@@ -111,3 +111,7 @@ tests/           # Playwright test files
 ## License
 
 Private - Pink Auto Glass
+
+## Deployment Status
+
+Last deployed: 2025-08-19
