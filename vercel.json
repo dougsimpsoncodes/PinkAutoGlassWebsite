@@ -1,8 +1,11 @@
 {
-  "version": 2,
   "framework": "nextjs",
-  "functions": {
-    "api/**/*.js": { "runtime": "nodejs20.x" },
-    "api/**/*.ts": { "runtime": "nodejs20.x" }
-  }
+  "regions": ["iad1"],
+  "redirects": [
+    {
+      "source": "/quote",
+      "destination": "/book",
+      "permanent": false
+    }
+  ]
 }
