@@ -1,0 +1,104 @@
+{
+  "name": "Pink Auto Glass - Mobile Windshield Service Denver",
+  "short_name": "Pink Auto Glass",
+  "description": "Professional mobile windshield repair and replacement throughout Denver Metro. We come to you with same-day service and lifetime warranty.",
+  "start_url": "/",
+  "display": "browser",
+  "orientation": "portrait",
+  "theme_color": "#E85A8B",
+  "background_color": "#0B1830",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["automotive", "services", "local"],
+  "icons": [
+    {
+      "src": "/public/brand/favicon-16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/brand/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/brand/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/brand/apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/brand/android-chrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/public/screenshots/desktop-homepage.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Pink Auto Glass homepage on desktop"
+    },
+    {
+      "src": "/public/screenshots/mobile-booking.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile booking flow"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Book Service",
+      "short_name": "Book",
+      "description": "Schedule windshield repair or replacement",
+      "url": "/book?utm_source=pwa&utm_medium=shortcut",
+      "icons": [
+        {
+          "src": "/public/brand/favicon-48.png",
+          "sizes": "48x48",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Get Quote",
+      "short_name": "Quote",
+      "description": "Get instant pricing for your vehicle",
+      "url": "/book?utm_source=pwa&utm_medium=shortcut&utm_campaign=quote",
+      "icons": [
+        {
+          "src": "/public/brand/favicon-48.png",
+          "sizes": "48x48",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Call or message Pink Auto Glass",
+      "url": "/contact?utm_source=pwa&utm_medium=shortcut",
+      "icons": [
+        {
+          "src": "/public/brand/favicon-48.png",
+          "sizes": "48x48",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

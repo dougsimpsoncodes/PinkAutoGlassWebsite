@@ -1,0 +1,300 @@
+{
+  "url": "http://localhost:3001",
+  "timestamp": "2025-08-19T22:27:43.847Z",
+  "sections": [],
+  "navigation": [
+    {
+      "text": "Skip to main content",
+      "href": "http://localhost:3001/#main-content",
+      "visible": true
+    },
+    {
+      "text": "Pink Auto Glass",
+      "href": "http://localhost:3001/",
+      "visible": true
+    },
+    {
+      "text": "Services",
+      "href": "http://localhost:3001/services",
+      "visible": true
+    },
+    {
+      "text": "Locations",
+      "href": "http://localhost:3001/locations",
+      "visible": true
+    },
+    {
+      "text": "Vehicles",
+      "href": "http://localhost:3001/vehicles",
+      "visible": true
+    },
+    {
+      "text": "About",
+      "href": "http://localhost:3001/about",
+      "visible": true
+    },
+    {
+      "text": "(303) 555-PINK",
+      "href": "tel:+13035557465",
+      "visible": true
+    },
+    {
+      "text": "Schedule Now",
+      "href": "http://localhost:3001/book?utm_source=header&utm_medium=cta&utm_campaign=header_primary",
+      "visible": true
+    },
+    {
+      "text": "Services",
+      "href": "http://localhost:3001/services",
+      "visible": true
+    },
+    {
+      "text": "Locations",
+      "href": "http://localhost:3001/locations",
+      "visible": true
+    },
+    {
+      "text": "Vehicles",
+      "href": "http://localhost:3001/vehicles",
+      "visible": true
+    },
+    {
+      "text": "About",
+      "href": "http://localhost:3001/about",
+      "visible": true
+    },
+    {
+      "text": "(303) 555-PINK",
+      "href": "tel:+13035557465",
+      "visible": true
+    },
+    {
+      "text": "Schedule Now",
+      "href": "http://localhost:3001/book?utm_source=mobile_menu&utm_medium=cta&utm_campaign=mobile_primary",
+      "visible": true
+    }
+  ],
+  "accessibility": [
+    {
+      "skipLinks": 1,
+      "altAttributes": 0,
+      "totalImages": 0,
+      "ariaLabels": 6,
+      "headingStructure": [
+        {
+          "level": 1,
+          "text": "Expert Auto Glass ServicesYou Can Trust"
+        },
+        {
+          "level": 2,
+          "text": "Get Your Free Quote"
+        },
+        {
+          "level": 2,
+          "text": "Our Services"
+        },
+        {
+          "level": 3,
+          "text": "Windshield Replacement"
+        },
+        {
+          "level": 3,
+          "text": "Windshield Repair"
+        },
+        {
+          "level": 3,
+          "text": "Mobile Service"
+        },
+        {
+          "level": 2,
+          "text": "Contact Pink Auto Glass"
+        },
+        {
+          "level": 3,
+          "text": "Call Us"
+        },
+        {
+          "level": 3,
+          "text": "Service Area"
+        },
+        {
+          "level": 3,
+          "text": "Hours"
+        }
+      ],
+      "focusableElements": 24
+    }
+  ],
+  "responsive": [
+    {
+      "viewport": "Mobile",
+      "navVisible": true,
+      "mobileMenuExists": true,
+      "bodyWidth": 360
+    },
+    {
+      "viewport": "Tablet",
+      "navVisible": true,
+      "mobileMenuExists": true,
+      "bodyWidth": 753
+    },
+    {
+      "viewport": "Desktop",
+      "navVisible": true,
+      "mobileMenuExists": true,
+      "bodyWidth": 1905
+    }
+  ],
+  "forms": [
+    {
+      "action": "http://localhost:3001/",
+      "method": "get",
+      "inputCount": 5,
+      "hasSubmit": true
+    }
+  ],
+  "issues": [],
+  "recommendations": [],
+  "title": "Pink Auto Glass - Professional Windshield Repair & Replacement in Denver",
+  "headings": [
+    {
+      "tag": "H1",
+      "text": "Expert Auto Glass ServicesYou Can Trust"
+    },
+    {
+      "tag": "H2",
+      "text": "Get Your Free Quote"
+    },
+    {
+      "tag": "H2",
+      "text": "Our Services"
+    },
+    {
+      "tag": "H3",
+      "text": "Windshield Replacement"
+    },
+    {
+      "tag": "H3",
+      "text": "Windshield Repair"
+    },
+    {
+      "tag": "H3",
+      "text": "Mobile Service"
+    },
+    {
+      "tag": "H2",
+      "text": "Contact Pink Auto Glass"
+    },
+    {
+      "tag": "H3",
+      "text": "Call Us"
+    },
+    {
+      "tag": "H3",
+      "text": "Service Area"
+    },
+    {
+      "tag": "H3",
+      "text": "Hours"
+    }
+  ],
+  "content": {
+    "hasPinkAutoGlass": true,
+    "hasQuoteForm": true,
+    "hasServices": true,
+    "hasContact": true
+  },
+  "formInputs": [
+    {
+      "type": "select-one",
+      "name": "year",
+      "required": true
+    },
+    {
+      "type": "select-one",
+      "name": "make",
+      "required": true
+    },
+    {
+      "type": "text",
+      "name": "model",
+      "required": true,
+      "placeholder": "Enter vehicle model"
+    },
+    {
+      "type": "select-one",
+      "name": "service",
+      "required": true
+    },
+    {
+      "type": "tel",
+      "name": "phone",
+      "required": true,
+      "placeholder": "(303) 555-1234"
+    }
+  ],
+  "formValidation": [
+    "Vehicle Year *Select Year20242023202220212020Make *Select MakeToyotaHondaFordChevroletNissanModel *Service Needed *Select ServiceWindshield RepairWindshield ReplacementSide WindowRear WindowPhone Number *Get My Quote",
+    "Select Year20242023202220212020",
+    "Select MakeToyotaHondaFordChevroletNissan",
+    "Please fill out this field.",
+    "Select ServiceWindshield RepairWindshield ReplacementSide WindowRear Window",
+    "Please fill out this field."
+  ],
+  "keyboardNav": {
+    "tabCount": 10,
+    "focusedElements": [
+      "SELECT",
+      {
+        "tag": "INPUT",
+        "text": "",
+        "class": "w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+      },
+      {
+        "tag": "SELECT",
+        "text": "Select ServiceWindshield RepairWindshield Replacem",
+        "class": "w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "class": "w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Get My Quote",
+        "class": "w-full mt-6 btn-primary text-lg py-4"
+      },
+      {
+        "tag": "A",
+        "text": "(303) 555-PINK",
+        "class": "text-pink-400 hover:text-pink-300 transition-colors"
+      },
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "class": "skip-link"
+      },
+      {
+        "tag": "A",
+        "text": "Pink Auto Glass",
+        "class": "focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
+      },
+      {
+        "tag": "A",
+        "text": "Services",
+        "class": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full"
+      },
+      {
+        "tag": "A",
+        "text": "Locations",
+        "class": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full"
+      },
+      {
+        "tag": "A",
+        "text": "Vehicles",
+        "class": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full"
+      }
+    ]
+  }
+}

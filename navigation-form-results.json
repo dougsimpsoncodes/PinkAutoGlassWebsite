@@ -1,0 +1,449 @@
+{
+  "navigation": [
+    {
+      "text": "Skip to main content",
+      "href": "#main-content",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Pink Auto Glass",
+      "href": "/",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Services",
+      "href": "/services",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Locations",
+      "href": "/locations",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Vehicles",
+      "href": "/vehicles",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "About",
+      "href": "/about",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Schedule Now",
+      "href": "/book?utm_source=header&utm_medium=cta&utm_campaign=header_primary",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Services",
+      "href": "/services",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Locations",
+      "href": "/locations",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Vehicles",
+      "href": "/vehicles",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "About",
+      "href": "/about",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "text": "Schedule Now",
+      "href": "/book?utm_source=mobile_menu&utm_medium=cta&utm_campaign=mobile_primary",
+      "isVisible": true,
+      "isEnabled": true,
+      "status": "accessible"
+    },
+    {
+      "element": "mobile_menu_button",
+      "isVisible": true,
+      "viewport": "mobile"
+    },
+    {
+      "element": "mobile_menu",
+      "isVisible": true,
+      "viewport": "mobile",
+      "action": "opened"
+    }
+  ],
+  "formTesting": [
+    {
+      "field": "year",
+      "action": "select option",
+      "result": "success",
+      "value": "2023"
+    },
+    {
+      "field": "make",
+      "action": "select option",
+      "result": "success",
+      "value": "Toyota"
+    },
+    {
+      "field": "model",
+      "action": "text input",
+      "result": "success",
+      "value": "Camry"
+    },
+    {
+      "field": "service",
+      "action": "select option",
+      "result": "success",
+      "value": "windshield-repair"
+    },
+    {
+      "field": "phone",
+      "action": "text input",
+      "result": "success",
+      "value": "(303) 555-1234"
+    },
+    {
+      "field": "submit_button",
+      "action": "availability check",
+      "result": "success",
+      "text": "Get My Quote",
+      "visible": true,
+      "enabled": true
+    },
+    {
+      "field": "validation",
+      "action": "empty form submission",
+      "result": "success",
+      "validationMessages": [
+        {
+          "id": "",
+          "name": ""
+        },
+        {
+          "id": "year",
+          "name": "year",
+          "validationMessage": "Please select an item in the list.",
+          "required": true
+        },
+        {
+          "id": "make",
+          "name": "make",
+          "validationMessage": "Please select an item in the list.",
+          "required": true
+        },
+        {
+          "id": "model",
+          "name": "model",
+          "validationMessage": "Please fill out this field.",
+          "required": true
+        },
+        {
+          "id": "service",
+          "name": "service",
+          "validationMessage": "Please select an item in the list.",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "name": "phone",
+          "validationMessage": "Please fill out this field.",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "accessibility": [
+    {
+      "test": "keyboard_navigation",
+      "result": "completed",
+      "focusPath": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "className": "w-full mt-6 btn-primary text-lg py-4",
+          "text": "Get My Quote"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "text-pink-400 hover:text-pink-300 transition-colors",
+          "text": "(303) 555-PINK"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "skip-link",
+          "text": "Skip to main content"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded",
+          "text": "Pink Auto Glass"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full",
+          "text": "Services"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full",
+          "text": "Locations"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full",
+          "text": "About"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "hidden sm:flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors",
+          "text": "(303) 555-PINK"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "btn-primary",
+          "text": "Schedule Now"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "className": "md:hidden p-2 text-gray-700 hover:text-pink-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded",
+          "text": ""
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "block py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100",
+          "text": "Services"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "block py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100",
+          "text": "Locations"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "block py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "className": "block py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100",
+          "text": "About"
+        }
+      ]
+    },
+    {
+      "test": "aria_elements",
+      "result": "completed",
+      "count": 27,
+      "elements": [
+        {
+          "tag": "NAV",
+          "ariaLabel": "Main navigation",
+          "role": "navigation",
+          "text": "Pink Auto GlassServicesLocationsVehiclesAbout(303)"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": "Pink Auto Glass - Go to homepage",
+          "role": null,
+          "text": "Pink Auto Glass"
+        },
+        {
+          "tag": "UL",
+          "ariaLabel": null,
+          "role": "menubar",
+          "text": "ServicesLocationsVehiclesAbout"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Services"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Services"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Locations"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Locations"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "About"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "About"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": "Call Pink Auto Glass",
+          "role": null,
+          "text": "(303) 555-PINK"
+        },
+        {
+          "tag": "BUTTON",
+          "ariaLabel": "Open mobile menu",
+          "role": null,
+          "text": ""
+        },
+        {
+          "tag": "NAV",
+          "ariaLabel": "Mobile navigation",
+          "role": "navigation",
+          "text": "ServicesLocationsVehiclesAbout(303) 555-PINKSchedu"
+        },
+        {
+          "tag": "UL",
+          "ariaLabel": null,
+          "role": "menu",
+          "text": "ServicesLocationsVehiclesAbout(303) 555-PINKSchedu"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Services"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Services"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Locations"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Locations"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "Vehicles"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "About"
+        },
+        {
+          "tag": "A",
+          "ariaLabel": null,
+          "role": "menuitem",
+          "text": "About"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "(303) 555-PINK"
+        },
+        {
+          "tag": "LI",
+          "ariaLabel": null,
+          "role": "none",
+          "text": "Schedule Now"
+        },
+        {
+          "tag": "FORM",
+          "ariaLabel": "Quote request form",
+          "role": "form",
+          "text": "Vehicle Year *Select Year20242023202220212020Make "
+        },
+        {
+          "tag": "DIV",
+          "ariaLabel": null,
+          "role": "alert",
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "issues": [],
+  "recommendations": []
+}

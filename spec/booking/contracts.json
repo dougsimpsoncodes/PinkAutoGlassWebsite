@@ -1,0 +1,788 @@
+{
+  "api": {
+    "version": "1.0",
+    "baseUrl": "/api",
+    "authentication": "none",
+    "rateLimit": {
+      "requests": 100,
+      "window": "15min",
+      "identifier": "ip"
+    }
+  },
+  "endpoints": {
+    "leads": {
+      "create": {
+        "method": "POST",
+        "path": "/api/leads",
+        "description": "Create a new lead from booking form",
+        "contentType": "application/json",
+        "requestBody": {
+          "type": "object",
+          "required": ["service", "vehicle", "customer", "location", "smsConsent"],
+          "properties": {
+            "service": {
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["windshield_repair", "windshield_replacement"],
+                  "description": "Primary service requested"
+                },
+                "mobileService": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether mobile service is requested"
+                }
+              }
+            },
+            "vehicle": {
+              "type": "object", 
+              "required": ["year", "make", "model"],
+              "properties": {
+                "year": {
+                  "type": "integer",
+                  "minimum": 1990,
+                  "maximum": 2024,
+                  "description": "Vehicle year"
+                },
+                "make": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 50,
+                  "description": "Vehicle manufacturer"
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 50, 
+                  "description": "Vehicle model"
+                },
+                "photos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "url",
+                    "description": "CDN URLs of uploaded damage photos"
+                  },
+                  "maxItems": 5,
+                  "description": "Optional damage photos"
+                }
+              }
+            },
+            "customer": {
+              "type": "object",
+              "required": ["firstName", "lastName", "phone"],
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 50,
+                  "pattern": "^[a-zA-Z\\s'-]+$",
+                  "description": "Customer first name"
+                },
+                "lastName": {
+                  "type": "string", 
+                  "minLength": 2,
+                  "maxLength": 50,
+                  "pattern": "^[a-zA-Z\\s'-]+$",
+                  "description": "Customer last name"
+                },
+                "phone": {
+                  "type": "string",
+                  "pattern": "^\\(\\d{3}\\) \\d{3}-\\d{4}$",
+                  "description": "US phone number in format (555) 123-4567"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "maxLength": 100,
+                  "description": "Customer email address (optional)"
+                },
+                "bestTimeToCall": {
+                  "type": "string",
+                  "enum": ["morning", "afternoon", "evening", "anytime"],
+                  "description": "Preferred contact time"
+                }
+              }
+            },
+            "location": {
+              "type": "object",
+              "required": ["address"],
+              "properties": {
+                "address": {
+                  "type": "object",
+                  "required": ["street", "city", "state", "zipCode"],
+                  "properties": {
+                    "street": {
+                      "type": "string",
+                      "minLength": 5,
+                      "maxLength": 100,
+                      "description": "Street address"
+                    },
+                    "city": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 50,
+                      "description": "City name"
+                    },
+                    "state": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{2}$",
+                      "description": "Two-letter state code"
+                    },
+                    "zipCode": {
+                      "type": "string",
+                      "pattern": "^\\d{5}(-\\d{4})?$",
+                      "description": "ZIP code (5 or 9 digits)"
+                    }
+                  }
+                },
+                "coordinates": {
+                  "type": "object",
+                  "properties": {
+                    "latitude": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "longitude": {
+                      "type": "number", 
+                      "minimum": -180,
+                      "maximum": 180
+                    }
+                  },
+                  "description": "Optional GPS coordinates"
+                }
+              }
+            },
+            "scheduling": {
+              "type": "object",
+              "properties": {
+                "preferredDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Preferred service date (YYYY-MM-DD)"
+                },
+                "timeWindow": {
+                  "type": "string",
+                  "enum": ["8-10", "10-12", "12-2", "2-4", "4-6", "flexible"],
+                  "description": "Preferred time window"
+                }
+              }
+            },
+            "damageDescription": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Optional damage description from customer"
+            },
+            "smsConsent": {
+              "type": "boolean",
+              "description": "Whether customer consented to SMS communications"
+            },
+            "source": {
+              "type": "string",
+              "enum": ["website_booking", "phone", "referral", "other"],
+              "default": "website_booking",
+              "description": "Lead source"
+            },
+            "utm": {
+              "type": "object",
+              "properties": {
+                "source": {"type": "string", "maxLength": 100},
+                "medium": {"type": "string", "maxLength": 100},
+                "campaign": {"type": "string", "maxLength": 100},
+                "term": {"type": "string", "maxLength": 100},
+                "content": {"type": "string", "maxLength": 100}
+              },
+              "description": "UTM tracking parameters"
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lead created successfully",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "leadId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique lead identifier"
+                    },
+                    "referenceNumber": {
+                      "type": "string",
+                      "pattern": "^QT-\\d{4}-\\d{4}$",
+                      "description": "Customer-facing reference number"
+                    },
+                    "estimatedQuote": {
+                      "type": "object",
+                      "properties": {
+                        "service": {"type": "string"},
+                        "basePrice": {"type": "number"},
+                        "mobileFee": {"type": "number"},
+                        "totalEstimate": {"type": "number"}
+                      }
+                    },
+                    "nextSteps": {
+                      "type": "object",
+                      "properties": {
+                        "callbackWindow": {"type": "string", "value": "15 minutes"},
+                        "emailSent": {"type": "boolean"},
+                        "smsEnabled": {"type": "boolean"}
+                      }
+                    }
+                  }
+                },
+                "message": {"type": "string", "value": "Quote request submitted successfully"}
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "string", "value": "VALIDATION_ERROR"},
+                    "message": {"type": "string"},
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {"type": "string"},
+                          "message": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business logic error",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object", 
+                  "properties": {
+                    "code": {"type": "string"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "string", "value": "RATE_LIMIT_EXCEEDED"},
+                    "message": {"type": "string", "value": "Too many requests. Please try again later."},
+                    "retryAfter": {"type": "number", "description": "Seconds until retry allowed"}
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "string", "value": "INTERNAL_ERROR"},
+                    "message": {"type": "string", "value": "Something went wrong. Please try again."}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "track": {
+        "method": "GET",
+        "path": "/api/leads/{referenceNumber}",
+        "description": "Track lead status by reference number",
+        "parameters": {
+          "path": {
+            "referenceNumber": {
+              "type": "string",
+              "pattern": "^QT-\\d{4}-\\d{4}$",
+              "description": "Customer reference number"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead status retrieved successfully",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "referenceNumber": {"type": "string"},
+                    "status": {
+                      "type": "string",
+                      "enum": ["new", "contacted", "scheduled", "in_progress", "completed", "cancelled"]
+                    },
+                    "statusMessage": {"type": "string"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                    "updatedAt": {"type": "string", "format": "date-time"},
+                    "appointment": {
+                      "type": "object",
+                      "properties": {
+                        "scheduled": {"type": "boolean"},
+                        "date": {"type": "string", "format": "date"},
+                        "timeWindow": {"type": "string"},
+                        "technician": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lead not found",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "string", "value": "LEAD_NOT_FOUND"},
+                    "message": {"type": "string", "value": "Reference number not found"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "uploads": {
+      "images": {
+        "method": "POST",
+        "path": "/api/uploads/images",
+        "description": "Upload damage photos",
+        "contentType": "multipart/form-data",
+        "requestBody": {
+          "type": "multipart",
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {"type": "file"},
+              "maxItems": 5,
+              "description": "Image files to upload"
+            },
+            "context": {
+              "type": "string",
+              "enum": ["damage_photos"],
+              "default": "damage_photos"
+            }
+          }
+        },
+        "fileConstraints": {
+          "allowedTypes": ["image/jpeg", "image/png", "image/heic"],
+          "maxSize": 2097152,
+          "maxFiles": 5
+        },
+        "responses": {
+          "201": {
+            "description": "Images uploaded successfully",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "uploadId": {"type": "string", "format": "uuid"},
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "filename": {"type": "string"},
+                          "originalName": {"type": "string"},
+                          "url": {"type": "string", "format": "url"},
+                          "thumbnailUrl": {"type": "string", "format": "url"},
+                          "size": {"type": "number"},
+                          "mimeType": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file upload",
+            "content": {
+              "type": "object", 
+              "properties": {
+                "success": {"type": "boolean", "value": false},
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {"type": "string", "enum": ["INVALID_FILE_TYPE", "FILE_TOO_LARGE", "TOO_MANY_FILES"]},
+                    "message": {"type": "string"},
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "file": {"type": "string"},
+                          "error": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vehicles": {
+      "makes": {
+        "method": "GET",
+        "path": "/api/vehicles/makes",
+        "description": "Get vehicle makes for a given year",
+        "parameters": {
+          "query": {
+            "year": {
+              "type": "integer",
+              "minimum": 1990,
+              "maximum": 2024,
+              "required": true,
+              "description": "Vehicle year"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vehicle makes retrieved successfully",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string"},
+                      "name": {"type": "string"},
+                      "popular": {"type": "boolean"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "models": {
+        "method": "GET", 
+        "path": "/api/vehicles/models",
+        "description": "Get vehicle models for a given year and make",
+        "parameters": {
+          "query": {
+            "year": {
+              "type": "integer",
+              "minimum": 1990,
+              "maximum": 2024,
+              "required": true,
+              "description": "Vehicle year"
+            },
+            "make": {
+              "type": "string",
+              "required": true,
+              "description": "Vehicle make"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vehicle models retrieved successfully",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string"},
+                      "name": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "location": {
+      "validate": {
+        "method": "POST",
+        "path": "/api/location/validate", 
+        "description": "Validate address and check service area",
+        "contentType": "application/json",
+        "requestBody": {
+          "type": "object",
+          "required": ["street", "city", "state", "zipCode"],
+          "properties": {
+            "street": {"type": "string"},
+            "city": {"type": "string"},
+            "state": {"type": "string"},
+            "zipCode": {"type": "string"}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address validation result",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean"},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {"type": "boolean"},
+                    "inServiceArea": {"type": "boolean"},
+                    "normalizedAddress": {
+                      "type": "object",
+                      "properties": {
+                        "street": {"type": "string"},
+                        "city": {"type": "string"},
+                        "state": {"type": "string"},
+                        "zipCode": {"type": "string"}
+                      }
+                    },
+                    "coordinates": {
+                      "type": "object", 
+                      "properties": {
+                        "latitude": {"type": "number"},
+                        "longitude": {"type": "number"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scheduling": {
+      "availability": {
+        "method": "GET",
+        "path": "/api/scheduling/availability",
+        "description": "Get available appointment slots",
+        "parameters": {
+          "query": {
+            "date": {
+              "type": "string",
+              "format": "date",
+              "required": true,
+              "description": "Date to check availability (YYYY-MM-DD)"
+            },
+            "location": {
+              "type": "string",
+              "required": true,
+              "description": "Location (ZIP code or coordinates)"
+            },
+            "service": {
+              "type": "string",
+              "enum": ["windshield_repair", "windshield_replacement"],
+              "description": "Service type for duration estimation"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Available time slots",
+            "content": {
+              "type": "object",
+              "properties": {
+                "success": {"type": "boolean", "value": true},
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "date": {"type": "string", "format": "date"},
+                    "slots": {
+                      "type": "array",
+                      "items": {
+                        "type": "object", 
+                        "properties": {
+                          "window": {"type": "string"},
+                          "available": {"type": "boolean"},
+                          "technician": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "errorCodes": {
+    "VALIDATION_ERROR": {
+      "httpStatus": 400,
+      "description": "Request data failed validation",
+      "userMessage": "Please check your information and try again"
+    },
+    "RATE_LIMIT_EXCEEDED": {
+      "httpStatus": 429,
+      "description": "Too many requests from client",
+      "userMessage": "Too many requests. Please try again later."
+    },
+    "DUPLICATE_LEAD": {
+      "httpStatus": 422,
+      "description": "Lead already exists for this phone/email",
+      "userMessage": "We already have a recent quote request from you. Please call us to update your request."
+    },
+    "SERVICE_AREA_UNAVAILABLE": {
+      "httpStatus": 422,
+      "description": "Location is outside service area",
+      "userMessage": "We don't service this area yet, but we're expanding soon!"
+    },
+    "INVALID_FILE_TYPE": {
+      "httpStatus": 400,
+      "description": "Uploaded file type not allowed",
+      "userMessage": "Please upload JPG or PNG images only"
+    },
+    "FILE_TOO_LARGE": {
+      "httpStatus": 400,
+      "description": "Uploaded file exceeds size limit",
+      "userMessage": "File too large. Please use images under 2MB."
+    },
+    "TOO_MANY_FILES": {
+      "httpStatus": 400,
+      "description": "More than 5 files uploaded",
+      "userMessage": "Maximum 5 photos allowed"
+    },
+    "LEAD_NOT_FOUND": {
+      "httpStatus": 404,
+      "description": "Reference number not found",
+      "userMessage": "Reference number not found. Please check and try again."
+    },
+    "INTERNAL_ERROR": {
+      "httpStatus": 500,
+      "description": "Unexpected server error",
+      "userMessage": "Something went wrong. Please try again."
+    }
+  },
+  "examples": {
+    "createLeadRequest": {
+      "service": {
+        "type": "windshield_repair",
+        "mobileService": true
+      },
+      "vehicle": {
+        "year": 2019,
+        "make": "Honda", 
+        "model": "Civic",
+        "photos": [
+          "https://cdn.pinkautoglass.com/uploads/damage_photo_1.jpg",
+          "https://cdn.pinkautoglass.com/uploads/damage_photo_2.jpg"
+        ]
+      },
+      "customer": {
+        "firstName": "John",
+        "lastName": "Smith", 
+        "phone": "(555) 123-4567",
+        "email": "john@example.com",
+        "bestTimeToCall": "morning"
+      },
+      "location": {
+        "address": {
+          "street": "123 Main Street",
+          "city": "Anytown",
+          "state": "CA",
+          "zipCode": "90210"
+        },
+        "coordinates": {
+          "latitude": 34.0902,
+          "longitude": -118.4063
+        }
+      },
+      "scheduling": {
+        "preferredDate": "2024-01-15",
+        "timeWindow": "10-12"
+      },
+      "damageDescription": "Small chip in driver's side of windshield, about the size of a quarter",
+      "smsConsent": true,
+      "source": "website_booking"
+    },
+    "createLeadResponse": {
+      "success": true,
+      "data": {
+        "leadId": "550e8400-e29b-41d4-a716-446655440000",
+        "referenceNumber": "QT-2024-1234",
+        "estimatedQuote": {
+          "service": "Windshield Repair",
+          "basePrice": 89,
+          "mobileFee": 25,
+          "totalEstimate": 114
+        },
+        "nextSteps": {
+          "callbackWindow": "15 minutes",
+          "emailSent": true,
+          "smsEnabled": true
+        }
+      },
+      "message": "Quote request submitted successfully"
+    },
+    "validationErrorResponse": {
+      "success": false,
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Request data failed validation",
+        "details": [
+          {
+            "field": "customer.phone",
+            "message": "Please enter a valid phone number"
+          },
+          {
+            "field": "vehicle.year", 
+            "message": "Please select your vehicle year"
+          }
+        ]
+      }
+    }
+  }
+}

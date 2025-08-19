@@ -1,0 +1,33 @@
+User-agent: *
+Allow: /
+
+# Disallow staging/development paths
+Disallow: /staging
+Disallow: /dev
+Disallow: /test
+Disallow: /admin
+Disallow: /api/internal
+
+# Disallow duplicate content paths
+Disallow: /*?utm_*
+Disallow: /*?ref=*
+Disallow: /*?share=*
+
+# Allow important API endpoints for crawling
+Allow: /api/vehicles/makes
+Allow: /api/vehicles/models
+Allow: /api/locations
+
+# Sitemap location
+Sitemap: https://pinkautoglass.com/sitemap.xml
+
+# Crawl-delay for specific bots (optional)
+User-agent: Bingbot
+Crawl-delay: 1
+
+# Block problematic bots (if needed)
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
