@@ -1,3 +1,283 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base CSS Variables for consistency */
+:root {
+  --font-display: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --brand-pink: #E85A8B;
+  --brand-navy: #0B1830;
+  --shadow-brand: 0 4px 14px 0 rgba(232, 90, 139, 0.2);
+  --shadow-brand-hover: 0 8px 25px 0 rgba(232, 90, 139, 0.3);
+  --shadow-brand-lg: 0 8px 25px 0 rgba(232, 90, 139, 0.4);
+}
+
+/* Component Layer - Custom Components */
+@layer components {
+  
+  /* Skip Link for Accessibility */
+  .skip-link {
+    @apply absolute -top-10 left-4 bg-white text-gray-900 px-4 py-2 rounded font-medium shadow-lg transform -translate-y-full;
+    @apply focus:translate-y-0 focus:top-4 transition-transform duration-200;
+    z-index: 1600;
+  }
+
+  /* Button Components */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white rounded-lg;
+    @apply bg-gradient-primary shadow-brand transition-all duration-200 ease-out;
+    @apply hover:shadow-brand-hover hover:-translate-y-0.5;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2;
+    @apply active:translate-y-0 active:shadow-brand;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg;
+    @apply bg-transparent text-brand-navy border-2 border-gray-200 transition-all duration-200;
+    @apply hover:border-brand-pink hover:text-brand-pink hover:shadow-sm;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg;
+    @apply bg-transparent text-brand-pink border-2 border-brand-pink transition-all duration-200;
+    @apply hover:bg-brand-pink hover:text-white hover:shadow-brand;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    @apply relative min-h-screen flex items-center justify-center overflow-hidden;
+    @apply bg-gradient-hero;
+  }
+
+  .hero-overlay {
+    @apply absolute inset-0 bg-hero-overlay z-10;
+  }
+
+  .hero-content {
+    @apply relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white;
+  }
+
+  .hero-title {
+    @apply text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mb-6;
+    @apply animate-fade-in-up;
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+  }
+
+  .hero-subtitle {
+    @apply text-lg sm:text-xl lg:text-2xl mb-8 text-white/90 max-w-2xl mx-auto;
+    @apply animate-fade-in-up;
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+  }
+
+  .hero-cta {
+    @apply animate-fade-in-up;
+    animation-delay: 0.8s;
+    animation-fill-mode: both;
+  }
+
+  /* Badge Components */
+  .badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-gradient-primary text-white;
+  }
+
+  .badge-outline {
+    @apply bg-transparent text-brand-pink border border-brand-pink;
+  }
+
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 transition-all duration-200;
+    @apply hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .card-quote {
+    @apply relative bg-white rounded-xl p-8 shadow-lg border border-gray-100 max-w-lg;
+  }
+
+  .card-service {
+    @apply bg-white rounded-lg p-6 shadow-md border border-gray-100 transition-all duration-200;
+    @apply hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+
+  .text-gradient-soft {
+    @apply bg-gradient-soft bg-clip-text text-transparent;
+  }
+
+  /* Chip Components */
+  .chip {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200;
+  }
+
+  .chip-area {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105;
+  }
+
+  /* Container Utilities */
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+
+  /* Focus Utilities */
+  .focus-brand {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2;
+  }
+
+  /* Mobile Menu Animation */
+  .mobile-menu-enter {
+    @apply transform translate-x-full;
+  }
+
+  .mobile-menu-enter-active {
+    @apply transform translate-x-0 transition-transform duration-300 ease-in-out;
+  }
+
+  .mobile-menu-exit {
+    @apply transform translate-x-0;
+  }
+
+  .mobile-menu-exit-active {
+    @apply transform translate-x-full transition-transform duration-300 ease-in-out;
+  }
+}
+
+/* Utility Layer - Custom Utilities */
+@layer utilities {
+  
+  /* Typography Utilities */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  /* Animation Utilities */
+  .animate-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .animate-delay-800 {
+    animation-delay: 0.8s;
+  }
+
+  /* Gradient Text Utilities */
+  .gradient-text-primary {
+    background: linear-gradient(135deg, #f0536d 0%, #ee6aa3 60%, #d946ef 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-text-soft {
+    background: linear-gradient(135deg, #f87171 0%, #f472b6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Background Gradient Utilities */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #f0536d 0%, #ee6aa3 60%, #d946ef 100%);
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, #E85A8B 0%, #ee6aa3 50%, #d946ef 100%);
+  }
+
+  .bg-gradient-soft {
+    background: linear-gradient(135deg, #f87171 0%, #f472b6 100%);
+  }
+
+  .bg-gradient-light {
+    background: linear-gradient(135deg, #fbc9da 0%, #fbcfe8 100%);
+  }
+
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, #982748 0%, #831843 100%);
+  }
+
+  /* Overlay Utilities */
+  .overlay-dark {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .overlay-light {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .overlay-darker {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  /* Shadow Utilities */
+  .shadow-brand {
+    box-shadow: var(--shadow-brand);
+  }
+
+  .shadow-brand-hover {
+    box-shadow: var(--shadow-brand-hover);
+  }
+
+  .shadow-brand-lg {
+    box-shadow: var(--shadow-brand-lg);
+  }
+}
+
+/* Global Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-ui text-gray-900 antialiased;
+  @apply selection:bg-brand-pink/20 selection:text-brand-pink;
+}
+
+/* Ensure animations work properly */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Improved focus styles for better accessibility */
+*:focus-visible {
+  @apply outline-none ring-2 ring-pink-500 ring-offset-2;
+}
+
+/* Better text rendering */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-display font-bold;
+}
+
+p {
+  @apply leading-relaxed;
+}
