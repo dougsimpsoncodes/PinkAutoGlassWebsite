@@ -1,0 +1,673 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import crypto from 'crypto';
+
+import { 
+  supabaseAdmin, 
+  insertLead, 
+  insertMediaFile, 
+  associateMediaWithLead,
+  checkRateLimit,
+  generateSecureFilePath,
+  validateFile,
+  uploadFileToStorage,
+  createSignedUploadUrl,
+  getPublicUrl,
+  RateLimitError,
+  ValidationError,
+  SupabaseError
+} from '@/lib/supabase';
+import { 
+  validateBookingFormData, 
+  validateFiles,
+  generateValidationSummary,
+  normalizePhoneNumber
+} from '@/lib/validation';
+import { 
+  BookingFormData, 
+  LeadInsertData, 
+  MediaFileInsertData,
+  BookingSubmissionResponse,
+  ApiResponse
+} from '@/types/supabase';
+
+// =============================================================================
+// REQUEST INTERFACES
+// =============================================================================
+
+interface BookingSubmissionRequest {
+  // Form data
+  formData: BookingFormData;
+  
+  // File data as base64 strings with metadata
+  files?: {
+    data: string; // base64 encoded file data
+    name: string;
+    type: string;
+    size: number;
+  }[];
+  
+  // Request metadata
+  referenceNumber?: string;
+  submittedAt?: string;
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Get client IP address from request
+ */
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const real = request.headers.get('x-real-ip');
+  const remote = request.headers.get('x-forwarded-for')?.split(',')[0];
+  
+  return forwarded || real || remote || '127.0.0.1';
+}
+
+/**
+ * Generate reference number
+ */
+function generateReferenceNumber(): string {
+  const year = new Date().getFullYear();
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `QT-${year}-${timestamp}${random}`;
+}
+
+/**
+ * Generate file hash for deduplication
+ */
+function generateFileHash(data: Buffer): string {
+  return crypto.createHash('sha256').update(data).digest('hex');
+}
+
+/**
+ * Convert base64 to Buffer
+ */
+function base64ToBuffer(base64: string): Buffer {
+  return Buffer.from(base64.split(',')[1] || base64, 'base64');
+}
+
+/**
+ * Log security event for monitoring
+ */
+function logSecurityEvent(event: string, details: any, ipAddress: string) {
+  console.warn(`SECURITY: ${event}`, {
+    timestamp: new Date().toISOString(),
+    ipAddress,
+    details
+  });
+}
+
+// =============================================================================
+// MAIN POST HANDLER
+// =============================================================================
+
+export async function POST(request: NextRequest) {
+  console.log("▶ Booking submission received");
+  const startTime = Date.now();
+  const clientIP = getClientIP(request);
+  const userAgent = request.headers.get('user-agent') || '';
+  
+  try {
+    // =======================================================================
+    // SECURITY AND RATE LIMITING
+    // =======================================================================
+    
+    // Check rate limiting
+    const rateLimitResult = checkRateLimit(clientIP, 5, 300000); // 5 requests per 5 minutes
+    if (!rateLimitResult.allowed) {
+      logSecurityEvent('RATE_LIMIT_EXCEEDED', { clientIP }, clientIP);
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Too many requests. Please try again later.',
+          retryAfter: rateLimitResult.resetTime
+        },
+        { status: 429 }
+      );
+    }
+
+    // Validate Content-Type
+    const contentType = request.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid content type' },
+        { status: 400 }
+      );
+    }
+
+    // =======================================================================
+    // PARSE AND VALIDATE REQUEST DATA
+    // =======================================================================
+    
+    let requestData: BookingSubmissionRequest;
+    
+    try {
+      const rawData = await request.json();
+      requestData = rawData as BookingSubmissionRequest;
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON data' },
+        { status: 400 }
+      );
+    }
+
+    // Validate form data structure
+    if (!requestData.formData || typeof requestData.formData !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Missing or invalid form data' },
+        { status: 400 }
+      );
+    }
+
+    // Comprehensive form validation
+    const validationResult = validateBookingFormData(requestData.formData);
+    
+    if (!validationResult.isValid) {
+      console.warn('Form validation failed:', {
+        clientIP,
+        errors: validationResult.errors,
+        summary: generateValidationSummary(validationResult)
+      });
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          validationErrors: validationResult.errors
+        },
+        { status: 400 }
+      );
+    }
+
+    const formData = validationResult.sanitizedData!;
+    
+    // Validate file uploads if present
+    let validFiles: File[] = [];
+    if (requestData.files && requestData.files.length > 0) {
+      try {
+        // Convert base64 files to File objects
+        const files = requestData.files.map(fileData => {
+          const buffer = base64ToBuffer(fileData.data);
+          return new File([buffer], fileData.name, { type: fileData.type });
+        });
+        
+        const fileValidation = validateFiles(files);
+        if (!fileValidation.isValid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'File validation failed',
+              fileErrors: fileValidation.errors
+            },
+            { status: 400 }
+          );
+        }
+        
+        validFiles = fileValidation.validFiles;
+      } catch (fileError) {
+        console.error('File processing error:', fileError);
+        return NextResponse.json(
+          { success: false, error: 'Invalid file data' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // =======================================================================
+    // SUPABASE TRANSACTION - CREATE LEAD
+    // =======================================================================
+    
+    if (!supabaseAdmin) {
+      throw new SupabaseError('Database connection not available');
+    }
+
+    // Generate reference number and session ID
+    const referenceNumber = requestData.referenceNumber || generateReferenceNumber();
+    const sessionId = crypto.randomUUID();
+    const submittedAt = requestData.submittedAt || new Date().toISOString();
+    
+    // Normalize phone number
+    const normalizedPhone = normalizePhoneNumber(formData.phone!);
+    
+    // Prepare lead data for insertion
+    const leadData: LeadInsertData = {
+      reference_number: referenceNumber,
+      service_type: formData.serviceType!,
+      mobile_service: formData.mobileService!,
+      first_name: formData.firstName!,
+      last_name: formData.lastName!,
+      phone: normalizedPhone,
+      email: formData.email!,
+      best_time_to_call: formData.bestTimeToCall || null,
+      vehicle_year: formData.vehicleYear!,
+      vehicle_make: formData.vehicleMake!,
+      vehicle_model: formData.vehicleModel!,
+      vehicle_trim: formData.vehicleTrim || null,
+      street_address: formData.streetAddress!,
+      city: formData.city!,
+      state: formData.state!,
+      zip_code: formData.zipCode!,
+      latitude: formData.latitude || null,
+      longitude: formData.longitude || null,
+      preferred_date: formData.preferredDate!,
+      time_window: formData.timeWindow || null,
+      damage_description: formData.damageDescription || null,
+      sms_consent: formData.smsConsent!,
+      privacy_acknowledgment: formData.privacyAcknowledgment!,
+      email_consent: true,
+      status: 'new',
+      source: 'website_booking',
+      utm_source: formData.utmSource || null,
+      utm_medium: formData.utmMedium || null,
+      utm_campaign: formData.utmCampaign || null,
+      referral_code: formData.referralCode || null,
+      used_geolocation: !!(formData.latitude && formData.longitude),
+      ip_address: clientIP,
+      user_agent: userAgent,
+      form_session_id: sessionId,
+      submitted_at: submittedAt
+    };
+
+    // Insert lead into database
+    let createdLead;
+    try {
+      createdLead = await insertLead(leadData);
+      console.log("✅ Lead created:", createdLead.id);
+      console.log('Lead created successfully:', {
+        leadId: createdLead.id,
+        referenceNumber: createdLead.reference_number,
+        customer: `${createdLead.first_name} ${createdLead.last_name}`,
+        service: createdLead.service_type
+      });
+    } catch (leadError) {
+      console.error('Lead creation failed:', leadError);
+      throw new SupabaseError('Failed to create lead record');
+    }
+
+    // =======================================================================
+    // FILE UPLOAD PROCESSING
+    // =======================================================================
+    
+    const uploadedFiles: Array<{
+      filename: string;
+      url: string;
+      thumbnailUrl?: string;
+    }> = [];
+
+    if (validFiles.length > 0) {
+      console.log(`Processing ${validFiles.length} file uploads for lead ${createdLead.id}`);
+      
+      for (const file of validFiles) {
+        try {
+          // Generate secure file path
+          const storagePath = generateSecureFilePath(createdLead.id, file.name);
+          
+          // Create signed upload URL
+          const signedUrlData = await createSignedUploadUrl(storagePath);
+          
+          // Convert File to ArrayBuffer for upload
+          const fileBuffer = await file.arrayBuffer();
+          const fileHash = generateFileHash(Buffer.from(fileBuffer));
+          
+          // Upload file to Supabase Storage
+          const uploadResult = await uploadFileToStorage(
+            file,
+            signedUrlData.signedUrl,
+            storagePath
+          );
+          
+          if (!uploadResult.success) {
+            console.error('File upload failed:', uploadResult.error);
+            continue; // Skip this file but don't fail the entire request
+          }
+          
+          // Get public URL
+          const publicUrl = getPublicUrl(storagePath);
+          
+          // Create media file record
+          const mediaData: MediaFileInsertData = {
+            filename: storagePath.split('/').pop()!,
+            original_filename: file.name,
+            file_path: storagePath,
+            file_size: file.size,
+            mime_type: file.type,
+            file_hash: fileHash,
+            media_type: 'image',
+            context: 'booking_photos',
+            bucket_name: 'lead-media',
+            storage_path: storagePath,
+            public_url: publicUrl,
+            status: 'active',
+            ip_address: clientIP,
+            user_agent: userAgent,
+            upload_metadata: {
+              session_id: sessionId,
+              upload_time: new Date().toISOString(),
+              client_ip: clientIP
+            }
+          };
+          
+          // Insert media file record
+          const mediaFile = await insertMediaFile(mediaData);
+          
+          // Associate media with lead
+          await associateMediaWithLead({
+            lead_id: createdLead.id,
+            media_file_id: mediaFile.id,
+            context: 'booking_photos',
+            display_order: uploadedFiles.length
+          });
+          
+          uploadedFiles.push({
+            filename: file.name,
+            url: publicUrl
+          });
+          
+          console.log('File uploaded successfully:', {
+            filename: file.name,
+            size: file.size,
+            leadId: createdLead.id,
+            mediaId: mediaFile.id
+          });
+          
+        } catch (fileError) {
+          console.error('Individual file upload error:', {
+            filename: file.name,
+            error: fileError,
+            leadId: createdLead.id
+          });
+          // Continue with other files
+        }
+      }
+    }
+
+    // =======================================================================
+    // POST-PROCESSING AND INTEGRATIONS
+    // =======================================================================
+    
+    // TODO: Send confirmation email
+    // TODO: Send SMS notification if consented
+    // TODO: Create CRM webhook
+    // TODO: Trigger staff notifications
+    
+    // Log successful submission
+    const processingTime = Date.now() - startTime;
+    console.log('Booking submission completed:', {
+      leadId: createdLead.id,
+      referenceNumber: createdLead.reference_number,
+      filesUploaded: uploadedFiles.length,
+      processingTimeMs: processingTime,
+      clientIP
+    });
+
+    // =======================================================================
+    // SUCCESS RESPONSE
+    // =======================================================================
+    
+    const response: BookingSubmissionResponse = {
+      success: true,
+      data: {
+        leadId: createdLead.id,
+        referenceNumber: createdLead.reference_number,
+        uploadedPhotos: uploadedFiles
+      },
+      message: 'Booking submitted successfully'
+    };
+    
+    console.log("✔ Booking logic finished. Returning success response.");
+    
+    return NextResponse.json(response, { 
+      status: 201,
+      headers: {
+        'Cache-Control': 'no-store',
+        'X-Processing-Time': processingTime.toString()
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Booking submission error:", error);
+    const processingTime = Date.now() - startTime;
+    
+    // Handle specific error types
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: error.message,
+          retryAfter: error.resetTime
+        },
+        { status: 429 }
+      );
+    }
+    
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: error.message,
+          field: error.field
+        },
+        { status: 400 }
+      );
+    }
+    
+    if (error instanceof SupabaseError) {
+      console.error('Supabase error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        clientIP,
+        processingTime
+      });
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database operation failed' 
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Generic error handling
+    console.error('Booking submission error:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      clientIP,
+      userAgent,
+      processingTime
+    });
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================================================================
+// GET ENDPOINT - BOOKING RETRIEVAL
+// =============================================================================
+
+export async function GET(request: NextRequest) {
+  const clientIP = getClientIP(request);
+  
+  try {
+    // Rate limiting for GET requests
+    const rateLimitResult = checkRateLimit(`get_${clientIP}`, 20, 60000); // 20 requests per minute
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Too many requests. Please try again later.' 
+        },
+        { status: 429 }
+      );
+    }
+
+    // Extract and validate reference number
+    const searchParams = request.nextUrl.searchParams;
+    const referenceNumber = searchParams.get('ref');
+
+    if (!referenceNumber) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Reference number required' 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate reference number format
+    if (!/^QT-\d{4}-\w+$/.test(referenceNumber)) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid reference number format' 
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!supabaseAdmin) {
+      throw new SupabaseError('Database connection not available');
+    }
+
+    // Retrieve lead with associated media
+    const { data: lead, error } = await supabaseAdmin
+      .from('leads')
+      .select(`
+        id,
+        reference_number,
+        service_type,
+        mobile_service,
+        vehicle_year,
+        vehicle_make,
+        vehicle_model,
+        vehicle_trim,
+        preferred_date,
+        time_window,
+        status,
+        created_at,
+        submitted_at,
+        estimated_cost,
+        media_associations (
+          id,
+          context,
+          display_order,
+          caption,
+          media_files (
+            id,
+            filename,
+            original_filename,
+            file_size,
+            mime_type,
+            public_url,
+            thumbnail_url,
+            status
+          )
+        )
+      `)
+      .eq('reference_number', referenceNumber)
+      .single();
+
+    if (error || !lead) {
+      console.warn('Lead not found:', { referenceNumber, clientIP });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Booking not found' 
+        },
+        { status: 404 }
+      );
+    }
+
+    // Filter sensitive information for public response
+    const publicLead = {
+  referenceNumber: lead.reference_number,
+  serviceType: lead.service_type,
+  mobileService: lead.mobile_service,
+  vehicle: {
+    year: lead.vehicle_year,
+    make: lead.vehicle_make,
+    model: lead.vehicle_model,
+    trim: lead.vehicle_trim
+  },
+  preferredDate: lead.preferred_date,
+  timeWindow: lead.time_window,
+  status: lead.status,
+  submittedAt: lead.submitted_at,
+  estimatedCost: lead.estimated_cost
+};
+
+    console.log('Lead retrieved successfully:', {
+      leadId: lead.id,
+      referenceNumber: lead.reference_number,
+      clientIP
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: { lead: publicLead }
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=300' // Cache for 5 minutes
+        }
+      }
+    );
+
+  } catch (error) {
+    console.error('Lead retrieval error:', {
+      error: error instanceof Error ? error.message : String(error),
+      clientIP
+    });
+    
+    if (error instanceof SupabaseError) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database operation failed' 
+        },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================================================================
+// OPTIONS ENDPOINT - CORS PREFLIGHT
+// =============================================================================
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' 
+        ? 'https://pinkautoglass.com' 
+        : '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    },
+  });
+}
