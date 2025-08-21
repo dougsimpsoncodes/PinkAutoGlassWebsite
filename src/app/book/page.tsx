@@ -1,5 +1,6 @@
-import type { BookingFormData } from "@/types/booking";
+'use client';
 
+import type { BookingFormData } from "@/types/booking";
 import { useState, useEffect } from 'react';
 import { StepTracker } from '@/components/book/step-tracker';
 import { ServiceSelection } from '@/components/book/service-selection';
