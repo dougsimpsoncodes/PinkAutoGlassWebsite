@@ -136,6 +136,13 @@ export async function POST(req: Request) {
       }
     }
 
+    // Trigger email notification (fire and forget)
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/booking/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: lead.id })
+    }).catch(err => console.error('Failed to send notification:', err));
+
     return NextResponse.json({ ok:true, id: lead.id });
   } catch (e:any) {
     return NextResponse.json({ ok:false, error: e.message || "error" }, { status: 400 });
