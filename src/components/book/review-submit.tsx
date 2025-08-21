@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { BookingFormData } from '@/app/book/page';
+import type { BookingFormData } from '@/types/booking';
 
 interface ReviewSubmitProps {
   formData: BookingFormData;

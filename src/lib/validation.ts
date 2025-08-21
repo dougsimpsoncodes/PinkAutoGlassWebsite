@@ -3,7 +3,7 @@
  * Implements comprehensive validation rules for all form fields
  */
 
-import { BookingFormData } from '@/types/supabase';
+import { BookingFormData } from '@/types/booking';
 import { ValidationError } from './supabase';
 
 // =============================================================================
