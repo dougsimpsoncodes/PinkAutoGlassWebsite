@@ -231,34 +231,30 @@ export default function BookingPage() {
         }))
       );
 
-      // Prepare submission data in new API format
+      // Prepare submission data in new API format - convert to snake_case
       const submissionData = {
-        formData: {
-          serviceType: formData.serviceType,
-          mobileService: formData.mobileService,
-          vehicleYear: parseInt(String(formData.vehicleYear), 10),
-          vehicleMake: formData.vehicleMake,
-          vehicleModel: formData.vehicleModel,
-          // vehicleTrim removed - not needed for auto glass work
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          email: formData.email,
-          // bestTimeToCall removed - field removed
-          streetAddress: formData.streetAddress,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          preferredDate: formData.preferredDate,
-          timeWindow: formData.timeWindow || undefined,
-          damageDescription: formData.damageDescription || undefined,
-          smsConsent: formData.smsConsent,
-          privacyAcknowledgment: formData.privacyAcknowledgment,
-          // Simplified tracking - UTM fields removed
-          referralCode: formData.referralCode || undefined
-        },
-        files: filesData.length > 0 ? filesData : undefined,
-        submittedAt: new Date().toISOString()
+        service_type: formData.serviceType,
+        mobile_service: formData.mobileService || false,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        email: formData.email,
+        vehicle_year: parseInt(String(formData.vehicleYear), 10),
+        vehicle_make: formData.vehicleMake,
+        vehicle_model: formData.vehicleModel,
+        address: formData.streetAddress,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zipCode,
+        preferred_date: formData.preferredDate,
+        time_preference: formData.timeWindow || 'flexible',
+        notes: formData.damageDescription || undefined,
+        sms_consent: formData.smsConsent,
+        privacy_acknowledgment: formData.privacyAcknowledgment,
+        terms_accepted: formData.privacyAcknowledgment,
+        referral_code: formData.referralCode || undefined,
+        source: 'website',
+        files: filesData.length > 0 ? filesData : undefined
       };
       
       // Submit to Supabase API
@@ -270,7 +266,7 @@ export default function BookingPage() {
 
       const responseData = await submitResponse.json();
 
-      if (!submitResponse.ok || !responseData.success) {
+      if (!submitResponse.ok || !responseData.ok) {
         // Handle validation errors specifically
         if (responseData.validationErrors) {
           setErrors(responseData.validationErrors);
@@ -281,7 +277,9 @@ export default function BookingPage() {
       }
 
       // Extract data from successful response
-      const { leadId, referenceNumber, uploadedPhotos } = responseData.data;
+      const leadId = responseData.id;
+      const referenceNumber = `REF-${leadId.slice(0, 8).toUpperCase()}`; // Generate reference from ID
+      const uploadedPhotos = [];
 
       console.log('Booking submitted successfully:', {
         leadId,
