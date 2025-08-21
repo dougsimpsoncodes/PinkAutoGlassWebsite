@@ -92,6 +92,50 @@ export async function POST(req: Request) {
     });
     if (inserts.length) await supabase.from("lead_attributions").insert(inserts);
 
+    // Handle photo uploads if provided
+    if (parsed.files && Array.isArray(parsed.files)) {
+      const mediaInserts = [];
+      
+      for (const file of parsed.files) {
+        // Extract base64 data
+        const base64Data = file.data.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const fileName = `${lead.id}/${Date.now()}-${file.name}`;
+        
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('damage-photos')
+          .upload(fileName, buffer, {
+            contentType: file.type,
+            upsert: false
+          });
+        
+        if (!uploadError && uploadData) {
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('damage-photos')
+            .getPublicUrl(fileName);
+          
+          // Save media reference to database
+          mediaInserts.push({
+            lead_id: lead.id,
+            file_name: file.name,
+            file_size: file.size,
+            mime_type: file.type,
+            storage_path: fileName,
+            public_url: publicUrl
+          });
+        }
+      }
+      
+      // Insert all media records
+      if (mediaInserts.length > 0) {
+        await supabase.from("media").insert(mediaInserts);
+      }
+    }
+
     return NextResponse.json({ ok:true, id: lead.id });
   } catch (e:any) {
     return NextResponse.json({ ok:false, error: e.message || "error" }, { status: 400 });
