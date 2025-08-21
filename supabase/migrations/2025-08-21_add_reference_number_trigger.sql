@@ -1,3 +1,15 @@
+-- Add updated_at column if it doesn't exist
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+
+-- Create or replace the updated_at trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create function to generate reference numbers
 CREATE OR REPLACE FUNCTION generate_reference_number()
 RETURNS TRIGGER AS $$
