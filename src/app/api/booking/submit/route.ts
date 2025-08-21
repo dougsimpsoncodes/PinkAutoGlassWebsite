@@ -1,29 +1,35 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { cookies, headers } from "next/headers";
 import { BookingSchema, parseRelativeDate, normalizePhoneE164 } from "../../../../lib/booking-schema";
 import { supabase, checkRateLimit, validateFile, STORAGE_CONFIG } from "@/lib/supabase";
+import { shouldBypassRateLimit } from "@/lib/api-auth";
 
 export async function POST(req: Request) {
   try {
-    // Rate limiting - 5 submissions per minute per IP
+    // Rate limiting - 5 submissions per minute per IP (bypass for authenticated requests)
     const h = headers();
     const ip_address = h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown";
     
-    const rateLimit = checkRateLimit(ip_address, 5, 60000); // 5 requests per minute
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { 
-          ok: false, 
-          error: "Too many requests. Please wait before submitting again.",
-          retryAfter: Math.ceil((rateLimit.resetTime! - Date.now()) / 1000)
-        }, 
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': Math.ceil((rateLimit.resetTime! - Date.now()) / 1000).toString()
+    // Check if rate limiting should be bypassed for authenticated requests
+    const bypassRateLimit = shouldBypassRateLimit(req as NextRequest);
+    
+    if (!bypassRateLimit) {
+      const rateLimit = checkRateLimit(ip_address, 5, 60000); // 5 requests per minute
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { 
+            ok: false, 
+            error: "Too many requests. Please wait before submitting again.",
+            retryAfter: Math.ceil((rateLimit.resetTime! - Date.now()) / 1000)
+          }, 
+          { 
+            status: 429,
+            headers: {
+              'Retry-After': Math.ceil((rateLimit.resetTime! - Date.now()) / 1000).toString()
+            }
           }
-        }
-      );
+        );
+      }
     }
     const raw = await req.json();
     const parsed = BookingSchema.parse(raw);
