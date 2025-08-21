@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { BookingFormData } from '@/app/book/page';
+import type { BookingFormData } from '@/types/booking';
 import { compressImages } from '@/lib/image-compression';
 
 interface VehicleInformationProps {
@@ -116,7 +116,7 @@ export function VehicleInformation({
   };
 
   const removePhoto = (index: number) => {
-    const newPhotos = formData.photos.filter((_, i) => i !== index);
+    const newPhotos = formData.photos.filter((_: File, i: number) => i !== index);
     updateFormData({ photos: newPhotos });
   };
 
@@ -331,7 +331,7 @@ export function VehicleInformation({
         {/* Photo Previews */}
         {formData.photos.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {formData.photos.map((photo, index) => (
+            {formData.photos.map((photo: File, index: number) => (
               <div key={index} className="relative group">
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   <img

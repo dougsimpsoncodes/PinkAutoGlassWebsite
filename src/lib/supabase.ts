@@ -288,10 +288,10 @@ export async function insertLead(leadData: Database['public']['Tables']['leads']
  * @param mediaData - Media file data to insert
  * @returns Created media file record
  */
-export async function insertMediaFile(mediaData: Database['public']['Tables']['media_files']['Insert']) {
+export async function insertMediaFile(mediaData: any) {
   // Use admin client for server-side operations to bypass RLS
   const client = supabaseAdmin || supabase;
-  const { data, error } = await client
+  const { data, error } = await (client as any)
     .from('media_files')
     .insert(mediaData)
     .select()
@@ -311,11 +311,11 @@ export async function insertMediaFile(mediaData: Database['public']['Tables']['m
  * @returns Created association record
  */
 export async function associateMediaWithLead(
-  associationData: Database['public']['Tables']['media_associations']['Insert']
+  associationData: any
 ) {
   // Use admin client for server-side operations to bypass RLS
   const client = supabaseAdmin || supabase;
-  const { data, error } = await client
+  const { data, error } = await (client as any)
     .from('media_associations')
     .insert(associationData)
     .select()
@@ -402,9 +402,9 @@ export async function updateLeadStatus(
  * @returns Created communication record
  */
 export async function logCommunication(
-  communicationData: Database['public']['Tables']['lead_communications']['Insert']
+  communicationData: any
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('lead_communications')
     .insert(communicationData)
     .select()
