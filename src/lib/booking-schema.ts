@@ -25,7 +25,13 @@ export const BookingSchema = z.object({
   privacy_acknowledgment: z.coerce.boolean().optional(),
 
   source: z.string().optional(),
-  referral_code: z.string().optional()
+  referral_code: z.string().optional(),
+  files: z.array(z.object({
+    data: z.string(),
+    name: z.string(),
+    type: z.string(),
+    size: z.number()
+  })).optional()
 });
 
 export type BookingInput = z.infer<typeof BookingSchema>;
