@@ -371,12 +371,12 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-light">
-      <div className="container-padding section-padding">
+      <div className="container-padding pt-24 pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-brand-navy mb-4">
-              Get Your <span className="text-gradient">Free Quote</span>
+              Get Your <span className="text-pink-600">FREE Quote</span>
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Get an instant quote for your windshield repair or replacement. Takes less than 3 minutes.

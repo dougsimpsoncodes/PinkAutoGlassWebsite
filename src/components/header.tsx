@@ -58,7 +58,7 @@ export default function Header() {
           </div>
           
           {/* CTA Section (Right) */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <a 
               href="tel:+13035557465" 
               className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
@@ -67,22 +67,22 @@ export default function Header() {
               <Phone className="w-4 h-4" />
               <span className="font-medium">(303) 555-PINK</span>
             </a>
-          </div>
           
           {/* Universal Menu Button */}
-          <button 
-            className="p-2 text-gray-700 hover:text-pink-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded" 
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+            <button 
+              className="p-2 text-gray-700 hover:text-pink-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded" 
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
         </nav>
       </div>
       

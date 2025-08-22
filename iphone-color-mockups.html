@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pink Auto Glass - iPhone Color Palette Mockups</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .phones-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 30px; 
+            justify-items: center;
+        }
+        
+        /* iPhone Frame */
+        .iphone {
+            width: 280px;
+            height: 560px;
+            background: #1a1a1a;
+            border-radius: 35px;
+            padding: 20px 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .iphone::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 25px;
+            background: #1a1a1a;
+            border-radius: 0 0 12px 12px;
+            z-index: 10;
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Phone Content */
+        .status-bar {
+            height: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #000;
+            background: transparent;
+        }
+        .header-mobile { 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            height: 50px;
+        }
+        .logo-mobile { font-size: 16px; font-weight: bold; }
+        .nav-mobile { display: flex; gap: 10px; align-items: center; }
+        .phone-mobile { font-size: 11px; font-weight: 500; }
+        .hero-mobile { 
+            padding: 30px 15px; 
+            text-align: center; 
+            position: relative;
+            flex: 1;
+        }
+        .hero-mobile h1 { 
+            font-size: 20px; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        .hero-mobile p { 
+            font-size: 13px; 
+            margin-bottom: 20px; 
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        .cta-mobile { 
+            display: flex; 
+            flex-direction: column;
+            gap: 8px; 
+        }
+        .btn-mobile { 
+            padding: 10px 16px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            text-align: center;
+        }
+        .form-section {
+            padding: 20px 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        .form-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .form-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .form-input-mobile {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .hamburger-mobile { 
+            width: 20px; 
+            height: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+        }
+        .hamburger-line-mobile { 
+            width: 100%; 
+            height: 2px; 
+            border-radius: 1px;
+        }
+        .palette-label {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Palette 1: Luxury Gold */
+        .palette-1 .status-bar { color: #000; }
+        .palette-1 .header-mobile { background: #1a1a1a; color: #ffd700; }
+        .palette-1 .hero-mobile { 
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%); 
+            color: #ffffff;
+        }
+        .palette-1 .hero-mobile h1 span { color: #ffd700; }
+        .palette-1 .btn-primary-mobile { 
+            background: #ffd700; 
+            color: #1a1a1a; 
+            border-color: #ffd700;
+        }
+        .palette-1 .btn-secondary-mobile { 
+            background: transparent; 
+            color: #ffd700; 
+            border-color: #ffd700;
+        }
+        .palette-1 .form-section { background: #f8f8f8; color: #1a1a1a; }
+        .palette-1 .form-title span { color: #ffd700; }
+        .palette-1 .hamburger-line-mobile { background: #ffd700; }
+
+        /* Palette 2: Champagne Elegance */
+        .palette-2 .status-bar { color: #000; }
+        .palette-2 .header-mobile { background: #2d2d30; color: #f7e7b4; }
+        .palette-2 .hero-mobile { 
+            background: linear-gradient(135deg, #3a3a3d 0%, #2d2d30 100%); 
+            color: #ffffff;
+        }
+        .palette-2 .hero-mobile h1 span { color: #f7e7b4; }
+        .palette-2 .btn-primary-mobile { 
+            background: #f7e7b4; 
+            color: #2d2d30; 
+            border-color: #f7e7b4;
+        }
+        .palette-2 .btn-secondary-mobile { 
+            background: transparent; 
+            color: #f7e7b4; 
+            border-color: #f7e7b4;
+        }
+        .palette-2 .form-section { background: #f5f5f5; color: #2d2d30; }
+        .palette-2 .form-title span { color: #d4a843; }
+        .palette-2 .hamburger-line-mobile { background: #f7e7b4; }
+
+        /* Palette 3: Bronze Professional */
+        .palette-3 .status-bar { color: #000; }
+        .palette-3 .header-mobile { background: #1c1c1c; color: #cd7f32; }
+        .palette-3 .hero-mobile { 
+            background: linear-gradient(135deg, #404040 0%, #1c1c1c 100%); 
+            color: #ffffff;
+        }
+        .palette-3 .hero-mobile h1 span { color: #cd7f32; }
+        .palette-3 .btn-primary-mobile { 
+            background: #cd7f32; 
+            color: #ffffff; 
+            border-color: #cd7f32;
+        }
+        .palette-3 .btn-secondary-mobile { 
+            background: transparent; 
+            color: #cd7f32; 
+            border-color: #cd7f32;
+        }
+        .palette-3 .form-section { background: #f0f0f0; color: #1c1c1c; }
+        .palette-3 .form-title span { color: #cd7f32; }
+        .palette-3 .hamburger-line-mobile { background: #cd7f32; }
+
+        /* Palette 4: Warm Gold & Charcoal */
+        .palette-4 .status-bar { color: #000; }
+        .palette-4 .header-mobile { background: #333333; color: #ffa500; }
+        .palette-4 .hero-mobile { 
+            background: linear-gradient(135deg, #4a4a4a 0%, #333333 100%); 
+            color: #ffffff;
+        }
+        .palette-4 .hero-mobile h1 span { color: #ffa500; }
+        .palette-4 .btn-primary-mobile { 
+            background: #ffa500; 
+            color: #333333; 
+            border-color: #ffa500;
+        }
+        .palette-4 .btn-secondary-mobile { 
+            background: transparent; 
+            color: #ffa500; 
+            border-color: #ffa500;
+        }
+        .palette-4 .form-section { background: #f9f9f9; color: #333333; }
+        .palette-4 .form-title span { color: #ffa500; }
+        .palette-4 .hamburger-line-mobile { background: #ffa500; }
+
+        /* Palette 5: Sophisticated Gold */
+        .palette-5 .status-bar { color: #000; }
+        .palette-5 .header-mobile { background: #0f0f0f; color: #daa520; }
+        .palette-5 .hero-mobile { 
+            background: linear-gradient(135deg, #2f2f2f 0%, #0f0f0f 100%); 
+            color: #e0e0e0;
+        }
+        .palette-5 .hero-mobile h1 span { color: #daa520; }
+        .palette-5 .btn-primary-mobile { 
+            background: #daa520; 
+            color: #0f0f0f; 
+            border-color: #daa520;
+        }
+        .palette-5 .btn-secondary-mobile { 
+            background: transparent; 
+            color: #daa520; 
+            border-color: #daa520;
+        }
+        .palette-5 .form-section { background: #f7f7f7; color: #0f0f0f; }
+        .palette-5 .form-title span { color: #daa520; }
+        .palette-5 .hamburger-line-mobile { background: #daa520; }
+
+        @media (max-width: 768px) {
+            .phones-grid { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 20px; 
+            }
+            .iphone { 
+                width: 240px; 
+                height: 480px; 
+            }
+        }
+        @media (max-width: 520px) {
+            .phones-grid { 
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="font-size: 28px; color: #333; margin-bottom: 15px;">
+                iPhone Mockups - Color Palette Options
+            </h1>
+            <p style="color: #666; font-size: 16px;">
+                See how each color scheme looks on mobile devices
+            </p>
+        </div>
+
+        <div class="phones-grid">
+            <!-- Option 1: Luxury Gold -->
+            <div class="iphone">
+                <div class="palette-label">Option 1: Luxury Gold</div>
+                <div class="screen palette-1">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>●●●○○</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="header-mobile">
+                        <div class="logo-mobile">Pink Auto Glass</div>
+                        <div class="nav-mobile">
+                            <div class="phone-mobile">(303) 555-PINK</div>
+                            <div class="hamburger-mobile">
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-mobile">
+                        <h1>Denver's #1 Mobile<br><span>Auto Glass Service</span></h1>
+                        <p>We come to you! Professional windshield repair & replacement.</p>
+                        <div class="cta-mobile">
+                            <a href="#" class="btn-mobile btn-primary-mobile">📅 Book Online</a>
+                            <a href="#" class="btn-mobile btn-secondary-mobile">📞 Call Now</a>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-title">Get Your <span>FREE Quote</span></div>
+                        <div class="form-mobile">
+                            <select class="form-input-mobile">
+                                <option>Select Service</option>
+                                <option>Repair</option>
+                                <option>Replacement</option>
+                            </select>
+                            <input type="tel" class="form-input-mobile" placeholder="Phone Number">
+                            <button class="btn-mobile btn-primary-mobile">Get Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Champagne Elegance -->
+            <div class="iphone">
+                <div class="palette-label">Option 2: Champagne Elegance</div>
+                <div class="screen palette-2">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>●●●●○</span>
+                        <span>85%</span>
+                    </div>
+                    <div class="header-mobile">
+                        <div class="logo-mobile">Pink Auto Glass</div>
+                        <div class="nav-mobile">
+                            <div class="phone-mobile">(303) 555-PINK</div>
+                            <div class="hamburger-mobile">
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-mobile">
+                        <h1>Denver's #1 Mobile<br><span>Auto Glass Service</span></h1>
+                        <p>We come to you! Professional windshield repair & replacement.</p>
+                        <div class="cta-mobile">
+                            <a href="#" class="btn-mobile btn-primary-mobile">📅 Book Online</a>
+                            <a href="#" class="btn-mobile btn-secondary-mobile">📞 Call Now</a>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-title">Get Your <span>FREE Quote</span></div>
+                        <div class="form-mobile">
+                            <select class="form-input-mobile">
+                                <option>Select Service</option>
+                                <option>Repair</option>
+                                <option>Replacement</option>
+                            </select>
+                            <input type="tel" class="form-input-mobile" placeholder="Phone Number">
+                            <button class="btn-mobile btn-primary-mobile">Get Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 3: Bronze Professional -->
+            <div class="iphone">
+                <div class="palette-label">Option 3: Bronze Professional</div>
+                <div class="screen palette-3">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>●●●●●</span>
+                        <span>92%</span>
+                    </div>
+                    <div class="header-mobile">
+                        <div class="logo-mobile">Pink Auto Glass</div>
+                        <div class="nav-mobile">
+                            <div class="phone-mobile">(303) 555-PINK</div>
+                            <div class="hamburger-mobile">
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-mobile">
+                        <h1>Denver's #1 Mobile<br><span>Auto Glass Service</span></h1>
+                        <p>We come to you! Professional windshield repair & replacement.</p>
+                        <div class="cta-mobile">
+                            <a href="#" class="btn-mobile btn-primary-mobile">📅 Book Online</a>
+                            <a href="#" class="btn-mobile btn-secondary-mobile">📞 Call Now</a>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-title">Get Your <span>FREE Quote</span></div>
+                        <div class="form-mobile">
+                            <select class="form-input-mobile">
+                                <option>Select Service</option>
+                                <option>Repair</option>
+                                <option>Replacement</option>
+                            </select>
+                            <input type="tel" class="form-input-mobile" placeholder="Phone Number">
+                            <button class="btn-mobile btn-primary-mobile">Get Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 4: Warm Gold & Charcoal -->
+            <div class="iphone">
+                <div class="palette-label">Option 4: Warm Gold & Charcoal</div>
+                <div class="screen palette-4">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>●●●○○</span>
+                        <span>67%</span>
+                    </div>
+                    <div class="header-mobile">
+                        <div class="logo-mobile">Pink Auto Glass</div>
+                        <div class="nav-mobile">
+                            <div class="phone-mobile">(303) 555-PINK</div>
+                            <div class="hamburger-mobile">
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-mobile">
+                        <h1>Denver's #1 Mobile<br><span>Auto Glass Service</span></h1>
+                        <p>We come to you! Professional windshield repair & replacement.</p>
+                        <div class="cta-mobile">
+                            <a href="#" class="btn-mobile btn-primary-mobile">📅 Book Online</a>
+                            <a href="#" class="btn-mobile btn-secondary-mobile">📞 Call Now</a>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-title">Get Your <span>FREE Quote</span></div>
+                        <div class="form-mobile">
+                            <select class="form-input-mobile">
+                                <option>Select Service</option>
+                                <option>Repair</option>
+                                <option>Replacement</option>
+                            </select>
+                            <input type="tel" class="form-input-mobile" placeholder="Phone Number">
+                            <button class="btn-mobile btn-primary-mobile">Get Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 5: Sophisticated Gold -->
+            <div class="iphone">
+                <div class="palette-label">Option 5: Sophisticated Gold ⭐</div>
+                <div class="screen palette-5">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>●●●●●</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="header-mobile">
+                        <div class="logo-mobile">Pink Auto Glass</div>
+                        <div class="nav-mobile">
+                            <div class="phone-mobile">(303) 555-PINK</div>
+                            <div class="hamburger-mobile">
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                                <div class="hamburger-line-mobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-mobile">
+                        <h1>Denver's #1 Mobile<br><span>Auto Glass Service</span></h1>
+                        <p>We come to you! Professional windshield repair & replacement.</p>
+                        <div class="cta-mobile">
+                            <a href="#" class="btn-mobile btn-primary-mobile">📅 Book Online</a>
+                            <a href="#" class="btn-mobile btn-secondary-mobile">📞 Call Now</a>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-title">Get Your <span>FREE Quote</span></div>
+                        <div class="form-mobile">
+                            <select class="form-input-mobile">
+                                <option>Select Service</option>
+                                <option>Repair</option>
+                                <option>Replacement</option>
+                            </select>
+                            <input type="tel" class="form-input-mobile" placeholder="Phone Number">
+                            <button class="btn-mobile btn-primary-mobile">Get Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 40px 20px; background: #f5f5f5; border-radius: 12px; margin-top: 40px;">
+            <h2 style="color: #333; margin-bottom: 20px;">Mobile Experience Preview</h2>
+            <p style="color: #666; margin-bottom: 15px;">Option 5 (Sophisticated Gold) marked with ⭐ - your preferred choice</p>
+            <p style="color: #888; font-size: 14px;">These mockups show how the color palettes translate to mobile screens with proper contrast and readability.</p>
+        </div>
+    </div>
+</body>
+</html>
