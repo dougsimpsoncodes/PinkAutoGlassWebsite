@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu, X, Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -34,42 +35,30 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between h-16 md:h-20" role="navigation" aria-label="Main navigation">
           
-          {/* Logo Lockup (Left) */}
-          <div className="flex-shrink-0">
+          {/* Left side spacer */}
+          <div className="flex-1"></div>
+          
+          {/* Centered Logo */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link 
               href="/" 
               className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
               aria-label="Pink Auto Glass - Go to homepage"
             >
-              {/* Logo placeholder - would use actual logo image */}
-              <div className="h-7 sm:h-8 md:h-9 w-auto bg-gradient-primary text-white px-4 py-1 rounded font-display font-bold text-lg flex items-center">
-                Pink Auto Glass
-              </div>
+              <Image
+                src="/pink-logo-horizontal.png"
+                alt="Pink Auto Glass"
+                width={972}
+                height={292}
+                className="w-auto max-w-[972px]"
+                style={{ height: '194px' }}
+                priority
+              />
             </Link>
           </div>
           
-          {/* Desktop Navigation (Center) */}
-          <ul className="hidden md:flex items-center space-x-6 lg:space-x-8" role="menubar">
-            {[
-              { href: "/services", label: "Services" },
-              { href: "/locations", label: "Locations" },
-              { href: "/vehicles", label: "Vehicles" },
-              { href: "/about", label: "About" },
-            ].map((item) => (
-              <li key={item.href} role="none">
-                <Link 
-                  href={item.href}
-                  className="text-gray-700 hover:text-pink-500 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-pink-500 after:transition-all hover:after:w-full"
-                  role="menuitem"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          
           {/* CTA Section (Right) */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <a 
               href="tel:+13035557465" 
               className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
@@ -78,19 +67,12 @@ export default function Header() {
               <Phone className="w-4 h-4" />
               <span className="font-medium">(303) 555-PINK</span>
             </a>
-            
-            <Link
-              href="/book?utm_source=header&utm_medium=cta&utm_campaign=header_primary"
-              className="btn-primary"
-            >
-              Schedule Now
-            </Link>
           </div>
           
-          {/* Mobile Menu Button */}
+          {/* Universal Menu Button */}
           <button 
-            className="md:hidden p-2 text-gray-700 hover:text-pink-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded" 
-            aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+            className="p-2 text-gray-700 hover:text-pink-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded" 
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-menu"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -104,16 +86,16 @@ export default function Header() {
         </nav>
       </div>
       
-      {/* Mobile Menu Overlay */}
+      {/* Universal Menu Overlay */}
       <div 
         id="mobile-menu" 
         className={cn(
-          "md:hidden fixed inset-0 top-16 bg-white z-40 transform transition-transform duration-300 ease-in-out",
+          "fixed inset-0 top-16 bg-white z-40 transform transition-transform duration-300 ease-in-out",
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         )}
         aria-hidden={!isMobileMenuOpen}
       >
-        <nav className="h-full px-4 py-6 overflow-y-auto" role="navigation" aria-label="Mobile navigation">
+        <nav className="h-full px-4 py-6 overflow-y-auto" role="navigation" aria-label="Main navigation menu">
           <ul className="space-y-4" role="menu">
             {[
               { href: "/services", label: "Services" },
@@ -141,23 +123,14 @@ export default function Header() {
                 <span>(303) 555-PINK</span>
               </a>
             </li>
-            <li role="none" className="pt-2">
-              <Link
-                href="/book?utm_source=mobile_menu&utm_medium=cta&utm_campaign=mobile_primary"
-                className="block w-full btn-primary text-center"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Schedule Now
-              </Link>
-            </li>
           </ul>
         </nav>
       </div>
       
-      {/* Mobile menu backdrop */}
+      {/* Menu backdrop */}
       {isMobileMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
