@@ -1,57 +1,62 @@
 import { z } from "zod";
 
 export const BookingSchema = z.object({
-  service_type: z.enum(["repair","replacement"]),
-  mobile_service: z.boolean().optional().default(false),
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
-  phone: z.string().min(7),
-  email: z.string().email().optional().or(z.literal("").transform(() => undefined)),
-  vehicle_year: z.coerce.number().int().min(1990).max(new Date().getFullYear()+2),
-  vehicle_make: z.string().min(1),
-  vehicle_model: z.string().min(1),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().length(2).optional(),
-  zip: z.string().optional(),
-  preferred_date: z.string().optional(),
-  time_preference: z.enum(["morning","afternoon","flexible"]).default("flexible"),
-  notes: z.string().optional(),
-  sms_consent: z.coerce.boolean().optional().default(false),
-
-  termsAccepted: z.coerce.boolean().optional(),
-  privacyAcknowledgment: z.coerce.boolean().optional(),
-  terms_accepted: z.coerce.boolean().optional(),
-  privacy_acknowledgment: z.coerce.boolean().optional(),
-
-  source: z.string().optional(),
-  referral_code: z.string().optional(),
-  files: z.array(z.object({
-    data: z.string(),
-    name: z.string(),
-    type: z.string(),
-    size: z.number()
-  })).optional()
+  clientGeneratedId: z.string().uuid().optional(),
+  serviceType: z.enum(["repair","replacement"]),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email().optional().or(z.literal("")),
+  phoneE164: z.string().min(7),
+  address: z.string().optional().or(z.literal("")),
+  city: z.string().optional().or(z.literal("")),
+  state: z.string().length(2).optional().or(z.literal("")),
+  zip: z.string().min(3).max(10).optional().or(z.literal("")),
+  vehicleYear: z.number().int().optional(),
+  vehicleMake: z.string().optional().or(z.literal("")),
+  vehicleModel: z.string().optional().or(z.literal("")),
+  termsAccepted: z.boolean().default(false),
+  privacyAcknowledgment: z.boolean().default(false),
+  clientId: z.string().optional().or(z.literal("")),
+  sessionId: z.string().optional().or(z.literal("")),
+  firstTouch: z.any().optional(),
+  lastTouch: z.any().optional()
 });
 
-export type BookingInput = z.infer<typeof BookingSchema>;
+export type BookingFormData = z.infer<typeof BookingSchema>;
 
-export const normalizePhoneE164 = (raw?: string) => {
-  if (!raw) return undefined;
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  return undefined;
-};
+export function parseRelativeDate(date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  
+  const today = new Date();
+  const parsed = new Date(date);
+  
+  if (parsed.toDateString() === today.toDateString()) {
+    return 'today';
+  }
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (parsed.toDateString() === tomorrow.toDateString()) {
+    return 'tomorrow';
+  }
+  
+  return date;
+}
 
-export const parseRelativeDate = (v?: string) => {
-  if (!v) return undefined;
-  const s = v.trim().toLowerCase();
-  const d = new Date(); d.setHours(0,0,0,0);
-  if (s === "today") return d.toISOString().slice(0,10);
-  if (s === "tomorrow") { const t = new Date(d); t.setDate(t.getDate()+1); return t.toISOString().slice(0,10); }
-  if (s === "next_week") { const nw = new Date(d); const add = ((1 - nw.getDay() + 7) % 7) + 7; nw.setDate(nw.getDate()+add); return nw.toISOString().slice(0,10); }
-  const direct = new Date(v);
-  if (!isNaN(direct.getTime())) return direct.toISOString().slice(0,10);
-  return undefined;
-};
+export function normalizePhoneE164(phone: string): string {
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // If it's a US number without country code, add it
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  
+  // If it already has country code
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  
+  // Return as-is for other formats
+  return phone;
+}
