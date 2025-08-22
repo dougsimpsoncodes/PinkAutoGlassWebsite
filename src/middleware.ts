@@ -5,6 +5,11 @@ export function middleware(request: NextRequest) {
   // Create response
   const response = NextResponse.next()
 
+  // Skip security headers in development for mobile testing
+  if (process.env.NODE_ENV === 'development') {
+    return response
+  }
+
   // Security Headers
   const securityHeaders = {
     // Content Security Policy - Prevent XSS attacks

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pink Auto Glass - Site Map & Page Hierarchy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e91e63;
+        }
+        
+        .header h1 {
+            color: #e91e63;
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+        
+        .status {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .implemented {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .missing {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .testing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .site-tree {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .page-section {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .page-section.main-page {
+            border-color: #e91e63;
+            background: linear-gradient(135deg, #fce4ec, #f8f9fa);
+        }
+        
+        .page-section.functional {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4f7d4, #f8f9fa);
+        }
+        
+        .page-section.missing {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #f8f9fa);
+            opacity: 0.7;
+        }
+        
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-route {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #333;
+            color: #00ff41;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .page-description {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .components-list {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .components-list h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .component-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .component-item:last-child {
+            border-bottom: none;
+        }
+        
+        .component-name {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            color: #0056b3;
+        }
+        
+        .icon {
+            font-size: 1.2rem;
+        }
+        
+        .icon.implemented {
+            color: #28a745;
+        }
+        
+        .icon.missing {
+            color: #dc3545;
+        }
+        
+        .icon.needs-work {
+            color: #ffc107;
+        }
+        
+        .questions-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #fff3e0, #f8f9fa);
+            border-left: 5px solid #ff9800;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .questions-section h2 {
+            color: #ff9800;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+        
+        .question {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 3px solid #ff9800;
+        }
+        
+        .navigation-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .nav-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .nav-item.active {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .status {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Pink Auto Glass - Site Map</h1>
+            <p>Complete page hierarchy and component analysis for design review</p>
+        </div>
+        
+        <div class="status">
+            <div class="status-badge implemented">✅ Implemented & Functional</div>
+            <div class="status-badge testing">🧪 Needs Testing/Polish</div>
+            <div class="status-badge missing">❌ Missing/Incomplete</div>
+        </div>
+        
+        <div class="site-tree">
+            
+            <!-- HOMEPAGE -->
+            <div class="page-section main-page">
+                <div class="page-title">
+                    <span class="icon implemented">🏠</span>
+                    Homepage
+                    <span class="page-route">localhost:3002/</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Basic structure implemented, needs major design overhaul<br>
+                    <strong>Purpose:</strong> Primary landing page, hero section, value propositions, CTA
+                </div>
+                <div class="components-list">
+                    <h4>Current Components:</h4>
+                    <div class="component-item">
+                        <span class="icon needs-work">⚠️</span>
+                        <span class="component-name">Hero Section</span> - Basic implementation, needs visual design
+                    </div>
+                    <div class="component-item">
+                        <span class="icon needs-work">⚠️</span>
+                        <span class="component-name">Services Preview</span> - Minimal content
+                    </div>
+                    <div class="component-item">
+                        <span class="icon needs-work">⚠️</span>
+                        <span class="component-name">Call-to-Action</span> - Basic button, needs enhancement
+                    </div>
+                    <div class="component-item">
+                        <span class="icon missing">❌</span>
+                        <span class="component-name">Trust Indicators</span> - Reviews, ratings, testimonials
+                    </div>
+                    <div class="component-item">
+                        <span class="icon missing">❌</span>
+                        <span class="component-name">Feature Highlights</span> - Mobile service, warranty, speed
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BOOKING FLOW -->
+            <div class="page-section functional">
+                <div class="page-title">
+                    <span class="icon implemented">📋</span>
+                    Booking Flow
+                    <span class="page-route">localhost:3002/book</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Fully functional with security hardening, good UX foundation<br>
+                    <strong>Purpose:</strong> Multi-step booking process for auto glass services
+                </div>
+                <div class="components-list">
+                    <h4>Booking Components (All Implemented):</h4>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">step-tracker.tsx</span> - Progress indicator
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">service-selection.tsx</span> - Repair vs replacement
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">vehicle-information.tsx</span> - Year, make, model
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">contact-information.tsx</span> - Name, phone, email
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">location-schedule.tsx</span> - Address, timing
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">review-submit.tsx</span> - Final review, photo upload
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">success-confirmation.tsx</span> - Completion message
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">Security Features</span> - Rate limiting, validation, RLS
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ORDER TRACKING -->
+            <div class="page-section functional">
+                <div class="page-title">
+                    <span class="icon implemented">🔍</span>
+                    Order Tracking
+                    <span class="page-route">localhost:3002/track</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Basic implementation, needs enhancement<br>
+                    <strong>Purpose:</strong> Allow customers to track their service progress
+                </div>
+                <div class="components-list">
+                    <h4>Features Needed:</h4>
+                    <div class="component-item">
+                        <span class="icon needs-work">⚠️</span>
+                        <span class="component-name">Reference Number Input</span> - Basic search
+                    </div>
+                    <div class="component-item">
+                        <span class="icon missing">❌</span>
+                        <span class="component-name">Status Timeline</span> - Progress visualization
+                    </div>
+                    <div class="component-item">
+                        <span class="icon missing">❌</span>
+                        <span class="component-name">Technician Updates</span> - Real-time notifications
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MISSING PAGES -->
+            <div class="page-section missing">
+                <div class="page-title">
+                    <span class="icon missing">❌</span>
+                    Services Page
+                    <span class="page-route">localhost:3002/services</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Referenced in navigation but doesn't exist<br>
+                    <strong>Purpose:</strong> Detailed service descriptions, pricing, before/after photos
+                </div>
+            </div>
+            
+            <div class="page-section missing">
+                <div class="page-title">
+                    <span class="icon missing">❌</span>
+                    Locations Page
+                    <span class="page-route">localhost:3002/locations</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Referenced in navigation but doesn't exist<br>
+                    <strong>Purpose:</strong> Service areas, coverage map, mobile service zones
+                </div>
+            </div>
+            
+            <div class="page-section missing">
+                <div class="page-title">
+                    <span class="icon missing">❌</span>
+                    Vehicle Compatibility
+                    <span class="page-route">localhost:3002/vehicles</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Referenced in navigation but doesn't exist<br>
+                    <strong>Purpose:</strong> Supported vehicle types, glass compatibility checker
+                </div>
+            </div>
+            
+            <div class="page-section missing">
+                <div class="page-title">
+                    <span class="icon missing">❌</span>
+                    About Page
+                    <span class="page-route">localhost:3002/about</span>
+                </div>
+                <div class="page-description">
+                    <strong>Status:</strong> Referenced in navigation but doesn't exist<br>
+                    <strong>Purpose:</strong> Company story, team, certifications, why choose us
+                </div>
+            </div>
+            
+            <!-- GLOBAL COMPONENTS -->
+            <div class="page-section functional">
+                <div class="page-title">
+                    <span class="icon implemented">🧩</span>
+                    Global Components
+                    <span class="page-route">Shared across all pages</span>
+                </div>
+                <div class="components-list">
+                    <h4>Layout Components:</h4>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">header.tsx</span> - Navigation, logo, phone number
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">footer.tsx</span> - Links, contact info, legal
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">layout.tsx</span> - Page wrapper, fonts, metadata
+                    </div>
+                    <div class="component-item">
+                        <span class="icon implemented">✅</span>
+                        <span class="component-name">Security Middleware</span> - Headers, CORS, rate limiting
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- NAVIGATION FLOW -->
+        <div class="navigation-flow">
+            <div class="nav-item active">
+                <strong>🏠 Homepage</strong><br>
+                Entry point, hero, CTA
+            </div>
+            <div class="nav-item">
+                <strong>📋 Book Service</strong><br>
+                Multi-step form
+            </div>
+            <div class="nav-item">
+                <strong>🔍 Track Order</strong><br>
+                Status lookup
+            </div>
+            <div class="nav-item">
+                <strong>📞 Contact</strong><br>
+                Phone in header
+            </div>
+        </div>
+        
+        <!-- QUESTIONS SECTION -->
+        <div class="questions-section">
+            <h2>🤔 Key Design & UX Questions</h2>
+            
+            <div class="question">
+                <strong>1. Homepage Priority:</strong><br>
+                The homepage needs the most work. Should we focus on:
+                <ul>
+                    <li>Visual design overhaul (hero section, imagery, branding)</li>
+                    <li>Content strategy (value props, trust signals, social proof)</li>
+                    <li>User flow optimization (clearer path to booking)</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <strong>2. Missing Pages Strategy:</strong><br>
+                The navigation references 4 pages that don't exist. Should we:
+                <ul>
+                    <li>Create placeholder pages to prevent 404 errors</li>
+                    <li>Remove navigation items until pages are built</li>
+                    <li>Build out these pages before polishing existing ones</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <strong>3. Booking Flow Polish:</strong><br>
+                The booking system works but could be enhanced:
+                <ul>
+                    <li>Visual design improvements (better styling, animations)</li>
+                    <li>UX enhancements (progress saving, back button, field validation)</li>
+                    <li>Mobile optimization (touch targets, keyboard handling)</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <strong>4. Brand Identity:</strong><br>
+                Pink Auto Glass needs stronger branding:
+                <ul>
+                    <li>Color palette refinement (current pink theme, but needs depth)</li>
+                    <li>Logo design (currently text-based placeholder)</li>
+                    <li>Typography hierarchy and consistency</li>
+                    <li>Photography/imagery (service photos, before/after, team)</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <strong>5. Mobile Experience:</strong><br>
+                How important is mobile-first design?
+                <ul>
+                    <li>Most users likely book on mobile</li>
+                    <li>Touch-friendly interface critical for forms</li>
+                    <li>Phone number accessibility on mobile</li>
+                </ul>
+            </div>
+            
+            <div class="question">
+                <strong>6. Content Needs:</strong><br>
+                What content do we need to create/gather?
+                <ul>
+                    <li>Service photos (windshield repair process, before/after)</li>
+                    <li>Company information (about, team, certifications)</li>
+                    <li>Customer testimonials and reviews</li>
+                    <li>Service area maps and coverage details</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

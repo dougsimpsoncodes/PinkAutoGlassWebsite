@@ -3,15 +3,13 @@
 import type { BookingFormData } from "@/types/booking";
 import { useState, useEffect } from 'react';
 import { StepTracker } from '@/components/book/step-tracker';
-import { ServiceSelection } from '@/components/book/service-selection';
-import { VehicleInformation } from '@/components/book/vehicle-information';
-import { ContactInformation } from '@/components/book/contact-information';
-import { LocationSchedule } from '@/components/book/location-schedule';
+import { ServiceVehicle } from '@/components/book/service-vehicle';
+import { ContactLocation } from '@/components/book/contact-location';
 import { ReviewSubmit } from '@/components/book/review-submit';
 import { SuccessConfirmation } from '@/components/book/success-confirmation';
 
 // Types for form data
-export const TOTAL_STEPS = 5;
+export const TOTAL_STEPS = 3;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -338,7 +336,7 @@ export default function BookingPage() {
     switch (currentStep) {
       case 1:
         return (
-          <ServiceSelection
+          <ServiceVehicle
             formData={formData}
             updateFormData={updateFormData}
             errors={errors}
@@ -347,7 +345,7 @@ export default function BookingPage() {
         );
       case 2:
         return (
-          <VehicleInformation
+          <ContactLocation
             formData={formData}
             updateFormData={updateFormData}
             errors={errors}
@@ -356,26 +354,6 @@ export default function BookingPage() {
           />
         );
       case 3:
-        return (
-          <ContactInformation
-            formData={formData}
-            updateFormData={updateFormData}
-            errors={errors}
-            onNext={goToNextStep}
-            onPrevious={goToPreviousStep}
-          />
-        );
-      case 4:
-        return (
-          <LocationSchedule
-            formData={formData}
-            updateFormData={updateFormData}
-            errors={errors}
-            onNext={goToNextStep}
-            onPrevious={goToPreviousStep}
-          />
-        );
-      case 5:
         return (
           <ReviewSubmit
             formData={formData}
