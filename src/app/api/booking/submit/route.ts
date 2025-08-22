@@ -1,105 +1,52 @@
-import { NextResponse, NextRequest } from "next/server";
-import { cookies, headers } from "next/headers";
-import { BookingSchema, parseRelativeDate, normalizePhoneE164 } from "../../../../lib/booking-schema";
-import { supabase, checkRateLimit, validateFile, STORAGE_CONFIG } from "@/lib/supabase";
-import { shouldBypassRateLimit } from "@/lib/api-auth";
+import { NextResponse } from "next/server";
+import { BookingSchema } from "@/lib/booking-schema";
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "crypto";
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 export async function POST(req: Request) {
-  try {
-    // Rate limiting - 5 submissions per minute per IP (bypass for authenticated requests)
-    const h = headers();
-    const ip_address = h.get("x-forwarded-for") || h.get("x-real-ip") || "unknown";
-    
-    // Check if rate limiting should be bypassed for authenticated requests
-    const bypassRateLimit = shouldBypassRateLimit(req as NextRequest);
-    
-    if (!bypassRateLimit) {
-      const rateLimit = checkRateLimit(ip_address, 5, 60000); // 5 requests per minute
-      if (!rateLimit.allowed) {
-        return NextResponse.json(
-          { 
-            ok: false, 
-            error: "Too many requests. Please wait before submitting again.",
-            retryAfter: Math.ceil((rateLimit.resetTime! - Date.now()) / 1000)
-          }, 
-          { 
-            status: 429,
-            headers: {
-              'Retry-After': Math.ceil((rateLimit.resetTime! - Date.now()) / 1000).toString()
-            }
-          }
-        );
-      }
+  const contentType = req.headers.get("content-type") || "";
+  if (contentType.includes("multipart/form-data")) {
+    const form = await req.formData();
+    const dataRaw = form.get("data") as string | null;
+    const files: File[] = [];
+    for (const [key, val] of form.entries()) {
+      if (val instanceof File && key.startsWith("file")) files.push(val);
     }
-    const raw = await req.json();
-    const parsed = BookingSchema.parse(raw);
+    if (!dataRaw) return NextResponse.json({ error: "missing data" }, { status: 400 });
 
-    const termsAccepted =
-      parsed.terms_accepted ??
-      parsed.termsAccepted ??
-      parsed.privacy_acknowledgment ??
-      parsed.privacyAcknowledgment ??
-      false;
+    const parsed = BookingSchema.safeParse(JSON.parse(dataRaw));
+    if (!parsed.success) return NextResponse.json({ error: "validation_failed", details: parsed.error.flatten() }, { status: 422 });
 
-    const preferred_date = parseRelativeDate(parsed.preferred_date);
-    const phone_e164 = normalizePhoneE164(parsed.phone);
+    const leadUUID = parsed.data.clientGeneratedId ?? randomUUID();
+    const payload = { ...parsed.data, clientGeneratedId: leadUUID };
+    const { data: leadInsert, error: leadErr } = await supabase.rpc("fn_insert_lead", { p_id: leadUUID, p_payload: payload as any });
+    if (leadErr) return NextResponse.json({ error: "lead_insert_failed", details: leadErr.message }, { status: 500 });
 
-    const c = cookies();
-    const client_id = c.get("cid")?.value || null;
-    const session_id = c.get("sid")?.value || null;
-    const ft = c.get("ft")?.value ? JSON.parse(c.get("ft")!.value) : null;
-    const lt = c.get("lt")?.value ? JSON.parse(c.get("lt")!.value) : null;
+    const uploaded: Array<{ id: string; path: string }> = [];
+    for (const f of files) {
+      const ext = f.name.split(".").pop() || "bin";
+      const storagePath = `leads/${leadUUID}/${randomUUID()}.${ext}`;
+      const arrayBuf = await f.arrayBuffer();
+      const { error: upErr } = await supabase.storage.from("uploads").upload(storagePath, new Uint8Array(arrayBuf), { contentType: f.type, upsert: false });
+      if (upErr) return NextResponse.json({ error: "upload_failed", details: upErr.message }, { status: 500 });
+      const { data: mediaId, error: mediaErr } = await supabase.rpc("fn_add_media", { p_lead_id: leadUUID, p_path: storagePath, p_mime: f.type || null, p_size: f.size });
+      if (mediaErr) return NextResponse.json({ error: "media_insert_failed", details: mediaErr.message }, { status: 500 });
+      uploaded.push({ id: String(mediaId), path: storagePath });
+    }
 
-    const payload = {
-      service_type: parsed.service_type,
-      mobile_service: !!parsed.mobile_service,
-      first_name: parsed.first_name,
-      last_name: parsed.last_name,
-      phone: parsed.phone,
-      phone_e164,
-      email: parsed.email,
-      vehicle_year: parsed.vehicle_year,
-      vehicle_make: parsed.vehicle_make,
-      vehicle_model: parsed.vehicle_model,
-      address: parsed.address,
-      city: parsed.city,
-      state: parsed.state?.toUpperCase(),
-      zip: parsed.zip,
-      preferred_date,
-      time_preference: parsed.time_preference,
-      notes: parsed.notes,
-      sms_consent: !!parsed.sms_consent,
+    return NextResponse.json({ leadId: leadInsert, files: uploaded });
+  } else {
+    const body = await req.json().catch(() => null);
+    if (!body?.data) return NextResponse.json({ error: "missing data" }, { status: 400 });
+    const parsed = BookingSchema.safeParse(body.data);
+    if (!parsed.success) return NextResponse.json({ error: "validation_failed", details: parsed.error.flatten() }, { status: 422 });
 
-      terms_accepted: !!termsAccepted,
-      privacy_acknowledgment: !!termsAccepted,
-
-      source: parsed.source || lt?.utm?.source || ft?.utm?.source || "website",
-      status: "new",
-      ip_address,
-      referral_code: parsed.referral_code || null,
-      client_id,
-      session_id,
-      first_touch: ft,
-      last_touch: lt
-    };
-
-    const { error } = await supabase
-      .from("leads")
-      .insert(payload);
-
-    if (error) return NextResponse.json({ ok:false, error: error.message }, { status: 400 });
-
-    // Attribution handling is now done by database trigger
-
-    // Note: Photo uploads and notifications would require additional setup
-    // since we can no longer retrieve the lead ID from the insert.
-    // This could be handled by:
-    // 1. Using a database function that returns the ID
-    // 2. Creating a separate endpoint for photo uploads
-    // 3. Using client-side storage for photos temporarily
-
-    return NextResponse.json({ ok: true, message: "Booking submitted successfully" });
-  } catch (e:any) {
-    return NextResponse.json({ ok:false, error: e.message || "error" }, { status: 400 });
+    const leadUUID = parsed.data.clientGeneratedId ?? randomUUID();
+    const payload = { ...parsed.data, clientGeneratedId: leadUUID };
+    const { data: leadInsert, error: leadErr } = await supabase.rpc("fn_insert_lead", { p_id: leadUUID, p_payload: payload as any });
+    if (leadErr) return NextResponse.json({ error: "lead_insert_failed", details: leadErr.message }, { status: 500 });
+    return NextResponse.json({ leadId: leadInsert });
   }
 }
