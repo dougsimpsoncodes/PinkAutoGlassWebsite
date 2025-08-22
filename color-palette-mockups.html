@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pink Auto Glass - Color Palette Options</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8f9fa;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .palette-section { 
+            margin-bottom: 60px; 
+            border: 2px solid #ddd; 
+            border-radius: 12px; 
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .palette-header { 
+            padding: 20px; 
+            text-align: center; 
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        .palette-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .color-swatches { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin: 15px 0;
+        }
+        .swatch { 
+            width: 60px; 
+            height: 40px; 
+            border-radius: 6px; 
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .swatch-label { 
+            font-size: 10px; 
+            text-align: center; 
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        .mockup { padding: 0; }
+        .header { 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .logo { font-size: 24px; font-weight: bold; }
+        .nav { display: flex; gap: 20px; align-items: center; }
+        .phone { font-size: 14px; font-weight: 500; }
+        .hero { 
+            padding: 60px 30px; 
+            text-align: center; 
+            position: relative;
+        }
+        .hero h1 { 
+            font-size: 36px; 
+            font-weight: bold; 
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        .hero p { 
+            font-size: 18px; 
+            margin-bottom: 30px; 
+            opacity: 0.9;
+        }
+        .cta-buttons { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            flex-wrap: wrap;
+        }
+        .btn { 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .btn-primary { border: 2px solid currentColor; }
+        .btn-secondary { border: 2px solid currentColor; }
+        .quote-section { 
+            padding: 40px 30px; 
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        .quote-title { 
+            text-align: center; 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 30px;
+        }
+        .quote-form { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            max-width: 800px; 
+            margin: 0 auto;
+        }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            font-size: 14px;
+        }
+        .form-input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 6px; 
+            font-size: 14px;
+        }
+        .hamburger { 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-around;
+        }
+        .hamburger-line { 
+            width: 100%; 
+            height: 2px; 
+            border-radius: 1px;
+        }
+
+        /* Palette 1: Luxury Gold */
+        .palette-1 .header { background: #1a1a1a; color: #ffd700; }
+        .palette-1 .hero { 
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%); 
+            color: #ffffff;
+        }
+        .palette-1 .hero h1 span { color: #ffd700; }
+        .palette-1 .btn-primary { 
+            background: #ffd700; 
+            color: #1a1a1a; 
+            border-color: #ffd700;
+        }
+        .palette-1 .btn-secondary { 
+            background: transparent; 
+            color: #ffd700; 
+            border-color: #ffd700;
+        }
+        .palette-1 .quote-section { background: #f8f8f8; color: #1a1a1a; }
+        .palette-1 .quote-title span { color: #ffd700; }
+        .palette-1 .hamburger-line { background: #ffd700; }
+
+        /* Palette 2: Champagne Elegance */
+        .palette-2 .header { background: #2d2d30; color: #f7e7b4; }
+        .palette-2 .hero { 
+            background: linear-gradient(135deg, #3a3a3d 0%, #2d2d30 100%); 
+            color: #ffffff;
+        }
+        .palette-2 .hero h1 span { color: #f7e7b4; }
+        .palette-2 .btn-primary { 
+            background: #f7e7b4; 
+            color: #2d2d30; 
+            border-color: #f7e7b4;
+        }
+        .palette-2 .btn-secondary { 
+            background: transparent; 
+            color: #f7e7b4; 
+            border-color: #f7e7b4;
+        }
+        .palette-2 .quote-section { background: #f5f5f5; color: #2d2d30; }
+        .palette-2 .quote-title span { color: #d4a843; }
+        .palette-2 .hamburger-line { background: #f7e7b4; }
+
+        /* Palette 3: Bronze Professional */
+        .palette-3 .header { background: #1c1c1c; color: #cd7f32; }
+        .palette-3 .hero { 
+            background: linear-gradient(135deg, #404040 0%, #1c1c1c 100%); 
+            color: #ffffff;
+        }
+        .palette-3 .hero h1 span { color: #cd7f32; }
+        .palette-3 .btn-primary { 
+            background: #cd7f32; 
+            color: #ffffff; 
+            border-color: #cd7f32;
+        }
+        .palette-3 .btn-secondary { 
+            background: transparent; 
+            color: #cd7f32; 
+            border-color: #cd7f32;
+        }
+        .palette-3 .quote-section { background: #f0f0f0; color: #1c1c1c; }
+        .palette-3 .quote-title span { color: #cd7f32; }
+        .palette-3 .hamburger-line { background: #cd7f32; }
+
+        /* Palette 4: Warm Gold & Charcoal */
+        .palette-4 .header { background: #333333; color: #ffa500; }
+        .palette-4 .hero { 
+            background: linear-gradient(135deg, #4a4a4a 0%, #333333 100%); 
+            color: #ffffff;
+        }
+        .palette-4 .hero h1 span { color: #ffa500; }
+        .palette-4 .btn-primary { 
+            background: #ffa500; 
+            color: #333333; 
+            border-color: #ffa500;
+        }
+        .palette-4 .btn-secondary { 
+            background: transparent; 
+            color: #ffa500; 
+            border-color: #ffa500;
+        }
+        .palette-4 .quote-section { background: #f9f9f9; color: #333333; }
+        .palette-4 .quote-title span { color: #ffa500; }
+        .palette-4 .hamburger-line { background: #ffa500; }
+
+        /* Palette 5: Sophisticated Gold */
+        .palette-5 .header { background: #0f0f0f; color: #daa520; }
+        .palette-5 .hero { 
+            background: linear-gradient(135deg, #2f2f2f 0%, #0f0f0f 100%); 
+            color: #e0e0e0;
+        }
+        .palette-5 .hero h1 span { color: #daa520; }
+        .palette-5 .btn-primary { 
+            background: #daa520; 
+            color: #0f0f0f; 
+            border-color: #daa520;
+        }
+        .palette-5 .btn-secondary { 
+            background: transparent; 
+            color: #daa520; 
+            border-color: #daa520;
+        }
+        .palette-5 .quote-section { background: #f7f7f7; color: #0f0f0f; }
+        .palette-5 .quote-title span { color: #daa520; }
+        .palette-5 .hamburger-line { background: #daa520; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 40px; font-size: 32px; color: #333;">
+            Pink Auto Glass - Color Palette Options
+        </h1>
+
+        <!-- Palette 1: Luxury Gold -->
+        <div class="palette-section palette-1">
+            <div class="palette-header">
+                <div class="palette-name">Option 1: Luxury Gold</div>
+                <div class="color-swatches">
+                    <div>
+                        <div class="swatch" style="background: #ffd700;"></div>
+                        <div class="swatch-label">Gold</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #1a1a1a;"></div>
+                        <div class="swatch-label">Black</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #f8f8f8;"></div>
+                        <div class="swatch-label">Light Grey</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #ffffff;"></div>
+                        <div class="swatch-label">White</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px;">Bold, high-contrast luxury feel with bright gold accents</p>
+            </div>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">Pink Auto Glass</div>
+                    <div class="nav">
+                        <div class="phone">(303) 555-PINK</div>
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>Denver's #1 Mobile Auto Glass<br><span>Repair & Replacement</span></h1>
+                    <p>We come to you! Professional windshield service at your home or office.</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">📅 Book Online - Get 10% Off</a>
+                        <a href="#" class="btn btn-secondary">📞 Call (303) 555-PINK</a>
+                    </div>
+                </div>
+                <div class="quote-section">
+                    <h2 class="quote-title">Get Your <span>FREE Quote</span> in 60 Seconds</h2>
+                    <div class="quote-form">
+                        <div class="form-group">
+                            <label class="form-label">What do you need? *</label>
+                            <select class="form-input">
+                                <option>Select Service</option>
+                                <option>Windshield Repair</option>
+                                <option>Windshield Replacement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Phone Number *</label>
+                            <input type="tel" class="form-input" placeholder="(303) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="margin-top: 24px; height: 48px;">Get FREE Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette 2: Champagne Elegance -->
+        <div class="palette-section palette-2">
+            <div class="palette-header">
+                <div class="palette-name">Option 2: Champagne Elegance</div>
+                <div class="color-swatches">
+                    <div>
+                        <div class="swatch" style="background: #f7e7b4;"></div>
+                        <div class="swatch-label">Champagne</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #d4a843;"></div>
+                        <div class="swatch-label">Dark Gold</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #2d2d30;"></div>
+                        <div class="swatch-label">Charcoal</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #f5f5f5;"></div>
+                        <div class="swatch-label">Light Grey</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px;">Sophisticated and refined with warm champagne tones</p>
+            </div>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">Pink Auto Glass</div>
+                    <div class="nav">
+                        <div class="phone">(303) 555-PINK</div>
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>Denver's #1 Mobile Auto Glass<br><span>Repair & Replacement</span></h1>
+                    <p>We come to you! Professional windshield service at your home or office.</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">📅 Book Online - Get 10% Off</a>
+                        <a href="#" class="btn btn-secondary">📞 Call (303) 555-PINK</a>
+                    </div>
+                </div>
+                <div class="quote-section">
+                    <h2 class="quote-title">Get Your <span>FREE Quote</span> in 60 Seconds</h2>
+                    <div class="quote-form">
+                        <div class="form-group">
+                            <label class="form-label">What do you need? *</label>
+                            <select class="form-input">
+                                <option>Select Service</option>
+                                <option>Windshield Repair</option>
+                                <option>Windshield Replacement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Phone Number *</label>
+                            <input type="tel" class="form-input" placeholder="(303) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="margin-top: 24px; height: 48px;">Get FREE Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette 3: Bronze Professional -->
+        <div class="palette-section palette-3">
+            <div class="palette-header">
+                <div class="palette-name">Option 3: Bronze Professional</div>
+                <div class="color-swatches">
+                    <div>
+                        <div class="swatch" style="background: #cd7f32;"></div>
+                        <div class="swatch-label">Bronze</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #1c1c1c;"></div>
+                        <div class="swatch-label">Black</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #404040;"></div>
+                        <div class="swatch-label">Grey</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #f0f0f0;"></div>
+                        <div class="swatch-label">Light Grey</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px;">Professional and trustworthy with rich bronze accents</p>
+            </div>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">Pink Auto Glass</div>
+                    <div class="nav">
+                        <div class="phone">(303) 555-PINK</div>
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>Denver's #1 Mobile Auto Glass<br><span>Repair & Replacement</span></h1>
+                    <p>We come to you! Professional windshield service at your home or office.</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">📅 Book Online - Get 10% Off</a>
+                        <a href="#" class="btn btn-secondary">📞 Call (303) 555-PINK</a>
+                    </div>
+                </div>
+                <div class="quote-section">
+                    <h2 class="quote-title">Get Your <span>FREE Quote</span> in 60 Seconds</h2>
+                    <div class="quote-form">
+                        <div class="form-group">
+                            <label class="form-label">What do you need? *</label>
+                            <select class="form-input">
+                                <option>Select Service</option>
+                                <option>Windshield Repair</option>
+                                <option>Windshield Replacement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Phone Number *</label>
+                            <input type="tel" class="form-input" placeholder="(303) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="margin-top: 24px; height: 48px;">Get FREE Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette 4: Warm Gold & Charcoal -->
+        <div class="palette-section palette-4">
+            <div class="palette-header">
+                <div class="palette-name">Option 4: Warm Gold & Charcoal</div>
+                <div class="color-swatches">
+                    <div>
+                        <div class="swatch" style="background: #ffa500;"></div>
+                        <div class="swatch-label">Orange Gold</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #333333;"></div>
+                        <div class="swatch-label">Charcoal</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #4a4a4a;"></div>
+                        <div class="swatch-label">Medium Grey</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #f9f9f9;"></div>
+                        <div class="swatch-label">Off White</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px;">Energetic and approachable with warm orange-gold highlights</p>
+            </div>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">Pink Auto Glass</div>
+                    <div class="nav">
+                        <div class="phone">(303) 555-PINK</div>
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>Denver's #1 Mobile Auto Glass<br><span>Repair & Replacement</span></h1>
+                    <p>We come to you! Professional windshield service at your home or office.</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">📅 Book Online - Get 10% Off</a>
+                        <a href="#" class="btn btn-secondary">📞 Call (303) 555-PINK</a>
+                    </div>
+                </div>
+                <div class="quote-section">
+                    <h2 class="quote-title">Get Your <span>FREE Quote</span> in 60 Seconds</h2>
+                    <div class="quote-form">
+                        <div class="form-group">
+                            <label class="form-label">What do you need? *</label>
+                            <select class="form-input">
+                                <option>Select Service</option>
+                                <option>Windshield Repair</option>
+                                <option>Windshield Replacement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Phone Number *</label>
+                            <input type="tel" class="form-input" placeholder="(303) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="margin-top: 24px; height: 48px;">Get FREE Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette 5: Sophisticated Gold -->
+        <div class="palette-section palette-5">
+            <div class="palette-header">
+                <div class="palette-name">Option 5: Sophisticated Gold</div>
+                <div class="color-swatches">
+                    <div>
+                        <div class="swatch" style="background: #daa520;"></div>
+                        <div class="swatch-label">Goldenrod</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #0f0f0f;"></div>
+                        <div class="swatch-label">Deep Black</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #2f2f2f;"></div>
+                        <div class="swatch-label">Dark Grey</div>
+                    </div>
+                    <div>
+                        <div class="swatch" style="background: #f7f7f7;"></div>
+                        <div class="swatch-label">Light Grey</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px;">Ultra-sophisticated with deep contrasts and refined gold</p>
+            </div>
+            <div class="mockup">
+                <div class="header">
+                    <div class="logo">Pink Auto Glass</div>
+                    <div class="nav">
+                        <div class="phone">(303) 555-PINK</div>
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>Denver's #1 Mobile Auto Glass<br><span>Repair & Replacement</span></h1>
+                    <p>We come to you! Professional windshield service at your home or office.</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">📅 Book Online - Get 10% Off</a>
+                        <a href="#" class="btn btn-secondary">📞 Call (303) 555-PINK</a>
+                    </div>
+                </div>
+                <div class="quote-section">
+                    <h2 class="quote-title">Get Your <span>FREE Quote</span> in 60 Seconds</h2>
+                    <div class="quote-form">
+                        <div class="form-group">
+                            <label class="form-label">What do you need? *</label>
+                            <select class="form-input">
+                                <option>Select Service</option>
+                                <option>Windshield Repair</option>
+                                <option>Windshplication</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Phone Number *</label>
+                            <input type="tel" class="form-input" placeholder="(303) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" style="margin-top: 24px; height: 48px;">Get FREE Quote →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 40px 20px; background: #f0f0f0; border-radius: 12px; margin-top: 40px;">
+            <h2 style="color: #333; margin-bottom: 20px;">Which Color Palette Do You Prefer?</h2>
+            <p style="color: #666; margin-bottom: 20px;">Each palette maintains professional credibility while moving away from pink to gold/grey/black combinations.</p>
+            <p style="color: #888; font-size: 14px;"><strong>Note:</strong> These mockups show the general feel - actual implementation will include gradients, shadows, and refined styling.</p>
+        </div>
+    </div>
+</body>
+</html>

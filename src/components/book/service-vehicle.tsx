@@ -103,27 +103,6 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
         {errors.serviceType && (
           <p className="text-red-500 text-sm mt-2">{errors.serviceType}</p>
         )}
-
-        {/* Mobile Service Option */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.mobileService || false}
-              onChange={(e) => updateFormData({ mobileService: e.target.checked })}
-              className="w-5 h-5 text-pink-500 rounded focus:ring-pink-500"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-gray-900">Mobile Service - We Come to You!</span>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">
-                Our technician will come to your home or office at no extra charge
-              </p>
-            </div>
-          </label>
-        </div>
       </div>
 
       {/* Vehicle Information Section */}
