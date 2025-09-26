@@ -243,8 +243,30 @@ export default function BookingPage() {
         referrer: document.referrer || 'direct'
       };
 
+      // Convert File objects to base64 for JSON submission
+      let filesData: any[] = [];
+      if (formData.photos && formData.photos.length > 0) {
+        filesData = await Promise.all(
+          formData.photos.map(async (file) => ({
+            data: await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                // Extract base64 data (remove data:image/...;base64, prefix)
+                const result = reader.result as string;
+                const base64 = result.split(',')[1];
+                resolve(base64);
+              };
+              reader.readAsDataURL(file);
+            }),
+            name: file.name,
+            type: file.type,
+            size: file.size
+          }))
+        );
+      }
+
       // Prepare submission data in camelCase format (matching API expectations)
-      const submissionData = {
+      const submissionData: any = {
         serviceType: formData.serviceType,
         mobileService: formData.mobileService || false,
         firstName: formData.firstName,
@@ -270,7 +292,12 @@ export default function BookingPage() {
         lastTouch: firstTouch
       };
 
-      // Submit to API (without files for now - keeping UI state unchanged)
+      // Add files if any
+      if (filesData.length > 0) {
+        submissionData.files = filesData;
+      }
+
+      // Submit to API with photos
       const submitResponse = await fetch('/api/booking/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

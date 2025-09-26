@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { BookingFormData } from '@/types/booking';
+import { PhotoUploader } from './photo-uploader';
 
 interface ReviewSubmitProps {
   formData: BookingFormData;
@@ -172,6 +173,21 @@ export function ReviewSubmit({
         {errors.damageDescription && (
           <p className="text-red-500 text-sm">{errors.damageDescription}</p>
         )}
+      </div>
+
+      {/* Photo Upload Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-brand-navy">
+          Add photos of the damage (optional)
+        </h3>
+        <p className="text-sm text-gray-600">
+          Upload photos to help us provide a more accurate quote
+        </p>
+        <PhotoUploader
+          files={formData.photos}
+          onChange={(files) => updateFormData({ photos: files })}
+          errors={errors.photos ? [errors.photos] : undefined}
+        />
       </div>
 
       {/* Consent and Privacy Section */}
