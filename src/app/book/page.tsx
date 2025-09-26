@@ -213,49 +213,64 @@ export default function BookingPage() {
     if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
-    
-    try {
-      // Convert File objects to base64 for API submission
-      const filesData = await Promise.all(
-        formData.photos.map(async (file) => ({
-          data: await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          }),
-          name: file.name,
-          type: file.type,
-          size: file.size
-        }))
-      );
 
-      // Prepare submission data in new API format - convert to snake_case
+    try {
+      // Normalize phone to E.164 format
+      const normalizePhone = (phone: string): string => {
+        const cleaned = phone.replace(/\D/g, '');
+        if (cleaned.length === 10) {
+          return `+1${cleaned}`;
+        } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+          return `+${cleaned}`;
+        }
+        return `+${cleaned}`;
+      };
+
+      // Generate session and client IDs
+      const sessionId = sessionStorage.getItem('session_id') || crypto.randomUUID();
+      const clientId = localStorage.getItem('client_id') || crypto.randomUUID();
+
+      // Store IDs for future use
+      sessionStorage.setItem('session_id', sessionId);
+      localStorage.setItem('client_id', clientId);
+
+      // Get UTM data from URL or sessionStorage
+      const params = new URLSearchParams(window.location.search);
+      const firstTouch = {
+        utm_source: params.get('utm_source') || formData.utmSource || 'direct',
+        utm_medium: params.get('utm_medium') || formData.utmMedium || 'none',
+        utm_campaign: params.get('utm_campaign') || formData.utmCampaign || 'none',
+        referrer: document.referrer || 'direct'
+      };
+
+      // Prepare submission data in camelCase format (matching API expectations)
       const submissionData = {
-        service_type: formData.serviceType,
-        mobile_service: formData.mobileService || false,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
+        serviceType: formData.serviceType,
+        mobileService: formData.mobileService || false,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneE164: normalizePhone(formData.phone),
         email: formData.email,
-        vehicle_year: parseInt(String(formData.vehicleYear), 10),
-        vehicle_make: formData.vehicleMake,
-        vehicle_model: formData.vehicleModel,
+        vehicleYear: parseInt(String(formData.vehicleYear), 10),
+        vehicleMake: formData.vehicleMake,
+        vehicleModel: formData.vehicleModel,
         address: formData.streetAddress,
         city: formData.city,
         state: formData.state,
         zip: formData.zipCode,
-        preferred_date: formData.preferredDate,
-        time_preference: formData.timeWindow || 'flexible',
+        preferredDate: formData.preferredDate || undefined,
+        timePreference: formData.timeWindow || 'flexible',
         notes: formData.damageDescription || undefined,
-        sms_consent: formData.smsConsent,
-        privacy_acknowledgment: formData.privacyAcknowledgment,
-        terms_accepted: formData.privacyAcknowledgment,
-        referral_code: formData.referralCode || undefined,
-        source: 'website',
-        files: filesData.length > 0 ? filesData : undefined
+        smsConsent: formData.smsConsent || false,
+        privacyAcknowledgment: formData.privacyAcknowledgment,
+        termsAccepted: formData.privacyAcknowledgment,
+        clientId: clientId,
+        sessionId: sessionId,
+        firstTouch: firstTouch,
+        lastTouch: firstTouch
       };
-      
-      // Submit to Supabase API
+
+      // Submit to API (without files for now - keeping UI state unchanged)
       const submitResponse = await fetch('/api/booking/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -270,13 +285,13 @@ export default function BookingPage() {
           setErrors(responseData.validationErrors);
           return;
         }
-        
+
         throw new Error(responseData.error || 'Failed to submit booking');
       }
 
-      // Extract data from successful response
+      // Use real reference number from API response
       const leadId = responseData.id;
-      const referenceNumber = `REF-${leadId.slice(0, 8).toUpperCase()}`; // Generate reference from ID
+      const referenceNumber = responseData.referenceNumber || `REF-${leadId.slice(0, 8).toUpperCase()}`;
       const uploadedPhotos = [];
 
       console.log('Booking submitted successfully:', {
