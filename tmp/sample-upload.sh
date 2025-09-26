@@ -1,16 +1,52 @@
-#!/usr/bin/env bash
-set -euo pipefail
-BOUNDARY="---------------------------$(date +%s%N)"
-JSON='{"data":{"serviceType":"repair","firstName":"Test","lastName":"User","email":"test@example.com","phoneE164":"+15555550123","address":"123 Main St","city":"Phoenix","state":"AZ","zip":"85001","vehicleYear":2024,"vehicleMake":"Toyota","vehicleModel":"Camry","termsAccepted":true,"privacyAcknowledgment":true,"clientId":"web","sessionId":"abc123","firstTouch":{"utm_source":"ad"},"lastTouch":{"utm_source":"direct"}}}'
-FILEPATH="package.json"
-{
-  printf -- "--%s\r\n" "$BOUNDARY"
-  printf 'Content-Disposition: form-data; name="data"\r\n'
-  printf 'Content-Type: application/json\r\n\r\n'
-  printf '%s\r\n' "$JSON"
-  printf -- "--%s\r\n" "$BOUNDARY"
-  printf 'Content-Disposition: form-data; name="file1"; filename="%s"\r\n' "$(basename "$FILEPATH")"
-  printf 'Content-Type: application/octet-stream\r\n\r\n'
-  cat "$FILEPATH"
-  printf '\r\n--%s--\r\n' "$BOUNDARY"
-} | curl -sS -X POST "$STAGING_BASE_URL/api/booking/submit" -H "Content-Type: multipart/form-data; boundary=$BOUNDARY" --data-binary @-
+#!/bin/bash
+
+# Sample multipart booking submission with file upload
+# Usage: ./tmp/sample-upload.sh
+
+# Set the API endpoint
+API_URL="${API_URL:-http://localhost:3000}/api/booking/submit"
+
+# Create a test image file if it doesn't exist
+if [ ! -f "tmp/test-image.jpg" ]; then
+    echo "Creating test image file..."
+    # Create a 1x1 pixel JPEG (minimal valid JPEG)
+    printf '\xff\xd8\xff\xe0\x00\x10\x4a\x46\x49\x46\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00\x43\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\x09\x09\x08\x0a\x0c\x14\x0d\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c\x20\x24\x2e\x27\x20\x22\x2c\x23\x1c\x1c\x28\x37\x29\x2c\x30\x31\x34\x34\x34\x1f\x27\x39\x3d\x38\x32\x3c\x2e\x33\x34\x32\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02\x04\x03\x05\x05\x04\x04\x00\x00\x01\x7d\x01\x02\x03\x00\x04\x11\x05\x12\x21\x31\x41\x06\x13\x51\x61\x07\x22\x71\x14\x32\x81\x91\xa1\x08\x23\x42\xb1\xc1\x15\x52\xd1\xf0\x24\x33\x62\x72\x82\x09\x0a\x16\x17\x18\x19\x1a\x25\x26\x27\x28\x29\x2a\x34\x35\x36\x37\x38\x39\x3a\x43\x44\x45\x46\x47\x48\x49\x4a\x53\x54\x55\x56\x57\x58\x59\x5a\x63\x64\x65\x66\x67\x68\x69\x6a\x73\x74\x75\x76\x77\x78\x79\x7a\x83\x84\x85\x86\x87\x88\x89\x8a\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x08\x01\x01\x00\x00\x3f\x00\xfb\xff\xd9' > tmp/test-image.jpg
+fi
+
+# Prepare the payload JSON
+PAYLOAD='{
+  "serviceType": "replacement",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phoneE164": "+13035557890",
+  "address": "456 Oak Ave",
+  "city": "Boulder",
+  "state": "CO",
+  "zip": "80301",
+  "vehicleYear": 2022,
+  "vehicleMake": "Honda",
+  "vehicleModel": "Accord",
+  "preferredDate": "2025-10-01",
+  "timePreference": "morning",
+  "notes": "Crack in windshield from rock chip",
+  "smsConsent": true,
+  "privacyAcknowledgment": true,
+  "termsAccepted": true,
+  "clientId": "test-multipart",
+  "sessionId": "session-456",
+  "firstTouch": {"utm_source": "google", "utm_medium": "cpc"},
+  "lastTouch": {"utm_source": "google", "utm_medium": "cpc"}
+}'
+
+# Submit with file upload
+echo "Submitting multipart booking with file to: $API_URL"
+echo "---"
+
+curl -X POST "$API_URL" \
+  -F "payload=$PAYLOAD" \
+  -F "file=@tmp/test-image.jpg;type=image/jpeg" \
+  -w "\n\nHTTP Status: %{http_code}\n"
+
+echo "---"
+echo "Multipart submission complete!"
