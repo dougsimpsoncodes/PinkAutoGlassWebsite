@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
     // Content Security Policy - Prevent XSS attacks
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://*.supabase.co",
+      "script-src 'self' https://fonts.googleapis.com https://*.supabase.co",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
