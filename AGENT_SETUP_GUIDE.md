@@ -283,18 +283,32 @@ git push -u origin feature/your-feature-name
 
 ```bash
 # Development
-npm run dev                        # Start dev server
+npm run dev                        # Start dev server on port 3000
 npm run build                      # Build for production
 npm run lint                       # Run linter
-npm run typecheck                  # Check TypeScript
+npm run test                       # Run Playwright tests
 
 # Database
 psql $DATABASE_URL                 # Connect to database
 npx supabase migration new         # Create new migration
 npx supabase db push               # Apply migrations
 
-# Testing
-curl -X POST http://localhost:3000/api/booking/submit -H "Content-Type: application/json" -d @tmp/sample-booking.json
+# API Testing - JSON submission
+./tmp/sample-booking-json.sh       # Submit JSON booking
+# Or directly:
+curl -X POST http://localhost:3000/api/booking/submit \
+  -H "Content-Type: application/json" \
+  -d @tmp/sample-booking.json
+
+# API Testing - Multipart with file upload
+./tmp/sample-upload.sh              # Submit with file
+# Or directly:
+curl -X POST http://localhost:3000/api/booking/submit \
+  -F "payload=@tmp/sample-booking.json" \
+  -F "file=@tmp/test-image.jpg;type=image/jpeg"
+
+# Response format:
+# { "ok": true, "id": "uuid", "referenceNumber": "REF-XXX", "files": [...] }
 ```
 
 ## Security Notes
