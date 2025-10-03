@@ -10,7 +10,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-5xl font-bold mb-4">
-              Denver's #1 Mobile Auto Glass
+              Colorado's #1 Mobile Auto Glass
               <span className="block text-pink-300">Repair & Replacement</span>
             </h1>
             
@@ -24,8 +24,8 @@ export default function Home() {
               <Link href="/book" className="btn-primary text-lg px-8 py-4 shadow-lg">
                 📅 Book Online - Get 10% Off
               </Link>
-              <a href="tel:+13035557465" className="btn-secondary text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-lg">
-                📞 Call (303) 555-PINK
+              <a href="tel:+17209817465" className="btn-secondary text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-lg">
+                📞 Call (720) 981-7465
               </a>
             </div>
             
@@ -120,7 +120,7 @@ export default function Home() {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Denver Chooses Pink Auto Glass</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Colorado Chooses Pink Auto Glass</h2>
             <p className="text-xl text-gray-600">Over 5,000 satisfied customers trust us with their auto glass needs</p>
           </div>
           
@@ -131,7 +131,7 @@ export default function Home() {
                 <MapPin className="w-10 h-10 text-pink-600" />
               </div>
               <h3 className="text-xl font-bold mb-4">We Come to You</h3>
-              <p className="text-gray-600 mb-4">No need to drive with a damaged windshield. We provide mobile service at your home, office, or anywhere in Denver Metro.</p>
+              <p className="text-gray-600 mb-4">No need to drive with a damaged windshield. We provide mobile service at your home, office, or anywhere in Colorado.</p>
               <div className="text-sm text-pink-600 font-semibold">Available 7 Days a Week</div>
             </div>
             
@@ -184,15 +184,15 @@ export default function Home() {
       <section className="py-16 bg-gradient-to-r from-pink-600 to-pink-700 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Your Windshield Fixed?</h2>
-          <p className="text-xl mb-8 text-pink-100">Join thousands of satisfied customers in Denver Metro</p>
+          <p className="text-xl mb-8 text-pink-100">Join thousands of satisfied customers in Colorado</p>
           
           {/* Primary Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/book" className="bg-white text-pink-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
               📱 Book Online Now
             </Link>
-            <a href="tel:+13035557465" className="bg-pink-800 hover:bg-pink-900 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
-              📞 Call (303) 555-PINK
+            <a href="tel:+17209817465" className="bg-pink-800 hover:bg-pink-900 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
+              📞 Call (720) 981-7465
             </a>
           </div>
           
@@ -201,15 +201,15 @@ export default function Home() {
             <div className="flex flex-col items-center">
               <Phone className="w-8 h-8 text-pink-300 mb-3" />
               <h3 className="text-lg font-semibold mb-2 text-white">Call or Text</h3>
-              <a href="tel:+13035557465" className="text-pink-200 hover:text-white transition-colors text-lg">
-                (303) 555-PINK
+              <a href="tel:+17209817465" className="text-pink-200 hover:text-white transition-colors text-lg">
+                (720) 981-7465
               </a>
               <div className="text-sm mt-1">Available 7 days a week</div>
             </div>
             <div className="flex flex-col items-center">
               <MapPin className="w-8 h-8 text-pink-300 mb-3" />
               <h3 className="text-lg font-semibold mb-2 text-white">Service Area</h3>
-              <p className="text-lg">Denver Metro Area</p>
+              <p className="text-lg">Statewide Colorado</p>
               <div className="text-sm mt-1">Mobile service available</div>
             </div>
             <div className="flex flex-col items-center">

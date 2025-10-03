@@ -13,6 +13,67 @@
   --shadow-brand-lg: 0 8px 25px 0 rgba(232, 90, 139, 0.4);
 }
 
+/* Date Input Styling for Better Cross-Browser Support */
+input[type="date"] {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Style the calendar icon for Webkit browsers */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Firefox date input styling */
+input[type="date"]::-moz-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* Ensure date input is clickable everywhere */
+input[type="date"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Mobile-friendly select styling */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Ensure dropdowns work properly on touch devices */
+select:focus {
+  outline: none;
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+  select {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    touch-action: manipulation;
+  }
+}
+
+/* Style for invalid date inputs */
+input[type="date"]:invalid {
+  color: #9ca3af;
+}
+
 /* Component Layer - Custom Components */
 @layer components {
   

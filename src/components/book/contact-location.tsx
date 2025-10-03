@@ -21,6 +21,10 @@ const US_STATES = [
 ];
 
 export function ContactLocation({ formData, updateFormData, errors, onNext, onPrevious }: ContactLocationProps) {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
     const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
@@ -47,6 +51,45 @@ export function ContactLocation({ formData, updateFormData, errors, onNext, onPr
   const maxDate = new Date();
   maxDate.setDate(maxDate.getDate() + 30);
   const maxDateStr = maxDate.toISOString().split('T')[0];
+
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const firstDay = new Date(selectedYear, selectedMonth, 1);
+    const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+    const days = [];
+
+    // Add empty cells for days before month starts
+    const startDay = firstDay.getDay();
+    for (let i = 0; i < startDay; i++) {
+      days.push(null);
+    }
+
+    // Add all days of the month
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      days.push(i);
+    }
+
+    return days;
+  };
+
+  const isDateSelectable = (day: number) => {
+    if (!day) return false;
+    const date = new Date(selectedYear, selectedMonth, day);
+    const dateStr = date.toISOString().split('T')[0];
+    return dateStr >= minDate && dateStr <= maxDateStr;
+  };
+
+  const selectDate = (day: number) => {
+    if (!isDateSelectable(day)) return;
+    const date = new Date(selectedYear, selectedMonth, day);
+    const dateStr = date.toISOString().split('T')[0];
+    updateFormData({ preferredDate: dateStr });
+    setShowDatePicker(false);
+  };
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="space-y-8">
@@ -251,17 +294,135 @@ export function ContactLocation({ formData, updateFormData, errors, onNext, onPr
             <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700 mb-2">
               Preferred Date (Optional)
             </label>
-            <input
-              type="date"
-              id="preferredDate"
-              value={formData.preferredDate}
-              onChange={(e) => updateFormData({ preferredDate: e.target.value })}
-              min={minDate}
-              max={maxDateStr}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-left bg-white hover:bg-gray-50 transition-colors"
+              >
+                {formData.preferredDate ? (
+                  new Date(formData.preferredDate + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                ) : (
+                  <span className="text-gray-400">Select a date</span>
+                )}
+              </button>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Calendar className="w-5 h-5 text-gray-400" />
+              </div>
+
+              {/* Custom Date Picker Dropdown */}
+              {showDatePicker && (
+                <div className="absolute z-50 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                  {/* Month/Year Selection */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedMonth === 0) {
+                          setSelectedMonth(11);
+                          setSelectedYear(selectedYear - 1);
+                        } else {
+                          setSelectedMonth(selectedMonth - 1);
+                        }
+                      }}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="font-medium">
+                      {monthNames[selectedMonth]} {selectedYear}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedMonth === 11) {
+                          setSelectedMonth(0);
+                          setSelectedYear(selectedYear + 1);
+                        } else {
+                          setSelectedMonth(selectedMonth + 1);
+                        }
+                      }}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Day Names */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {dayNames.map(day => (
+                      <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Calendar Days */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {generateCalendarDays().map((day, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => day && selectDate(day)}
+                        disabled={!day || !isDateSelectable(day)}
+                        className={`
+                          py-2 text-sm rounded transition-colors
+                          ${!day ? 'invisible' : ''}
+                          ${day && isDateSelectable(day)
+                            ? 'hover:bg-pink-100 cursor-pointer'
+                            : 'text-gray-300 cursor-not-allowed'}
+                          ${day && formData.preferredDate ===
+                            new Date(selectedYear, selectedMonth, day).toISOString().split('T')[0]
+                            ? 'bg-pink-500 text-white hover:bg-pink-600'
+                            : ''}
+                        `}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Quick Select Options */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="text-xs text-gray-500 mb-2">Quick Select:</div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const tomorrow = new Date();
+                          tomorrow.setDate(tomorrow.getDate() + 1);
+                          updateFormData({ preferredDate: tomorrow.toISOString().split('T')[0] });
+                          setShowDatePicker(false);
+                        }}
+                        className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                      >
+                        Tomorrow
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextWeek = new Date();
+                          nextWeek.setDate(nextWeek.getDate() + 7);
+                          updateFormData({ preferredDate: nextWeek.toISOString().split('T')[0] });
+                          setShowDatePicker(false);
+                        }}
+                        className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                      >
+                        Next Week
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <p className="text-sm text-gray-500 mt-1">
-              Available: Tomorrow - Next 30 days
+              Click to select a date • Available: Tomorrow - Next 30 days
             </p>
           </div>
 

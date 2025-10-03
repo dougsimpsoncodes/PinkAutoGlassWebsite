@@ -18,7 +18,7 @@ export default function Footer() {
                   Pink Auto Glass
                 </div>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Professional mobile windshield repair and replacement throughout Denver Metro. 
+                  Professional mobile windshield repair and replacement throughout Colorado.
                   We come to you with same-day service and lifetime warranty.
                 </p>
               </div>
@@ -27,11 +27,11 @@ export default function Footer() {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-pink-400 flex-shrink-0" />
-                  <a 
-                    href="tel:+13035557465" 
+                  <a
+                    href="tel:+17209817465"
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    (303) 555-PINK
+                    (720) 981-7465
                   </a>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -47,7 +47,7 @@ export default function Footer() {
                   <MapPin className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-300">
                     Mobile Service Throughout<br />
-                    Denver Metro Area
+                    Colorado
                   </span>
                 </div>
               </div>

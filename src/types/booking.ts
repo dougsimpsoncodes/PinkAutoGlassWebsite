@@ -1,5 +1,3 @@
-import type { BookingInput } from "@/lib/booking-schema";
-
 // Frontend form data (camelCase for React forms)
 export interface BookingFormData {
   // Service details
@@ -41,6 +39,3 @@ export interface BookingFormData {
   utmMedium?: string;
   utmCampaign?: string;
 }
-
-// Backend API type (snake_case for database)
-export type BookingApiData = BookingInput & { photos?: File[] };

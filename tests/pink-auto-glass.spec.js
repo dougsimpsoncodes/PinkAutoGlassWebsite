@@ -64,117 +64,11 @@ test.describe('Pink Auto Glass Website', () => {
       await expect(page.getByRole('button', { name: /replacement/i }).or(page.getByText(/replacement/i)).first()).toBeVisible();
     });
 
-    test('should handle photo uploads in booking flow', async ({ page }) => {
-      await page.goto('/book');
+    // Photo uploads are out of scope for MVP
 
-      // Navigate through steps to reach photo upload
-      // Step 1: Select service
-      await page.getByRole('button', { name: /repair/i }).first().click();
-      await page.fill('input[placeholder*="year" i]', '2020');
-      await page.fill('input[placeholder*="make" i]', 'Toyota');
-      await page.fill('input[placeholder*="model" i]', 'Camry');
-      await page.getByRole('button', { name: /continue|next/i }).click();
+    // Upload validation tests removed for MVP
 
-      // Step 2: Fill contact info
-      await page.fill('input[placeholder*="first" i]', 'Test');
-      await page.fill('input[placeholder*="last" i]', 'User');
-      await page.fill('input[type="email"]', 'test@example.com');
-      await page.fill('input[type="tel"]', '3035551234');
-      await page.fill('input[placeholder*="address" i]', '123 Main St');
-      await page.fill('input[placeholder*="city" i]', 'Denver');
-      await page.fill('input[placeholder*="state" i]', 'CO');
-      await page.fill('input[placeholder*="zip" i]', '80202');
-      await page.getByRole('button', { name: /continue|next/i }).click();
-
-      // Step 3: Photo upload section should be visible
-      await expect(page.getByText(/add photos of the damage/i)).toBeVisible();
-
-      // Check for file input
-      const fileInput = page.locator('input[type="file"][accept*="image"]');
-      await expect(fileInput).toBeHidden(); // Should be hidden but present (sr-only)
-
-      // Check for upload area
-      const uploadArea = page.getByRole('button', { name: /upload photo/i });
-      await expect(uploadArea).toBeVisible();
-    });
-
-    test('should validate photo file types', async ({ page }) => {
-      await page.goto('/book');
-
-      // Navigate to step 3 (simplified)
-      await page.evaluate(() => {
-        // Direct navigation for testing
-        window.location.hash = '#step3';
-      });
-
-      // Create test files programmatically
-      const validImageBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-      const invalidTextBuffer = Buffer.from('This is not an image', 'utf8');
-
-      // Test valid image upload
-      const fileChooserPromise = page.waitForEvent('filechooser');
-      await page.getByRole('button', { name: /upload photo/i }).click();
-      const fileChooser = await fileChooserPromise;
-
-      await fileChooser.setFiles([
-        {
-          name: 'test.png',
-          mimeType: 'image/png',
-          buffer: validImageBuffer,
-        }
-      ]);
-
-      // Should show preview
-      await expect(page.locator('img[alt*="Preview"]').first()).toBeVisible();
-
-      // Test invalid file type
-      const fileChooserPromise2 = page.waitForEvent('filechooser');
-      await page.getByRole('button', { name: /upload photo/i }).click();
-      const fileChooser2 = await fileChooserPromise2;
-
-      await fileChooser2.setFiles([
-        {
-          name: 'test.txt',
-          mimeType: 'text/plain',
-          buffer: invalidTextBuffer,
-        }
-      ]);
-
-      // Should show error for invalid type
-      await expect(page.getByText(/invalid file type/i)).toBeVisible();
-    });
-
-    test('should enforce maximum file count', async ({ page }) => {
-      await page.goto('/book');
-
-      // Navigate to upload section
-      await page.evaluate(() => {
-        window.location.hash = '#step3';
-      });
-
-      // Create 6 test images (exceeds max of 5)
-      const validImageBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-
-      const files = Array.from({ length: 6 }, (_, i) => ({
-        name: `test${i + 1}.png`,
-        mimeType: 'image/png',
-        buffer: validImageBuffer,
-      }));
-
-      // Try to upload 6 files
-      const fileChooserPromise = page.waitForEvent('filechooser');
-      await page.getByRole('button', { name: /upload photo/i }).click();
-      const fileChooser = await fileChooserPromise;
-
-      await fileChooser.setFiles(files);
-
-      // Should show error about maximum files
-      await expect(page.getByText(/maximum.*5.*files/i)).toBeVisible();
-
-      // Should only show 5 previews
-      const previews = page.locator('img[alt*="Preview"]');
-      await expect(previews).toHaveCount(5);
-    });
+    // File count tests removed for MVP
   });
 
   test.describe('API Endpoints', () => {
@@ -210,43 +104,7 @@ test.describe('Pink Auto Glass Website', () => {
       expect(body).toHaveProperty('referenceNumber');
     });
 
-    test('should reject invalid file types', async ({ page }) => {
-      const formData = new FormData();
-
-      // Add payload
-      const payload = JSON.stringify({
-        serviceType: 'repair',
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@example.com',
-        phoneE164: '+13035551234',
-        address: '123 Main St',
-        city: 'Denver',
-        state: 'CO',
-        zip: '80202',
-        vehicleYear: 2020,
-        vehicleMake: 'Toyota',
-        vehicleModel: 'Camry',
-        termsAccepted: true,
-        privacyAcknowledgment: true
-      });
-
-      const response = await page.request.post('/api/booking/submit', {
-        multipart: {
-          payload: payload,
-          file: {
-            name: 'test.txt',
-            mimeType: 'text/plain',
-            buffer: Buffer.from('invalid file')
-          }
-        }
-      });
-
-      expect(response.status()).toBe(400);
-      const body = await response.json();
-      expect(body).toHaveProperty('ok', false);
-      expect(body.error).toContain('Invalid file type');
-    });
+    // API upload negative tests removed for MVP
   });
 
   test.describe('Responsive Design', () => {

@@ -19,7 +19,9 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
   // Update available makes when year changes
   useEffect(() => {
     if (formData.vehicleYear) {
-      const yearData = vehicleDatabase.find(v => v.year === formData.vehicleYear);
+      // Convert to number for comparison with database
+      const yearNum = typeof formData.vehicleYear === 'string' ? parseInt(formData.vehicleYear, 10) : formData.vehicleYear;
+      const yearData = vehicleDatabase.find(v => v.year === yearNum);
       if (yearData) {
         setAvailableMakes(Object.keys(yearData.makes));
         // Reset make and model if year changed
@@ -37,11 +39,14 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
   // Update available models when make changes
   useEffect(() => {
     if (formData.vehicleYear && formData.vehicleMake) {
-      const yearData = vehicleDatabase.find(v => v.year === formData.vehicleYear);
-      if (yearData && yearData.makes[formData.vehicleMake]) {
-        setAvailableModels(yearData.makes[formData.vehicleMake]);
+      // Convert to number for comparison with database
+      const yearNum = typeof formData.vehicleYear === 'string' ? parseInt(formData.vehicleYear, 10) : formData.vehicleYear;
+      const yearData = vehicleDatabase.find(v => v.year === yearNum);
+      const models = yearData?.makes[formData.vehicleMake as keyof typeof yearData.makes];
+      if (yearData && models) {
+        setAvailableModels(models);
         // Reset model if make changed
-        if (!yearData.makes[formData.vehicleMake].includes(formData.vehicleModel)) {
+        if (!models.includes(formData.vehicleModel)) {
           updateFormData({ vehicleModel: '' });
         }
       }
@@ -119,9 +124,10 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               id="year"
               value={formData.vehicleYear}
               onChange={(e) => updateFormData({ vehicleYear: e.target.value })}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleYear ? 'border-red-500' : 'border-gray-300'
               }`}
+              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Select Year</option>
               {vehicleDatabase.map(v => (
@@ -143,9 +149,10 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               value={formData.vehicleMake}
               onChange={(e) => updateFormData({ vehicleMake: e.target.value })}
               disabled={!formData.vehicleYear}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleMake ? 'border-red-500' : 'border-gray-300'
               } ${!formData.vehicleYear ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Select Make</option>
               {availableMakes.map(make => (
@@ -167,9 +174,10 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               value={formData.vehicleModel}
               onChange={(e) => updateFormData({ vehicleModel: e.target.value })}
               disabled={!formData.vehicleMake}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleModel ? 'border-red-500' : 'border-gray-300'
               } ${!formData.vehicleMake ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Select Model</option>
               {availableModels.map(model => (

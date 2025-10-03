@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import type { BookingFormData } from '@/types/booking';
-import { PhotoUploader } from './photo-uploader';
 
 interface ReviewSubmitProps {
   formData: BookingFormData;
@@ -89,12 +88,7 @@ export function ReviewSubmit({
                 {/* Trim removed - not needed for auto glass work */}
               </span>
             </div>
-            {formData.photos.length > 0 && (
-              <div className="flex justify-between items-start">
-                <span className="text-gray-600">Photos:</span>
-                <span className="font-medium">{formData.photos.length} uploaded</span>
-              </div>
-            )}
+            {/* Photos removed for MVP */}
           </div>
         </div>
 
@@ -175,20 +169,7 @@ export function ReviewSubmit({
         )}
       </div>
 
-      {/* Photo Upload Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-brand-navy">
-          Add photos of the damage (optional)
-        </h3>
-        <p className="text-sm text-gray-600">
-          Upload photos to help us provide a more accurate quote
-        </p>
-        <PhotoUploader
-          files={formData.photos}
-          onChange={(files) => updateFormData({ photos: files })}
-          errors={errors.photos ? [errors.photos] : undefined}
-        />
-      </div>
+      {/* Photo upload removed for MVP */}
 
       {/* Consent and Privacy Section */}
       <div className="space-y-6 border-t pt-6">

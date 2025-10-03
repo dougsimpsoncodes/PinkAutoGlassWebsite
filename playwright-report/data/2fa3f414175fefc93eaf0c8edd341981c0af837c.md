@@ -1,0 +1,154 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Skip to main content":
+    - /url: "#main-content"
+  - navigation "Main navigation":
+    - link "Pink Auto Glass - Go to homepage":
+      - /url: /
+      - img "Pink Auto Glass"
+    - button "Open menu":
+      - img
+- main:
+  - 'heading "Denver''s #1 Mobile Auto Glass Repair & Replacement" [level=1]'
+  - paragraph: We come to you! Professional windshield service at your home or office. Quick repairs, quality replacements, unbeatable prices.
+  - link "📅 Book Online - Get 10% Off":
+    - /url: /book
+  - link "📞 Call (303) 555-PINK":
+    - /url: tel:+13035557465
+  - img
+  - text: Same Day Service
+  - img
+  - text: Mobile Service
+  - img
+  - text: Lifetime Warranty
+  - heading "Get Your FREE Quote in 60 Seconds" [level=2]
+  - paragraph: No commitment • Instant estimate • Mobile service available
+  - form "Quick quote form":
+    - text: What do you need? *
+    - combobox "What do you need? *":
+      - option "Select Service" [selected]
+      - option "🔧 Windshield Repair ($89+)"
+      - option "🚗 Windshield Replacement ($299+)"
+    - text: Your Phone Number *
+    - textbox "Your Phone Number *"
+    - button "Get FREE Quote →"
+  - img
+  - text: Licensed & Insured
+  - img
+  - text: 4.9/5 Rating (200+ Reviews)
+  - img
+  - text: Same Day Service
+  - heading "Why Denver Chooses Pink Auto Glass" [level=2]
+  - paragraph: Over 5,000 satisfied customers trust us with their auto glass needs
+  - img
+  - heading "We Come to You" [level=3]
+  - paragraph: No need to drive with a damaged windshield. We provide mobile service at your home, office, or anywhere in Denver Metro.
+  - text: Available 7 Days a Week
+  - img
+  - heading "Fast & Professional" [level=3]
+  - paragraph: Most repairs completed in under 30 minutes. Replacements done in 1-2 hours using OEM quality glass and professional techniques.
+  - text: Same Day Service Available
+  - img
+  - heading "Lifetime Warranty" [level=3]
+  - paragraph: We stand behind our work with a lifetime warranty on all installations. Licensed, insured, and trusted by 200+ 5-star reviews.
+  - text: Fully Licensed & Insured 5,000+ Happy Customers 4.9★ Average Rating Same Day Service Available Lifetime Warranty
+  - heading "Ready to Get Your Windshield Fixed?" [level=2]
+  - paragraph: Join thousands of satisfied customers in Denver Metro
+  - link "📱 Book Online Now":
+    - /url: /book
+  - link "📞 Call (303) 555-PINK":
+    - /url: tel:+13035557465
+  - img
+  - heading "Call or Text" [level=3]
+  - link "(303) 555-PINK":
+    - /url: tel:+13035557465
+  - text: Available 7 days a week
+  - img
+  - heading "Service Area" [level=3]
+  - paragraph: Denver Metro Area
+  - text: Mobile service available
+  - img
+  - heading "Quick Response" [level=3]
+  - paragraph: Same Day Service
+  - text: Emergency repairs available
+- contentinfo:
+  - text: Pink Auto Glass
+  - paragraph: Professional mobile windshield repair and replacement throughout Denver Metro. We come to you with same-day service and lifetime warranty.
+  - img
+  - link "(303) 555-PINK":
+    - /url: tel:+13035557465
+  - img
+  - link "service@pinkautoglass.com":
+    - /url: mailto:service@pinkautoglass.com
+  - img
+  - text: Mobile Service Throughout Denver Metro Area
+  - heading "Services" [level=3]
+  - list:
+    - listitem:
+      - link "Windshield Replacement":
+        - /url: /services/windshield-replacement
+    - listitem:
+      - link "Rock Chip Repair":
+        - /url: /services/windshield-repair
+    - listitem:
+      - link "Mobile Service":
+        - /url: /services/mobile-service
+    - listitem:
+      - link "ADAS Calibration":
+        - /url: /services/adas-calibration
+    - listitem:
+      - link "Insurance Claims":
+        - /url: /services/insurance-claims
+  - heading "Service Area" [level=3]
+  - list:
+    - listitem:
+      - link "Denver":
+        - /url: /locations/denver-co
+    - listitem:
+      - link "Aurora":
+        - /url: /locations/aurora-co
+    - listitem:
+      - link "Lakewood":
+        - /url: /locations/lakewood-co
+    - listitem:
+      - link "Boulder":
+        - /url: /locations/boulder-co
+    - listitem:
+      - link "View All Locations →":
+        - /url: /locations
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+  - heading "Follow Us" [level=4]
+  - link "Follow us on Facebook":
+    - /url: https://www.facebook.com/PinkAutoGlassDenver
+    - img
+  - link "Follow us on Instagram":
+    - /url: https://www.instagram.com/pinkautoglassdenver
+    - img
+  - link "Follow us on LinkedIn":
+    - /url: https://www.linkedin.com/company/pink-auto-glass
+    - img
+  - paragraph: © 2024 Pink Auto Glass. All rights reserved.
+  - link "Privacy Policy":
+    - /url: /privacy
+  - link "Terms of Service":
+    - /url: /terms
+  - link "Sitemap":
+    - /url: /sitemap
+  - text: Licensed & Insured • Lifetime Warranty
+- alert
+```
