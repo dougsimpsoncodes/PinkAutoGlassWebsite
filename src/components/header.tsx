@@ -60,12 +60,12 @@ export default function Header() {
           {/* CTA Section (Right) */}
           <div className="flex items-center space-x-4">
             <a
-              href="tel:+17209817465"
+              href="tel:+17209187465"
               className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
               aria-label="Call Pink Auto Glass"
             >
               <Phone className="w-4 h-4" />
-              <span className="font-medium">(720) 981-7465</span>
+              <span className="font-medium">(720) 918-7465</span>
             </a>
           
           {/* Universal Menu Button */}
@@ -116,11 +116,11 @@ export default function Header() {
             ))}
             <li role="none" className="pt-4">
               <a
-                href="tel:+17209817465"
+                href="tel:+17209187465"
                 className="flex items-center space-x-3 py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors"
               >
                 <Phone className="w-5 h-5" />
-                <span>(720) 981-7465</span>
+                <span>(720) 918-7465</span>
               </a>
             </li>
           </ul>

@@ -119,10 +119,10 @@ export function SuccessConfirmation({ referenceNumber, email }: SuccessConfirmat
             <div className="mt-8 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-600 mb-2">Questions? Call us:</p>
               <a
-                href="tel:+17209817465"
+                href="tel:+17209187465"
                 className="text-lg font-semibold text-brand-pink hover:text-brand-navy transition-colors duration-200"
               >
-                (720) 981-7465
+                (720) 918-7465
               </a>
             </div>
           </div>

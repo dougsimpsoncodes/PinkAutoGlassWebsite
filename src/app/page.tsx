@@ -24,8 +24,8 @@ export default function Home() {
               <Link href="/book" className="btn-primary text-lg px-8 py-4 shadow-lg">
                 📅 Book Online - Get 10% Off
               </Link>
-              <a href="tel:+17209817465" className="btn-secondary text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-lg">
-                📞 Call (720) 981-7465
+              <a href="tel:+17209187465" className="btn-secondary text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-lg">
+                📞 Call (720) 918-7465
               </a>
             </div>
             
@@ -191,8 +191,8 @@ export default function Home() {
             <Link href="/book" className="bg-white text-pink-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
               📱 Book Online Now
             </Link>
-            <a href="tel:+17209817465" className="bg-pink-800 hover:bg-pink-900 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
-              📞 Call (720) 981-7465
+            <a href="tel:+17209187465" className="bg-pink-800 hover:bg-pink-900 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
+              📞 Call (720) 918-7465
             </a>
           </div>
           
@@ -201,8 +201,8 @@ export default function Home() {
             <div className="flex flex-col items-center">
               <Phone className="w-8 h-8 text-pink-300 mb-3" />
               <h3 className="text-lg font-semibold mb-2 text-white">Call or Text</h3>
-              <a href="tel:+17209817465" className="text-pink-200 hover:text-white transition-colors text-lg">
-                (720) 981-7465
+              <a href="tel:+17209187465" className="text-pink-200 hover:text-white transition-colors text-lg">
+                (720) 918-7465
               </a>
               <div className="text-sm mt-1">Available 7 days a week</div>
             </div>
