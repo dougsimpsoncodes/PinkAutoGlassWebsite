@@ -9,7 +9,7 @@ import { ReviewSubmit } from '@/components/book/review-submit';
 import { SuccessConfirmation } from '@/components/book/success-confirmation';
 
 // Types for form data
-export const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 3;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -243,27 +243,7 @@ export default function BookingPage() {
         referrer: document.referrer || 'direct'
       };
 
-      // Convert File objects to base64 for JSON submission
-      let filesData: any[] = [];
-      if (formData.photos && formData.photos.length > 0) {
-        filesData = await Promise.all(
-          formData.photos.map(async (file) => ({
-            data: await new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                // Extract base64 data (remove data:image/...;base64, prefix)
-                const result = reader.result as string;
-                const base64 = result.split(',')[1];
-                resolve(base64);
-              };
-              reader.readAsDataURL(file);
-            }),
-            name: file.name,
-            type: file.type,
-            size: file.size
-          }))
-        );
-      }
+      // Photos not included in MVP
 
       // Prepare submission data in camelCase format (matching API expectations)
       const submissionData: any = {
@@ -292,10 +272,7 @@ export default function BookingPage() {
         lastTouch: firstTouch
       };
 
-      // Add files if any
-      if (filesData.length > 0) {
-        submissionData.files = filesData;
-      }
+      // No files in MVP submission
 
       // Submit to API with photos
       const submitResponse = await fetch('/api/booking/submit', {
@@ -319,12 +296,10 @@ export default function BookingPage() {
       // Use real reference number from API response
       const leadId = responseData.id;
       const referenceNumber = responseData.referenceNumber || `REF-${leadId.slice(0, 8).toUpperCase()}`;
-      const uploadedPhotos = [];
-
       console.log('Booking submitted successfully:', {
         leadId,
         referenceNumber,
-        photosUploaded: uploadedPhotos?.length || 0
+        photosUploaded: 0
       });
 
       setReferenceNumber(referenceNumber);
@@ -334,19 +309,7 @@ export default function BookingPage() {
       sessionStorage.removeItem('booking_form_data');
       
       // Track conversion
-      if (typeof (globalThis as any).gtag !== 'undefined') {
-        (globalThis as any).gtag('event', 'booking_complete', {
-          'entry_point': formData.utmMedium || 'direct',
-          'utm_source': formData.utmSource || 'direct',
-          'utm_campaign': formData.utmCampaign || 'none',
-          'service_type': formData.serviceType,
-          'vehicle': `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`,
-          'mobile_service': formData.mobileService,
-          'photos_uploaded': uploadedPhotos?.length || 0,
-          'lead_id': leadId,
-          'value': 1
-        });
-      }
+      // No analytics events in MVP
 
     } catch (error) {
       console.error('Submission error:', error);

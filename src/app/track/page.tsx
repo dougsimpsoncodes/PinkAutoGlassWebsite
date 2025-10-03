@@ -1,9 +1,10 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function TrackPage() {
+function TrackContent() {
   const searchParams = useSearchParams();
   const referenceNumber = searchParams.get('ref');
 
@@ -44,10 +45,10 @@ export default function TrackPage() {
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-4">Questions? Call us:</p>
                   <a
-                    href="tel:+15551234567"
+                    href="tel:+17209817465"
                     className="text-lg font-semibold text-brand-pink hover:text-brand-navy transition-colors duration-200"
                   >
-                    (555) 123-4567
+                    (720) 981-7465
                   </a>
                 </div>
               </div>
@@ -71,5 +72,13 @@ export default function TrackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TrackPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TrackContent />
+    </Suspense>
   );
 }

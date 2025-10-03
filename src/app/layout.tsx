@@ -16,8 +16,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Pink Auto Glass - Professional Windshield Repair & Replacement in Denver",
-  description: "Expert auto glass repair and replacement services in Denver. Mobile service available. Fast, reliable windshield repair with lifetime warranty.",
+  title: "Pink Auto Glass - Professional Windshield Repair & Replacement in Colorado",
+  description: "Expert auto glass repair and replacement services in Colorado. Mobile service available. Fast, reliable windshield repair with lifetime warranty.",
 };
 
 export default function RootLayout({
