@@ -90,7 +90,7 @@ export default function Header() {
       <div
         id="mobile-menu"
         className={cn(
-          "fixed inset-0 top-16 bg-white z-40 transform transition-transform duration-300 ease-in-out",
+          "fixed inset-0 top-16 md:top-20 bg-white z-40 transform transition-transform duration-300 ease-in-out",
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
         )}
         aria-hidden={!isMobileMenuOpen}
@@ -242,9 +242,10 @@ export default function Header() {
       
       {/* Menu backdrop */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+        <div
+          className="fixed inset-0 top-16 md:top-20 bg-black bg-opacity-50 z-30"
           onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
         />
       )}
     </header>
