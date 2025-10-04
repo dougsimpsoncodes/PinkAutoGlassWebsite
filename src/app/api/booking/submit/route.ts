@@ -2,11 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 
-// Initialize Supabase client with anon key (no service role)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Initialize Supabase client lazily to avoid build-time errors
+let supabase: ReturnType<typeof createClient> | null = null;
+
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Supabase environment variables not configured");
+    }
+
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabase;
+}
 
 // Rate limiting store (in production, use Redis)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -195,8 +206,11 @@ export async function POST(req: NextRequest) {
     // Generate lead ID
     const leadId = uuidv4();
 
+    // Get Supabase client
+    const client = getSupabaseClient();
+
     // Insert lead using RPC
-    const { error: leadError } = await supabase.rpc("fn_insert_lead", {
+    const { error: leadError } = await client.rpc("fn_insert_lead", {
       p_id: leadId,
       p_payload: payload
     });
@@ -210,7 +224,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get reference number using RPC
-    const { data: referenceNumber, error: refError } = await supabase.rpc(
+    const { data: referenceNumber, error: refError } = await client.rpc(
       "fn_get_reference_number",
       { p_id: leadId }
     );
@@ -228,7 +242,7 @@ export async function POST(req: NextRequest) {
       const filePath = `uploads/leads/${leadId}/${safeName}`;
 
       // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await client.storage
         .from("uploads")
         .upload(filePath, file.data, {
           contentType: file.type,
@@ -243,7 +257,7 @@ export async function POST(req: NextRequest) {
 
       // Register in media table if RPC exists
       try {
-        await supabase.rpc("fn_add_media", {
+        await client.rpc("fn_add_media", {
           p_lead_id: leadId,
           p_path: filePath,
           p_mime_type: file.type,

@@ -47,7 +47,7 @@ export default function Header() {
             >
               <Image
                 src="/pink-logo-horizontal.png"
-                alt="Pink Auto Glass"
+                alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
                 width={972}
                 height={292}
                 className="w-auto max-w-[972px]"
@@ -97,6 +97,7 @@ export default function Header() {
       >
         <nav className="h-full px-4 py-6 overflow-y-auto" role="navigation" aria-label="Main navigation menu">
           <ul className="space-y-4" role="menu">
+            {/* Primary CTA */}
             <li role="none">
               <Link
                 href="/book"
@@ -107,20 +108,129 @@ export default function Header() {
                 📅 Book Appointment
               </Link>
             </li>
+
+            {/* Services Section */}
+            <li role="none" className="pt-2">
+              <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Services</div>
+              <ul className="space-y-1">
+                <li>
+                  <Link
+                    href="/services/windshield-replacement"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Windshield Replacement
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/services/windshield-repair"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Rock Chip Repair
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/services/mobile-service"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Mobile Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/services/adas-calibration"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    ADAS Calibration
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/services/insurance-claims"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Insurance Claims
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Locations Section */}
+            <li role="none" className="pt-2 border-t border-gray-100">
+              <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-2">Locations</div>
+              <ul className="space-y-1">
+                <li>
+                  <Link
+                    href="/locations/denver-co"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Denver
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/locations/aurora-co"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Aurora
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/locations/lakewood-co"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Lakewood
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/locations/boulder-co"
+                    className="block py-2 text-base text-gray-900 hover:text-pink-500 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Boulder
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Other Pages */}
+            <li role="none" className="pt-2 border-t border-gray-100">
+              <Link
+                href="/blog"
+                className="block py-3 text-base font-medium text-gray-900 hover:text-pink-500 transition-colors"
+                role="menuitem"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+            </li>
             <li role="none">
               <Link
                 href="/track"
-                className="block py-4 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100"
+                className="block py-3 text-base font-medium text-gray-900 hover:text-pink-500 transition-colors"
                 role="menuitem"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Track Order
               </Link>
             </li>
-            <li role="none" className="pt-4">
+
+            {/* Contact */}
+            <li role="none" className="pt-4 border-t-2 border-gray-200">
               <a
                 href="tel:+17209187465"
-                className="flex items-center space-x-3 py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors"
+                className="flex items-center space-x-3 py-3 text-lg font-bold text-pink-600 hover:text-pink-700 transition-colors"
               >
                 <Phone className="w-5 h-5" />
                 <span>(720) 918-7465</span>
