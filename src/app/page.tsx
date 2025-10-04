@@ -6,12 +6,13 @@ export default function Home() {
   return (
     <>
       {/* Compact Hero Section - Lead Generation Focused */}
-      <section className="bg-gradient-hero py-16 md:py-20 text-white">
+      <section className="bg-gradient-hero py-16 md:py-20 text-white pt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-5xl font-bold mb-4">
-              Colorado's #1 Mobile Auto Glass
-              <span className="block text-pink-300">Repair & Replacement</span>
+              Colorado's #1
+              <span className="block">Mobile Auto Glass</span>
+              <span className="block">Repair & Replacement</span>
             </h1>
             
             <p className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">

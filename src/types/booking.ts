@@ -30,9 +30,6 @@ export interface BookingFormData {
   smsConsent: boolean;
   privacyAcknowledgment: boolean;
   
-  // Photos
-  photos: File[];
-  
   // Metadata
   referralCode?: string;
   utmSource?: string;

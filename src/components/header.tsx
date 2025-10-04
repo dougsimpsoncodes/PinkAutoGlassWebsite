@@ -87,8 +87,8 @@ export default function Header() {
       </div>
       
       {/* Universal Menu Overlay */}
-      <div 
-        id="mobile-menu" 
+      <div
+        id="mobile-menu"
         className={cn(
           "fixed inset-0 top-16 bg-white z-40 transform transition-transform duration-300 ease-in-out",
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
@@ -97,23 +97,26 @@ export default function Header() {
       >
         <nav className="h-full px-4 py-6 overflow-y-auto" role="navigation" aria-label="Main navigation menu">
           <ul className="space-y-4" role="menu">
-            {[
-              { href: "/services", label: "Services" },
-              { href: "/locations", label: "Locations" },
-              { href: "/vehicles", label: "Vehicles" },
-              { href: "/about", label: "About" },
-            ].map((item) => (
-              <li key={item.href} role="none">
-                <Link
-                  href={item.href}
-                  className="block py-3 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100"
-                  role="menuitem"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+            <li role="none">
+              <Link
+                href="/book"
+                className="block py-4 text-xl font-bold text-pink-600 hover:text-pink-700 transition-colors border-b-2 border-pink-200"
+                role="menuitem"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                📅 Book Appointment
+              </Link>
+            </li>
+            <li role="none">
+              <Link
+                href="/track"
+                className="block py-4 text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors border-b border-gray-100"
+                role="menuitem"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Track Order
+              </Link>
+            </li>
             <li role="none" className="pt-4">
               <a
                 href="tel:+17209187465"

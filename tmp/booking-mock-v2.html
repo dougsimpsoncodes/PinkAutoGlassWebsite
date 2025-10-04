@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Mock V2 - Card Layout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-2xl mx-auto p-4 min-h-screen">
+    <div class="text-center mb-6 pt-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Get Your FREE Quote</h1>
+      <p class="text-gray-600">Takes less than 60 seconds</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h2 class="text-lg font-bold mb-4 text-pink-600">Version 2: Card/Section Layout</h2>
+
+      <form class="space-y-6">
+        <!-- Service Selection Card -->
+        <div class="bg-pink-50 p-4 rounded-lg border-2 border-pink-200">
+          <h3 class="font-bold text-gray-900 mb-3">What do you need?</h3>
+          <select class="w-full p-4 border-2 border-gray-300 rounded-lg text-base font-medium">
+            <option>Select Service</option>
+            <option>🔧 Windshield Repair ($89+)</option>
+            <option>🚗 Windshield Replacement ($299+)</option>
+          </select>
+        </div>
+
+        <!-- Vehicle Card -->
+        <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+          <h3 class="font-bold text-gray-900 mb-3">Your Vehicle</h3>
+          <div class="space-y-3">
+            <select class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+              <option>Year (2024)</option>
+            </select>
+            <select class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+              <option>Make (Toyota)</option>
+            </select>
+            <select class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+              <option>Model (Camry)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Contact Card -->
+        <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+          <h3 class="font-bold text-gray-900 mb-3">Contact Info</h3>
+          <div class="space-y-3">
+            <input type="text" placeholder="First Name" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+            <input type="text" placeholder="Last Name" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+            <input type="tel" placeholder="Phone: (720) 555-1234" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+            <input type="email" placeholder="Email" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+          </div>
+        </div>
+
+        <!-- Location Card -->
+        <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+          <h3 class="font-bold text-gray-900 mb-3">Service Location</h3>
+          <div class="space-y-3">
+            <input type="text" placeholder="Street Address" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+            <div class="grid grid-cols-2 gap-3">
+              <input type="text" placeholder="City" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+              <input type="text" placeholder="ZIP" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+            </div>
+            <input type="date" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base">
+          </div>
+        </div>
+
+        <!-- Consent -->
+        <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+          <label class="flex items-start gap-3">
+            <input type="checkbox" class="mt-1 w-6 h-6 text-pink-600">
+            <span class="text-sm text-gray-700">I consent to receive SMS updates</span>
+          </label>
+          <label class="flex items-start gap-3">
+            <input type="checkbox" class="mt-1 w-6 h-6 text-pink-600">
+            <span class="text-sm text-gray-700">I agree to privacy policy</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-5 px-6 rounded-lg text-xl shadow-lg">
+          Get My FREE Quote →
+        </button>
+      </form>
+
+      <p class="text-xs text-gray-500 text-center mt-4">
+        🔒 Secure & encrypted
+      </p>
+    </div>
+  </div>
+</body>
+</html>
