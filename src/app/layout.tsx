@@ -3,6 +3,9 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import StickyCallBar from "@/components/StickyCallBar";
+import StickyCallbackBar from "@/components/StickyCallbackBar";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,8 +19,29 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Pink Auto Glass - Professional Windshield Repair & Replacement in Colorado",
-  description: "Expert auto glass repair and replacement services in Colorado. Mobile service available. Fast, reliable windshield repair with lifetime warranty.",
+  metadataBase: new URL('https://pinkautoglass.com'),
+  title: "Mobile Windshield Replacement Denver | Pink Auto Glass | Same Day Service",
+  description: "Denver's #1 mobile auto glass service. We come to you! Windshield repair from $89, replacement from $299. Insurance handled. Same-day service. Call (720) 918-7465",
+  keywords: "windshield replacement Denver, mobile auto glass Denver, windshield repair Denver, auto glass repair Denver, same day windshield replacement, insurance windshield replacement",
+  alternates: {
+    canonical: 'https://pinkautoglass.com',
+  },
+  openGraph: {
+    title: "Mobile Windshield Replacement Denver | Pink Auto Glass",
+    description: "Denver's #1 mobile auto glass service. Same-day repair & replacement. We handle your insurance.",
+    url: "https://pinkautoglass.com",
+    siteName: "Pink Auto Glass",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mobile Windshield Replacement Denver | Pink Auto Glass",
+    description: "Denver's #1 mobile auto glass service. Same-day repair & replacement.",
+  },
+  verification: {
+    google: 'your-google-verification-code-here',
+  },
 };
 
 export default function RootLayout({
@@ -28,8 +52,36 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Favicons */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+
+        {/* Google Analytics */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body
         className={`${inter.variable} ${poppins.variable} antialiased`}
@@ -39,6 +91,9 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <StickyCallBar />
+        <StickyCallbackBar />
+        <AnalyticsTracker />
       </body>
     </html>
   );
