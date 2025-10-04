@@ -19,7 +19,6 @@ export default function BookingPage() {
     vehicleYear: '',
     vehicleMake: '',
     vehicleModel: '',
-    photos: [],
     firstName: '',
     lastName: '',
     phone: '',
@@ -376,23 +375,17 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-light">
-      <div className="container-padding pt-24 pb-16">
+      <div className="container-padding pt-20 pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-brand-navy mb-4">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-brand-navy">
               Get Your <span className="text-pink-600">FREE Quote</span>
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Get an instant quote for your windshield repair or replacement. Takes less than 3 minutes.
-            </p>
           </div>
 
-          {/* Step Tracker */}
-          <StepTracker currentStep={currentStep} totalSteps={TOTAL_STEPS} />
-
           {/* Form Container */}
-          <div className="bg-white rounded-xl shadow-brand p-6 sm:p-8 lg:p-10 mt-8">
+          <div className="mt-4">
             {renderCurrentStep()}
           </div>
 

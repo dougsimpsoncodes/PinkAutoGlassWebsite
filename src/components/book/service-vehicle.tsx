@@ -56,29 +56,26 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
   }, [formData.vehicleMake, formData.vehicleYear]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Service Selection Section */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">What service do you need?</h2>
-        
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-brand p-6 sm:p-8 lg:p-10">
+        <div className="grid md:grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => updateFormData({ serviceType: 'repair' })}
-            className={`p-6 rounded-xl border-2 transition-all text-left ${
+            className={`p-4 rounded-lg border-2 transition-all text-left ${
               formData.serviceType === 'repair'
                 ? 'border-pink-500 bg-pink-50'
                 : 'border-gray-200 hover:border-gray-300 bg-white'
             }`}
           >
-            <div className="flex items-start gap-4">
-              <Wrench className={`w-8 h-8 flex-shrink-0 ${
+            <div className="flex items-center gap-3">
+              <Wrench className={`w-6 h-6 flex-shrink-0 ${
                 formData.serviceType === 'repair' ? 'text-pink-500' : 'text-gray-400'
               }`} />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Windshield Repair</h3>
-                <p className="text-sm text-gray-600 mb-2">Chips, cracks under 6 inches</p>
-                <p className="text-lg font-bold text-pink-600">Starting at $89</p>
+                <h3 className="text-base font-semibold text-gray-900">Repair</h3>
+                <p className="text-sm font-medium text-pink-600">From $89</p>
               </div>
             </div>
           </button>
@@ -86,20 +83,19 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
           <button
             type="button"
             onClick={() => updateFormData({ serviceType: 'replacement' })}
-            className={`p-6 rounded-xl border-2 transition-all text-left ${
+            className={`p-4 rounded-lg border-2 transition-all text-left ${
               formData.serviceType === 'replacement'
                 ? 'border-pink-500 bg-pink-50'
                 : 'border-gray-200 hover:border-gray-300 bg-white'
             }`}
           >
-            <div className="flex items-start gap-4">
-              <Car className={`w-8 h-8 flex-shrink-0 ${
+            <div className="flex items-center gap-3">
+              <Car className={`w-6 h-6 flex-shrink-0 ${
                 formData.serviceType === 'replacement' ? 'text-pink-500' : 'text-gray-400'
               }`} />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Windshield Replacement</h3>
-                <p className="text-sm text-gray-600 mb-2">Full windshield replacement</p>
-                <p className="text-lg font-bold text-pink-600">Starting at $299</p>
+                <h3 className="text-base font-semibold text-gray-900">Replacement</h3>
+                <p className="text-sm font-medium text-pink-600">From $299</p>
               </div>
             </div>
           </button>
@@ -111,15 +107,10 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
       </div>
 
       {/* Vehicle Information Section */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Tell us about your vehicle</h2>
-        
+      <div className="bg-white rounded-xl shadow-brand p-6 sm:p-8 lg:p-10">
         <div className="grid md:grid-cols-3 gap-4">
           {/* Year Selection */}
           <div>
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">
-              Year *
-            </label>
             <select
               id="year"
               value={formData.vehicleYear}
@@ -129,7 +120,7 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               }`}
               style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
-              <option value="">Select Year</option>
+              <option value="">Year</option>
               {vehicleDatabase.map(v => (
                 <option key={v.year} value={v.year}>{v.year}</option>
               ))}
@@ -141,9 +132,6 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
 
           {/* Make Selection */}
           <div>
-            <label htmlFor="make" className="block text-sm font-medium text-gray-700 mb-2">
-              Make *
-            </label>
             <select
               id="make"
               value={formData.vehicleMake}
@@ -154,7 +142,7 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               } ${!formData.vehicleYear ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
-              <option value="">Select Make</option>
+              <option value="">Make</option>
               {availableMakes.map(make => (
                 <option key={make} value={make}>{make}</option>
               ))}
@@ -166,9 +154,6 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
 
           {/* Model Selection */}
           <div>
-            <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-2">
-              Model *
-            </label>
             <select
               id="model"
               value={formData.vehicleModel}
@@ -179,7 +164,7 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               } ${!formData.vehicleMake ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
-              <option value="">Select Model</option>
+              <option value="">Model</option>
               {availableModels.map(model => (
                 <option key={model} value={model}>{model}</option>
               ))}
