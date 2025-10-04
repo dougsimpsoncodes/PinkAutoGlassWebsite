@@ -30,7 +30,7 @@ export default function CTAButtons({
     trackBookingClick(source);
   };
 
-  const buttonClasses = layout === 'vertical' ? 'flex flex-col gap-3' : 'flex flex-col sm:flex-row gap-4 justify-center';
+  const buttonClasses = layout === 'vertical' ? 'flex flex-col gap-3 items-center' : 'flex flex-col sm:flex-row gap-4 justify-center items-center';
 
   return (
     <div className={buttonClasses}>
