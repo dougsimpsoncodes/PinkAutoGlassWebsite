@@ -15,11 +15,11 @@ export function middleware(request: NextRequest) {
     // Content Security Policy - Prevent XSS attacks
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' https://fonts.googleapis.com https://*.supabase.co",
+      "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io https://www.google-analytics.com",
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",
