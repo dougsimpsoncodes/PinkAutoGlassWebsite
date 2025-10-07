@@ -175,7 +175,7 @@ export default function AboutPage() {
               <p className="text-xl mb-8 text-pink-50">
                 Get a free quote or book your appointment today
               </p>
-              <CTAButtons variant="secondary" />
+              <CTAButtons source="about-page" />
             </div>
           </div>
         </div>
