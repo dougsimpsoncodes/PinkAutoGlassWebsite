@@ -157,6 +157,34 @@ export function ContactInformation({
         {/* Best time to call removed - auto glass work is typically urgent */}
       </div>
 
+      {/* SMS Consent Checkbox */}
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="smsConsent"
+            checked={formData.smsConsent || false}
+            onChange={(e) => updateFormData({ smsConsent: e.target.checked })}
+            className="mt-1 w-5 h-5 text-brand-pink border-gray-300 rounded focus:ring-brand-pink focus:ring-2"
+          />
+          <label htmlFor="smsConsent" className="text-sm text-gray-700 cursor-pointer">
+            By checking this box, you agree to receive SMS messages from Pink Auto Glass related to your service appointment.
+            You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance.
+            Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
+            <a href="/privacy" className="text-brand-pink hover:underline" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </a>{' '}
+            page and{' '}
+            <a href="/terms" className="text-brand-pink hover:underline" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </a>.
+          </label>
+        </div>
+        <p className="text-xs text-gray-600 mt-2 ml-8">
+          <em>Optional - Consent is not required to use our services.</em>
+        </p>
+      </div>
+
       {/* Privacy Notice */}
       <div className="bg-gray-50 rounded-lg p-4">
         <div className="flex items-start space-x-3">
@@ -166,7 +194,7 @@ export function ContactInformation({
               Your privacy matters
             </h4>
             <p className="text-sm text-gray-600">
-              We only use your contact information for service delivery and appointment coordination. 
+              We only use your contact information for service delivery and appointment coordination.
               We never sell or share your personal data with third parties.
             </p>
           </div>
