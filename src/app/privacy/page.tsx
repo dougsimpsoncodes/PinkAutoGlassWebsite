@@ -173,9 +173,19 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
               </ul>
 
-              <p className="text-gray-700 mb-6">
+              <p className="text-gray-700 mb-4">
                 We do not sell your personal information to third parties for their marketing purposes.
               </p>
+
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                <p className="text-gray-800 font-semibold">
+                  Mobile Opt-in and SMS Consent:
+                </p>
+                <p className="text-gray-800 mt-2">
+                  Mobile opt-in, SMS consent, and phone numbers collected for SMS communication purposes will not be
+                  shared with any third party or affiliates for marketing purposes.
+                </p>
+              </div>
 
               {/* Cookies and Tracking */}
               <h2 className="text-2xl font-bold text-navy-900 mt-8 mb-4">5. Cookies and Tracking Technologies</h2>
