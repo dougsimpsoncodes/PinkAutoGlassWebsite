@@ -115,6 +115,7 @@ export default function Footer() {
                   { href: "/contact", label: "Contact" },
                   { href: "/blog", label: "Blog" },
                   { href: "/careers", label: "Careers" },
+                  { href: "/privacy", label: "Privacy Policy" },
                 ].map((item) => (
                   <li key={item.href}>
                     <Link 
