@@ -64,10 +64,10 @@ export default function AboutPage() {
                   {/* Placeholder for breast cancer awareness logo */}
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-lg shadow-lg flex items-center justify-center border-2 border-pink-400">
                     <Image
-                      src="/breast-cancer-awareness-logo.png"
+                      src="/breast-cancer-awareness-logo.svg"
                       alt="Breast Cancer Awareness Ribbon"
                       width={160}
-                      height={160}
+                      height={240}
                       className="object-contain p-4"
                       priority
                     />
