@@ -60,10 +60,6 @@ export default function MobileServicePage() {
         <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <MapPin className="w-8 h-8 mr-2" />
-                <span className="text-xl">We Come To You</span>
-              </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Mobile Windshield Repair & Replacement in Denver
               </h1>
