@@ -241,18 +241,23 @@ export function ContactLocation({ formData, updateFormData, errors, onNext, onPr
             {/* State */}
             <div>
               <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
-                State
+                State *
               </label>
               <select
                 id="state"
                 value={formData.state || 'CO'}
                 onChange={(e) => updateFormData({ state: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 ${
+                  errors.state ? 'border-red-500' : 'border-gray-300'
+                }`}
               >
                 {US_STATES.map(state => (
                   <option key={state} value={state}>{state}</option>
                 ))}
               </select>
+              {errors.state && (
+                <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+              )}
             </div>
 
             {/* ZIP */}
@@ -455,7 +460,7 @@ export function ContactLocation({ formData, updateFormData, errors, onNext, onPr
           <ChevronLeft className="w-5 h-5" />
           Previous
         </button>
-        
+
         <button
           type="button"
           onClick={onNext}

@@ -1,10 +1,153 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, Clock, Star, Shield, Users } from "lucide-react";
+import CTAButtons from "@/components/CTAButtons";
+import QuoteForm from "@/components/QuoteForm";
+import TrustSignals from "@/components/TrustSignals";
 
 export default function Home() {
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "AutoRepair",
+    "name": "Pink Auto Glass",
+    "image": "https://pinkautoglass.com/pink-logo-horizontal.png",
+    "@id": "https://pinkautoglass.com",
+    "url": "https://pinkautoglass.com",
+    "telephone": "+17209187465",
+    "priceRange": "$89-$500",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Denver",
+      "addressRegion": "CO",
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 39.7392,
+      "longitude": -104.9903
+    },
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Denver"
+      },
+      {
+        "@type": "City",
+        "name": "Aurora"
+      },
+      {
+        "@type": "City",
+        "name": "Lakewood"
+      },
+      {
+        "@type": "City",
+        "name": "Highlands Ranch"
+      },
+      {
+        "@type": "City",
+        "name": "Boulder"
+      }
+    ],
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "07:00",
+      "closes": "19:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/pinkautoglass",
+      "https://www.instagram.com/pinkautoglass"
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Auto Glass Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Windshield Repair",
+            "description": "Professional windshield chip and crack repair"
+          },
+          "price": "89",
+          "priceCurrency": "USD"
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Windshield Replacement",
+            "description": "Full windshield replacement with OEM quality glass"
+          },
+          "price": "299",
+          "priceCurrency": "USD"
+        }
+      ]
+    }
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do you come to my location?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! We're 100% mobile. We come to your home, office, or anywhere in the Denver metro area."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does insurance cover windshield replacement?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most comprehensive insurance policies in Colorado cover windshield replacement with $0 deductible. We handle all insurance paperwork for you."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does windshield replacement take?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most windshield repairs take under 30 minutes. Full replacements typically take 1-2 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you offer same-day service?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! We offer same-day mobile windshield service throughout the Denver metro area, 7 days a week."
+        }
+      }
+    ]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Compact Hero Section - Lead Generation Focused */}
       <section className="bg-gradient-hero py-16 md:py-20 text-white pt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,13 +164,8 @@ export default function Home() {
             </p>
             
             {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Link href="/book" className="btn-primary text-lg px-8 py-4 shadow-lg">
-                📅 Book Online - Get 10% Off
-              </Link>
-              <a href="tel:+17209187465" className="btn-secondary text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 shadow-lg">
-                📞 Call (720) 918-7465
-              </a>
+            <div className="mb-8">
+              <CTAButtons source="hero" />
             </div>
             
             {/* Quick Benefits */}
@@ -49,69 +187,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quick Quote Section - Above the Fold */}
+      {/* Quote Form & Trust Signals Section */}
       <section className="py-12 bg-white border-t-4 border-pink-500">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-2">Get Your FREE Quote in 60 Seconds</h2>
-              <p className="text-gray-600">No commitment • Instant estimate • Mobile service available</p>
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+            {/* Quote Form */}
+            <div>
+              <QuoteForm />
             </div>
-            
-            <div className="bg-gradient-to-r from-gray-50 to-pink-50 p-8 rounded-xl shadow-lg">
-              <form action="/book" method="GET" className="grid md:grid-cols-3 gap-4" role="form" aria-label="Quick quote form">
-                
-                {/* Service Type - Most Important First */}
-                <div>
-                  <label htmlFor="service" className="block text-sm font-semibold text-gray-700 mb-2">
-                    What do you need? *
-                  </label>
-                  <select id="service" name="serviceType" required className="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base">
-                    <option value="">Select Service</option>
-                    <option value="repair">🔧 Windshield Repair ($89+)</option>
-                    <option value="replacement">🚗 Windshield Replacement ($299+)</option>
-                  </select>
-                </div>
-                
-                {/* Phone - For Quick Response */}
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Your Phone Number *
-                  </label>
-                  <input 
-                    type="tel" 
-                    id="phone" 
-                    name="phone" 
-                    required 
-                    placeholder="(303) 555-1234"
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
-                  />
-                </div>
-                
-                {/* CTA Button */}
-                <div className="flex items-end">
-                  <button type="submit" className="w-full btn-primary text-lg py-3 px-6 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
-                    Get FREE Quote →
-                  </button>
-                </div>
-                
-              </form>
-              
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap justify-center gap-6 mt-6 pt-6 border-t border-gray-200 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  Licensed & Insured
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  4.9/5 Rating (200+ Reviews)
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  Same Day Service
-                </div>
-              </div>
+
+            {/* Trust Signals */}
+            <div>
+              <TrustSignals />
             </div>
           </div>
         </div>

@@ -278,6 +278,7 @@ export function ReviewSubmit({
         </button>
         
         <button
+          type="button"
           onClick={onSubmit}
           disabled={!isValidToSubmit || isLoading}
           className={cn(

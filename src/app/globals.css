@@ -220,6 +220,20 @@ input[type="date"]:invalid {
   .mobile-menu-exit-active {
     @apply transform translate-x-full transition-transform duration-300 ease-in-out;
   }
+
+  /* Sticky Call Bar Animation */
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
 }
 
 /* Utility Layer - Custom Utilities */

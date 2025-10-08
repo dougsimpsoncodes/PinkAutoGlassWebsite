@@ -1,0 +1,81 @@
+#!/bin/bash
+# Git pre-push hook to verify brand URLs and schema before pushing
+#
+# To install this hook, run:
+#   cp .git-hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+#
+# Or use Git hooks path configuration:
+#   git config core.hooksPath .git-hooks
+
+set -e
+
+echo "🔍 Running pre-push verification checks..."
+echo ""
+
+# Check if we have any commits to push
+if git rev-parse @{u} > /dev/null 2>&1; then
+    COMMITS=$(git log @{u}.. --oneline)
+    if [ -z "$COMMITS" ]; then
+        echo "No commits to push, skipping verification."
+        exit 0
+    fi
+fi
+
+# Build the project
+echo "📦 Building project..."
+if ! npm run build > /dev/null 2>&1; then
+    echo "❌ Build failed! Fix errors before pushing."
+    exit 1
+fi
+echo "✅ Build successful"
+echo ""
+
+# Start the server in background
+echo "🚀 Starting server..."
+npm run start > /dev/null 2>&1 &
+SERVER_PID=$!
+sleep 5
+
+# Verify server is running
+if ! curl -s http://localhost:3000 > /dev/null 2>&1; then
+    echo "❌ Server failed to start"
+    kill $SERVER_PID 2>/dev/null || true
+    exit 1
+fi
+
+# Run brand URL verification
+echo "🔗 Verifying brand URLs..."
+if ./scripts/verify-brand-urls.sh > /tmp/verify-brands.log 2>&1; then
+    echo "✅ Brand URLs verified"
+else
+    echo "❌ Brand URL verification failed!"
+    echo ""
+    echo "Output:"
+    cat /tmp/verify-brands.log
+    kill $SERVER_PID 2>/dev/null || true
+    exit 1
+fi
+
+# Run schema validation
+echo "📋 Validating schema..."
+if node scripts/validate-schema.js > /tmp/verify-schema.log 2>&1; then
+    echo "✅ Schema validation passed"
+else
+    echo "❌ Schema validation failed!"
+    echo ""
+    echo "Output:"
+    cat /tmp/verify-schema.log
+    kill $SERVER_PID 2>/dev/null || true
+    exit 1
+fi
+
+# Cleanup
+echo ""
+echo "🧹 Cleaning up..."
+kill $SERVER_PID 2>/dev/null || true
+rm -f /tmp/verify-brands.log /tmp/verify-schema.log
+
+echo ""
+echo "✅ All pre-push checks passed! Pushing..."
+exit 0

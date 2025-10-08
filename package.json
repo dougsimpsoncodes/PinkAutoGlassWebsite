@@ -9,7 +9,10 @@
     "lint": "next lint",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "generate-brand": "node assets/scripts/generate-brand-images.mjs"
+    "generate-brand": "node assets/scripts/generate-brand-images.mjs",
+    "verify:brands": "./scripts/verify-brand-urls.sh",
+    "verify:schema": "node scripts/validate-schema.js",
+    "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "1.1.2",

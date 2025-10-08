@@ -1,0 +1,142 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Skip to main content":
+    - /url: "#main-content"
+  - navigation "Main navigation":
+    - link "Pink Auto Glass - Go to homepage":
+      - /url: /
+      - img "Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
+    - link "Call Pink Auto Glass":
+      - /url: tel:+17209187465
+      - img
+      - text: (720) 918-7465
+  - link "Services":
+    - /url: /services
+  - link "Locations":
+    - /url: /locations
+  - link "Vehicles":
+    - /url: /vehicles
+  - link "Get Free Quote":
+    - /url: /book
+- main:
+  - img
+  - heading "Request Received!" [level=1]
+  - paragraph: We'll contact you within 15 minutes to confirm your appointment
+  - paragraph: Your Reference Number
+  - paragraph: ABC123
+  - paragraph: Save this number for your records
+  - img
+  - 'heading "Status: Request Pending" [level=2]'
+  - paragraph:
+    - text: Your request has been received and our team is reviewing it now. We'll call you within
+    - strong: 15 minutes
+    - text: to confirm your appointment details and answer any questions.
+  - heading "What Happens Next:" [level=3]
+  - text: ✓ 1. Request Received Your quote request is in our system 2 2. We'll Call You (within 15 min) Confirm details, provide quote, answer questions 3 3. Schedule Appointment Pick a time that works for you 4 4. Service Completed We come to you and fix your windshield!
+  - img
+  - 'heading "Coming Soon: Real-Time Tracking" [level=3]'
+  - paragraph: We're working on a real-time tracking system that will let you see your technician's location and ETA. For now, we'll keep you updated via phone and text.
+  - heading "Need to Talk to Us Now?" [level=2]
+  - link "Call (720) 918-7465":
+    - /url: tel:+17209187465
+    - img
+    - text: Call (720) 918-7465
+  - link "Text Us":
+    - /url: sms:+17209187465
+    - img
+    - text: Text Us
+  - paragraph:
+    - text: "Reference your number:"
+    - strong: ABC123
+  - link "← Back to Home":
+    - /url: /
+- contentinfo:
+  - text: Pink Auto Glass
+  - paragraph: Professional mobile windshield repair and replacement throughout Colorado. We come to you with same-day service and lifetime warranty.
+  - img
+  - link "(720) 918-7465":
+    - /url: tel:+17209187465
+  - img
+  - link "service@pinkautoglass.com":
+    - /url: mailto:service@pinkautoglass.com
+  - img
+  - text: Mobile Service Throughout Colorado
+  - heading "Services" [level=3]
+  - list:
+    - listitem:
+      - link "Windshield Replacement":
+        - /url: /services/windshield-replacement
+    - listitem:
+      - link "Rock Chip Repair":
+        - /url: /services/windshield-repair
+    - listitem:
+      - link "Mobile Service":
+        - /url: /services/mobile-service
+    - listitem:
+      - link "ADAS Calibration":
+        - /url: /services/adas-calibration
+    - listitem:
+      - link "Insurance Claims":
+        - /url: /services/insurance-claims
+    - listitem:
+      - link "View All Services →":
+        - /url: /services
+  - heading "Service Area" [level=3]
+  - list:
+    - listitem:
+      - link "Denver":
+        - /url: /locations/denver-co
+    - listitem:
+      - link "Aurora":
+        - /url: /locations/aurora-co
+    - listitem:
+      - link "Lakewood":
+        - /url: /locations/lakewood-co
+    - listitem:
+      - link "Boulder":
+        - /url: /locations/boulder-co
+    - listitem:
+      - link "View All Locations →":
+        - /url: /locations
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+    - listitem:
+      - link "Find Your Vehicle":
+        - /url: /vehicles
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+  - heading "Follow Us" [level=4]
+  - link "Follow us on Facebook":
+    - /url: https://www.facebook.com/PinkAutoGlassDenver
+    - img
+  - link "Follow us on Instagram":
+    - /url: https://www.instagram.com/pinkautoglassdenver
+    - img
+  - link "Follow us on LinkedIn":
+    - /url: https://www.linkedin.com/company/pink-auto-glass
+    - img
+  - paragraph: © 2024 Pink Auto Glass. All rights reserved.
+  - link "Privacy Policy":
+    - /url: /privacy
+  - link "Terms of Service":
+    - /url: /terms
+  - link "Sitemap":
+    - /url: /sitemap
+  - text: Licensed & Insured • Lifetime Warranty
+- alert
+```

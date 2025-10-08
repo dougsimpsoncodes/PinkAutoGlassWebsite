@@ -2,6 +2,7 @@
 
 import type { BookingFormData } from "@/types/booking";
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { StepTracker } from '@/components/book/step-tracker';
 import { ServiceVehicle } from '@/components/book/service-vehicle';
 import { ContactLocation } from '@/components/book/contact-location';
@@ -25,7 +26,7 @@ export default function BookingPage() {
     email: '',
     streetAddress: '',
     city: '',
-    state: '',
+    state: 'CO', // Default to Colorado
     zipCode: '',
     preferredDate: '',
     smsConsent: false,
@@ -134,9 +135,6 @@ export default function BookingPage() {
         if (!formData.serviceType) {
           newErrors.serviceType = 'Please select a service to continue';
         }
-        break;
-      
-      case 2:
         if (!formData.vehicleYear) {
           newErrors.vehicleYear = 'Please select your vehicle year';
         }
@@ -147,26 +145,26 @@ export default function BookingPage() {
           newErrors.vehicleModel = 'Please select your vehicle model';
         }
         break;
-      
-      case 3:
+
+      case 2:
         if (!formData.firstName || formData.firstName.length < 2) {
           newErrors.firstName = 'Please enter your first name';
         }
         if (!formData.lastName || formData.lastName.length < 2) {
           newErrors.lastName = 'Please enter your last name';
         }
-        if (!formData.phone || !/^\(\d{3}\) \d{3}-\d{4}$/.test(formData.phone)) {
-          newErrors.phone = 'Please enter a valid phone number';
+        if (!formData.phone) {
+          newErrors.phone = 'Please enter a phone number';
+        } else {
+          const phoneDigits = formData.phone.replace(/\D/g, '');
+          if (phoneDigits.length !== 10) {
+            newErrors.phone = 'Please enter a valid 10-digit phone number';
+          }
         }
         if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
           newErrors.email = 'Please enter a valid email address';
         }
-        break;
-      
-      case 4:
-        if (!formData.streetAddress) {
-          newErrors.streetAddress = 'Please enter a street address';
-        }
+        // streetAddress is optional
         if (!formData.city) {
           newErrors.city = 'Please enter a city';
         }
@@ -176,12 +174,10 @@ export default function BookingPage() {
         if (!formData.zipCode || !/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
           newErrors.zipCode = 'Please enter a valid ZIP code';
         }
-        if (!formData.preferredDate) {
-          newErrors.preferredDate = 'Please select a date';
-        }
+        // preferredDate is optional
         break;
-      
-      case 5:
+
+      case 3:
         if (!formData.smsConsent) {
           newErrors.smsConsent = 'SMS consent required to continue';
         }
@@ -201,6 +197,10 @@ export default function BookingPage() {
   const goToNextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Scroll to first error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -209,7 +209,9 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(currentStep)) {
+      return;
+    }
 
     setIsLoading(true);
 
@@ -226,8 +228,16 @@ export default function BookingPage() {
       };
 
       // Generate session and client IDs
-      const sessionId = sessionStorage.getItem('session_id') || crypto.randomUUID();
-      const clientId = localStorage.getItem('client_id') || crypto.randomUUID();
+      const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      };
+
+      const sessionId = sessionStorage.getItem('session_id') || generateUUID();
+      const clientId = localStorage.getItem('client_id') || generateUUID();
 
       // Store IDs for future use
       sessionStorage.setItem('session_id', sessionId);
@@ -273,7 +283,7 @@ export default function BookingPage() {
 
       // No files in MVP submission
 
-      // Submit to API with photos
+      // Submit to API
       const submitResponse = await fetch('/api/booking/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,10 +322,10 @@ export default function BookingPage() {
 
     } catch (error) {
       console.error('Submission error:', error);
-      
+
       // Set appropriate error message
       let errorMessage = 'Something went wrong. Please try again.';
-      
+
       if (error instanceof Error) {
         if (error.message.includes('Rate limit')) {
           errorMessage = 'Too many requests. Please wait a moment and try again.';
@@ -325,7 +335,7 @@ export default function BookingPage() {
           errorMessage = 'Please check your information and try again.';
         }
       }
-      
+
       setErrors({ submit: errorMessage });
     } finally {
       setIsLoading(false);
