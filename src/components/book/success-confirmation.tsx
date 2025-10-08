@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 interface SuccessConfirmationProps {
   referenceNumber: string;
@@ -6,6 +7,10 @@ interface SuccessConfirmationProps {
 }
 
 export function SuccessConfirmation({ referenceNumber, email }: SuccessConfirmationProps) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-light flex items-center justify-center">
       <div className="container-padding">

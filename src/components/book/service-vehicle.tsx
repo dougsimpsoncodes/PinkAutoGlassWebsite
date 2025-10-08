@@ -1,7 +1,7 @@
 'use client';
 
 import { BookingFormData } from '@/types/booking';
-import { useEffect, useState } from 'react';
+import { useMemo, memo } from 'react';
 import { ChevronRight, Car, Wrench, Home, MapPin } from 'lucide-react';
 import { vehicleDatabase } from '@/data/vehicles';
 
@@ -12,48 +12,27 @@ interface ServiceVehicleProps {
   onNext: () => void;
 }
 
-export function ServiceVehicle({ formData, updateFormData, errors, onNext }: ServiceVehicleProps) {
-  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
-
-  // Update available makes when year changes
-  useEffect(() => {
-    if (formData.vehicleYear) {
-      // Convert to number for comparison with database
-      const yearNum = typeof formData.vehicleYear === 'string' ? parseInt(formData.vehicleYear, 10) : formData.vehicleYear;
-      const yearData = vehicleDatabase.find(v => v.year === yearNum);
-      if (yearData) {
-        setAvailableMakes(Object.keys(yearData.makes));
-        // Reset make and model if year changed
-        if (!Object.keys(yearData.makes).includes(formData.vehicleMake)) {
-          updateFormData({ vehicleMake: '', vehicleModel: '' });
-          setAvailableModels([]);
-        }
-      }
-    } else {
-      setAvailableMakes([]);
-      setAvailableModels([]);
-    }
+const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: ServiceVehicleProps) => {
+  // Memoize available makes based only on year
+  const availableMakes = useMemo(() => {
+    if (!formData.vehicleYear) return [];
+    const yearNum = typeof formData.vehicleYear === 'string'
+      ? parseInt(formData.vehicleYear, 10)
+      : formData.vehicleYear;
+    const yearData = vehicleDatabase.find(v => v.year === yearNum);
+    return yearData ? Object.keys(yearData.makes) : [];
   }, [formData.vehicleYear]);
 
-  // Update available models when make changes
-  useEffect(() => {
-    if (formData.vehicleYear && formData.vehicleMake) {
-      // Convert to number for comparison with database
-      const yearNum = typeof formData.vehicleYear === 'string' ? parseInt(formData.vehicleYear, 10) : formData.vehicleYear;
-      const yearData = vehicleDatabase.find(v => v.year === yearNum);
-      const models = yearData?.makes[formData.vehicleMake as keyof typeof yearData.makes];
-      if (yearData && models) {
-        setAvailableModels(models);
-        // Reset model if make changed
-        if (!models.includes(formData.vehicleModel)) {
-          updateFormData({ vehicleModel: '' });
-        }
-      }
-    } else {
-      setAvailableModels([]);
-    }
-  }, [formData.vehicleMake, formData.vehicleYear]);
+  // Memoize available models based on year and make
+  const availableModels = useMemo(() => {
+    if (!formData.vehicleYear || !formData.vehicleMake) return [];
+    const yearNum = typeof formData.vehicleYear === 'string'
+      ? parseInt(formData.vehicleYear, 10)
+      : formData.vehicleYear;
+    const yearData = vehicleDatabase.find(v => v.year === yearNum);
+    if (!yearData) return [];
+    return yearData.makes[formData.vehicleMake as keyof typeof yearData.makes] || [];
+  }, [formData.vehicleYear, formData.vehicleMake]);
 
   return (
     <div className="space-y-4">
@@ -118,7 +97,6 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleYear ? 'border-red-500' : 'border-gray-300'
               }`}
-              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Year</option>
               {vehicleDatabase.map(v => (
@@ -135,12 +113,13 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
             <select
               id="make"
               value={formData.vehicleMake}
-              onChange={(e) => updateFormData({ vehicleMake: e.target.value })}
+              onChange={(e) => {
+                updateFormData({ vehicleMake: e.target.value, vehicleModel: '' });
+              }}
               disabled={!formData.vehicleYear}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleMake ? 'border-red-500' : 'border-gray-300'
               } ${!formData.vehicleYear ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Make</option>
               {availableMakes.map(make => (
@@ -157,12 +136,13 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
             <select
               id="model"
               value={formData.vehicleModel}
-              onChange={(e) => updateFormData({ vehicleModel: e.target.value })}
+              onChange={(e) => {
+                updateFormData({ vehicleModel: e.target.value });
+              }}
               disabled={!formData.vehicleMake}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleModel ? 'border-red-500' : 'border-gray-300'
               } ${!formData.vehicleMake ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              style={{ WebkitAppearance: 'none', appearance: 'none' }}
             >
               <option value="">Model</option>
               {availableModels.map(model => (
@@ -198,4 +178,6 @@ export function ServiceVehicle({ formData, updateFormData, errors, onNext }: Ser
       </div>
     </div>
   );
-}
+};
+
+export const ServiceVehicle = memo(ServiceVehicleComponent);

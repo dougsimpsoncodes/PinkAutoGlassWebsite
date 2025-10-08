@@ -65,7 +65,7 @@ export default function Footer() {
                   { href: "/services/insurance-claims", label: "Insurance Claims" },
                 ].map((item) => (
                   <li key={item.href}>
-                    <Link 
+                    <Link
                       href={item.href}
                       className="text-gray-300 hover:text-white transition-colors"
                     >
@@ -73,6 +73,14 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    href="/services"
+                    className="text-pink-400 hover:text-pink-300 transition-colors"
+                  >
+                    View All Services →
+                  </Link>
+                </li>
               </ul>
             </div>
             
@@ -114,11 +122,12 @@ export default function Footer() {
                   { href: "/about", label: "About Us" },
                   { href: "/contact", label: "Contact" },
                   { href: "/blog", label: "Blog" },
+                  { href: "/vehicles", label: "Find Your Vehicle" },
                   { href: "/careers", label: "Careers" },
                   { href: "/privacy", label: "Privacy Policy" },
                 ].map((item) => (
                   <li key={item.href}>
-                    <Link 
+                    <Link
                       href={item.href}
                       className="text-gray-300 hover:text-white transition-colors"
                     >

@@ -7,41 +7,61 @@
   - navigation "Main navigation":
     - link "Pink Auto Glass - Go to homepage":
       - /url: /
-      - img "Pink Auto Glass"
+      - img "Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
     - link "Call Pink Auto Glass":
-      - /url: tel:+13035557465
+      - /url: tel:+17209187465
       - img
-      - text: (303) 555-PINK
-    - button "Open menu":
-      - img
+      - text: (720) 918-7465
+  - link "Services":
+    - /url: /services
+  - link "Locations":
+    - /url: /locations
+  - link "Vehicles":
+    - /url: /vehicles
+  - link "Get Free Quote":
+    - /url: /book
 - main:
   - heading "Get Your FREE Quote" [level=1]
-  - paragraph: Get an instant quote for your windshield repair or replacement. Takes less than 3 minutes.
-  - text: Step 1 of 3 Service & Vehicle Service & Vehicle Contact & Location Review & Submit
-  - heading "What service do you need?" [level=2]
-  - button "Windshield Repair Chips, cracks under 6 inches Starting at $89":
+  - button "Repair From $89":
     - img
-    - heading "Windshield Repair" [level=3]
-    - paragraph: Chips, cracks under 6 inches
-    - paragraph: Starting at $89
-  - button "Windshield Replacement Full windshield replacement Starting at $299":
+    - heading "Repair" [level=3]
+    - paragraph: From $89
+  - button "Replacement From $299":
     - img
-    - heading "Windshield Replacement" [level=3]
-    - paragraph: Full windshield replacement
-    - paragraph: Starting at $299
-  - heading "Tell us about your vehicle" [level=2]
-  - text: Year *
-  - combobox "Year *":
-    - option "Select Year" [selected]
+    - heading "Replacement" [level=3]
+    - paragraph: From $299
+  - combobox:
+    - option "Year" [selected]
     - option "2025"
     - option "2024"
     - option "2023"
-  - text: Make *
-  - combobox "Make *" [disabled]:
-    - option "Select Make" [selected]
-  - text: Model *
-  - combobox "Model *" [disabled]:
-    - option "Select Model" [selected]
+    - option "2022"
+    - option "2021"
+    - option "2020"
+    - option "2019"
+    - option "2018"
+    - option "2017"
+    - option "2016"
+    - option "2015"
+    - option "2014"
+    - option "2013"
+    - option "2012"
+    - option "2011"
+    - option "2010"
+    - option "2009"
+    - option "2008"
+    - option "2007"
+    - option "2006"
+    - option "2005"
+    - option "2004"
+    - option "2003"
+    - option "2002"
+    - option "2001"
+    - option "2000"
+  - combobox [disabled]:
+    - option "Make" [selected]
+  - combobox [disabled]:
+    - option "Model" [selected]
   - button "Continue":
     - text: Continue
     - img
@@ -51,15 +71,15 @@
       - /url: /privacy-policy
 - contentinfo:
   - text: Pink Auto Glass
-  - paragraph: Professional mobile windshield repair and replacement throughout Denver Metro. We come to you with same-day service and lifetime warranty.
+  - paragraph: Professional mobile windshield repair and replacement throughout Colorado. We come to you with same-day service and lifetime warranty.
   - img
-  - link "(303) 555-PINK":
-    - /url: tel:+13035557465
+  - link "(720) 918-7465":
+    - /url: tel:+17209187465
   - img
   - link "service@pinkautoglass.com":
     - /url: mailto:service@pinkautoglass.com
   - img
-  - text: Mobile Service Throughout Denver Metro Area
+  - text: Mobile Service Throughout Colorado
   - heading "Services" [level=3]
   - list:
     - listitem:
@@ -77,6 +97,9 @@
     - listitem:
       - link "Insurance Claims":
         - /url: /services/insurance-claims
+    - listitem:
+      - link "View All Services →":
+        - /url: /services
   - heading "Service Area" [level=3]
   - list:
     - listitem:
@@ -106,8 +129,14 @@
       - link "Blog":
         - /url: /blog
     - listitem:
+      - link "Find Your Vehicle":
+        - /url: /vehicles
+    - listitem:
       - link "Careers":
         - /url: /careers
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
   - heading "Follow Us" [level=4]
   - link "Follow us on Facebook":
     - /url: https://www.facebook.com/PinkAutoGlassDenver
