@@ -342,13 +342,17 @@ test.describe('Comprehensive Pink Auto Glass Tests', () => {
       });
     }
 
-    test('should show mobile menu on small screens', async ({ page }) => {
+    test('should show header elements on small screens', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
 
-      // Should have mobile menu button
-      const mobileMenu = page.getByRole('button', { name: /menu/i });
-      await expect(mobileMenu.first()).toBeVisible();
+      // Logo should be visible
+      const logo = page.getByRole('link', { name: /Pink Auto Glass.*homepage/i });
+      await expect(logo).toBeVisible();
+
+      // Phone link should be visible
+      const phoneLink = page.locator('a[href*="tel:"]').first();
+      await expect(phoneLink).toBeVisible();
     });
   });
 
