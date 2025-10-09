@@ -168,9 +168,7 @@ export function ContactInformation({
             className="mt-1 w-5 h-5 text-brand-pink border-gray-300 rounded focus:ring-brand-pink focus:ring-2"
           />
           <label htmlFor="smsConsent" className="text-sm text-gray-700 cursor-pointer">
-            By checking this box, you agree to receive SMS messages from Pink Auto Glass related to your service appointment.
-            You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance.
-            Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
+            By checking this box, you agree to receive Customer Care SMS messages from Pink Auto Glass. You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance. Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
             <a href="/privacy" className="text-brand-pink hover:underline" target="_blank" rel="noopener noreferrer">
               Privacy Policy
             </a>{' '}
