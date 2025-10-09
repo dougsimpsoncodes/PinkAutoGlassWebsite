@@ -10,7 +10,7 @@ function TrackContent() {
   const referenceNumber = searchParams.get('ref');
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-16 md:pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 page-top-padding">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {referenceNumber ? (
           // WITH REFERENCE NUMBER
@@ -297,7 +297,7 @@ function TrackContent() {
 export default function TrackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-16 md:pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 page-top-padding flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>

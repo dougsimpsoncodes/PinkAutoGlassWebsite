@@ -56,7 +56,7 @@ export default function WindshieldRepairPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-pink-50 pt-16 md:pt-20">
+      <div className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero */}
         <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

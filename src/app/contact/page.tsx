@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
-      <div className="pt-16 md:pt-20">
+      <div className="page-top-padding">
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs

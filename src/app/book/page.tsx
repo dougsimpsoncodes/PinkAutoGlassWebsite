@@ -385,7 +385,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-light">
-      <div className="container-padding pt-20 pb-16">
+      <div className="container-padding page-top-padding pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-4">

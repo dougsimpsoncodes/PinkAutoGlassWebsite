@@ -136,7 +136,7 @@ export default function LocationsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-purple-50 pt-16 md:pt-20">
+      <div className="min-h-screen bg-gradient-to-b from-white to-purple-50 page-top-padding">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

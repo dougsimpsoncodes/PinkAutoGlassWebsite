@@ -56,7 +56,7 @@ export default function MobileServicePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-16 md:pt-20">
+      <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 page-top-padding">
         <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
