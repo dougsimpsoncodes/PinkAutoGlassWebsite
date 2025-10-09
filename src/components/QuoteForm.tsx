@@ -182,9 +182,7 @@ export default function QuoteForm() {
               className="mt-1 w-5 h-5 text-pink-600 border-gray-300 rounded focus:ring-pink-500 focus:ring-2"
             />
             <label htmlFor="smsConsent" className="text-sm text-gray-700 cursor-pointer">
-              By checking this box, you agree to receive SMS messages from Pink Auto Glass related to your quote and service.
-              You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance.
-              Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
+              By checking this box, you agree to receive Customer Care SMS messages from Pink Auto Glass. You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance. Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
               <a href="/privacy" className="text-pink-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Privacy Policy
               </a>{' '}
