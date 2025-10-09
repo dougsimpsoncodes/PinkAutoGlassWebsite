@@ -49,7 +49,8 @@ export default function Header() {
                 alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
                 width={972}
                 height={292}
-                className="w-auto h-12 md:h-16"
+                className="w-auto max-w-[972px]"
+                style={{ height: '194px' }}
                 priority
               />
             </Link>

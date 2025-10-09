@@ -199,6 +199,11 @@ input[type="date"]:invalid {
     @apply py-12 sm:py-16 lg:py-20;
   }
 
+  /* Page Top Padding - Consistent spacing to clear fixed header */
+  .page-top-padding {
+    @apply pt-60 md:pt-64;
+  }
+
   /* Focus Utilities */
   .focus-brand {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2;
