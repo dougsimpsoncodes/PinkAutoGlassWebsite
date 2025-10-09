@@ -120,9 +120,13 @@ test.describe('Smoke Tests - Critical Functionality', () => {
     // Page should load
     await expect(page).toHaveTitle(/Pink Auto Glass/);
 
-    // Mobile menu should be visible
-    const mobileMenu = page.getByRole('button', { name: /menu/i }).first();
-    await expect(mobileMenu).toBeVisible();
+    // Logo should be visible in header
+    const logo = page.getByRole('link', { name: /Pink Auto Glass.*homepage/i });
+    await expect(logo).toBeVisible();
+
+    // Phone link should be visible
+    const phoneLink = page.locator('a[href*="tel:"]').first();
+    await expect(phoneLink).toBeVisible();
 
     // No horizontal scroll
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
