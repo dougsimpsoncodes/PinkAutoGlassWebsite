@@ -10,7 +10,7 @@ interface ServiceSelectionProps {
 
 const services = [
   {
-    id: 'repair',
+    id: 'repair' as const,
     name: 'Windshield Repair',
     description: 'Fix chips & cracks',
     price: 'Starting at $89',
@@ -18,7 +18,7 @@ const services = [
     popular: false,
   },
   {
-    id: 'replacement',
+    id: 'replacement' as const,
     name: 'Windshield Replacement',
     description: 'Complete replacement',
     price: 'From $299',
@@ -35,7 +35,7 @@ export function ServiceSelection({
   errors,
   onNext,
 }: ServiceSelectionProps) {
-  const handleServiceSelect = (serviceId: string) => {
+  const handleServiceSelect = (serviceId: 'repair' | 'replacement') => {
     updateFormData({ serviceType: serviceId });
   };
 
