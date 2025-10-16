@@ -2,7 +2,6 @@
 
 import type { BookingFormData } from "@/types/booking";
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
 import { StepTracker } from '@/components/book/step-tracker';
 import { ServiceVehicle } from '@/components/book/service-vehicle';
 import { ContactLocation } from '@/components/book/contact-location';
@@ -54,16 +53,19 @@ export default function BookingPage() {
     if (params.get('model')) prefillData.vehicleModel = params.get('model')!;
     // vehicleTrim removed - not needed for auto glass work
 
-    // Service prefill
+    // Service prefill - map URL params to valid enum values ('repair' or 'replacement')
     const serviceMap: Record<string, string> = {
-      'windshield-replacement': 'windshield_replacement',
-      'windshield-repair': 'windshield_repair',
-      'mobile-service': 'mobile_service',
-      'rock-chip': 'windshield_repair',
-      'adas-calibration': 'windshield_replacement'
+      'windshield-replacement': 'replacement',
+      'windshield-repair': 'repair',
+      'rock-chip': 'repair',
+      'adas-calibration': 'replacement'  // ADAS typically requires replacement
     };
     if (params.get('service') && serviceMap[params.get('service')!]) {
       prefillData.serviceType = serviceMap[params.get('service')!];
+    }
+    // Mobile service is a boolean flag, not a service type
+    if (params.get('service') === 'mobile-service') {
+      prefillData.mobileService = true;
     }
 
     // Location prefill
@@ -394,6 +396,9 @@ export default function BookingPage() {
             </h1>
           </div>
 
+          {/* Step Tracker */}
+          <StepTracker currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+
           {/* Form Container */}
           <div className="mt-4">
             {renderCurrentStep()}
@@ -403,7 +408,7 @@ export default function BookingPage() {
           <div className="mt-8 text-center text-sm text-gray-500">
             <p>
               Your information is secure and encrypted. We never sell or share your personal data.{' '}
-              <a href="/privacy-policy" className="text-brand-pink hover:underline">
+              <a href="/privacy" className="text-brand-pink hover:underline">
                 Privacy Policy
               </a>
             </p>

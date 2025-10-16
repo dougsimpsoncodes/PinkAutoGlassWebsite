@@ -241,8 +241,8 @@ export function ReviewSubmit({
                   <strong>Your Rights:</strong> You can request data deletion, correction, or export at any time.
                 </p>
               </div>
-              <a 
-                href="/privacy-policy" 
+              <a
+                href="/privacy"
                 className="inline-block mt-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"

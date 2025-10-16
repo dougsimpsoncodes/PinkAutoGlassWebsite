@@ -1,7 +1,7 @@
 // Frontend form data (camelCase for React forms)
 export interface BookingFormData {
   // Service details
-  serviceType: string;
+  serviceType: 'repair' | 'replacement' | '';  // Valid DB enum values or empty for initial state
   mobileService?: boolean;
   
   // Vehicle details

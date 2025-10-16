@@ -150,7 +150,7 @@ export function SuccessConfirmation({ referenceNumber, email }: SuccessConfirmat
                 at any time by contacting us.
               </p>
               <Link
-                href="/privacy-policy"
+                href="/privacy"
                 className="inline-block text-brand-pink hover:text-brand-navy hover:underline font-medium"
               >
                 View Complete Privacy Policy →
