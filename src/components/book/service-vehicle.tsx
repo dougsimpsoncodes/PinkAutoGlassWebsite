@@ -38,6 +38,7 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
     <div className="space-y-4">
       {/* Service Selection Section */}
       <div className="bg-white rounded-xl shadow-brand p-6 sm:p-8 lg:p-10">
+        <h2 className="text-xl font-semibold text-brand-navy mb-4">Choose Your Service Type</h2>
         <div className="grid md:grid-cols-2 gap-3">
           <button
             type="button"

@@ -36,27 +36,29 @@ const MAX_FILES = 5;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
 
-// Helper to check rate limit (TEMPORARILY DISABLED FOR TESTING)
+// Helper to check rate limit
 function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
-  // TEMP: Always allow for testing
+  // Skip rate limiting in development
+  if (process.env.NODE_ENV === 'development') {
+    return { allowed: true };
+  }
+
+  const now = Date.now();
+  const key = `booking:${ip}`;
+  const current = rateLimitStore.get(key);
+
+  if (!current || now > current.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, resetTime: current.resetTime };
+  }
+
+  current.count++;
+  rateLimitStore.set(key, current);
   return { allowed: true };
-
-  // const now = Date.now();
-  // const key = `booking:${ip}`;
-  // const current = rateLimitStore.get(key);
-
-  // if (!current || now > current.resetTime) {
-  //   rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-  //   return { allowed: true };
-  // }
-
-  // if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
-  //   return { allowed: false, resetTime: current.resetTime };
-  // }
-
-  // current.count++;
-  // rateLimitStore.set(key, current);
-  // return { allowed: true };
 }
 
 // Helper to sanitize filename
@@ -123,9 +125,9 @@ export async function POST(req: NextRequest) {
             );
           }
 
-          // Convert base64 to ArrayBuffer if needed
+          // Convert base64 to ArrayBuffer if needed (Node-safe)
           const data = typeof file.data === 'string'
-            ? Uint8Array.from(atob(file.data), c => c.charCodeAt(0)).buffer
+            ? Buffer.from(file.data, 'base64').buffer
             : file.data;
 
           fileUploads.push({
@@ -216,7 +218,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (leadError) {
-      console.error("Lead insert failed:", leadError.message);
+      console.error("Lead insert failed:", leadError.message, "Code:", leadError.code);
       return NextResponse.json(
         { ok: false, error: "Failed to submit booking" },
         { status: 500 }
@@ -250,7 +252,7 @@ export async function POST(req: NextRequest) {
         });
 
       if (uploadError) {
-        console.error("File upload failed:", uploadError.message);
+        console.error("File upload failed:", uploadError.message, "Lead ID:", leadId);
         // Continue with other files rather than failing entire request
         continue;
       }
@@ -284,7 +286,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error("Booking submission error:", error.message);
+    console.error("Booking submission error:", error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { ok: false, error: "An error occurred processing your request" },
       { status: 500 }

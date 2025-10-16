@@ -201,7 +201,7 @@ input[type="date"]:invalid {
 
   /* Page Top Padding - Consistent spacing to clear fixed header */
   .page-top-padding {
-    @apply pt-60 md:pt-64;
+    @apply pt-20 md:pt-24;
   }
 
   /* Focus Utilities */

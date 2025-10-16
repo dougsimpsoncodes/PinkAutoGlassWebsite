@@ -74,7 +74,8 @@ export const supabaseAdmin = (() => {
 // =============================================================================
 
 export const STORAGE_BUCKETS = {
-  LEAD_MEDIA: 'lead-media',
+  UPLOADS: 'uploads',  // Canonical bucket for all lead uploads
+  LEAD_MEDIA: 'uploads', // Alias for backward compatibility
   THUMBNAILS: 'thumbnails',
   TEMP_UPLOADS: 'temp-uploads'
 } as const;
