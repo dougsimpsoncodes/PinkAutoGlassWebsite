@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Service Denver - We Come To You',
-  description: 'Professional mobile auto glass service in Denver metro. We come to your home, office, or anywhere. Fully equipped vans. Same-day service. No extra charge. Call (720) 918-7465.',
+  description: 'Professional mobile auto glass service across the Front Range. We come to your home, office, or anywhere. Fully equipped vans. Same-day service. No extra charge. Call (720) 918-7465.',
   keywords: 'mobile windshield service denver, mobile auto glass, windshield replacement at home, mobile glass repair denver',
   openGraph: {
     title: 'Mobile Windshield Service Denver | Pink Auto Glass',
@@ -23,7 +23,7 @@ export default function MobileServicePage() {
   const faqs = [
     {
       question: 'Is there an extra charge for mobile service?',
-      answer: 'No! Mobile service is included at no additional cost within the Denver metro area. Our prices are the same whether you come to us or we come to you. We believe convenience shouldn\'t cost extra. Our service area includes Denver, Aurora, Lakewood, Boulder, Highlands Ranch, Thornton, Arvada, Westminster, Parker, and Centennial.'
+      answer: 'No! Mobile service is included at no additional cost across the Front Range. Our prices are the same whether you come to us or we come to you. We believe convenience shouldn\'t cost extra. Our service area includes Denver, Aurora, Lakewood, Boulder, Highlands Ranch, Thornton, Arvada, Westminster, Parker, Centennial, Fort Collins, and Colorado Springs.'
     },
     {
       question: 'How does mobile windshield service work?',
@@ -33,10 +33,10 @@ export default function MobileServicePage() {
 
   const serviceSchema = generateServiceSchema({
     serviceName: 'Mobile Windshield Service',
-    description: 'Mobile windshield repair and replacement service in Denver metro area. We come to your location with fully equipped mobile units. No extra charge for mobile service.',
+    description: 'Mobile windshield repair and replacement service across the Front Range. We come to your location with fully equipped mobile units. No extra charge for mobile service.',
     priceRange: '89-500',
     serviceType: 'Mobile Auto Glass Service',
-    areaServed: ['Denver Metropolitan Area']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -101,7 +101,7 @@ export default function MobileServicePage() {
                 <AboveFoldCTA location="service-mobile" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  Our mobile units are fully equipped with professional tools, OEM-quality glass, and everything needed for repair or replacement. We maintain the same high standards as a shop - just at your convenience.
+                  Our mobile units are fully equipped with professional tools, OEM quality glass, and everything needed for repair or replacement. We maintain the same high standards as a shop - just at your convenience.
                 </p>
               </section>
 
@@ -160,7 +160,7 @@ export default function MobileServicePage() {
                 <div className="grid md:grid-cols-2 gap-3">
                   {[
                     'Professional removal and installation tools',
-                    'OEM-quality windshields for all makes/models',
+                    'OEM quality windshields for all makes/models',
                     'High-grade urethane adhesives',
                     'ADAS calibration equipment',
                     'UV curing lights',
@@ -178,13 +178,13 @@ export default function MobileServicePage() {
 
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Service Area - Denver Metro
+                  Service Area - Denver and the Front Range
                 </h2>
                 <div className="grid md:grid-cols-3 gap-3">
                   {[
                     'Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch',
                     'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial',
-                    'Littleton', 'Englewood', 'Golden', 'Commerce City'
+                    'Littleton', 'Englewood', 'Golden', 'Commerce City', 'Fort Collins', 'Colorado Springs'
                   ].map(city => (
                     <div key={city} className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-blue-50 hover:border-blue-300 transition-colors">
                       <span className="text-gray-700 font-medium">{city}</span>
@@ -295,6 +295,11 @@ export default function MobileServicePage() {
                       <span className="text-sm text-gray-700"><strong>Flexible Scheduling</strong> at your convenience</span>
                     </li>
                   </ul>
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <p className="text-sm text-gray-700">
+                      We're proud supporters of breast cancer research, and a portion of our proceeds goes to help fund breast cancer awareness and treatment.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-lg shadow p-6">

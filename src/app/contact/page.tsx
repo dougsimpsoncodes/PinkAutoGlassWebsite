@@ -5,7 +5,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const metadata: Metadata = {
   title: 'Contact Pink Auto Glass | Denver Mobile Windshield Service',
-  description: 'Get in touch with Pink Auto Glass. Call (720) 918-7465 for same-day mobile windshield service in Denver. Available 7 days a week, 7am-7pm.',
+  description: 'Get in touch with Pink Auto Glass. Call (720) 918-7465 for same-day mobile windshield service in Denver. Available Monday - Saturday, 7am-7pm.',
   keywords: 'contact Pink Auto Glass, Denver auto glass contact, windshield repair contact, mobile glass service Denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/contact',
@@ -56,7 +56,7 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Call Us</h2>
               <p className="text-gray-600 mb-3">Speak with our team now</p>
               <p className="text-3xl font-bold text-pink-600">(720) 918-7465</p>
-              <p className="text-sm text-gray-500 mt-2">7 days a week, 7am - 7pm</p>
+              <p className="text-sm text-gray-500 mt-2">Monday - Saturday, 7am - 7pm</p>
             </a>
 
             {/* Text Us */}
@@ -126,7 +126,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Sunday</span>
-                  <span className="font-semibold text-gray-900">7:00 AM - 7:00 PM</span>
+                  <span className="font-semibold text-gray-900">Closed</span>
                 </div>
               </div>
               <div className="mt-6 p-4 bg-green-50 rounded-lg">

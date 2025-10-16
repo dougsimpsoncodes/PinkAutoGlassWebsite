@@ -8,12 +8,12 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'ADAS Calibration Denver - Included Free After Windshield Replacement',
-  description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. We include it free (others charge $150-$300). Call (720) 918-7465.',
+  title: 'ADAS Calibration Denver - Professional Camera Calibration Service',
+  description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. Starting at $199. Call (720) 918-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',
   openGraph: {
     title: 'ADAS Calibration Denver | Pink Auto Glass',
-    description: 'ADAS calibration included free with windshield replacement. Certified technicians, OEM-spec equipment.',
+    description: 'ADAS calibration after windshield replacement. Certified technicians, OEM-spec equipment. Starting at $199.',
     url: 'https://pinkautoglass.com/services/adas-calibration',
     type: 'website',
   },
@@ -25,18 +25,14 @@ export default function AdasCalibrationPage() {
       question: 'What is ADAS calibration and why is it necessary?',
       answer: 'ADAS (Advanced Driver Assistance Systems) calibration is a precise alignment process required after windshield replacement on vehicles with cameras or sensors mounted on or near the glass. These systems - including lane departure warning, automatic emergency braking, adaptive cruise control, and collision avoidance - rely on exact positioning to function correctly. Even a 1mm shift in the windshield can cause these safety systems to malfunction or provide false alerts. Calibration ensures your safety systems work as the manufacturer intended.'
     },
-    {
-      question: 'How much does ADAS calibration cost?',
-      answer: 'Many shops charge $150-$300 for ADAS calibration as a separate service. At Pink Auto Glass, we include ADAS calibration FREE with every windshield replacement that requires it. This saves you hundreds of dollars and ensures your safety systems are properly calibrated. We believe safety features shouldn\'t be an expensive add-on - they should work correctly from day one.'
-    },
   ];
 
   const serviceSchema = generateServiceSchema({
     serviceName: 'ADAS Calibration',
-    description: 'Professional ADAS camera calibration service in Denver metro area. Included free with windshield replacement. Certified technicians use OEM-spec equipment.',
-    priceRange: '0-0',
+    description: 'Professional ADAS camera calibration service across the Front Range. Certified technicians use OEM quality equipment. Starting at $199.',
+    priceRange: '199-299',
     serviceType: 'ADAS Calibration Service',
-    areaServed: ['Denver Metropolitan Area']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -68,7 +64,7 @@ export default function AdasCalibrationPage() {
                 ADAS Calibration After Windshield Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-purple-100">
-                Included FREE • Certified Technicians • OEM Equipment • Required for 2018+ Vehicles
+                Starting at $199 • Certified Technicians • OEM Quality Equipment • Required for 2018+ Vehicles
               </p>
               <CTAButtons source="adas-calibration" />
             </div>
@@ -171,24 +167,6 @@ export default function AdasCalibrationPage() {
                 </div>
               </section>
 
-              <section className="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  We Include ADAS Calibration FREE
-                </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="text-3xl font-bold text-gray-500 mb-2 line-through">$150-$300</div>
-                    <div className="text-sm text-gray-600 mb-4">What other shops charge</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl font-bold text-green-600 mb-2">$0</div>
-                    <div className="text-sm text-gray-600 mb-4">Included with our windshield replacement</div>
-                  </div>
-                </div>
-                <p className="text-gray-700">
-                  When you choose Pink Auto Glass for windshield replacement, ADAS calibration is <strong>automatically included at no extra charge</strong>. We believe your safety systems should work correctly - without breaking the bank.
-                </p>
-              </section>
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -236,7 +214,7 @@ export default function AdasCalibrationPage() {
               <section className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Need Windshield Replacement with ADAS?</h2>
                 <p className="text-xl mb-6 text-purple-100">
-                  Calibration included free. Certified technicians. OEM equipment.
+                  Professional calibration service. Certified technicians. OEM quality equipment.
                 </p>
                 <CTAButtons source="adas-calibration" />
               </section>
@@ -272,7 +250,7 @@ export default function AdasCalibrationPage() {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Why Calibration Matters</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Why Colorado Trusts Pink Auto Glass</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-purple-600 mr-2 mt-1 flex-shrink-0" />
@@ -284,13 +262,14 @@ export default function AdasCalibrationPage() {
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-purple-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>No Extra Cost</strong> - Included free</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-purple-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Certified Techs</strong> - OEM-trained</span>
+                      <span className="text-sm text-gray-700"><strong>Certified Techs</strong> - OEM quality trained</span>
                     </li>
                   </ul>
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <p className="text-sm text-gray-700">
+                      We're proud supporters of breast cancer research, and a portion of our proceeds goes to help fund breast cancer awareness and treatment.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="bg-blue-50 rounded-lg p-6">
@@ -300,6 +279,8 @@ export default function AdasCalibrationPage() {
                     <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
                     <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
                     <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
                   </div>
                 </div>
 

@@ -8,7 +8,7 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Auto Glass Services Denver | Windshield Repair & Replacement | Pink Auto Glass',
-  description: 'Complete auto glass services in Denver metro. Windshield repair from $89, replacement from $299. ADAS calibration included free. Mobile service, same-day appointments, lifetime warranty.',
+  description: 'Complete auto glass services across the Front Range. Windshield repair from $89, replacement from $299. Mobile service, same-day appointments, lifetime warranty.',
   keywords: 'auto glass services denver, windshield services, windshield repair, windshield replacement, mobile auto glass, adas calibration denver',
   openGraph: {
     title: 'Auto Glass Services Denver | Pink Auto Glass',
@@ -33,16 +33,12 @@ export default function ServicesPage() {
       answer: 'Windshield repair typically takes 30-45 minutes. Full replacement takes 60-90 minutes, plus an additional 30-60 minutes if ADAS calibration is required (2018+ vehicles). We recommend waiting at least 1 hour after replacement before driving to allow proper adhesive cure time.'
     },
     {
-      question: 'Do you really include ADAS calibration for free?',
-      answer: 'Absolutely. ADAS calibration is required after windshield replacement on vehicles equipped with forward-facing cameras or sensors (typically 2018 and newer). This service costs $150-$300 at other shops. We include it free with every replacement because proper calibration is essential for your safety systems to work correctly.'
-    },
-    {
       question: 'What if I don\'t have insurance?',
       answer: 'No problem. We offer competitive cash pricing for all services. Windshield repair starts at $89, and replacement starts at $299 depending on your vehicle. We can discuss payment options when you call.'
     },
     {
       question: 'Can you really come to my location?',
-      answer: 'Yes! Mobile service is our specialty. We serve the entire Denver metro area including Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, and surrounding cities. We come to your home, office, or any safe location. There\'s no extra charge for mobile service.'
+      answer: 'Yes! Mobile service is our specialty. We serve the entire Front Range including Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Fort Collins, Colorado Springs, and surrounding cities. We come to your home, office, or any safe location. There\'s no extra charge for mobile service.'
     },
     {
       question: 'Will filing a glass claim increase my insurance rates?',
@@ -71,7 +67,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "Windshield Replacement",
           "url": "https://pinkautoglass.com/services/windshield-replacement",
-          "description": "Professional windshield replacement with OEM glass and ADAS calibration included",
+          "description": "Professional windshield replacement with OEM quality glass",
           "offers": {
             "@type": "Offer",
             "priceCurrency": "USD",
@@ -105,7 +101,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "ADAS Calibration",
           "url": "https://pinkautoglass.com/services/adas-calibration",
-          "description": "Advanced Driver Assistance Systems calibration included free with windshield replacement"
+          "description": "Advanced Driver Assistance Systems calibration starting at $199"
         }
       },
       {
@@ -115,7 +111,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "Mobile Auto Glass Service",
           "url": "https://pinkautoglass.com/services/mobile-service",
-          "description": "We come to you anywhere in Denver metro - no extra charge"
+          "description": "We come to you anywhere across the Front Range - no extra charge"
         }
       },
       {
@@ -247,7 +243,7 @@ export default function ServicesPage() {
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">Our Complete Service Menu</h2>
             <p className="text-lg text-gray-700 mb-12 text-center max-w-4xl mx-auto">
-              Pink Auto Glass provides comprehensive auto glass services throughout the Denver metro area. Whether you need a quick chip repair or complete windshield replacement with ADAS calibration, our certified technicians deliver exceptional results with a lifetime warranty. We come to you with our fully equipped mobile units—no shop visit required.
+              Pink Auto Glass provides comprehensive auto glass services throughout the Front Range. Whether you need a quick chip repair or complete windshield replacement with ADAS calibration, our certified technicians deliver exceptional results with a lifetime warranty. We come to you with our fully equipped mobile units—no shop visit required.
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
@@ -267,7 +263,7 @@ export default function ServicesPage() {
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>OEM-quality glass for your specific vehicle</span>
+                      <span>OEM quality glass for your specific vehicle</span>
                     </li>
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -275,7 +271,7 @@ export default function ServicesPage() {
                     </li>
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span><strong>ADAS calibration included free</strong> (2018+ vehicles)</span>
+                      <span>ADAS calibration available (starting at $199 for 2018+ vehicles)</span>
                     </li>
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -373,16 +369,13 @@ export default function ServicesPage() {
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
                   <Car className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">ADAS Calibration</h3>
-                  <div className="text-3xl font-bold">Included FREE</div>
+                  <div className="text-3xl font-bold">Starting at $199</div>
                   <div className="text-blue-100 flex items-center mt-2">
                     <Clock className="w-4 h-4 mr-2" />
                     30-60 minutes
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-4 rounded">
-                    <p className="text-sm font-semibold text-yellow-900">Save $150-$300 - We include this free!</p>
-                  </div>
                   <h4 className="font-semibold text-gray-900 mb-3">Systems That Require Calibration:</h4>
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start text-sm">
@@ -424,7 +417,7 @@ export default function ServicesPage() {
                   <Car className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">Mobile Service</h3>
                   <div className="text-3xl font-bold">No Extra Charge</div>
-                  <div className="text-purple-100 text-sm mt-2">Entire Denver Metro Area</div>
+                  <div className="text-purple-100 text-sm mt-2">Entire Front Range</div>
                 </div>
                 <div className="p-6">
                   <h4 className="font-semibold text-gray-900 mb-3">How It Works:</h4>
@@ -502,9 +495,6 @@ export default function ServicesPage() {
                       <span>Bill insurance directly</span>
                     </li>
                   </ul>
-                  <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded">
-                    <p className="text-sm font-semibold text-green-900">Colorado Law: Most comprehensive policies cover windshield replacement with zero deductible.</p>
-                  </div>
                   <h4 className="font-semibold text-gray-900 mb-2 text-sm">We Work With All Major Insurers:</h4>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-6">
                     <div>• State Farm</div>
@@ -557,7 +547,7 @@ export default function ServicesPage() {
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Insurance</td>
                       <td className="px-6 py-4 text-gray-700">Usually 100% covered, no deductible</td>
-                      <td className="px-6 py-4 text-gray-700">Often $0 deductible in Colorado</td>
+                      <td className="px-6 py-4 text-gray-700">Covered for the price of your deductible</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Result</td>
@@ -585,55 +575,6 @@ export default function ServicesPage() {
             </div>
           </section>
 
-          {/* Colorado Insurance Section */}
-          <section className="mb-16">
-            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-8 border-2 border-green-200">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Most Windshield Claims Cost You $0 in Colorado</h2>
-              <p className="text-lg text-gray-700 mb-6">
-                Colorado law encourages prompt windshield replacement for safety. As a result, most comprehensive insurance policies cover glass claims with zero or reduced deductibles.
-              </p>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">How It Works:</h3>
-                  <ol className="space-y-2 text-gray-700">
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">1.</span>
-                      <span>We verify your coverage (takes 5 minutes)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">2.</span>
-                      <span>File claim with your insurer</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">3.</span>
-                      <span>Your insurer approves the work</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">4.</span>
-                      <span>We complete the service</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">5.</span>
-                      <span>We bill insurance directly</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold text-green-600 mr-2">6.</span>
-                      <span>You pay only your deductible (typically $0)</span>
-                    </li>
-                  </ol>
-                </div>
-                <div className="bg-white rounded-lg p-6 border-2 border-blue-200">
-                  <h3 className="font-bold text-gray-900 mb-3">Important:</h3>
-                  <p className="text-gray-700 mb-4">
-                    Filing a glass claim typically does <strong>NOT increase your rates</strong>. Glass claims are considered "comprehensive" (not at-fault), so they usually don't affect your premiums.
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Don't have your policy info? No problem. We can look up your coverage with just your name, date of birth, and phone number.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
 
           {/* Why Choose Us */}
           <section className="mb-16">
@@ -651,7 +592,7 @@ export default function ServicesPage() {
                 <Clock className="w-10 h-10 text-blue-600 mb-3" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Same-Day Service</h3>
                 <p className="text-gray-700">
-                  Most appointments completed within hours of your call. We work around your schedule with flexible availability 7 days a week.
+                  Most appointments completed within hours of your call. We work around your schedule with flexible availability Monday through Saturday.
                 </p>
               </div>
 
@@ -667,15 +608,15 @@ export default function ServicesPage() {
                 <CheckCircle className="w-10 h-10 text-green-600 mb-3" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">OEM Quality Guaranteed</h3>
                 <p className="text-gray-700">
-                  We use only OEM or OEM-equivalent glass that meets Federal Motor Vehicle Safety Standards. Perfect fit and optical clarity guaranteed.
+                  We use only OEM quality glass that meets Federal Motor Vehicle Safety Standards. Perfect fit and optical clarity guaranteed.
                 </p>
               </div>
 
               <div className="bg-white rounded-lg p-6 shadow-md border-t-4 border-yellow-500">
                 <DollarSign className="w-10 h-10 text-yellow-600 mb-3" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Free ADAS Calibration</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Supporting Breast Cancer Research</h3>
                 <p className="text-gray-700">
-                  We include this $150-$300 service free with every replacement on equipped vehicles. Your safety systems work correctly, and you save money.
+                  We're proud supporters of breast cancer research, and a portion of our proceeds goes to help fund breast cancer awareness and treatment.
                 </p>
               </div>
 
@@ -711,7 +652,7 @@ export default function ServicesPage() {
               {/* Service Areas */}
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Service Areas</h2>
-                <p className="text-gray-700 mb-4">We provide all auto glass services throughout the Denver metro area:</p>
+                <p className="text-gray-700 mb-4">We provide all auto glass services throughout the Front Range:</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { name: 'Denver', slug: 'denver-co' },
@@ -724,6 +665,8 @@ export default function ServicesPage() {
                     { name: 'Westminster', slug: 'westminster-co' },
                     { name: 'Parker', slug: 'parker-co' },
                     { name: 'Centennial', slug: 'centennial-co' },
+                    { name: 'Fort Collins', slug: 'fort-collins-co' },
+                    { name: 'Colorado Springs', slug: 'colorado-springs-co' },
                   ].map(location => (
                     <Link
                       key={location.slug}
@@ -766,7 +709,7 @@ export default function ServicesPage() {
           <section className="bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-2xl p-12 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Your Windshield Fixed?</h2>
             <p className="text-xl mb-8 text-pink-100">
-              Same-day appointments available throughout Denver metro. Free quotes. Expert service. Lifetime warranty.
+              Same-day appointments available throughout the Front Range. Free quotes. Expert service. Lifetime warranty.
             </p>
             <CTAButtons source="services-hub-bottom" />
           </section>
