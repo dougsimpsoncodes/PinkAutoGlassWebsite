@@ -54,7 +54,7 @@ export default function BookingPage() {
     // vehicleTrim removed - not needed for auto glass work
 
     // Service prefill - map URL params to valid enum values ('repair' or 'replacement')
-    const serviceMap: Record<string, string> = {
+    const serviceMap: Record<string, 'repair' | 'replacement'> = {
       'windshield-replacement': 'replacement',
       'windshield-repair': 'repair',
       'rock-chip': 'repair',
