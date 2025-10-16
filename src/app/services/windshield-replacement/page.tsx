@@ -176,17 +176,16 @@ export default function WindshieldReplacementPage() {
               {/* Our Process */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Our 7-Step Windshield Replacement Process
+                  Our 6-Step Windshield Replacement Process
                 </h2>
                 <div className="space-y-4">
                   {[
                     { num: 1, title: 'Vehicle Inspection', desc: 'We inspect your vehicle and verify the correct windshield part number for your exact make, model, and year.' },
-                    { num: 2, title: 'Interior Protection', desc: 'We protect your dashboard, seats, and interior with covers to prevent damage during the replacement.' },
-                    { num: 3, title: 'Old Windshield Removal', desc: 'Using specialized tools, we carefully remove the damaged windshield and all old adhesive from the frame.' },
-                    { num: 4, title: 'Frame Preparation', desc: 'We clean and prime the windshield frame to ensure optimal adhesion of the new glass.' },
-                    { num: 5, title: 'New Glass Installation', desc: 'We apply high-grade urethane adhesive and carefully position your new OEM-quality windshield.' },
-                    { num: 6, title: 'ADAS Calibration', desc: 'For vehicles with cameras or sensors, we perform precise ADAS calibration to restore safety system functionality.' },
-                    { num: 7, title: 'Quality Check & Cure Time', desc: 'We inspect the installation, test for leaks, and advise you on proper cure time before driving.' }
+                    { num: 2, title: 'Old Windshield Removal', desc: 'Using specialized tools, we carefully remove the damaged windshield and all old adhesive from the frame.' },
+                    { num: 3, title: 'Frame Preparation', desc: 'We clean and prime the windshield frame to ensure optimal adhesion of the new glass.' },
+                    { num: 4, title: 'New Glass Installation', desc: 'We apply high-grade urethane adhesive and carefully position your new OEM-quality windshield.' },
+                    { num: 5, title: 'ADAS Calibration', desc: 'For vehicles with cameras or sensors, we perform precise ADAS calibration to restore safety system functionality.' },
+                    { num: 6, title: 'Quality Check & Cure Time', desc: 'We inspect the installation, test for leaks, and advise you on proper cure time before driving.' }
                   ].map((step) => (
                     <div key={step.num} className="flex items-start bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex-shrink-0 w-10 h-10 bg-pink-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">
