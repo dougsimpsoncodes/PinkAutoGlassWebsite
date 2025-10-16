@@ -9,11 +9,11 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Denver - From $299 | Pink Auto Glass',
-  description: 'Professional windshield replacement in Denver metro. OEM quality glass, same-day service, lifetime warranty. We come to you! ADAS calibration included. Book now or call (720) 918-7465.',
+  description: 'Professional windshield replacement across the Front Range. OEM quality glass, same-day service, lifetime warranty. We come to you! Book now or call (720) 918-7465.',
   keywords: 'windshield replacement denver, auto glass replacement, windshield replacement cost, mobile windshield replacement, same day windshield replacement',
   openGraph: {
     title: 'Windshield Replacement Denver - From $299 | Pink Auto Glass',
-    description: 'Professional windshield replacement with OEM quality glass. Same-day mobile service. Lifetime warranty. ADAS calibration included.',
+    description: 'Professional windshield replacement with OEM quality glass. Same-day mobile service. Lifetime warranty.',
     url: 'https://pinkautoglass.com/services/windshield-replacement',
     type: 'website',
   },
@@ -31,23 +31,23 @@ export default function WindshieldReplacementPage() {
     },
     {
       question: 'Do you use OEM or aftermarket windshields?',
-      answer: 'We primarily use OEM (Original Equipment Manufacturer) quality glass that meets or exceeds factory specifications. OEM glass ensures proper fit, optical clarity, and compatibility with modern safety systems like ADAS. For vehicles without advanced safety features, we also offer high-quality aftermarket options that can reduce costs while maintaining safety standards. We\'ll recommend the best option for your specific vehicle and budget.'
+      answer: 'We primarily use OEM quality (Original Equipment Manufacturer) glass that meets or exceeds factory specifications. OEM quality glass ensures proper fit, optical clarity, and compatibility with modern safety systems like ADAS. For vehicles without advanced safety features, we also offer high-quality aftermarket options that can reduce costs while maintaining safety standards. We\'ll recommend the best option for your specific vehicle and budget.'
     },
     {
       question: 'Does insurance cover windshield replacement in Colorado?',
-      answer: 'Yes! In Colorado, most comprehensive insurance policies cover windshield replacement with zero deductible. This is because Colorado law encourages prompt replacement to maintain vehicle safety. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly - you just need to pay any applicable deductible (which is often $0 for glass claims).'
+      answer: 'In Colorado, most comprehensive insurance policies cover windshield replacement for the price of your deductible. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly - you just need to pay any applicable deductible.'
     },
     {
       question: 'What is ADAS calibration and do I need it?',
-      answer: 'ADAS (Advanced Driver Assistance Systems) calibration is required when replacing windshields on vehicles with cameras, sensors, or heads-up displays mounted on or near the glass. Systems like lane departure warning, automatic emergency braking, adaptive cruise control, and collision avoidance all require precise calibration after windshield replacement. Most vehicles 2018 and newer require ADAS calibration. We include this service with your replacement - other shops charge $150-$300 extra.'
+      answer: 'ADAS (Advanced Driver Assistance Systems) calibration is required when replacing windshields on vehicles with cameras, sensors, or heads-up displays mounted on or near the glass. Systems like lane departure warning, automatic emergency braking, adaptive cruise control, and collision avoidance all require precise calibration after windshield replacement. Most vehicles 2018 and newer require ADAS calibration.'
     },
     {
       question: 'Do you offer mobile windshield replacement?',
-      answer: 'Absolutely! Mobile service is our specialty. We come to your home, office, or anywhere in the Denver metro area. Our fully equipped mobile units carry the tools and glass needed to complete your replacement on-site. There\'s no additional charge for mobile service within our service area. Same-day appointments are usually available.'
+      answer: 'Absolutely! Mobile service is our specialty. We come to your home, office, or anywhere across the Front Range. Our fully equipped mobile units carry the tools and glass needed to complete your replacement on-site. There\'s no additional charge for mobile service within our service area. Same-day appointments are usually available.'
     },
     {
       question: 'What\'s your warranty on windshield replacement?',
-      answer: 'We offer a lifetime warranty on all windshield replacements. This covers defects in materials, workmanship, and leaks for as long as you own your vehicle. If you experience any issues related to our installation, we\'ll fix it free of charge. Our warranty is transferable if you sell your vehicle, adding value to your car.'
+      answer: 'We offer a lifetime warranty on all windshield replacements. This covers defects in materials, workmanship, and leaks for as long as you own your vehicle. If you experience any issues related to our installation, we\'ll fix it free of charge.'
     },
     {
       question: 'When should I replace vs repair my windshield?',
@@ -60,7 +60,7 @@ export default function WindshieldReplacementPage() {
     description: 'Professional windshield replacement service in Denver metro area. OEM quality glass, mobile service, same-day appointments, lifetime warranty, and ADAS calibration included.',
     priceRange: '299-500',
     serviceType: 'Auto Glass Replacement',
-    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -132,7 +132,7 @@ export default function WindshieldReplacementPage() {
                 <AboveFoldCTA location="service-windshield-replacement" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk - that's why we use only OEM-quality glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
+                  Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk - that's why we use only OEM quality glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
                 </p>
               </section>
 
@@ -219,7 +219,7 @@ export default function WindshieldReplacementPage() {
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Required for ADAS-equipped vehicles (2018+)</span>
+                      <span className="text-gray-700">For ADAS-equipped vehicles (2018+)</span>
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
@@ -244,14 +244,14 @@ export default function WindshieldReplacementPage() {
                   </ul>
                 </div>
                 <p className="text-lg text-gray-700 mt-4">
-                  <strong>Our Recommendation:</strong> We recommend OEM glass for all vehicles, especially those with ADAS. The slight price difference is worth the peace of mind knowing your windshield is exactly as the manufacturer intended.
+                  <strong>Our Recommendation:</strong> We recommend OEM quality glass for all vehicles, especially those with ADAS. The slight price difference is worth the peace of mind knowing your windshield is exactly as the manufacturer intended.
                 </p>
               </section>
 
               {/* ADAS Calibration */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  ADAS Calibration Included - No Extra Charge
+                  ADAS Calibration - Starting at $199
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
                   Modern vehicles (2018 and newer) come equipped with Advanced Driver Assistance Systems (ADAS) that rely on cameras and sensors mounted on or near the windshield. These systems include:
@@ -275,7 +275,7 @@ export default function WindshieldReplacementPage() {
                   </div>
                 </div>
                 <p className="text-lg text-gray-700">
-                  After windshield replacement, these systems must be recalibrated to ensure they function correctly. Many shops charge $150-$300 for ADAS calibration, but <strong>we include it free with every replacement</strong>. Our certified technicians use manufacturer-approved equipment to ensure your safety systems work perfectly.
+                  After windshield replacement, these systems must be recalibrated to ensure they function correctly. Our certified technicians use manufacturer-approved equipment to ensure your safety systems work perfectly.
                 </p>
               </section>
 
@@ -303,7 +303,7 @@ export default function WindshieldReplacementPage() {
                     </div>
                   </div>
                   <p className="text-center text-gray-700">
-                    <strong>Includes:</strong> OEM glass, mobile service, ADAS calibration, lifetime warranty
+                    <strong>Includes:</strong> OEM quality glass, mobile service, lifetime warranty
                   </p>
                 </div>
               </section>
@@ -314,7 +314,7 @@ export default function WindshieldReplacementPage() {
                   Insurance Claims - We Handle Everything
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Most windshield replacements are covered by your comprehensive insurance policy with <strong>zero deductible in Colorado</strong>. We work with all major insurance companies:
+                  Most windshield replacements are covered by your comprehensive insurance policy for the price of your deductible. We work with all major insurance companies:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                   {['State Farm', 'Geico', 'Progressive', 'Allstate', 'USAA', 'Farmers', 'Liberty Mutual', 'Nationwide'].map(insurer => (
@@ -433,20 +433,21 @@ export default function WindshieldReplacementPage() {
                       <span className="text-sm text-gray-700"><strong>OEM Quality Glass</strong> guaranteed</span>
                     </li>
                     <li className="flex items-start">
-                      <Wrench className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Free ADAS Calibration</strong> included</span>
-                    </li>
-                    <li className="flex items-start">
                       <Car className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
                       <span className="text-sm text-gray-700"><strong>Mobile Service</strong> to your location</span>
                     </li>
                   </ul>
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <p className="text-sm text-gray-700">
+                      We're proud supporters of breast cancer research, and a portion of our proceeds goes to help fund breast cancer awareness and treatment.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Service Area */}
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
-                  <p className="text-sm text-gray-700 mb-3">We serve the entire Denver metro area:</p>
+                  <p className="text-sm text-gray-700 mb-3">We serve the Front Range:</p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
                     <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
@@ -454,6 +455,8 @@ export default function WindshieldReplacementPage() {
                     <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
                     <Link href="/locations/highlands-ranch-co" className="text-blue-600 hover:underline">Highlands Ranch</Link>
                     <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
+                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
                   </div>
                 </div>
 

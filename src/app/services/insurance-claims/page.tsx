@@ -23,7 +23,7 @@ export default function InsuranceClaimsPage() {
   const faqs = [
     {
       question: 'Does insurance cover windshield replacement in Colorado?',
-      answer: 'Yes! In Colorado, most comprehensive auto insurance policies cover windshield replacement. Better yet, Colorado law encourages carriers to offer zero-deductible coverage for auto glass, meaning you often pay nothing out of pocket. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, Farmers, Liberty Mutual, and Nationwide. We verify your coverage before starting work so you know exactly what you\'ll pay.'
+      answer: 'Yes! In Colorado, most comprehensive auto insurance policies cover windshield replacement for the price of your deductible. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, Farmers, Liberty Mutual, and Nationwide. We verify your coverage before starting work so you know exactly what you\'ll pay.'
     },
     {
       question: 'Do I have to use my insurance company\'s recommended shop?',
@@ -33,10 +33,10 @@ export default function InsuranceClaimsPage() {
 
   const serviceSchema = generateServiceSchema({
     serviceName: 'Auto Glass Insurance Claims',
-    description: 'Hassle-free auto glass insurance claims service in Denver. We handle all paperwork and bill your insurance directly. Often zero deductible in Colorado.',
+    description: 'Hassle-free auto glass insurance claims service across the Front Range. We handle all paperwork and bill your insurance directly.',
     priceRange: '0-100',
     serviceType: 'Insurance Claims Assistance',
-    areaServed: ['Denver Metropolitan Area']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -99,38 +99,16 @@ export default function InsuranceClaimsPage() {
                   Insurance Claims Should Be Easy - And They Are
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Dealing with insurance doesn't have to be frustrating. At Pink Auto Glass, we handle 100% of the insurance paperwork for you. We'll verify your coverage, file your claim, communicate with your insurer, and bill them directly. You just approve the work - we take care of everything else.
+                  Dealing with insurance doesn't have to be frustrating. At Pink Auto Glass, we handle 100% of the insurance paperwork for you. We'll verify your coverage, assist with filing your claim, communicate with your insurer, and bill them directly. You just approve the work - we take care of everything else.
                 </p>
 
                 <AboveFoldCTA location="service-insurance-claims" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  In Colorado, most comprehensive policies cover windshield repair and replacement with zero deductible. This means you often pay absolutely nothing out of pocket. Even if you have a deductible, we'll tell you the exact amount before we start work - no surprises.
+                  In Colorado, most comprehensive policies cover windshield repair and replacement for the price of your deductible. We'll tell you the exact amount before we start work - no surprises.
                 </p>
               </section>
 
-              <section className="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Colorado's Zero-Deductible Law
-                </h2>
-                <p className="text-lg text-gray-700 mb-4">
-                  Colorado encourages insurance companies to waive deductibles for auto glass claims. Why? Because prompt windshield repair and replacement keeps drivers safe and prevents more costly damage.
-                </p>
-                <div className="bg-white rounded-lg p-4">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-3xl font-bold text-green-600 mb-2">Repair</div>
-                      <div className="text-lg font-semibold mb-1">Usually $0</div>
-                      <p className="text-sm text-gray-600">Most insurers waive deductible for chip repair</p>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-green-600 mb-2">Replacement</div>
-                      <div className="text-lg font-semibold mb-1">Often $0</div>
-                      <p className="text-sm text-gray-600">Many policies have $0-$100 glass deductible</p>
-                    </div>
-                  </div>
-                </div>
-              </section>
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -141,8 +119,8 @@ export default function InsuranceClaimsPage() {
                     { num: 1, title: 'Provide Insurance Info', desc: 'Give us your insurance company name and policy number (usually on your insurance card).' },
                     { num: 2, title: 'We Verify Coverage', desc: 'We call your insurer to verify coverage, deductible amount, and any specific requirements.' },
                     { num: 3, title: 'You Approve Cost', desc: 'We tell you exactly what you\'ll pay out-of-pocket (often $0) before we start any work.' },
-                    { num: 4, title: 'We File the Claim', desc: 'We submit all required claim documentation to your insurance company on your behalf.' },
-                    { num: 5, title: 'We Complete Service', desc: 'We repair or replace your windshield using OEM-quality materials and professional installation.' },
+                    { num: 4, title: 'We Assist with Filing', desc: 'We assist with filing all required claim documentation to your insurance company on your behalf.' },
+                    { num: 5, title: 'We Complete Service', desc: 'We repair or replace your windshield using OEM quality materials and professional installation.' },
                     { num: 6, title: 'We Bill Insurance', desc: 'We bill your insurance company directly. You only pay your deductible (if any).' },
                     { num: 7, title: 'You\'re Done!', desc: 'Your windshield is fixed, your claim is handled, and you can drive away safely.' }
                   ].map((step) => (
@@ -195,7 +173,7 @@ export default function InsuranceClaimsPage() {
                   <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
                     <h3 className="text-xl font-bold text-blue-900 mb-3">✓ Quality Parts Guaranteed</h3>
                     <p className="text-blue-800">
-                      You have the right to OEM-quality parts. We use only high-quality glass that meets or exceeds factory specifications - never inferior aftermarket glass.
+                      You have the right to OEM quality parts. We use only high-quality glass that meets or exceeds factory specifications - never inferior aftermarket glass.
                     </p>
                   </div>
                   <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
@@ -213,29 +191,6 @@ export default function InsuranceClaimsPage() {
                 </div>
               </section>
 
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Popular Vehicles We Service
-                </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { make: 'Toyota', model: 'Camry', slug: 'toyota-camry-windshield-replacement-denver' },
-                    { make: 'Honda', model: 'Accord', slug: 'honda-accord-windshield-replacement-denver' },
-                    { make: 'Subaru', model: 'Outback', slug: 'subaru-outback-windshield-replacement-denver' },
-                    { make: 'Ford', model: 'F-150', slug: 'ford-f150-windshield-replacement-denver' },
-                    { make: 'Jeep', model: 'Wrangler', slug: 'jeep-wrangler-windshield-replacement-denver' },
-                  ].map(v => (
-                    <Link
-                      key={v.slug}
-                      href={`/vehicles/${v.slug}`}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:border-teal-500 hover:shadow-md transition-all"
-                    >
-                      <div className="font-semibold text-gray-900">{v.make} {v.model}</div>
-                      <div className="text-sm text-teal-600">View Pricing →</div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -317,6 +272,8 @@ export default function InsuranceClaimsPage() {
                     <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
                     <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
                     <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
                   </div>
                 </div>
 
