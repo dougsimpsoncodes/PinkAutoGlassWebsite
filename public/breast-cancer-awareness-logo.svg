@@ -1,55 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
-  <!-- Official Breast Cancer Awareness Ribbon - Simplified Flat Design -->
-  <defs>
-    <!-- Subtle gradient for slight depth -->
-    <linearGradient id="pinkRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#F394C4;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#E91E8C;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#D81B84;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+  <!-- Standard Breast Cancer Awareness Ribbon -->
 
-  <!-- Left ribbon loop -->
-  <path d="M 100,35
-           C 70,35 45,55 35,85
-           C 25,115 30,145 45,165
-           L 80,220
-           L 95,215
-           L 100,240
-           L 92,218
-           L 60,170
-           C 48,155 43,130 50,105
-           C 58,75 80,55 100,50
+  <!-- Main ribbon shape with white outline -->
+  <path d="M 100,30
+           C 65,30 40,50 30,85
+           C 20,120 25,155 42,180
+           L 75,235
+           L 85,228
+           L 100,270
+           L 95,235
+           L 58,175
+           C 45,155 40,125 48,95
+           C 56,65 78,50 100,45
+           Z
+           M 100,30
+           C 135,30 160,50 170,85
+           C 180,120 175,155 158,180
+           L 125,235
+           L 115,228
+           L 100,270
+           L 105,235
+           L 142,175
+           C 155,155 160,125 152,95
+           C 144,65 122,50 100,45
            Z"
-        fill="url(#pinkRibbon)"
-        stroke="#C71585"
-        stroke-width="1"/>
+        fill="#E91E8C"
+        stroke="#FFFFFF"
+        stroke-width="8"
+        stroke-linejoin="round"/>
 
-  <!-- Right ribbon loop -->
-  <path d="M 100,35
-           C 130,35 155,55 165,85
-           C 175,115 170,145 155,165
-           L 120,220
-           L 105,215
-           L 100,240
-           L 108,218
-           L 140,170
-           C 152,155 157,130 150,105
-           C 142,75 120,55 100,50
-           Z"
-        fill="url(#pinkRibbon)"
-        stroke="#C71585"
-        stroke-width="1"/>
+  <!-- Inner highlight for dimension -->
+  <path d="M 100,45
+           C 78,50 56,65 48,95
+           C 42,118 45,145 55,165
+           L 85,215"
+        fill="none"
+        stroke="#F394C4"
+        stroke-width="4"
+        opacity="0.6"/>
 
-  <!-- Top loop fold -->
-  <ellipse cx="100" cy="42" rx="12" ry="10"
-           fill="#F8A6D3"
-           opacity="0.8"/>
-
-  <!-- Bottom crossing point -->
-  <path d="M 95,215
-           L 100,240
-           L 105,215
-           Z"
-        fill="#D81B84"/>
+  <path d="M 100,45
+           C 122,50 144,65 152,95
+           C 158,118 155,145 145,165
+           L 115,215"
+        fill="none"
+        stroke="#F394C4"
+        stroke-width="4"
+        opacity="0.6"/>
 </svg>
