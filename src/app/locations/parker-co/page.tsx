@@ -151,12 +151,12 @@ export default function ParkerLocationPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $89</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $299</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
@@ -189,8 +189,8 @@ export default function ParkerLocationPage() {
                 <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-pink-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Popular Vehicles</h3>
                   <ul className="space-y-2 text-sm">
-                    <li><Link href="/vehicles/subaru-outback-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Subaru Outback</span><span className="text-gray-600">$420</span></Link></li>
-                    <li><Link href="/vehicles/honda-cr-v-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Honda CR-V</span><span className="text-gray-600">$380</span></Link></li>
+                    <li><Link href="/vehicles/subaru-outback-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Subaru Outback</span></Link></li>
+                    <li><Link href="/vehicles/honda-cr-v-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Honda CR-V</span></Link></li>
                   </ul>
                   <Link href="/services/windshield-replacement" className="block mt-4 text-blue-600 hover:underline font-semibold">View All Services →</Link>
                 </div>
