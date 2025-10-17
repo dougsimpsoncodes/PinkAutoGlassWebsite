@@ -1,85 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
-  <!-- Official Breast Cancer Awareness Ribbon -->
+  <!-- Official Breast Cancer Awareness Ribbon - Simplified Flat Design -->
   <defs>
-    <!-- Light side gradient (left) -->
-    <linearGradient id="lightPink" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#FFB6D9;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#FFA0CB;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FF8CBF;stop-opacity:1" />
-    </linearGradient>
-
-    <!-- Dark side gradient (right) -->
-    <linearGradient id="darkPink" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#FF8CBF;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#E85BA1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#D5478F;stop-opacity:1" />
+    <!-- Subtle gradient for slight depth -->
+    <linearGradient id="pinkRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#F394C4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#E91E8C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D81B84;stop-opacity:1" />
     </linearGradient>
   </defs>
 
-  <!-- Left ribbon (lighter side) -->
-  <path d="M 85,40
-           C 65,40 45,50 35,70
-           C 25,90 25,115 35,135
-           C 40,145 48,153 58,158
-           L 78,210
-           L 92,205
-           L 100,235
-           L 95,240
-           L 85,235
-           L 65,168
-           C 50,160 40,148 32,133
-           C 18,108 18,82 32,57
-           C 45,35 68,25 90,28
-           L 100,30
-           L 100,50
+  <!-- Left ribbon loop -->
+  <path d="M 100,35
+           C 70,35 45,55 35,85
+           C 25,115 30,145 45,165
+           L 80,220
+           L 95,215
+           L 100,240
+           L 92,218
+           L 60,170
+           C 48,155 43,130 50,105
+           C 58,75 80,55 100,50
            Z"
-        fill="url(#lightPink)"
-        stroke="#E85BA1"
-        stroke-width="1.5"/>
-
-  <!-- Right ribbon (darker side) -->
-  <path d="M 115,40
-           C 135,40 155,50 165,70
-           C 175,90 175,115 165,135
-           C 160,145 152,153 142,158
-           L 122,210
-           L 108,205
-           L 100,235
-           L 105,240
-           L 115,235
-           L 135,168
-           C 150,160 160,148 168,133
-           C 182,108 182,82 168,57
-           C 155,35 132,25 110,28
-           L 100,30
-           L 100,50
-           Z"
-        fill="url(#darkPink)"
-        stroke="#D5478F"
-        stroke-width="1.5"/>
-
-  <!-- Center fold highlight -->
-  <ellipse cx="100" cy="40" rx="15" ry="15"
-           fill="#FFD0E8"
-           opacity="0.6"/>
-
-  <!-- Lower crossing ribbon light -->
-  <path d="M 92,205
-           L 100,235
-           L 95,240
-           L 85,235
-           L 92,205"
-        fill="url(#lightPink)"
-        stroke="#E85BA1"
+        fill="url(#pinkRibbon)"
+        stroke="#C71585"
         stroke-width="1"/>
 
-  <!-- Lower crossing ribbon dark -->
-  <path d="M 108,205
-           L 100,235
-           L 105,240
-           L 115,235
-           L 108,205"
-        fill="url(#darkPink)"
-        stroke="#D5478F"
+  <!-- Right ribbon loop -->
+  <path d="M 100,35
+           C 130,35 155,55 165,85
+           C 175,115 170,145 155,165
+           L 120,220
+           L 105,215
+           L 100,240
+           L 108,218
+           L 140,170
+           C 152,155 157,130 150,105
+           C 142,75 120,55 100,50
+           Z"
+        fill="url(#pinkRibbon)"
+        stroke="#C71585"
         stroke-width="1"/>
+
+  <!-- Top loop fold -->
+  <ellipse cx="100" cy="42" rx="12" ry="10"
+           fill="#F8A6D3"
+           opacity="0.8"/>
+
+  <!-- Bottom crossing point -->
+  <path d="M 95,215
+           L 100,240
+           L 105,215
+           Z"
+        fill="#D81B84"/>
 </svg>
