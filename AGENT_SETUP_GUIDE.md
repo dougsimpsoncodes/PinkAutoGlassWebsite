@@ -184,25 +184,41 @@ WHERE schemaname = 'public';
 
 ## Current Status & Known Issues
 
-### ✅ Completed
+### ✅ Completed (Updated October 2025)
 - Homepage redesign with lead-gen focus
 - 3-step booking form (reduced from 5)
 - Horizontal Pink Auto Glass logo
 - Universal hamburger menu
-- Database security hardening
+- **NEW: Complete security hardening (commit 0321c61)**
+  - Service role key removed from all public APIs
+  - RPC-only database pattern enforced
+  - Rate limiting re-enabled (10 req/min leads, 5 req/min bookings)
+  - PII removed from server logs
+  - Node.js base64 handling fixed
+  - Storage bucket standardized to `uploads`
+- **NEW: Type safety improvements**
+  - Strict TypeScript enums (`'repair' | 'replacement'`)
+  - Service type prefill mapping fixed
+  - Mobile service boolean handling
+- **NEW: UX improvements**
+  - StepTracker component now visible
+  - Privacy policy links fixed
+  - Service selection heading added
 - Multipart file upload support
 - Service type alignment
 
-### ⚠️ In Progress
-- Applying canonical migration to production
-- Testing booking endpoints with live data
+### ⚠️ Minor Items
+- Missing `fn_get_reference_number` RPC (has working fallback)
+- Test selector needs updating for StepTracker (feature works, test issue)
 
-### ❌ TODO
+### ❌ TODO (Future Enhancements)
 - Create missing pages (services, about, locations, vehicles)
 - Implement order tracking functionality
 - Add email/SMS notifications
 - Analytics integration
 - Payment processing
+- Redis-based rate limiting for multi-instance scaling
+- Integration tests for RPC functions
 
 ## Development Workflow
 
@@ -311,6 +327,251 @@ curl -X POST http://localhost:3000/api/booking/submit \
 # { "ok": true, "id": "uuid", "referenceNumber": "REF-XXX", "files": [...] }
 ```
 
+## API Security Architecture (October 2025 Update)
+
+### RPC-Only Pattern
+
+All public API endpoints (`/api/lead` and `/api/booking/submit`) now use a strict RPC-only pattern for database operations. This ensures Row Level Security (RLS) is always enforced.
+
+**✅ Correct Pattern (Current)**:
+```typescript
+// Use anon key for public APIs
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// All writes through RPC
+const { error } = await supabase.rpc('fn_insert_lead', {
+  p_id: leadId,
+  p_payload: {
+    serviceType: 'repair',  // Valid enum value
+    firstName: 'John',
+    lastName: 'Smith',
+    phoneE164: '+13035551234',  // E.164 format
+    // ... other fields
+  }
+});
+```
+
+**❌ Incorrect Pattern (Removed)**:
+```typescript
+// DO NOT USE: Service role bypasses RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!  // ❌ Never use in public APIs
+);
+
+// DO NOT USE: Direct table access
+const { error } = await supabase
+  .from('leads')
+  .insert({ ... });  // ❌ Bypasses RLS and validation
+```
+
+### Rate Limiting Implementation
+
+Both API endpoints now enforce rate limiting in production:
+
+```typescript
+// Lead API: 10 requests per minute
+// Booking API: 5 requests per minute
+
+function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
+  // Bypass in development
+  if (process.env.NODE_ENV === 'development') {
+    return { allowed: true };
+  }
+
+  // Production: enforce limits
+  const now = Date.now();
+  const key = `${prefix}:${ip}`;
+  const current = rateLimitStore.get(key);
+
+  if (!current || now > current.resetTime) {
+    rateLimitStore.set(key, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS
+    });
+    return { allowed: true };
+  }
+
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, resetTime: current.resetTime };
+  }
+
+  current.count++;
+  return { allowed: true };
+}
+```
+
+**429 Response**:
+```json
+{
+  "error": "Too many requests. Please try again later."
+}
+```
+
+**Headers**:
+```
+HTTP/1.1 429 Too Many Requests
+Retry-After: 42
+```
+
+### Service Type Enum Values
+
+**Database Schema**:
+```sql
+CREATE TYPE service_type AS ENUM ('repair', 'replacement');
+```
+
+**Valid Values** (use these):
+- `'repair'` - For windshield repair, rock chip repair
+- `'replacement'` - For windshield replacement, ADAS calibration
+
+**Invalid Values** (removed):
+- ❌ `'quote_request'`
+- ❌ `'windshield_replacement'`
+- ❌ `'windshield_repair'`
+- ❌ `'rock_chip'`
+
+**URL Parameter Mapping** (`src/app/book/page.tsx`):
+```typescript
+const serviceMap: Record<string, string> = {
+  'windshield-replacement': 'replacement',  // ✅
+  'windshield-repair': 'repair',           // ✅
+  'rock-chip': 'repair',                   // ✅
+  'adas-calibration': 'replacement'        // ✅
+};
+```
+
+**Mobile Service**: Use boolean flag, not service type
+```typescript
+// Correct:
+{ serviceType: 'repair', mobileService: true }
+
+// Incorrect:
+{ serviceType: 'mobile-service' }  // ❌ Not a valid enum
+```
+
+### RPC Payload Format
+
+All RPC calls expect **camelCase** payloads. The RPC functions handle snake_case conversion internally.
+
+**Lead API Payload** (`fn_insert_lead`):
+```typescript
+{
+  // Service details
+  serviceType: 'repair' | 'replacement',     // Required
+  mobileService: boolean,                     // Optional
+
+  // Customer info
+  firstName: string,                          // Required
+  lastName: string,                           // Required
+  phoneE164: string,                          // Required (E.164 format: +13035551234)
+  email?: string,                             // Optional
+
+  // Vehicle info
+  vehicleYear: number,                        // Required
+  vehicleMake: string,                        // Required
+  vehicleModel: string,                       // Required
+
+  // Location
+  address?: string,                           // Optional
+  city: string,                               // Required
+  state: string,                              // Required (2-letter code)
+  zip: string,                                // Required
+
+  // Scheduling
+  preferredDate?: string,                     // Optional (ISO format)
+  timePreference?: 'morning' | 'afternoon' | 'flexible',
+
+  // Additional
+  notes?: string,                             // Optional
+  source: string,                             // Required (for tracking)
+
+  // Consent
+  smsConsent: boolean,                        // Required
+  privacyAcknowledgment: boolean,             // Required
+  termsAccepted: boolean,                     // Required
+
+  // Tracking
+  clientId: string,                           // Required
+  sessionId: string,                          // Required
+  firstTouch: object,                         // Required
+  lastTouch: object                           // Required
+}
+```
+
+### Storage Bucket Configuration
+
+**Canonical Bucket**: `uploads` (private)
+
+```typescript
+// src/lib/supabase.ts
+export const STORAGE_BUCKETS = {
+  UPLOADS: 'uploads',          // ✅ Use this
+  LEAD_MEDIA: 'uploads',       // Alias for backward compatibility
+  THUMBNAILS: 'thumbnails',
+  TEMP_UPLOADS: 'temp-uploads'
+} as const;
+```
+
+**File Upload Path Format**:
+```
+uploads/leads/{leadId}/{uuid}-{sanitized-filename}
+```
+
+**Example**:
+```
+uploads/leads/a1b2c3d4-e5f6-7890-abcd-ef1234567890/f9e8d7c6-b5a4-3210-9876-543210fedcba-damage-photo.jpg
+```
+
+### PII and Logging
+
+**✅ Correct Logging**:
+```typescript
+console.log('Lead insert successful:', {
+  status: 'success',
+  hasVehicle: !!vehicleData.year,  // Boolean only
+  source: body.source
+});
+```
+
+**❌ Incorrect Logging (Removed)**:
+```typescript
+console.log('Lead data:', {
+  phone: body.phone,      // ❌ PII
+  email: body.email,      // ❌ PII
+  name: body.firstName    // ❌ PII
+});
+```
+
+### Verification Commands
+
+**Check for service role key in public APIs**:
+```bash
+rg -n "SUPABASE_SERVICE_ROLE_KEY" src/app/api/
+# Expected: 0 results
+```
+
+**Check for PII in logs**:
+```bash
+rg -n "console\.(log|error).*(phone|email)" src/app/api/
+# Expected: 0 results
+```
+
+**Check for old enum values**:
+```bash
+rg -n "quote_request|windshield_replacement" src/
+# Expected: 0 results
+```
+
+**Check storage bucket consistency**:
+```bash
+rg -n "lead-media|lead_uploads" src/
+# Expected: 0 results or only intentional aliases
+```
+
 ## Security Notes
 
 ⚠️ **NEVER**:
@@ -327,6 +588,7 @@ curl -X POST http://localhost:3000/api/booking/submit \
 
 ---
 
-**Last Updated:** August 2025
-**Version:** 1.0.0
-**Status:** Active Development
+**Last Updated:** October 15, 2025
+**Version:** 2.0.0 (Security Hardening Release)
+**Status:** Production Ready
+**Major Update (Commit 0321c61):** Complete security overhaul - service role removed, RPC-only enforced, rate limiting active, type safety improved

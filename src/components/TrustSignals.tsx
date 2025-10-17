@@ -57,7 +57,7 @@ export default function TrustSignals() {
           <div className="text-xs text-gray-500 font-medium text-center">Farmers</div>
         </div>
         <p className="text-xs text-gray-500 text-center mt-4">
-          Most insurance covers windshield replacement with $0 deductible
+          Most insurance covers windshield replacement with zero deductible
         </p>
       </div>
     </div>

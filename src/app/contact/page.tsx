@@ -189,7 +189,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Affordable Pricing</h3>
                 <p className="text-gray-600">
-                  Rock chip repair from $89, windshield replacement from $299. Insurance handled.
+                  Rock chip repair from Professional Service, windshield replacement from Professional Service. Insurance handled.
                 </p>
               </div>
               <div className="text-center">
@@ -223,7 +223,7 @@ export default function ContactPage() {
                   Do you work with insurance companies?
                 </h3>
                 <p className="text-gray-700">
-                  Yes! We work with all major insurance providers and can handle the entire claims process for you. Most comprehensive policies cover windshield repair with $0 deductible.
+                  Yes! We work with all major insurance providers and can handle the entire claims process for you. Most comprehensive policies cover windshield repair with Professional Service deductible.
                 </p>
               </div>
               <div>

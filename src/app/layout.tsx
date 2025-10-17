@@ -21,7 +21,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL('https://pinkautoglass.com'),
   title: "Mobile Windshield Replacement Denver | Pink Auto Glass | Same Day Service",
-  description: "Denver's #1 mobile auto glass service. We come to you! Windshield repair from $89, replacement from $299. Insurance handled. Same-day service. Call (720) 918-7465",
+  description: "Denver's #1 mobile auto glass service. We come to you! Windshield repair from professional service, replacement from professional service. Insurance handled. Same-day service. Call (720) 918-7465",
   keywords: "windshield replacement Denver, mobile auto glass Denver, windshield repair Denver, auto glass repair Denver, same day windshield replacement, insurance windshield replacement",
   alternates: {
     canonical: 'https://pinkautoglass.com',

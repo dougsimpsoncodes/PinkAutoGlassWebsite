@@ -54,7 +54,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
     {
       question: `Do I need ADAS calibration for my ${vehicle.make} ${vehicle.model}?`,
       answer: vehicle.hasADAS
-        ? `Yes! ${vehicle.make} ${vehicle.model} models from ${vehicle.adasYearStart || 2018} and newer come equipped with ADAS (Advanced Driver Assistance Systems) that require calibration after windshield replacement. This includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. We include ADAS calibration free with every ${vehicle.make} ${vehicle.model} windshield replacement - other shops charge $150-$300 extra for this service.`
+        ? `Yes! ${vehicle.make} ${vehicle.model} models from ${vehicle.adasYearStart || 2018} and newer come equipped with ADAS (Advanced Driver Assistance Systems) that require calibration after windshield replacement. This includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. We include ADAS calibration free with every ${vehicle.make} ${vehicle.model} windshield replacement - other shops charge Competitive Pricing extra for this service.`
         : `Most ${vehicle.make} ${vehicle.model} models do not require ADAS calibration unless they have optional advanced safety packages. We'll inspect your vehicle and let you know if calibration is needed.`
     },
     {
@@ -202,7 +202,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                         {vehicle.hasADAS && (
                           <li className="flex items-start">
                             <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                            <span className="text-gray-700"><strong>ADAS calibration included (saves $150-$300)</strong></span>
+                            <span className="text-gray-700"><strong>ADAS calibration included (saves Competitive Pricing)</strong></span>
                           </li>
                         )}
                         <li className="flex items-start">
@@ -223,7 +223,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                         </li>
                         <li className="flex items-start">
                           <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Often $0 with insurance</span>
+                          <span className="text-gray-700">Often covered by insurance</span>
                         </li>
                         <li className="flex items-start">
                           <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />

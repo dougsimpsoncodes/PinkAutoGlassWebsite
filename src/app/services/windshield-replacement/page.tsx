@@ -8,11 +8,11 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Denver - From $299 | Pink Auto Glass',
+  title: 'Windshield Replacement Denver | Pink Auto Glass',
   description: 'Professional windshield replacement across the Front Range. OEM quality glass, same-day service, lifetime warranty. We come to you! Book now or call (720) 918-7465.',
   keywords: 'windshield replacement denver, auto glass replacement, windshield replacement cost, mobile windshield replacement, same day windshield replacement',
   openGraph: {
-    title: 'Windshield Replacement Denver - From $299 | Pink Auto Glass',
+    title: 'Windshield Replacement Denver | Pink Auto Glass',
     description: 'Professional windshield replacement with OEM quality glass. Same-day mobile service. Lifetime warranty.',
     url: 'https://pinkautoglass.com/services/windshield-replacement',
     type: 'website',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 export default function WindshieldReplacementPage() {
   const faqs = [
     {
-      question: 'How much does windshield replacement cost in Denver?',
-      answer: 'Windshield replacement in Denver typically ranges from $299-$500 depending on your vehicle make, model, and features. Luxury vehicles, larger SUVs, and vehicles with ADAS (Advanced Driver Assistance Systems) cost more due to specialized glass and calibration requirements. Most insurance companies cover windshield replacement with zero deductible under comprehensive coverage. We provide free quotes and handle all insurance paperwork.'
+      question: 'Does insurance cover windshield replacement in Denver?',
+      answer: 'Most insurance companies cover windshield replacement under comprehensive coverage. The exact coverage depends on your vehicle make, model, and features. Luxury vehicles, larger SUVs, and vehicles with ADAS (Advanced Driver Assistance Systems) may have different coverage due to specialized glass and calibration requirements. We provide free quotes and handle all insurance paperwork.'
     },
     {
       question: 'How long does windshield replacement take?',
@@ -34,8 +34,8 @@ export default function WindshieldReplacementPage() {
       answer: 'We primarily use OEM quality (Original Equipment Manufacturer) glass that meets or exceeds factory specifications. OEM quality glass ensures proper fit, optical clarity, and compatibility with modern safety systems like ADAS. For vehicles without advanced safety features, we also offer high-quality aftermarket options that can reduce costs while maintaining safety standards. We\'ll recommend the best option for your specific vehicle and budget.'
     },
     {
-      question: 'Does insurance cover windshield replacement in Colorado?',
-      answer: 'In Colorado, most comprehensive insurance policies cover windshield replacement for the price of your deductible. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly - you just need to pay any applicable deductible.'
+      question: 'How does insurance coverage work in Colorado?',
+      answer: 'In Colorado, most comprehensive insurance policies cover windshield replacement. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly. We\'ll verify your exact coverage before we start.'
     },
     {
       question: 'What is ADAS calibration and do I need it?',
@@ -58,7 +58,6 @@ export default function WindshieldReplacementPage() {
   const serviceSchema = generateServiceSchema({
     serviceName: 'Windshield Replacement',
     description: 'Professional windshield replacement service in Denver metro area. OEM quality glass, mobile service, same-day appointments, lifetime warranty, and ADAS calibration included.',
-    priceRange: '299-500',
     serviceType: 'Auto Glass Replacement',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
@@ -90,7 +89,7 @@ export default function WindshieldReplacementPage() {
                 Professional Windshield Replacement in Denver
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                OEM Quality Glass • Same-Day Service • Lifetime Warranty • From $299
+                OEM Quality Glass • Same-Day Service • Lifetime Warranty
               </p>
               <CTAButtons source="windshield-replacement" />
             </div>
@@ -250,7 +249,7 @@ export default function WindshieldReplacementPage() {
               {/* ADAS Calibration */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  ADAS Calibration - Starting at $199
+                  ADAS Calibration Included
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
                   Modern vehicles (2018 and newer) come equipped with Advanced Driver Assistance Systems (ADAS) that rely on cameras and sensors mounted on or near the windshield. These systems include:
@@ -278,32 +277,29 @@ export default function WindshieldReplacementPage() {
                 </p>
               </section>
 
-              {/* Pricing */}
+              {/* What's Included */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  Transparent Pricing - Know Before You Book
+                  What's Included in Your Service
                 </h2>
                 <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-6 border-2 border-pink-200">
-                  <div className="grid md:grid-cols-3 gap-6 mb-6">
+                  <div className="grid md:grid-cols-3 gap-6">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-pink-600 mb-2">$299+</div>
-                      <div className="text-gray-700">Standard Sedans</div>
-                      <div className="text-sm text-gray-600">Honda Civic, Toyota Corolla</div>
+                      <Shield className="w-12 h-12 text-pink-600 mx-auto mb-3" />
+                      <div className="font-bold text-gray-900 mb-2">OEM Quality Glass</div>
+                      <div className="text-sm text-gray-700">Exact same glass as factory original</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-pink-600 mb-2">$350+</div>
-                      <div className="text-gray-700">Mid-Size Vehicles</div>
-                      <div className="text-sm text-gray-600">Honda Accord, Toyota Camry</div>
+                      <Car className="w-12 h-12 text-pink-600 mx-auto mb-3" />
+                      <div className="font-bold text-gray-900 mb-2">Mobile Service</div>
+                      <div className="text-sm text-gray-700">We come to your location</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-pink-600 mb-2">$400+</div>
-                      <div className="text-gray-700">SUVs & Trucks</div>
-                      <div className="text-sm text-gray-600">Toyota RAV4, Ford F-150</div>
+                      <Shield className="w-12 h-12 text-pink-600 mx-auto mb-3" />
+                      <div className="font-bold text-gray-900 mb-2">Lifetime Warranty</div>
+                      <div className="text-sm text-gray-700">Workmanship guaranteed forever</div>
                     </div>
                   </div>
-                  <p className="text-center text-gray-700">
-                    <strong>Includes:</strong> OEM quality glass, mobile service, lifetime warranty
-                  </p>
                 </div>
               </section>
 
@@ -313,7 +309,7 @@ export default function WindshieldReplacementPage() {
                   Insurance Claims - We Handle Everything
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Most windshield replacements are covered by your comprehensive insurance policy for the price of your deductible. We work with all major insurance companies:
+                  Most windshield replacements are covered by your comprehensive insurance policy. We work with all major insurance companies:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                   {['State Farm', 'Geico', 'Progressive', 'Allstate', 'USAA', 'Farmers', 'Liberty Mutual', 'Nationwide'].map(insurer => (
@@ -350,7 +346,7 @@ export default function WindshieldReplacementPage() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   Popular Vehicles We Service in Denver
                 </h2>
-                <p className="text-gray-700 mb-4">Get vehicle-specific pricing and information:</p>
+                <p className="text-gray-700 mb-4">Get vehicle-specific information:</p>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { make: 'Toyota', model: 'Camry', slug: 'toyota-camry-windshield-replacement-denver' },
@@ -368,7 +364,7 @@ export default function WindshieldReplacementPage() {
                       className="bg-white border border-gray-200 rounded-lg p-4 hover:border-pink-500 hover:shadow-md transition-all"
                     >
                       <div className="font-semibold text-gray-900">{v.make} {v.model}</div>
-                      <div className="text-sm text-pink-600">View Pricing →</div>
+                      <div className="text-sm text-pink-600">Learn More →</div>
                     </Link>
                   ))}
                 </div>
