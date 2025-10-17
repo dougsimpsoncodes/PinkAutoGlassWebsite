@@ -178,7 +178,7 @@ export default function AuroraLocationPage() {
                     ].map(v => (
                       <li key={v.slug}>
                         <Link href={`/vehicles/${v.slug}`} className="text-pink-600 hover:underline flex justify-between">
-                          <span>{v.model}</span><span className="text-gray-600">{v.price}</span>
+                          <span>{v.model}</span>
                         </Link>
                       </li>
                     ))}
