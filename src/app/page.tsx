@@ -14,7 +14,6 @@ export default function Home() {
     "@id": "https://pinkautoglass.com",
     "url": "https://pinkautoglass.com",
     "telephone": "+17209187465",
-    "priceRange": "$89-$500",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Denver",
@@ -81,9 +80,7 @@ export default function Home() {
             "@type": "Service",
             "name": "Windshield Repair",
             "description": "Professional windshield chip and crack repair"
-          },
-          "price": "89",
-          "priceCurrency": "USD"
+          }
         },
         {
           "@type": "Offer",
@@ -91,9 +88,7 @@ export default function Home() {
             "@type": "Service",
             "name": "Windshield Replacement",
             "description": "Full windshield replacement with OEM quality glass"
-          },
-          "price": "299",
-          "priceCurrency": "USD"
+          }
         }
       ]
     }
@@ -116,7 +111,7 @@ export default function Home() {
         "name": "Does insurance cover windshield replacement?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Most comprehensive insurance policies in Colorado cover windshield replacement with $0 deductible. We handle all insurance paperwork for you."
+          "text": "Most comprehensive insurance policies in Colorado cover windshield replacement. We handle all insurance paperwork for you."
         }
       },
       {
@@ -161,7 +156,7 @@ export default function Home() {
             
             <p className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
               We come to you! Professional windshield service at your home or office. 
-              Quick repairs, quality replacements, unbeatable prices.
+              Quick repairs, quality replacements, professional service.
             </p>
             
             {/* Primary CTAs */}

@@ -8,7 +8,7 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Auto Glass Services Denver | Windshield Repair & Replacement | Pink Auto Glass',
-  description: 'Complete auto glass services across the Front Range. Windshield repair from $89, replacement from $299. Mobile service, same-day appointments, lifetime warranty.',
+  description: 'Complete auto glass services across the Front Range. Windshield repair and replacement. Mobile service, same-day appointments, lifetime warranty.',
   keywords: 'auto glass services denver, windshield services, windshield repair, windshield replacement, mobile auto glass, adas calibration denver',
   openGraph: {
     title: 'Auto Glass Services Denver | Pink Auto Glass',
@@ -26,7 +26,7 @@ export default function ServicesPage() {
     },
     {
       question: 'Does insurance cover windshield repair and replacement in Colorado?',
-      answer: 'Yes. Most comprehensive insurance policies in Colorado cover windshield claims with zero or reduced deductibles. Repairs are almost always 100% covered with no deductible. Replacements are often covered at $0 out of pocket as well. We verify your coverage and handle all the paperwork.'
+      answer: 'Yes. Most comprehensive insurance policies in Colorado cover windshield claims with zero or reduced deductibles. Repairs are almost always 100% covered with no deductible. Replacements are often covered as well. We verify your coverage and handle all the paperwork.'
     },
     {
       question: 'How long does each service take?',
@@ -34,7 +34,7 @@ export default function ServicesPage() {
     },
     {
       question: 'What if I don\'t have insurance?',
-      answer: 'No problem. We offer competitive cash pricing for all services. Windshield repair starts at $89, and replacement starts at $299 depending on your vehicle. We can discuss payment options when you call.'
+      answer: 'No problem. We offer competitive cash pricing for all services depending on your vehicle. We can discuss payment options and provide a free quote when you call.'
     },
     {
       question: 'Can you really come to my location?',
@@ -67,16 +67,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "Windshield Replacement",
           "url": "https://pinkautoglass.com/services/windshield-replacement",
-          "description": "Professional windshield replacement with OEM quality glass",
-          "offers": {
-            "@type": "Offer",
-            "priceCurrency": "USD",
-            "price": "299",
-            "priceSpecification": {
-              "@type": "PriceSpecification",
-              "minPrice": "299"
-            }
-          }
+          "description": "Professional windshield replacement with OEM quality glass"
         }
       },
       {
@@ -86,12 +77,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "Windshield Repair",
           "url": "https://pinkautoglass.com/services/windshield-repair",
-          "description": "Fast windshield chip and crack repair, often covered 100% by insurance",
-          "offers": {
-            "@type": "Offer",
-            "priceCurrency": "USD",
-            "price": "89"
-          }
+          "description": "Fast windshield chip and crack repair, often covered 100% by insurance"
         }
       },
       {
@@ -101,7 +87,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "ADAS Calibration",
           "url": "https://pinkautoglass.com/services/adas-calibration",
-          "description": "Advanced Driver Assistance Systems calibration starting at $199"
+          "description": "Advanced Driver Assistance Systems calibration"
         }
       },
       {
@@ -121,7 +107,7 @@ export default function ServicesPage() {
           "@type": "Service",
           "name": "Insurance Claims Assistance",
           "url": "https://pinkautoglass.com/services/insurance-claims",
-          "description": "We handle all insurance paperwork and billing - most claims $0 out of pocket"
+          "description": "We handle all insurance paperwork and billing"
         }
       }
     ]
@@ -179,8 +165,8 @@ export default function ServicesPage() {
                     <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-900 mb-1">Small chip (quarter-sized or smaller)</div>
-                      <div className="text-pink-600 font-bold">Windshield Repair - $89</div>
-                      <div className="text-sm text-gray-600">Often $0 with insurance</div>
+                      <div className="text-pink-600 font-bold">Windshield Repair</div>
+                      <div className="text-sm text-gray-600">Often covered by insurance</div>
                     </div>
                   </div>
                 </div>
@@ -190,7 +176,7 @@ export default function ServicesPage() {
                     <CheckCircle className="w-5 h-5 text-orange-600 mr-2 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-900 mb-1">Large crack (longer than 6 inches)</div>
-                      <div className="text-pink-600 font-bold">Windshield Replacement - From $299</div>
+                      <div className="text-pink-600 font-bold">Windshield Replacement</div>
                     </div>
                   </div>
                 </div>
@@ -200,7 +186,7 @@ export default function ServicesPage() {
                     <CheckCircle className="w-5 h-5 text-orange-600 mr-2 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-900 mb-1">Damage in driver's view</div>
-                      <div className="text-pink-600 font-bold">Windshield Replacement - From $299</div>
+                      <div className="text-pink-600 font-bold">Windshield Replacement</div>
                     </div>
                   </div>
                 </div>
@@ -210,7 +196,7 @@ export default function ServicesPage() {
                     <CheckCircle className="w-5 h-5 text-orange-600 mr-2 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-900 mb-1">Multiple chips or cracks</div>
-                      <div className="text-pink-600 font-bold">Windshield Replacement - From $299</div>
+                      <div className="text-pink-600 font-bold">Windshield Replacement</div>
                     </div>
                   </div>
                 </div>
@@ -220,7 +206,7 @@ export default function ServicesPage() {
                     <CheckCircle className="w-5 h-5 text-orange-600 mr-2 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-900 mb-1">Edge damage (crack reaches edge)</div>
-                      <div className="text-pink-600 font-bold">Windshield Replacement - From $299</div>
+                      <div className="text-pink-600 font-bold">Windshield Replacement</div>
                     </div>
                   </div>
                 </div>
@@ -252,7 +238,6 @@ export default function ServicesPage() {
                 <div className="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-6 rounded-t-xl">
                   <Wrench className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">Windshield Replacement</h3>
-                  <div className="text-3xl font-bold">From $299</div>
                   <div className="text-pink-100 flex items-center mt-2">
                     <Clock className="w-4 h-4 mr-2" />
                     60-90 minutes
@@ -271,7 +256,7 @@ export default function ServicesPage() {
                     </li>
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>ADAS calibration available (starting at $199 for 2018+ vehicles)</span>
+                      <span>ADAS calibration available for 2018+ vehicles</span>
                     </li>
                     <li className="flex items-start text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -309,7 +294,6 @@ export default function ServicesPage() {
                 <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 rounded-t-xl">
                   <Shield className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">Windshield Repair</h3>
-                  <div className="text-3xl font-bold">From $89</div>
                   <div className="text-green-100 flex items-center mt-2">
                     <Clock className="w-4 h-4 mr-2" />
                     30-45 minutes
@@ -317,7 +301,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="p-6">
                   <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded">
-                    <p className="text-sm font-semibold text-green-900">Often $0 with insurance!</p>
+                    <p className="text-sm font-semibold text-green-900">Often covered by insurance!</p>
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-3">What's Included:</h4>
                   <ul className="space-y-2 mb-6">
@@ -369,7 +353,6 @@ export default function ServicesPage() {
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
                   <Car className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">ADAS Calibration</h3>
-                  <div className="text-3xl font-bold">Starting at $199</div>
                   <div className="text-blue-100 flex items-center mt-2">
                     <Clock className="w-4 h-4 mr-2" />
                     30-60 minutes
@@ -469,7 +452,7 @@ export default function ServicesPage() {
                   <DollarSign className="w-12 h-12 mb-3" />
                   <h3 className="text-2xl font-bold mb-2">Insurance Claims</h3>
                   <div className="text-3xl font-bold">We Handle Everything</div>
-                  <div className="text-teal-100 text-sm mt-2">Most Claims: $0 Out of Pocket</div>
+                  <div className="text-teal-100 text-sm mt-2">Often No Out-of-Pocket Cost</div>
                 </div>
                 <div className="p-6">
                   <h4 className="font-semibold text-gray-900 mb-3">What We Do:</h4>
@@ -540,14 +523,14 @@ export default function ServicesPage() {
                       <td className="px-6 py-4 text-gray-700">60-90 minutes (+ calibration if needed)</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">Typical Cost</td>
-                      <td className="px-6 py-4 text-gray-700">$89 (often $0 w/ insurance)</td>
-                      <td className="px-6 py-4 text-gray-700">$299-$500</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">Coverage</td>
+                      <td className="px-6 py-4 text-gray-700">Often covered by insurance with no deductible</td>
+                      <td className="px-6 py-4 text-gray-700">Covered by most comprehensive insurance policies</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">Insurance</td>
-                      <td className="px-6 py-4 text-gray-700">Usually 100% covered, no deductible</td>
-                      <td className="px-6 py-4 text-gray-700">Covered for the price of your deductible</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">Drive Time</td>
+                      <td className="px-6 py-4 text-gray-700">Immediate</td>
+                      <td className="px-6 py-4 text-gray-700">Wait 1 hour after completion</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Result</td>
@@ -622,9 +605,9 @@ export default function ServicesPage() {
 
               <div className="bg-white rounded-lg p-6 shadow-md border-t-4 border-pink-500">
                 <Car className="w-10 h-10 text-pink-600 mb-3" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Transparent Pricing</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Free Quotes</h3>
                 <p className="text-gray-700">
-                  You'll know your exact cost before we start. No hidden fees, no surprises. We tell you your out-of-pocket amount upfront.
+                  You'll know your exact coverage before we start. No hidden fees, no surprises. We tell you your out-of-pocket amount upfront.
                 </p>
               </div>
             </div>
@@ -682,7 +665,7 @@ export default function ServicesPage() {
               {/* Popular Vehicles */}
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Vehicles We Service</h2>
-                <p className="text-gray-700 mb-4">Get vehicle-specific pricing and information:</p>
+                <p className="text-gray-700 mb-4">Get vehicle-specific information:</p>
                 <div className="space-y-2">
                   {[
                     { name: 'Toyota Camry', slug: 'toyota-camry-windshield-replacement-denver' },
