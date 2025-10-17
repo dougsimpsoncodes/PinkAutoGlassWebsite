@@ -37,7 +37,7 @@ export default function TrustBanner() {
             <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 mb-3">
               <ThumbsUp className="w-8 h-8" />
             </div>
-            <div className="font-bold text-lg mb-1">$0 Out of Pocket</div>
+            <div className="font-bold text-lg mb-1">Often No Cost</div>
             <div className="text-sm text-pink-100">Most insurance claims</div>
           </div>
         </div>

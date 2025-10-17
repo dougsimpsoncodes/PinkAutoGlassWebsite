@@ -9,11 +9,11 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Auto Glass Insurance Claims Denver - We Handle Everything',
-  description: 'Hassle-free auto glass insurance claims in Denver. Often $0 deductible in Colorado. We bill insurance directly. All paperwork handled. Work with all major insurers. Call (720) 918-7465.',
+  description: 'Hassle-free auto glass insurance claims in Denver. Often zero deductible in Colorado. We bill insurance directly. All paperwork handled. Work with all major insurers. Call (720) 918-7465.',
   keywords: 'auto glass insurance claims denver, windshield insurance colorado, zero deductible windshield, insurance glass replacement',
   openGraph: {
     title: 'Auto Glass Insurance Claims Made Easy | Pink Auto Glass',
-    description: 'We handle all insurance paperwork. Often $0 out-of-pocket in Colorado. Direct billing to your insurance.',
+    description: 'We handle all insurance paperwork. Often no out-of-pocket cost in Colorado. Direct billing to your insurance.',
     url: 'https://pinkautoglass.com/services/insurance-claims',
     type: 'website',
   },
@@ -68,7 +68,7 @@ export default function InsuranceClaimsPage() {
                 Auto Glass Insurance Claims Made Easy
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-teal-100">
-                We Handle All Paperwork • Often $0 Deductible • Direct Billing • All Major Insurers
+                We Handle All Paperwork • Often Zero Deductible • Direct Billing • All Major Insurers
               </p>
               <CTAButtons source="insurance-claims" />
             </div>
@@ -118,7 +118,7 @@ export default function InsuranceClaimsPage() {
                   {[
                     { num: 1, title: 'Provide Insurance Info', desc: 'Give us your insurance company name and policy number (usually on your insurance card).' },
                     { num: 2, title: 'We Verify Coverage', desc: 'We call your insurer to verify coverage, deductible amount, and any specific requirements.' },
-                    { num: 3, title: 'You Approve Cost', desc: 'We tell you exactly what you\'ll pay out-of-pocket (often $0) before we start any work.' },
+                    { num: 3, title: 'You Approve Cost', desc: 'We tell you exactly what you\'ll pay out-of-pocket (often nothing) before we start any work.' },
                     { num: 4, title: 'We Assist with Filing', desc: 'We assist with filing all required claim documentation to your insurance company on your behalf.' },
                     { num: 5, title: 'We Complete Service', desc: 'We repair or replace your windshield using OEM quality materials and professional installation.' },
                     { num: 6, title: 'We Bill Insurance', desc: 'We bill your insurance company directly. You only pay your deductible (if any).' },
@@ -212,7 +212,7 @@ export default function InsuranceClaimsPage() {
               <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to File Your Claim?</h2>
                 <p className="text-xl mb-6 text-teal-100">
-                  We handle all paperwork. Often $0 out-of-pocket. Direct billing.
+                  We handle all paperwork. Often no out-of-pocket cost. Direct billing.
                 </p>
                 <CTAButtons source="insurance-claims" />
               </section>

@@ -32,7 +32,7 @@ export default function CareersPage() {
         'Excellent customer service skills',
         'Professional appearance and demeanor',
       ],
-      pay: '$25-$35/hour + bonuses',
+      pay: 'Competitive-Competitive/hour + bonuses',
     },
     {
       title: 'Customer Service Representative',
@@ -45,7 +45,7 @@ export default function CareersPage() {
         'Comfortable with technology and scheduling software',
         'Bilingual (English/Spanish) a plus',
       ],
-      pay: '$18-$22/hour',
+      pay: 'Competitive-Competitive/hour',
     },
     {
       title: 'Auto Glass Apprentice',
@@ -58,7 +58,7 @@ export default function CareersPage() {
         'Physical ability to lift and carry glass',
         'Good mechanical aptitude',
       ],
-      pay: '$18-$20/hour (increases with experience)',
+      pay: 'Competitive-Competitive/hour (increases with experience)',
     },
   ];
 
@@ -101,7 +101,7 @@ export default function CareersPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Competitive Pay</h3>
                 <p className="text-gray-600">
-                  Industry-leading wages with performance bonuses and regular raises. Technicians earn $25-$35/hour plus incentives.
+                  Industry-leading wages with performance bonuses and regular raises. Technicians earn Competitive-Competitive/hour plus incentives.
                 </p>
               </div>
 

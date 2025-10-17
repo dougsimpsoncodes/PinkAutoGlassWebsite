@@ -8,11 +8,11 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair Denver - From $89 | Rock Chip Repair',
-  description: 'Professional windshield chip and crack repair in Denver. Often $0 with insurance. Same-day service, 30-minute repair, lifetime warranty. Stop chips from spreading. Call (720) 918-7465.',
+  title: 'Windshield Repair Denver | Rock Chip Repair',
+  description: 'Professional windshield chip and crack repair in Denver. Often covered by insurance. Same-day service, 30-minute repair, lifetime warranty. Stop chips from spreading. Call (720) 918-7465.',
   keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost',
   openGraph: {
-    title: 'Windshield Repair Denver - From $89 | Pink Auto Glass',
+    title: 'Windshield Repair Denver | Pink Auto Glass',
     description: 'Fast windshield chip repair. Often covered 100% by insurance. Same-day mobile service available.',
     url: 'https://pinkautoglass.com/services/windshield-repair',
     type: 'website',
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 export default function WindshieldRepairPage() {
   const faqs = [
     {
-      question: 'How much does windshield repair cost in Denver?',
-      answer: 'Windshield chip repair in Denver starts at $89. However, most comprehensive insurance policies in Colorado cover windshield repair with zero deductible - meaning you pay nothing out of pocket. We can verify your coverage before scheduling. Even without insurance, repair is significantly cheaper than replacement ($299-$500) and takes only 30 minutes.'
+      question: 'Does insurance cover windshield repair in Denver?',
+      answer: 'Most comprehensive insurance policies in Colorado cover windshield repair with zero deductible - meaning you pay nothing out of pocket. We can verify your coverage before scheduling. Repair is significantly more affordable than replacement and takes only 30 minutes.'
     },
     {
       question: 'When should I repair vs replace my windshield?',
@@ -33,8 +33,7 @@ export default function WindshieldRepairPage() {
 
   const serviceSchema = generateServiceSchema({
     serviceName: 'Windshield Repair',
-    description: 'Professional windshield chip and crack repair service in Denver metro area. Fast 30-minute service, often $0 with insurance, prevents chips from spreading.',
-    priceRange: '89-150',
+    description: 'Professional windshield chip and crack repair service in Denver metro area. Fast 30-minute service, often covered by insurance, prevents chips from spreading.',
     serviceType: 'Auto Glass Repair',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial']
   });
@@ -65,7 +64,7 @@ export default function WindshieldRepairPage() {
                 Fast Windshield Chip Repair in Denver
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-green-100">
-                30-Minute Service • Often $0 with Insurance • Prevents Spreading
+                30-Minute Service • Often Covered by Insurance • Prevents Spreading
               </p>
               <CTAButtons source="windshield-repair" />
             </div>
@@ -96,7 +95,7 @@ export default function WindshieldRepairPage() {
                   Stop Chips Before They Spread
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  A small rock chip might seem insignificant, but Colorado's temperature swings cause chips to spread into long cracks fast. What starts as a repairable $89 chip can become a $350+ replacement within days. Windshield repair uses advanced resin technology to fill and seal the damage, preventing it from growing.
+                  A small rock chip might seem insignificant, but Colorado's temperature swings cause chips to spread into long cracks fast. What starts as a repairable chip can require a full replacement within days. Windshield repair uses advanced resin technology to fill and seal the damage, preventing it from growing.
                 </p>
 
                 <AboveFoldCTA location="service-windshield-repair" />
@@ -186,21 +185,11 @@ export default function WindshieldRepairPage() {
 
               <section className="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Insurance Coverage - Often $0 Out-of-Pocket
+                  Insurance Coverage - Often No Out-of-Pocket Cost
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
                   In Colorado, most comprehensive insurance policies cover windshield repair with <strong>zero deductible</strong>. This means you pay nothing - your insurance covers the full cost. We work with all major insurers and handle the paperwork.
                 </p>
-                <div className="bg-white rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">Without Insurance:</span>
-                    <span className="text-2xl font-bold text-green-600">$89</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">With Insurance:</span>
-                    <span className="text-2xl font-bold text-green-600">$0</span>
-                  </div>
-                </div>
               </section>
 
               <section>
@@ -221,7 +210,7 @@ export default function WindshieldRepairPage() {
                       className="bg-white border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-md transition-all"
                     >
                       <div className="font-semibold text-gray-900">{v.make} {v.model}</div>
-                      <div className="text-sm text-green-600">View Pricing →</div>
+                      <div className="text-sm text-green-600">Learn More →</div>
                     </Link>
                   ))}
                 </div>
@@ -247,7 +236,7 @@ export default function WindshieldRepairPage() {
               <section className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Stop That Chip From Spreading</h2>
                 <p className="text-xl mb-6 text-green-100">
-                  Same-day appointments. Often $0 with insurance. 30-minute service.
+                  Same-day appointments. Often covered by insurance. 30-minute service.
                 </p>
                 <CTAButtons source="windshield-repair" />
               </section>
@@ -291,11 +280,11 @@ export default function WindshieldRepairPage() {
                     </li>
                     <li className="flex items-start">
                       <DollarSign className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Save Money</strong> - repair is 80% cheaper than replacement</span>
+                      <span className="text-sm text-gray-700"><strong>Save Money</strong> - repair is more affordable than replacement</span>
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>$0 Cost</strong> with most insurance</span>
+                      <span className="text-sm text-gray-700"><strong>Often Covered</strong> by insurance with no deductible</span>
                     </li>
                   </ul>
                 </div>

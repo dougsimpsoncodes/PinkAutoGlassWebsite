@@ -9,7 +9,7 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement by Vehicle | Denver Auto Glass Pricing | Pink Auto Glass',
-  description: 'Get exact windshield replacement pricing for your vehicle. OEM glass, ADAS calibration included free. Serving all makes and models in Denver metro. From $299.',
+  description: 'Get exact windshield replacement pricing for your vehicle. OEM glass, ADAS calibration included free. Serving all makes and models in Denver metro. Professional Service.',
   keywords: 'windshield replacement by vehicle, auto glass pricing by car, vehicle windshield cost, adas calibration by make model',
   openGraph: {
     title: 'Windshield Replacement Pricing by Vehicle | Pink Auto Glass',
@@ -37,7 +37,7 @@ export default function VehiclesPage() {
     },
     {
       question: 'What is ADAS and which vehicles need it?',
-      answer: 'ADAS (Advanced Driver Assistance Systems) includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. Most vehicles from 2018 and newer have ADAS cameras mounted on or near the windshield that require recalibration after replacement. We include ADAS calibration free with every replacement - other shops charge $150-$300 extra.'
+      answer: 'ADAS (Advanced Driver Assistance Systems) includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. Most vehicles from 2018 and newer have ADAS cameras mounted on or near the windshield that require recalibration after replacement. We include ADAS calibration free with every replacement - other shops charge Competitive Pricing extra.'
     },
     {
       question: 'Should I use OEM or aftermarket glass for my vehicle?',
@@ -99,7 +99,7 @@ export default function VehiclesPage() {
                 </h1>
               </div>
               <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-                Get exact pricing for your make and model • OEM quality glass • ADAS calibration included free • From $299
+                Get exact pricing for your make and model • OEM quality glass • ADAS calibration included free • Professional Service
               </p>
               <CTAButtons source="vehicles-hub-hero" />
             </div>
@@ -239,11 +239,11 @@ export default function VehiclesPage() {
                     Advanced Driver Assistance Systems (ADAS) are safety features in modern vehicles that rely on cameras and sensors mounted on or near your windshield. After windshield replacement, these systems must be recalibrated to work correctly.
                   </p>
                   <p className="text-lg text-gray-700 mb-6">
-                    <strong>Most vehicles from 2018 and newer require ADAS calibration.</strong> Other shops charge $150-$300 for this service. We include it free with every replacement.
+                    <strong>Most vehicles from 2018 and newer require ADAS calibration.</strong> Other shops charge Competitive Pricing for this service. We include it free with every replacement.
                   </p>
                   <div className="bg-white rounded-lg p-4 border-l-4 border-green-500">
                     <p className="text-sm font-semibold text-green-900">
-                      💰 Save $150-$300 - ADAS calibration included free with our windshield replacement!
+                      💰 Save Competitive Pricing - ADAS calibration included free with our windshield replacement!
                     </p>
                   </div>
                 </div>
@@ -346,31 +346,31 @@ export default function VehiclesPage() {
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Compact Sedan</td>
                       <td className="px-6 py-4 text-gray-700">Honda Civic, Toyota Corolla</td>
-                      <td className="px-6 py-4 text-green-600 font-bold">$299 - $350</td>
+                      <td className="px-6 py-4 text-green-600 font-bold">Contact for Quote</td>
                       <td className="px-6 py-4 text-gray-700">2018+ models</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Mid-Size Sedan</td>
                       <td className="px-6 py-4 text-gray-700">Honda Accord, Toyota Camry</td>
-                      <td className="px-6 py-4 text-green-600 font-bold">$340 - $380</td>
+                      <td className="px-6 py-4 text-green-600 font-bold">Contact for Quote</td>
                       <td className="px-6 py-4 text-gray-700">2018+ standard</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Compact SUV</td>
                       <td className="px-6 py-4 text-gray-700">Honda CR-V, Toyota RAV4</td>
-                      <td className="px-6 py-4 text-orange-600 font-bold">$380 - $420</td>
+                      <td className="px-6 py-4 text-orange-600 font-bold">Contact for Quote</td>
                       <td className="px-6 py-4 text-gray-700">2017+ standard</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Full-Size Truck</td>
                       <td className="px-6 py-4 text-gray-700">Ford F-150, Chevy Silverado</td>
-                      <td className="px-6 py-4 text-orange-600 font-bold">$400 - $500</td>
+                      <td className="px-6 py-4 text-orange-600 font-bold">Contact for Quote</td>
                       <td className="px-6 py-4 text-gray-700">2020+ common</td>
                     </tr>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">Luxury/Premium</td>
                       <td className="px-6 py-4 text-gray-700">Tesla, BMW, Mercedes</td>
-                      <td className="px-6 py-4 text-red-600 font-bold">$450 - $600+</td>
+                      <td className="px-6 py-4 text-red-600 font-bold">Contact for Quote</td>
                       <td className="px-6 py-4 text-gray-700">Nearly all models</td>
                     </tr>
                   </tbody>

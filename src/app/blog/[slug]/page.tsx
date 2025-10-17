@@ -322,7 +322,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
                 Ready to Get Your Auto Glass Fixed?
               </h2>
               <p className="text-xl text-pink-100 mb-8">
-                Expert service, lifetime warranty, and most insurance claims covered at $0 out of pocket.
+                Expert service, lifetime warranty, and most insurance claims covered at professional service out of pocket.
               </p>
               <CTAButtons source={`blog-${post.slug}-bottom`} />
             </div>

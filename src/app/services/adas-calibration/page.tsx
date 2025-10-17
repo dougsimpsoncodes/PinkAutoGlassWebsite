@@ -9,11 +9,11 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'ADAS Calibration Denver - Professional Camera Calibration Service',
-  description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. Starting at $199. Call (720) 918-7465.',
+  description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. Call (720) 918-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',
   openGraph: {
     title: 'ADAS Calibration Denver | Pink Auto Glass',
-    description: 'ADAS calibration after windshield replacement. Certified technicians, OEM-spec equipment. Starting at $199.',
+    description: 'ADAS calibration after windshield replacement. Certified technicians, OEM-spec equipment.',
     url: 'https://pinkautoglass.com/services/adas-calibration',
     type: 'website',
   },
@@ -29,8 +29,7 @@ export default function AdasCalibrationPage() {
 
   const serviceSchema = generateServiceSchema({
     serviceName: 'ADAS Calibration',
-    description: 'Professional ADAS camera calibration service across the Front Range. Certified technicians use OEM quality equipment. Starting at $199.',
-    priceRange: '199-299',
+    description: 'Professional ADAS camera calibration service across the Front Range. Certified technicians use OEM quality equipment.',
     serviceType: 'ADAS Calibration Service',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
@@ -64,7 +63,7 @@ export default function AdasCalibrationPage() {
                 ADAS Calibration After Windshield Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-purple-100">
-                Starting at $199 • Certified Technicians • OEM Quality Equipment • Required for 2018+ Vehicles
+                Certified Technicians • OEM Quality Equipment • Required for 2018+ Vehicles
               </p>
               <CTAButtons source="adas-calibration" />
             </div>

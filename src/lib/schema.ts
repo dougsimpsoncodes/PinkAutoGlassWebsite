@@ -29,7 +29,7 @@ export function generateOrganizationSchema() {
     "@id": "https://pinkautoglass.com",
     "url": "https://pinkautoglass.com",
     "telephone": "+17209187465",
-    "priceRange": "$89-$500",
+    "priceRange": "Contact for Quote",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Denver",
@@ -144,7 +144,7 @@ export function generateLocalBusinessSchema(params: {
     "image": "https://pinkautoglass.com/pink-logo-horizontal.png",
     "url": `https://pinkautoglass.com/locations/${params.city.toLowerCase().replace(/\s+/g, '-')}-${params.state.toLowerCase()}`,
     "telephone": "+17209187465",
-    "priceRange": "$89-$500",
+    "priceRange": "Contact for Quote",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": params.city,

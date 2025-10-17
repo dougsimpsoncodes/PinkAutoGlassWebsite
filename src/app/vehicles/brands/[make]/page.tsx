@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: MakePageProps): Promise<Metad
 
   return {
     title: `${makeName} Windshield Replacement Denver | Expert ${makeName} Auto Glass Service`,
-    description: `Professional windshield replacement for all ${makeName} models in Denver. OEM glass, ADAS calibration, lifetime warranty. Most insurance claims $0 out of pocket. Call 720-918-7465.`,
+    description: `Professional windshield replacement for all ${makeName} models in Denver. OEM glass, ADAS calibration, lifetime warranty. Most insurance claims no out-of-pocket cost. Call 720-918-7465.`,
     openGraph: {
       title: `${makeName} Windshield Replacement Denver | Pink Auto Glass`,
       description: `Expert auto glass service for all ${makeName} models. Same-day appointments, mobile service available.`,
@@ -120,7 +120,7 @@ export default function MakePage({ params }: MakePageProps) {
                 When your {makeName} needs windshield replacement or repair in Denver, you need experts who understand the unique requirements of your vehicle. Pink Auto Glass specializes in {makeName} windshields, ensuring perfect fit, proper installation, and full safety system functionality.
               </p>
               <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-                We service all {makeName} models with {hasADASModels ? 'specialized ADAS calibration equipment for models with advanced safety systems, ' : ''}OEM-quality glass, and a lifetime warranty on our workmanship. Most insurance claims are covered at $0 out of pocket under Colorado law.
+                We service all {makeName} models with {hasADASModels ? 'specialized ADAS calibration equipment for models with advanced safety systems, ' : ''}OEM-quality glass, and a lifetime warranty on our workmanship. Most insurance claims are covered at no out-of-pocket cost under Colorado law.
               </p>
             </div>
 
@@ -163,7 +163,7 @@ export default function MakePage({ params }: MakePageProps) {
                   <h3 className="text-xl font-bold text-gray-900">Insurance Friendly</h3>
                 </div>
                 <p className="text-gray-700">
-                  We work directly with your insurance company. Under Colorado law, most windshield replacements are covered at $0 deductible.
+                  We work directly with your insurance company. Under Colorado law, most windshield replacements are covered at zero deductible.
                 </p>
               </div>
 
@@ -306,7 +306,7 @@ export default function MakePage({ params }: MakePageProps) {
                   Rock Chip Repair
                 </h3>
                 <p className="text-gray-700">
-                  Small chip? Get it repaired fast for just $89 (often free with insurance).
+                  Small chip? Get it repaired fast quickly (often covered by insurance).
                 </p>
               </Link>
 
@@ -344,7 +344,7 @@ export default function MakePage({ params }: MakePageProps) {
                   Insurance Claims Help
                 </h3>
                 <p className="text-gray-700">
-                  We handle your insurance claim from start to finish—most claims $0 out of pocket.
+                  We handle your insurance claim from start to finish—most claims no out-of-pocket cost.
                 </p>
               </Link>
             </div>
@@ -358,7 +358,7 @@ export default function MakePage({ params }: MakePageProps) {
               Ready to Get Your {makeName} Fixed?
             </h2>
             <p className="text-xl text-pink-100 mb-8">
-              Same-day service, lifetime warranty, and most insurance claims covered at $0 out of pocket.
+              Same-day service, lifetime warranty, and most insurance claims covered at no out-of-pocket cost.
             </p>
             <CTAButtons source={`make-${params.make}-bottom`} />
           </div>
