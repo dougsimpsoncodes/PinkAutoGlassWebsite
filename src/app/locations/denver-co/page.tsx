@@ -158,7 +158,7 @@ export default function DenverLocationPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $89</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
@@ -169,7 +169,7 @@ export default function DenverLocationPage() {
 
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $299</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM glass. ADAS calibration included.
                     </p>
@@ -218,7 +218,7 @@ export default function DenverLocationPage() {
                   </li>
                   <li className="flex items-start">
                     <span className="text-yellow-600 mr-2">•</span>
-                    <span><strong>Insurance Covers It:</strong> Comprehensive coverage typically covers hail damage with $0 deductible</span>
+                    <span><strong>Insurance Covers It:</strong> Comprehensive coverage typically covers hail damage with zero deductible</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-yellow-600 mr-2">•</span>

@@ -156,7 +156,7 @@ export default function FortCollinsLocationPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $89</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
@@ -167,7 +167,7 @@ export default function FortCollinsLocationPage() {
 
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $299</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
@@ -189,7 +189,7 @@ export default function FortCollinsLocationPage() {
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">ADAS Calibration</h3>
-                    <p className="text-blue-600 font-bold text-2xl mb-3">Starting at $199</p>
+                    <p className="text-blue-600 font-bold text-2xl mb-3">Professional Calibration</p>
                     <p className="text-gray-700 mb-4">
                       Required for 2018+ vehicles with advanced safety features.
                     </p>

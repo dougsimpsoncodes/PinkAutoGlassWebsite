@@ -117,12 +117,12 @@ export default function AuroraLocationPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $89</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
-                    <p className="text-pink-600 font-bold text-2xl mb-3">From $299</p>
+                    <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
@@ -172,9 +172,9 @@ export default function AuroraLocationPage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Popular Vehicles in Aurora</h3>
                   <ul className="space-y-2 text-sm">
                     {[
-                      { model: 'Subaru Outback', price: '$420', slug: 'subaru-outback-windshield-replacement-denver' },
-                      { model: 'Honda CR-V', price: '$380', slug: 'honda-cr-v-windshield-replacement-denver' },
-                      { model: 'Toyota RAV4', price: '$390', slug: 'toyota-rav4-windshield-replacement-denver' }
+                      { model: 'Subaru Outback', slug: 'subaru-outback-windshield-replacement-denver' },
+                      { model: 'Honda CR-V', slug: 'honda-cr-v-windshield-replacement-denver' },
+                      { model: 'Toyota RAV4', slug: 'toyota-rav4-windshield-replacement-denver' }
                     ].map(v => (
                       <li key={v.slug}>
                         <Link href={`/vehicles/${v.slug}`} className="text-pink-600 hover:underline flex justify-between">
