@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'ADAS Calibration Denver - Professional Camera Calibration Service',
   description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. Call (720) 918-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services/adas-calibration',
+  },
   openGraph: {
     title: 'ADAS Calibration Denver | Pink Auto Glass',
     description: 'ADAS calibration after windshield replacement. Certified technicians, OEM-spec equipment.',

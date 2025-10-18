@@ -1,0 +1,209 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Skip to main content":
+    - /url: "#main-content"
+  - navigation "Main navigation":
+    - link "Pink Auto Glass - Go to homepage":
+      - /url: /
+      - img "Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
+    - link "Call Pink Auto Glass":
+      - /url: tel:+17209187465
+      - img
+      - text: (720) 918-7465
+- main:
+  - heading "Get Your FREE Quote" [level=1]
+  - text: Step 2 of 3 Contact & Location Service & Vehicle Contact & Location Review & Submit
+  - heading "Contact Information" [level=2]
+  - img
+  - text: First Name *
+  - textbox "First Name *"
+  - img
+  - text: Last Name *
+  - textbox "Last Name *"
+  - img
+  - text: Phone Number *
+  - textbox "Phone Number *"
+  - img
+  - text: Email Address *
+  - textbox "Email Address *"
+  - heading "Service Location" [level=2]:
+    - img
+    - text: Service Location
+  - text: Street Address (Optional)
+  - textbox "Street Address (Optional)"
+  - text: City *
+  - textbox "City *"
+  - text: State *
+  - combobox "State *":
+    - option "AL"
+    - option "AK"
+    - option "AZ"
+    - option "AR"
+    - option "CA"
+    - option "CO" [selected]
+    - option "CT"
+    - option "DE"
+    - option "FL"
+    - option "GA"
+    - option "HI"
+    - option "ID"
+    - option "IL"
+    - option "IN"
+    - option "IA"
+    - option "KS"
+    - option "KY"
+    - option "LA"
+    - option "ME"
+    - option "MD"
+    - option "MA"
+    - option "MI"
+    - option "MN"
+    - option "MS"
+    - option "MO"
+    - option "MT"
+    - option "NE"
+    - option "NV"
+    - option "NH"
+    - option "NJ"
+    - option "NM"
+    - option "NY"
+    - option "NC"
+    - option "ND"
+    - option "OH"
+    - option "OK"
+    - option "OR"
+    - option "PA"
+    - option "RI"
+    - option "SC"
+    - option "SD"
+    - option "TN"
+    - option "TX"
+    - option "UT"
+    - option "VT"
+    - option "VA"
+    - option "WA"
+    - option "WV"
+    - option "WI"
+    - option "WY"
+  - text: ZIP Code *
+  - textbox "ZIP Code *"
+  - heading "When would you like service?" [level=2]:
+    - img
+    - text: When would you like service?
+  - text: Preferred Date (Optional)
+  - button "Select a date"
+  - img
+  - paragraph: "Click to select a date • Available: Tomorrow - Next 30 days"
+  - text: Preferred Time
+  - combobox "Preferred Time":
+    - option "Flexible" [selected]
+    - option "Morning (8am - 12pm)"
+    - option "Afternoon (12pm - 5pm)"
+    - option "Evening (5pm - 8pm)"
+  - button "Previous":
+    - img
+    - text: Previous
+  - button "Review Order":
+    - text: Review Order
+    - img
+  - paragraph:
+    - text: Your information is secure and encrypted. We never sell or share your personal data.
+    - link "Privacy Policy":
+      - /url: /privacy
+- contentinfo:
+  - text: Pink Auto Glass
+  - paragraph: Professional mobile windshield repair and replacement throughout Colorado. We come to you with same-day service and lifetime warranty.
+  - img
+  - link "(720) 918-7465":
+    - /url: tel:+17209187465
+  - img
+  - link "service@pinkautoglass.com":
+    - /url: mailto:service@pinkautoglass.com
+  - img
+  - text: Mobile Service Throughout Colorado
+  - heading "Services" [level=3]
+  - list:
+    - listitem:
+      - link "Windshield Replacement":
+        - /url: /services/windshield-replacement
+    - listitem:
+      - link "Rock Chip Repair":
+        - /url: /services/windshield-repair
+    - listitem:
+      - link "Mobile Service":
+        - /url: /services/mobile-service
+    - listitem:
+      - link "ADAS Calibration":
+        - /url: /services/adas-calibration
+    - listitem:
+      - link "Insurance Claims":
+        - /url: /services/insurance-claims
+    - listitem:
+      - link "View All Services →":
+        - /url: /services
+  - heading "Service Area" [level=3]
+  - list:
+    - listitem:
+      - link "Denver":
+        - /url: /locations/denver-co
+    - listitem:
+      - link "Aurora":
+        - /url: /locations/aurora-co
+    - listitem:
+      - link "Lakewood":
+        - /url: /locations/lakewood-co
+    - listitem:
+      - link "Boulder":
+        - /url: /locations/boulder-co
+    - listitem:
+      - link "View All Locations →":
+        - /url: /locations
+  - heading "Company" [level=3]
+  - list:
+    - listitem:
+      - link "About Us":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Blog":
+        - /url: /blog
+    - listitem:
+      - link "Find Your Vehicle":
+        - /url: /vehicles
+    - listitem:
+      - link "Careers":
+        - /url: /careers
+    - listitem:
+      - link "Privacy Policy":
+        - /url: /privacy
+  - heading "Follow Us" [level=4]
+  - link "Follow us on Facebook":
+    - /url: https://www.facebook.com/PinkAutoGlassDenver
+    - img
+  - link "Follow us on Instagram":
+    - /url: https://www.instagram.com/pinkautoglassdenver
+    - img
+  - link "Follow us on LinkedIn":
+    - /url: https://www.linkedin.com/company/pink-auto-glass
+    - img
+  - paragraph: © 2024 Pink Auto Glass. All rights reserved.
+  - link "Privacy Policy":
+    - /url: /privacy
+  - link "Terms of Service":
+    - /url: /terms
+  - link "Sitemap":
+    - /url: /sitemap
+  - text: Licensed & Insured • Lifetime Warranty
+- alert
+- text: 🚗 Need Auto Glass Service? Request callback in 5 minutes
+- link "Call Now":
+  - /url: tel:+17209187465
+  - img
+  - text: Call Now
+- button "Dismiss callback bar":
+  - img
+```

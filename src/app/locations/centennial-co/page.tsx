@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Centennial, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Centennial, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair centennial, windshield replacement centennial, auto glass centennial co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/centennial-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Centennial, CO | Pink Auto Glass',
     description: 'Centennial\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function CentennialLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Centennial Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">DTC office parks and I‑25/E‑470 commutes mean curbside convenience is key. We provide mobile service across Centennial with OEM‑quality glass.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Can you service DTC offices?</h3>
+                    <p>Yes—book a window that fits your schedule; we’ll coordinate a safe spot on‑site.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Do you include ADAS calibration?</h3>
+                    <p>Where required by the vehicle, calibration is included and results are documented.</p>
                   </div>
                 </div>
               </section>

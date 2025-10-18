@@ -1,0 +1,77 @@
+# Gitleaks configuration for Pink Auto Glass
+# https://github.com/gitleaks/gitleaks
+
+title = "Pink Auto Glass - Secret Scanning Configuration"
+
+[extend]
+# Use default gitleaks rules
+useDefault = true
+
+# Additional custom rules for Pink Auto Glass specific secrets
+[[rules]]
+id = "supabase-service-role-key"
+description = "Supabase Service Role Key"
+regex = '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'''
+tags = ["key", "supabase", "critical"]
+
+[[rules]]
+id = "postgres-connection-string"
+description = "PostgreSQL Connection String with Password"
+regex = '''postgresql://[a-zA-Z0-9._-]+:[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+:[0-9]+/[a-zA-Z0-9._-]+'''
+tags = ["database", "postgres", "critical"]
+
+[[rules]]
+id = "twilio-auth-token"
+description = "Twilio Auth Token"
+regex = '''(?i)(twilio[_-]?auth[_-]?token|twilio[_-]?secret)[\"']?\s*[:=]\s*[\"']?([a-z0-9]{32})'''
+tags = ["twilio", "sms", "high"]
+
+[[rules]]
+id = "stripe-secret-key"
+description = "Stripe Secret API Key"
+regex = '''sk_(test|live)_[0-9a-zA-Z]{24,}'''
+tags = ["stripe", "payment", "critical"]
+
+[[rules]]
+id = "upstash-redis-token"
+description = "Upstash Redis REST Token"
+regex = '''(?i)(upstash[_-]?redis[_-]?rest[_-]?token)[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_-]{43})'''
+tags = ["redis", "cache", "high"]
+
+[[rules]]
+id = "recaptcha-secret"
+description = "reCAPTCHA Secret Key"
+regex = '''(?i)(recaptcha[_-]?secret)[\"']?\s*[:=]\s*[\"']?([0-9A-Za-z_-]{40})'''
+tags = ["recaptcha", "captcha", "medium"]
+
+# Allowlist for false positives
+[allowlist]
+description = "Allowlisted files and patterns"
+paths = [
+  '''^\.env\.example$''',  # Example env file (no real secrets)
+  '''^\.gitleaks\.toml$''',  # This config file
+  '''^SECURITY_.*\.md$''',  # Security documentation
+  '''test-results/''',  # Playwright test artifacts
+]
+
+# Allowlist specific patterns that are not secrets
+regexes = [
+  '''NEXT_PUBLIC_SUPABASE_URL''',  # Public URL, not secret
+  '''NEXT_PUBLIC_SUPABASE_ANON_KEY''',  # Anon key is public
+  '''NEXT_PUBLIC_GA_MEASUREMENT_ID''',  # GA ID is public
+  '''NEXT_PUBLIC_RECAPTCHA_SITE_KEY''',  # Site key is public
+  '''example\.com''',  # Example domains
+  '''your-project-id''',  # Placeholder text
+  '''your-anon-key''',  # Placeholder text
+  '''your-service-role-key''',  # Placeholder text
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.your-(anon|service)-key''',  # Placeholder JWTs in .env.example
+]
+
+# Stop words to ignore (common false positives)
+stopwords = [
+  "password",
+  "secret",
+  "token",
+  "key",
+  "api",
+]

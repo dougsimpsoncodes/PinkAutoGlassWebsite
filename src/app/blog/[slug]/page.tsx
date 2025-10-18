@@ -33,6 +33,9 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
   return {
     title: `${post.title} | Pink Auto Glass Blog`,
     description: post.excerpt,
+    alternates: {
+      canonical: `https://pinkautoglass.com/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,

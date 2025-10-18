@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Thornton, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Thornton, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair thornton, windshield replacement thornton, auto glass thornton co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/thornton-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Thornton, CO | Pink Auto Glass',
     description: 'Thornton\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function ThorntonLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Thornton Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">With rapid growth along I‑25 north, construction debris and dust can cause frequent chips. We offer mobile repair and OEM replacements throughout Thornton.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you service new developments?</h3>
+                    <p>Yes—call or book online and we’ll meet you at home or a safe nearby lot.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Is same‑day available?</h3>
+                    <p>Often yes; we’ll confirm the earliest arrival window based on your location and weather.</p>
                   </div>
                 </div>
               </section>
