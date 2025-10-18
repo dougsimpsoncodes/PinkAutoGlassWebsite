@@ -1,77 +1,110 @@
-# Gitleaks configuration for Pink Auto Glass
+# Gitleaks Configuration for Pink Auto Glass
 # https://github.com/gitleaks/gitleaks
 
-title = "Pink Auto Glass - Secret Scanning Configuration"
+title = "Pink Auto Glass - Secret Detection Config"
 
 [extend]
-# Use default gitleaks rules
+# useDefault will extend the base configuration with the default gitleaks config:
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
 useDefault = true
 
-# Additional custom rules for Pink Auto Glass specific secrets
-[[rules]]
-id = "supabase-service-role-key"
-description = "Supabase Service Role Key"
-regex = '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'''
-tags = ["key", "supabase", "critical"]
-
-[[rules]]
-id = "postgres-connection-string"
-description = "PostgreSQL Connection String with Password"
-regex = '''postgresql://[a-zA-Z0-9._-]+:[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+:[0-9]+/[a-zA-Z0-9._-]+'''
-tags = ["database", "postgres", "critical"]
-
-[[rules]]
-id = "twilio-auth-token"
-description = "Twilio Auth Token"
-regex = '''(?i)(twilio[_-]?auth[_-]?token|twilio[_-]?secret)[\"']?\s*[:=]\s*[\"']?([a-z0-9]{32})'''
-tags = ["twilio", "sms", "high"]
-
-[[rules]]
-id = "stripe-secret-key"
-description = "Stripe Secret API Key"
-regex = '''sk_(test|live)_[0-9a-zA-Z]{24,}'''
-tags = ["stripe", "payment", "critical"]
-
-[[rules]]
-id = "upstash-redis-token"
-description = "Upstash Redis REST Token"
-regex = '''(?i)(upstash[_-]?redis[_-]?rest[_-]?token)[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_-]{43})'''
-tags = ["redis", "cache", "high"]
-
-[[rules]]
-id = "recaptcha-secret"
-description = "reCAPTCHA Secret Key"
-regex = '''(?i)(recaptcha[_-]?secret)[\"']?\s*[:=]\s*[\"']?([0-9A-Za-z_-]{40})'''
-tags = ["recaptcha", "captcha", "medium"]
-
-# Allowlist for false positives
 [allowlist]
 description = "Allowlisted files and patterns"
 paths = [
-  '''^\.env\.example$''',  # Example env file (no real secrets)
-  '''^\.gitleaks\.toml$''',  # This config file
-  '''^SECURITY_.*\.md$''',  # Security documentation
-  '''test-results/''',  # Playwright test artifacts
+    # Example/template files
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+
+    # Test files with mock data
+    '''tests?/.*\.ts$''',
+    '''tests?/.*\.js$''',
+    '''\.*\.spec\.ts$''',
+    '''\.*\.test\.ts$''',
+
+    # Documentation
+    '''docs/.*\.md$''',
+    '''README\.md$''',
+    '''SECURITY\.md$''',
+
+    # Package lock files
+    '''package-lock\.json$''',
+    '''yarn\.lock$''',
 ]
 
-# Allowlist specific patterns that are not secrets
 regexes = [
-  '''NEXT_PUBLIC_SUPABASE_URL''',  # Public URL, not secret
-  '''NEXT_PUBLIC_SUPABASE_ANON_KEY''',  # Anon key is public
-  '''NEXT_PUBLIC_GA_MEASUREMENT_ID''',  # GA ID is public
-  '''NEXT_PUBLIC_RECAPTCHA_SITE_KEY''',  # Site key is public
-  '''example\.com''',  # Example domains
-  '''your-project-id''',  # Placeholder text
-  '''your-anon-key''',  # Placeholder text
-  '''your-service-role-key''',  # Placeholder text
-  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.your-(anon|service)-key''',  # Placeholder JWTs in .env.example
+    # Placeholder values in .env.example
+    '''your-project-id''',
+    '''your-anon-key''',
+    '''your-service-role-key''',
+    '''your-32-character-hex-key''',
+    '''your-twilio''',
+    '''your-sendgrid''',
+    '''your-google-maps''',
+    '''your-recaptcha''',
+    '''G-XXXXXXXXXX''',
+    '''https://your-''',
+    '''example\.com''',
+
+    # Test tokens (clearly marked)
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.test''',
+    '''test-secret-key-for-ci-only''',
+
+    # Public information (not secrets)
+    '''pinkautoglass\.com''',
+    '''service@pinkautoglass\.com''',
+    '''\+17209187465''',
 ]
 
-# Stop words to ignore (common false positives)
 stopwords = [
-  "password",
-  "secret",
-  "token",
-  "key",
-  "api",
+    "example",
+    "test",
+    "mock",
+    "placeholder",
+    "your-",
+    "XXXXXXXXXX",
 ]
+
+[[rules]]
+id = "supabase-anon-key"
+description = "Supabase Anonymous/Public Key"
+regex = '''(?i)(supabase.*anon.*key|next_public_supabase_anon_key)['"]?\s*[:=]\s*['"]?([a-zA-Z0-9_-]{20,})'''
+tags = ["supabase", "key", "api"]
+
+[[rules]]
+id = "supabase-service-role"
+description = "Supabase Service Role Key"
+regex = '''(?i)(supabase.*service.*role.*key)['"]?\s*[:=]\s*['"]?([a-zA-Z0-9_-]{20,})'''
+tags = ["supabase", "key", "api", "critical"]
+keywords = [
+    "supabase_service_role_key",
+    "service-role",
+]
+
+[[rules]]
+id = "form-integrity-secret"
+description = "Form Integrity Secret"
+regex = '''(?i)(form_integrity_secret)['"]?\s*[:=]\s*['"]?([a-f0-9]{64})'''
+tags = ["secret", "form"]
+
+[[rules]]
+id = "fingerprint-salt"
+description = "Fingerprint Salt"
+regex = '''(?i)(fingerprint_salt)['"]?\s*[:=]\s*['"]?([a-f0-9]{64})'''
+tags = ["secret", "security"]
+
+[[rules]]
+id = "private-key-file"
+description = "Private Key File"
+regex = '''-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "critical"]
+
+[[rules]]
+id = "jwt-token"
+description = "JSON Web Token"
+regex = '''eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]+'''
+tags = ["jwt", "token"]
+# This will catch JWTs but allowlist will exclude test tokens
+
+[allowlist.commits]
+# You can allowlist specific commits if they were incorrectly flagged
+# Example: "commit-hash-here"

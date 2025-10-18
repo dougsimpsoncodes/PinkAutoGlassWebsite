@@ -1,0 +1,99 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  gitleaks:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for gitleaks
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # Only needed for Gitleaks Enterprise
+
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: false  # Fail build on high/critical vulnerabilities
+
+  security-headers:
+    name: Security Headers Check
+    runs-on: ubuntu-latest
+    needs: [gitleaks, dependency-audit]  # Only run if secrets/deps are clean
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          # Use test environment variables for CI build
+          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test
+          SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-service
+
+      - name: Start Next.js server
+        run: npm start &
+        env:
+          PORT: 3000
+          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test
+          SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-service
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000 -t 30000
+
+      - name: Check homepage security headers
+        run: |
+          echo "Checking homepage headers..."
+          curl -sI http://localhost:3000 | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security|Content-Security-Policy|Referrer-Policy)" || exit 1
+
+      - name: Check API security headers
+        run: |
+          echo "Checking API headers..."
+          curl -sI http://localhost:3000/api/vehicles/makes | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security|Content-Security-Policy)" || exit 1
+
+      - name: Verify CSP includes essential directives
+        run: |
+          echo "Verifying CSP completeness..."
+          HEADERS=$(curl -sI http://localhost:3000)
+          echo "$HEADERS" | grep "Content-Security-Policy" | grep -q "default-src" || (echo "Missing default-src" && exit 1)
+          echo "$HEADERS" | grep "Content-Security-Policy" | grep -q "script-src" || (echo "Missing script-src" && exit 1)
+          echo "$HEADERS" | grep "Content-Security-Policy" | grep -q "style-src" || (echo "Missing style-src" && exit 1)
+          echo "✅ All CSP directives present"
+
+      - name: Stop server
+        run: pkill -f "next start" || true
