@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Fort Collins, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Fort Collins, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair fort collins, windshield replacement fort collins, auto glass fort collins, mobile windshield service fort collins co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/fort-collins-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Fort Collins, CO | Pink Auto Glass',
     description: 'Fort Collins\' trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -268,6 +271,22 @@ export default function FortCollinsLocationPage() {
               </section>
 
               {/* FAQs */}
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Fort Collins Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">I‑25/Harmony corridors and campus routes generate frequent chips. We coordinate safe curbside service in Midtown, South Fort Collins, Fossil Creek, and Old Town.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you service CSU and Old Town?</h3>
+                    <p>Yes—share your exact location and we’ll meet you at a safe nearby spot.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Is calibration included?</h3>
+                    <p>If your vehicle requires it (common on 2018+), we include ADAS calibration and provide documentation.</p>
+                  </div>
+                </div>
+              </section>
+
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
                   Common Questions from Fort Collins Customers

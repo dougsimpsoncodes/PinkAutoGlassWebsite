@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
+import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/validation";
 
 // Initialize Supabase client lazily to avoid build-time errors
 let supabase: ReturnType<typeof createClient> | null = null;
@@ -19,9 +20,6 @@ function getSupabaseClient() {
   return supabase;
 }
 
-// Rate limiting store (in production, use Redis)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
 // File validation constants
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -33,33 +31,6 @@ const ALLOWED_MIME_TYPES = [
 ];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 5;
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-
-// Helper to check rate limit
-function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
-  // Skip rate limiting in development
-  if (process.env.NODE_ENV === 'development') {
-    return { allowed: true };
-  }
-
-  const now = Date.now();
-  const key = `booking:${ip}`;
-  const current = rateLimitStore.get(key);
-
-  if (!current || now > current.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true };
-  }
-
-  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return { allowed: false, resetTime: current.resetTime };
-  }
-
-  current.count++;
-  rateLimitStore.set(key, current);
-  return { allowed: true };
-}
 
 // Helper to sanitize filename
 function sanitizeFilename(filename: string): string {
@@ -80,23 +51,6 @@ function validateFile(file: { type: string; size: number; name: string }): { val
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ||
-               req.headers.get('x-real-ip') ||
-               'unknown';
-
-    const rateLimit = checkRateLimit(ip);
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime! - Date.now()) / 1000);
-      return NextResponse.json(
-        { ok: false, error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: { 'Retry-After': retryAfter.toString() }
-        }
-      );
-    }
-
     const contentType = req.headers.get('content-type') || '';
     let payload: any;
     let fileUploads: Array<{ data: ArrayBuffer; name: string; type: string; size: number }> = [];
@@ -197,13 +151,53 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate required fields
-    if (!payload.termsAccepted || !payload.privacyAcknowledgment) {
+    // =============================================================================
+    // SECURITY: Anti-Spam (Honeypot + Timestamp)
+    // =============================================================================
+    const honeypotResult = validateHoneypot(payload.website);
+    if (!honeypotResult.valid) {
+      console.warn('⚠️ Honeypot triggered - bot detected');
+      // Return success to bot but don't process
+      return NextResponse.json({
+        ok: true,
+        id: uuidv4(),
+        referenceNumber: 'PENDING',
+        files: []
+      });
+    }
+
+    const timestampResult = validateTimestamp(payload.formStartTime);
+    if (!timestampResult.valid) {
       return NextResponse.json(
-        { ok: false, error: "Terms and privacy must be accepted" },
+        { ok: false, error: timestampResult.error },
         { status: 400 }
       );
     }
+
+    // =============================================================================
+    // SECURITY: Input Validation with Zod
+    // =============================================================================
+    const validationResult = bookingFormSchema.safeParse(payload);
+    if (!validationResult.success) {
+      const errors = validationResult.error.format();
+      console.warn('⚠️ Validation failed:', errors);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Invalid input data',
+          validationErrors: Object.entries(errors)
+            .filter(([key]) => key !== '_errors')
+            .reduce((acc, [key, value]: [string, any]) => {
+              acc[key] = value._errors[0] || 'Invalid value';
+              return acc;
+            }, {} as Record<string, string>)
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use validated and sanitized data
+    const validatedData = validationResult.data;
 
     // Generate lead ID
     const leadId = uuidv4();
@@ -211,10 +205,10 @@ export async function POST(req: NextRequest) {
     // Get Supabase client
     const client = getSupabaseClient();
 
-    // Insert lead using RPC
+    // Insert lead using RPC with validated data
     const { error: leadError } = await client.rpc("fn_insert_lead", {
       p_id: leadId,
-      p_payload: payload
+      p_payload: validatedData
     });
 
     if (leadError) {

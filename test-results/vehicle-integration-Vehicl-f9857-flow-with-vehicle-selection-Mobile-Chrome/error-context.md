@@ -14,50 +14,99 @@
       - text: (720) 918-7465
 - main:
   - heading "Get Your FREE Quote" [level=1]
-  - text: Step 1 of 3 Service & Vehicle Service & Vehicle Contact & Location Review & Submit
-  - heading "Choose Your Service Type" [level=2]
-  - button "Repair From $89":
+  - text: Step 2 of 3 Contact & Location Service & Vehicle Contact & Location Review & Submit
+  - heading "Contact Information" [level=2]
+  - img
+  - text: First Name *
+  - textbox "First Name *"
+  - img
+  - text: Last Name *
+  - textbox "Last Name *"
+  - img
+  - text: Phone Number *
+  - textbox "Phone Number *"
+  - img
+  - text: Email Address *
+  - textbox "Email Address *"
+  - heading "Service Location" [level=2]:
     - img
-    - heading "Repair" [level=3]
-    - paragraph: From $89
-  - button "Replacement From $299":
+    - text: Service Location
+  - text: Street Address (Optional)
+  - textbox "Street Address (Optional)"
+  - text: City *
+  - textbox "City *"
+  - text: State *
+  - combobox "State *":
+    - option "AL"
+    - option "AK"
+    - option "AZ"
+    - option "AR"
+    - option "CA"
+    - option "CO" [selected]
+    - option "CT"
+    - option "DE"
+    - option "FL"
+    - option "GA"
+    - option "HI"
+    - option "ID"
+    - option "IL"
+    - option "IN"
+    - option "IA"
+    - option "KS"
+    - option "KY"
+    - option "LA"
+    - option "ME"
+    - option "MD"
+    - option "MA"
+    - option "MI"
+    - option "MN"
+    - option "MS"
+    - option "MO"
+    - option "MT"
+    - option "NE"
+    - option "NV"
+    - option "NH"
+    - option "NJ"
+    - option "NM"
+    - option "NY"
+    - option "NC"
+    - option "ND"
+    - option "OH"
+    - option "OK"
+    - option "OR"
+    - option "PA"
+    - option "RI"
+    - option "SC"
+    - option "SD"
+    - option "TN"
+    - option "TX"
+    - option "UT"
+    - option "VT"
+    - option "VA"
+    - option "WA"
+    - option "WV"
+    - option "WI"
+    - option "WY"
+  - text: ZIP Code *
+  - textbox "ZIP Code *"
+  - heading "When would you like service?" [level=2]:
     - img
-    - heading "Replacement" [level=3]
-    - paragraph: From $299
-  - combobox:
-    - option "Year" [selected]
-    - option "2025"
-    - option "2024"
-    - option "2023"
-    - option "2022"
-    - option "2021"
-    - option "2020"
-    - option "2019"
-    - option "2018"
-    - option "2017"
-    - option "2016"
-    - option "2015"
-    - option "2014"
-    - option "2013"
-    - option "2012"
-    - option "2011"
-    - option "2010"
-    - option "2009"
-    - option "2008"
-    - option "2007"
-    - option "2006"
-    - option "2005"
-    - option "2004"
-    - option "2003"
-    - option "2002"
-    - option "2001"
-    - option "2000"
-  - combobox [disabled]:
-    - option "Make" [selected]
-  - combobox [disabled]:
-    - option "Model" [selected]
-  - button "Continue":
-    - text: Continue
+    - text: When would you like service?
+  - text: Preferred Date (Optional)
+  - button "Select a date"
+  - img
+  - paragraph: "Click to select a date • Available: Tomorrow - Next 30 days"
+  - text: Preferred Time
+  - combobox "Preferred Time":
+    - option "Flexible" [selected]
+    - option "Morning (8am - 12pm)"
+    - option "Afternoon (12pm - 5pm)"
+    - option "Evening (5pm - 8pm)"
+  - button "Previous":
+    - img
+    - text: Previous
+  - button "Review Order":
+    - text: Review Order
     - img
   - paragraph:
     - text: Your information is secure and encrypted. We never sell or share your personal data.

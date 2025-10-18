@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Replacement Denver | Pink Auto Glass',
   description: 'Professional windshield replacement across the Front Range. OEM quality glass, same-day service, lifetime warranty. We come to you! Book now or call (720) 918-7465.',
   keywords: 'windshield replacement denver, auto glass replacement, windshield replacement cost, mobile windshield replacement, same day windshield replacement',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services/windshield-replacement',
+  },
   openGraph: {
     title: 'Windshield Replacement Denver | Pink Auto Glass',
     description: 'Professional windshield replacement with OEM quality glass. Same-day mobile service. Lifetime warranty.',
@@ -133,6 +136,45 @@ export default function WindshieldReplacementPage() {
                 <p className="text-lg text-gray-700 mb-4">
                   Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk - that's why we use only OEM quality glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
                 </p>
+              </section>
+
+              {/* How It Works (Replacement) */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">How Our Windshield Replacement Works</h2>
+                <ol className="list-decimal list-inside space-y-3 text-gray-700">
+                  <li><strong>Inspect & Protect:</strong> We cover your interior, verify glass features, and check for ADAS sensors or camera units.</li>
+                  <li><strong>Remove Glass:</strong> The damaged windshield and old urethane are safely removed following OEM procedures.</li>
+                  <li><strong>Prep & Prime:</strong> We clean and prime the pinch weld to ensure proper bond strength and long‑term seal.</li>
+                  <li><strong>Install OEM‑Quality Glass:</strong> We position the new windshield precisely and apply premium urethane for a factory‑tight fit.</li>
+                  <li><strong>ADAS Calibration:</strong> If your vehicle requires it (common on 2018+), we recalibrate cameras/sensors and provide documentation.</li>
+                </ol>
+              </section>
+
+              {/* FAQs (Replacement) */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Replacement FAQs</h2>
+                <div className="space-y-4 text-gray-700">
+                  <div>
+                    <h3 className="font-semibold">Do you use OEM or aftermarket glass?</h3>
+                    <p>We recommend OEM‑quality glass for correct fit, optical clarity, and ADAS performance. High‑quality aftermarket is available for older vehicles without advanced sensors.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">How long before I can drive?</h3>
+                    <p>Plan on 60–90 minutes for replacement plus recommended cure time. If calibration is required, add about 30–60 minutes.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Do you calibrate ADAS?</h3>
+                    <p>Yes—when required by your vehicle, we include calibration and provide results.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Does insurance cover replacement?</h3>
+                    <p>With comprehensive coverage, many Colorado drivers pay $0. We verify coverage and bill your insurer directly.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Will it leak?</h3>
+                    <p>No. We use OEM‑spec materials and methods and back the installation with a lifetime leak and workmanship warranty.</p>
+                  </div>
+                </div>
               </section>
 
               {/* When Replacement is Needed */}

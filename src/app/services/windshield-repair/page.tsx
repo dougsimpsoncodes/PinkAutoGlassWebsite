@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair Denver | Rock Chip Repair',
   description: 'Professional windshield chip and crack repair in Denver. Often covered by insurance. Same-day service, 30-minute repair, lifetime warranty. Stop chips from spreading. Call (720) 918-7465.',
   keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services/windshield-repair',
+  },
   openGraph: {
     title: 'Windshield Repair Denver | Pink Auto Glass',
     description: 'Fast windshield chip repair. Often covered 100% by insurance. Same-day mobile service available.',
@@ -103,6 +106,41 @@ export default function WindshieldRepairPage() {
                 <p className="text-lg text-gray-700 mb-4">
                   Our repair process takes just 30 minutes and restores up to 90% of your windshield's original strength. Best of all, most insurance companies in Colorado cover windshield repair with zero deductible - you pay absolutely nothing.
                 </p>
+              </section>
+
+              {/* How It Works (Repair) */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">How Our Rock Chip Repair Works</h2>
+                <ol className="list-decimal list-inside space-y-3 text-gray-700">
+                  <li><strong>Clean & Inspect:</strong> We clean the chip and confirm it’s safe to repair (quarter‑sized chips and short cracks are good candidates).</li>
+                  <li><strong>Resin Injection:</strong> We apply specialized resin and use vacuum/pressure cycles to fill micro‑fractures.</li>
+                  <li><strong>UV Cure:</strong> The resin is cured under UV light to restore strength and help prevent spreading.</li>
+                  <li><strong>Polish & Finish:</strong> We polish the area for clarity. Some faint marks may remain, but the goal is structural integrity.</li>
+                  <li><strong>Safety Check:</strong> We verify visibility and advise if replacement would be safer in the future.</li>
+                </ol>
+              </section>
+
+              {/* FAQs (Repair) */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Repair FAQs</h2>
+                <div className="space-y-4 text-gray-700">
+                  <div>
+                    <h3 className="font-semibold">What chips can be repaired?</h3>
+                    <p>Chips smaller than a quarter and cracks under ~6 inches not in the driver’s primary view are usually repairable.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Will it be invisible?</h3>
+                    <p>You’ll likely see some faint cosmetic marks. The purpose of repair is to stop spreading and restore strength.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Is it safe to drive right away?</h3>
+                    <p>Yes—repairs are drive‑ready immediately after curing.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Is repair covered by insurance?</h3>
+                    <p>Often 100% in Colorado under comprehensive coverage. We’ll help you confirm.</p>
+                  </div>
+                </div>
               </section>
 
               <section>

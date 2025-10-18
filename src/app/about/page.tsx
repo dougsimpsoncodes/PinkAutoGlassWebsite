@@ -7,6 +7,9 @@ import CTAButtons from '@/components/CTAButtons';
 export const metadata: Metadata = {
   title: 'About Us | Pink Auto Glass - Mobile Windshield Repair Colorado',
   description: 'Learn about Pink Auto Glass, Colorado\'s trusted mobile windshield repair and replacement service. We\'re proud supporters of breast cancer awareness.',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/about',
+  },
   openGraph: {
     title: 'About Pink Auto Glass',
     description: 'Colorado\'s mobile windshield repair experts and breast cancer awareness supporters',

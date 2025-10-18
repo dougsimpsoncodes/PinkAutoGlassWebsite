@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Boulder, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair boulder, windshield replacement boulder, auto glass boulder co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/boulder-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
     description: 'Boulder\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function BoulderLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Boulder Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">Between Hwy 36 and mountain access roads, rock chips are common in Boulder. We provide mobile service across Table Mesa, Gunbarrel, and North/South Boulder.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you service campus and downtown?</h3>
+                    <p>Yes—please share your location details and we’ll select a safe spot for curbside service.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Are ADAS calibrations common in Boulder?</h3>
+                    <p>Yes—many 2018+ vehicles need calibration. We include it where required and provide documentation.</p>
                   </div>
                 </div>
               </section>

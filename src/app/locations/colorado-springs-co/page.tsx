@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Colorado Springs, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Colorado Springs, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair colorado springs, windshield replacement colorado springs, auto glass colorado springs, mobile windshield service colorado springs co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/colorado-springs-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Colorado Springs, CO | Pink Auto Glass',
     description: 'Colorado Springs\' trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -268,6 +271,22 @@ export default function ColoradoSpringsLocationPage() {
               </section>
 
               {/* FAQs */}
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Colorado Springs Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">Powers Corridor and I‑25 traffic often cause chips; near Garden of the Gods, we coordinate safe spaces for mobile service. We cover the entire Springs area.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you service military bases?</h3>
+                    <p>We can meet off‑base in approved lots or at your home—call to coordinate access and timing.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Is same‑day available?</h3>
+                    <p>Often yes—especially for repairs. Replacements with ADAS calibration may require a slightly longer window.</p>
+                  </div>
+                </div>
+              </section>
+
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
                   Common Questions from Colorado Springs Customers

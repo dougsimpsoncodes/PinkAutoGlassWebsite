@@ -1,9 +1,8 @@
 'use client';
 
 import { BookingFormData } from '@/types/booking';
-import { useMemo, memo } from 'react';
-import { ChevronRight, Car, Wrench, Home, MapPin } from 'lucide-react';
-import { vehicleDatabase } from '@/data/vehicles';
+import { useState, useEffect, memo } from 'react';
+import { ChevronRight, Car, Wrench } from 'lucide-react';
 
 interface ServiceVehicleProps {
   formData: BookingFormData;
@@ -13,26 +12,58 @@ interface ServiceVehicleProps {
 }
 
 const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: ServiceVehicleProps) => {
-  // Memoize available makes based only on year
-  const availableMakes = useMemo(() => {
-    if (!formData.vehicleYear) return [];
-    const yearNum = typeof formData.vehicleYear === 'string'
-      ? parseInt(formData.vehicleYear, 10)
-      : formData.vehicleYear;
-    const yearData = vehicleDatabase.find(v => v.year === yearNum);
-    return yearData ? Object.keys(yearData.makes) : [];
-  }, [formData.vehicleYear]);
+  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loadingMakes, setLoadingMakes] = useState(true);
+  const [loadingModels, setLoadingModels] = useState(false);
 
-  // Memoize available models based on year and make
-  const availableModels = useMemo(() => {
-    if (!formData.vehicleYear || !formData.vehicleMake) return [];
-    const yearNum = typeof formData.vehicleYear === 'string'
-      ? parseInt(formData.vehicleYear, 10)
-      : formData.vehicleYear;
-    const yearData = vehicleDatabase.find(v => v.year === yearNum);
-    if (!yearData) return [];
-    return yearData.makes[formData.vehicleMake as keyof typeof yearData.makes] || [];
-  }, [formData.vehicleYear, formData.vehicleMake]);
+  // Generate years array (2005-2024)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+
+  // Fetch makes on component mount
+  useEffect(() => {
+    const fetchMakes = async () => {
+      try {
+        setLoadingMakes(true);
+        const response = await fetch('/api/vehicles/makes');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableMakes(data.makes || []);
+        }
+      } catch (error) {
+        console.error('Error fetching makes:', error);
+      } finally {
+        setLoadingMakes(false);
+      }
+    };
+    fetchMakes();
+  }, []);
+
+  // Fetch models when make changes
+  useEffect(() => {
+    if (!formData.vehicleMake) {
+      setAvailableModels([]);
+      return;
+    }
+
+    const fetchModels = async () => {
+      try {
+        setLoadingModels(true);
+        const response = await fetch(`/api/vehicles/models?make=${encodeURIComponent(formData.vehicleMake)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableModels(data.models || []);
+        }
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        setAvailableModels([]);
+      } finally {
+        setLoadingModels(false);
+      }
+    };
+    fetchModels();
+  }, [formData.vehicleMake]);
 
   return (
     <div className="space-y-4">
@@ -94,14 +125,14 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
             <select
               id="year"
               value={formData.vehicleYear}
-              onChange={(e) => updateFormData({ vehicleYear: e.target.value })}
+              onChange={(e) => updateFormData({ vehicleYear: e.target.value, vehicleMake: '', vehicleModel: '' })}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleYear ? 'border-red-500' : 'border-gray-300'
               }`}
             >
               <option value="">Year</option>
-              {vehicleDatabase.map(v => (
-                <option key={v.year} value={v.year}>{v.year}</option>
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
               ))}
             </select>
             {errors.vehicleYear && (
@@ -117,12 +148,12 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               onChange={(e) => {
                 updateFormData({ vehicleMake: e.target.value, vehicleModel: '' });
               }}
-              disabled={!formData.vehicleYear}
+              disabled={loadingMakes || availableMakes.length === 0}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleMake ? 'border-red-500' : 'border-gray-300'
-              } ${!formData.vehicleYear ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              } ${(loadingMakes || availableMakes.length === 0) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             >
-              <option value="">Make</option>
+              <option value="">{loadingMakes ? 'Loading...' : 'Make'}</option>
               {availableMakes.map(make => (
                 <option key={make} value={make}>{make}</option>
               ))}
@@ -140,12 +171,12 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               onChange={(e) => {
                 updateFormData({ vehicleModel: e.target.value });
               }}
-              disabled={!formData.vehicleMake}
+              disabled={!formData.vehicleMake || loadingModels}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 touch-manipulation ${
                 errors.vehicleModel ? 'border-red-500' : 'border-gray-300'
-              } ${!formData.vehicleMake ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              } ${(!formData.vehicleMake || loadingModels) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             >
-              <option value="">Model</option>
+              <option value="">{loadingModels ? 'Loading...' : 'Model'}</option>
               {availableModels.map(model => (
                 <option key={model} value={model}>{model}</option>
               ))}

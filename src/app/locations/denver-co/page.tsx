@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Denver, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Denver, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair denver, windshield replacement denver, auto glass denver, mobile windshield service denver co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/denver-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Denver, CO | Pink Auto Glass',
     description: 'Denver\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -122,6 +125,24 @@ export default function DenverLocationPage() {
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Denver life. You're busy commuting on I-70, working downtown, or enjoying the mountains. That's why we bring our services to you - whether you're at home in Capitol Hill, at your office in LoDo, or anywhere else in the Mile High City.
                 </p>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Denver Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">
+                  From construction debris on I‑25 and I‑70 to sudden hail, Denver roads can be hard on windshields. Temperature swings also make chips spread faster. We provide safe curbside service downtown and mobile service in neighborhoods across the city.
+                </p>
+                <div className="space-y-4 text-gray-700">
+                  <div>
+                    <h3 className="font-semibold">Can you meet me downtown?</h3>
+                    <p>Yes. We coordinate a safe loading zone or parking area to perform the work without blocking traffic.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">How fast can you arrive?</h3>
+                    <p>Same‑day is common. We typically arrive within a few hours depending on schedule and weather.</p>
+                  </div>
+                </div>
               </section>
 
               {/* Service Area Map */}

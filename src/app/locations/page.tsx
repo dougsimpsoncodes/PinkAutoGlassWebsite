@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
   description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 10+ metro cities. We come to you - no extra charge. Call (720) 918-7465.',
   keywords: 'windshield repair locations colorado, mobile auto glass denver metro, windshield replacement near me, auto glass service areas colorado',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations',
+  },
   openGraph: {
     title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
     description: 'We come to you anywhere in Denver metro. Mobile windshield service with no extra charge.',

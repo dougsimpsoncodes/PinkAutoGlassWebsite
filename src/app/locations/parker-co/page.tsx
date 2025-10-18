@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Parker, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Parker, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair parker, windshield replacement parker, auto glass parker co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/parker-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Parker, CO | Pink Auto Glass',
     description: 'Parker\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function ParkerLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Parker Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">E‑470 corridors and Southlands routes commonly cause chips. We provide mobile service throughout Parker and nearby communities.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you meet at Southlands?</h3>
+                    <p>Yes—we regularly meet customers at designated areas or at their homes and offices.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">How soon can you arrive?</h3>
+                    <p>Often same‑day—call for current availability and we’ll confirm a time window.</p>
                   </div>
                 </div>
               </section>

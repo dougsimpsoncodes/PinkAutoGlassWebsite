@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Auto Glass Services Denver | Windshield Repair & Replacement | Pink Auto Glass',
   description: 'Complete auto glass services across the Front Range. Windshield repair and replacement. Mobile service, same-day appointments, lifetime warranty.',
   keywords: 'auto glass services denver, windshield services, windshield repair, windshield replacement, mobile auto glass, adas calibration denver',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services',
+  },
   openGraph: {
     title: 'Auto Glass Services Denver | Pink Auto Glass',
     description: 'Expert windshield repair, replacement, and ADAS calibration throughout Colorado.',

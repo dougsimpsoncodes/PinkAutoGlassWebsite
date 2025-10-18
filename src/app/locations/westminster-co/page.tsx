@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Westminster, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Westminster, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair westminster, windshield replacement westminster, auto glass westminster co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/westminster-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Westminster, CO | Pink Auto Glass',
     description: 'Westminster\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function WestminsterLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Westminster Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">Commuters along US‑36 often see highway chip damage. We provide mobile repair and OEM replacements across Westminster neighborhoods.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Is workplace service available?</h3>
+                    <p>Yes—we can complete service while you work. We just need a safe, level spot.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Do you include calibration?</h3>
+                    <p>Where required by the vehicle (common on 2018+), calibration is included and documented.</p>
                   </div>
                 </div>
               </section>

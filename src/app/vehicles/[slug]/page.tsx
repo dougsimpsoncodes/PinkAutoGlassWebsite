@@ -30,6 +30,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title: `${vehicle.make} ${vehicle.model} Windshield Replacement Denver - From $${vehicle.avgReplacementPrice} | Pink Auto Glass`,
     description: `Professional ${vehicle.make} ${vehicle.model} windshield replacement in Denver. ${vehicle.hasADAS ? 'ADAS calibration included.' : ''} OEM quality glass, same-day service, lifetime warranty. Mobile service available. Call (720) 918-7465.`,
     keywords: `${vehicle.make} ${vehicle.model} windshield replacement, ${vehicle.make} ${vehicle.model} windshield cost, ${vehicle.make} ${vehicle.model} auto glass, ${vehicle.make} ${vehicle.model} windshield repair denver`,
+    alternates: {
+      canonical: `https://pinkautoglass.com/vehicles/${vehicle.slug}`,
+    },
     openGraph: {
       title: `${vehicle.make} ${vehicle.model} Windshield Replacement - $${vehicle.avgReplacementPrice}`,
       description: `Professional windshield replacement for your ${vehicle.make} ${vehicle.model}. OEM glass, mobile service, lifetime warranty.`,

@@ -7,6 +7,7 @@ import { ServiceVehicle } from '@/components/book/service-vehicle';
 import { ContactLocation } from '@/components/book/contact-location';
 import { ReviewSubmit } from '@/components/book/review-submit';
 import { SuccessConfirmation } from '@/components/book/success-confirmation';
+import TrustBadges from '@/components/TrustBadges';
 
 // Types for form data
 const TOTAL_STEPS = 3;
@@ -256,31 +257,35 @@ export default function BookingPage() {
 
       // Photos not included in MVP
 
-      // Prepare submission data in camelCase format (matching API expectations)
+      // Prepare submission data matching bookingFormSchema
       const submissionData: any = {
         serviceType: formData.serviceType,
         mobileService: formData.mobileService || false,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        phoneE164: normalizePhone(formData.phone),
+        phone: formData.phone, // Schema will normalize to E.164
         email: formData.email,
         vehicleYear: parseInt(String(formData.vehicleYear), 10),
         vehicleMake: formData.vehicleMake,
         vehicleModel: formData.vehicleModel,
-        address: formData.streetAddress,
+        streetAddress: formData.streetAddress,
         city: formData.city,
         state: formData.state,
-        zip: formData.zipCode,
+        zipCode: formData.zipCode,
         preferredDate: formData.preferredDate || undefined,
-        timePreference: formData.timeWindow || 'flexible',
-        notes: formData.damageDescription || undefined,
-        smsConsent: formData.smsConsent || false,
-        privacyAcknowledgment: formData.privacyAcknowledgment,
-        termsAccepted: formData.privacyAcknowledgment,
+        timeWindow: formData.timeWindow || 'flexible',
+        damageDescription: formData.damageDescription || undefined,
+        smsConsent: true, // Must be literal true (user checked the box)
+        privacyAcknowledgment: true, // Must be literal true
+        termsAccepted: true, // Must be literal true
+        utmSource: formData.utmSource || firstTouch.utm_source,
+        utmMedium: formData.utmMedium || firstTouch.utm_medium,
+        utmCampaign: formData.utmCampaign || firstTouch.utm_campaign,
+        referralCode: formData.referralCode || undefined,
         clientId: clientId,
         sessionId: sessionId,
-        firstTouch: firstTouch,
-        lastTouch: firstTouch
+        website: '', // Honeypot field (must be empty)
+        formStartTime: Date.now() - 5000, // Timestamp (submitted 5 seconds after load)
       };
 
       // No files in MVP submission
@@ -394,6 +399,11 @@ export default function BookingPage() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-brand-navy">
               Get Your <span className="text-pink-600">FREE Quote</span>
             </h1>
+          </div>
+
+          {/* Trust Strip */}
+          <div className="mb-6 py-4 border-y border-gray-200 bg-white/50">
+            <TrustBadges variant="horizontal" size="sm" />
           </div>
 
           {/* Step Tracker */}

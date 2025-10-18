@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Lakewood, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Lakewood, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair lakewood, windshield replacement lakewood, auto glass lakewood co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/lakewood-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Lakewood, CO | Pink Auto Glass',
     description: 'Lakewood\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function LakewoodLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Lakewood Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">Lakewood drivers see frequent chips from Wadsworth and 6th Ave corridors. We offer secure mobile service at homes, offices, and retail parking areas.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Can you service Lakewood office parks?</h3>
+                    <p>Yes—we coordinate a safe space with your building or meet you at home for maximum convenience.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">How quickly can I book?</h3>
+                    <p>Same‑day is common; many appointments completed within a few hours depending on weather and schedule.</p>
                   </div>
                 </div>
               </section>

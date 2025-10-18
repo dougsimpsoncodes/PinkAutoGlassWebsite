@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Terms & Conditions | Pink Auto Glass',
   description: 'Terms and Conditions for Pink Auto Glass services including SMS messaging terms.',
   robots: 'noindex, follow',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/terms',
+  },
 };
 
 export default function TermsPage() {

@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Arvada, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Arvada, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair arvada, windshield replacement arvada, auto glass arvada co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/arvada-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Arvada, CO | Pink Auto Glass',
     description: 'Arvada\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function ArvadaLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Arvada Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">Candelas and Leyden Rock areas see dust and debris from new builds. We offer mobile service throughout Olde Town and west Arvada neighborhoods.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Do you serve new developments?</h3>
+                    <p>Yes—we regularly service Candelas, Leyden Rock, and Stonebridge with curbside convenience.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Can you work at my home?</h3>
+                    <p>Absolutely. Our mobile units are fully equipped to complete service at your driveway or curb.</p>
                   </div>
                 </div>
               </section>
