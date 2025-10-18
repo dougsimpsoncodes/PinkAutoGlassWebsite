@@ -155,7 +155,38 @@ calculateEntropy(text): number
 # Form Integrity Secrets (rotate quarterly)
 FORM_INTEGRITY_SECRET="your-long-random-secret-here-min-32-chars"
 FINGERPRINT_SALT="another-long-random-secret-here-min-32-chars"
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 ```
+
+### Service Role Key Usage
+
+**Current Status**: `SUPABASE_SERVICE_ROLE_KEY` is **NOT** used at runtime in production.
+
+**Why It Exists**:
+- Defined in `src/lib/supabase.ts` for potential future use
+- Reserved for scheduled jobs, CI/CD tasks, or admin operations
+- Can be kept in Vercel environment variables for future automation
+
+**Current Implementation**:
+- All API routes use `NEXT_PUBLIC_SUPABASE_ANON_KEY` (safe for client-side)
+- Database operations use **SECURITY DEFINER RPC functions** that run with elevated privileges
+- This eliminates the need for service role key in API routes
+- No risk of key exposure in Edge runtime or client bundles
+
+**Verification**:
+```bash
+# Confirm service role key not used in API routes (returns empty)
+grep -r "supabaseAdmin\|SUPABASE_SERVICE_ROLE_KEY" src/app/api/
+
+# Confirm only in lib file
+grep -r "SUPABASE_SERVICE_ROLE_KEY" src/lib/
+# Expected: src/lib/supabase.ts only
+```
+
+**Recommendation**: Keep service role key configured for future CI/automation needs, but it's safe to remove from Vercel production if you prefer minimal secret exposure. Current runtime operations don't require it.
 
 **How to Generate**:
 ```bash
