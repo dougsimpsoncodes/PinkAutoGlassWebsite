@@ -35,7 +35,7 @@ const MAX_FILES = 5;
 // Helper to sanitize filename
 function sanitizeFilename(filename: string): string {
   const extension = filename.split('.').pop()?.toLowerCase() || '';
-  return `${uuidv4()}-${extension.replace(/[^a-z0-9]/g, '')}`;
+  return `${uuidv4()}.${extension.replace(/[^a-z0-9]/g, '')}`;
 }
 
 // Helper to validate file
