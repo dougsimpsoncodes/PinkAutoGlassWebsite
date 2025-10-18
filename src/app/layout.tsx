@@ -33,11 +33,20 @@ export const metadata: Metadata = {
     siteName: "Pink Auto Glass",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Pink Auto Glass - Mobile Windshield Repair & Replacement Denver'
+      }
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Mobile Windshield Replacement Denver | Pink Auto Glass",
     description: "Denver's #1 mobile auto glass service. Same-day repair & replacement.",
+    images: ['/og-image.png'],
   },
   verification: {
     // Get verification code from Google Search Console → Settings → Ownership verification
