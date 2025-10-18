@@ -34,29 +34,33 @@ export default function CTAButtons({
 
   return (
     <div className={buttonClasses}>
-      {/* Call Button - Optimized with urgency */}
+      {/* Call Button */}
       <a
         href={`tel:+1${phoneNumber}`}
         onClick={handlePhoneClick}
         className="inline-flex items-center justify-center gap-2 bg-white text-pink-600 hover:bg-gray-50 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all border-2 border-pink-600"
       >
         <Phone className="w-5 h-5" />
-        <span className="flex flex-col items-start leading-tight">
-          <span className="text-sm font-normal">Call Now - We'll Answer</span>
-          <span>{displayPhone}</span>
-        </span>
+        Call {displayPhone}
       </a>
 
-      {/* Book Online Button - Optimized with benefit */}
+      {/* Text Button */}
+      <a
+        href={`sms:+1${phoneNumber}`}
+        onClick={handleTextClick}
+        className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+      >
+        <MessageSquare className="w-5 h-5" />
+        Text Us
+      </a>
+
+      {/* Book Online Button */}
       <Link
         href="/book"
         onClick={handleBookClick}
         className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
       >
-        <span className="flex flex-col items-start leading-tight">
-          <span className="text-sm font-normal">Get Same-Day Service</span>
-          <span>Book Now - FREE Quote in 60 Seconds</span>
-        </span>
+        📅 Book Online
       </Link>
     </div>
   );
