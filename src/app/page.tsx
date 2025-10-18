@@ -265,6 +265,112 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Quick Answers FAQ Section - Optimized for Featured Snippets */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Quick Answers About Auto Glass Service</h2>
+
+            <div className="space-y-8">
+              {/* FAQ 1 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">How much does windshield replacement cost in Denver?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Windshield replacement in Denver typically costs:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
+                  <li>Compact sedans: $300-$480</li>
+                  <li>Mid-size vehicles: $350-$550</li>
+                  <li>SUVs and trucks: $380-$650</li>
+                  <li>Premium vehicles with ADAS: $450-$800</li>
+                </ul>
+                <p className="text-gray-700">
+                  <strong>Most customers with comprehensive insurance pay $0</strong> in Colorado, as many insurers waive the deductible for glass claims.
+                </p>
+              </div>
+
+              {/* FAQ 2 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">Is ADAS calibration required after windshield replacement?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Yes, federal law requires ADAS calibration for vehicles with Advanced Driver Assistance Systems (typically 2018+ models). This includes:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
+                  <li>Lane departure warning</li>
+                  <li>Automatic emergency braking</li>
+                  <li>Adaptive cruise control</li>
+                  <li>Forward collision warning</li>
+                </ul>
+                <p className="text-gray-700">
+                  <strong>We include ADAS calibration at no extra charge</strong> when required for your vehicle.
+                </p>
+              </div>
+
+              {/* FAQ 3 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">Do you offer mobile windshield replacement in Denver?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Yes! Mobile service is our specialty. We provide:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
+                  <li>Free mobile service (no extra charge)</li>
+                  <li>Same-day appointments available</li>
+                  <li>Service at your home or office</li>
+                  <li>Coverage throughout Denver metro area</li>
+                  <li>ADAS calibration performed on-site</li>
+                </ul>
+              </div>
+
+              {/* FAQ 4 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">How long does windshield replacement take?</h3>
+                <div className="text-lg text-gray-700">
+                  <table className="w-full border-collapse mb-3">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Service Type</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Time Required</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Windshield chip repair</td>
+                        <td className="border border-gray-300 px-4 py-2">20-30 minutes</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Standard windshield replacement</td>
+                        <td className="border border-gray-300 px-4 py-2">60-90 minutes</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Replacement + ADAS calibration</td>
+                        <td className="border border-gray-300 px-4 py-2">90-150 minutes</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p className="text-gray-700">
+                    After installation, we recommend waiting 1-2 hours before driving to allow the adhesive to cure properly.
+                  </p>
+                </div>
+              </div>
+
+              {/* FAQ 5 */}
+              <div className="pb-6">
+                <h3 className="text-2xl font-bold mb-4">Will filing a windshield claim raise my insurance rates?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  No, windshield claims typically don't raise your insurance rates in Colorado. Here's why:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
+                  <li>Glass claims are comprehensive (not at-fault) claims</li>
+                  <li>They're treated differently than collision claims</li>
+                  <li>Most insurers don't count glass-only claims against you</li>
+                  <li>Colorado has favorable glass coverage laws</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="py-16 bg-gradient-to-r from-pink-600 to-pink-700 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">

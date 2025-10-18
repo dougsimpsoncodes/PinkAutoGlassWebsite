@@ -1,55 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-// Rate limiting store (in production, use Redis)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-const RATE_LIMIT_MAX_REQUESTS = 10;
-const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-
-// Helper to check rate limit
-function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
-  // Skip rate limiting in development
-  if (process.env.NODE_ENV === 'development') {
-    return { allowed: true };
-  }
-
-  const now = Date.now();
-  const key = `lead:${ip}`;
-  const current = rateLimitStore.get(key);
-
-  if (!current || now > current.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true };
-  }
-
-  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return { allowed: false, resetTime: current.resetTime };
-  }
-
-  current.count++;
-  rateLimitStore.set(key, current);
-  return { allowed: true };
-}
+import { v4 as uuidv4 } from 'uuid';
+import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-               request.headers.get('x-real-ip') ||
-               'unknown';
+    const body = await request.json();
 
-    const rateLimit = checkRateLimit(ip);
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime! - Date.now()) / 1000);
+    // Transform legacy QuoteForm format to leadFormSchema format
+    const transformedBody: any = { ...body };
+
+    // Handle single 'name' field -> firstName/lastName
+    if (body.name && !body.firstName) {
+      const nameParts = body.name.trim().split(' ');
+      transformedBody.firstName = nameParts[0] || '';
+      transformedBody.lastName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name as last if only one name
+    }
+
+    // Handle 'vehicle' string -> vehicleYear/Make/Model (e.g., "2024 Toyota Camry")
+    if (body.vehicle && !body.vehicleYear) {
+      const vehicleParts = body.vehicle.trim().split(' ');
+      const year = parseInt(vehicleParts[0]);
+      if (!isNaN(year)) {
+        transformedBody.vehicleYear = year;
+        transformedBody.vehicleMake = vehicleParts[1] || '';
+        transformedBody.vehicleModel = vehicleParts.slice(2).join(' ') || '';
+      }
+    }
+
+    // Handle 'zip' -> 'zipCode'
+    if (body.zip && !body.zipCode) {
+      transformedBody.zipCode = body.zip;
+    }
+
+    // Default email to optional placeholder if not provided (QuoteForm doesn't collect email)
+    if (!transformedBody.email) {
+      transformedBody.email = `quote-${Date.now()}@temp.pinkautoglass.com`;
+    }
+
+    // Default serviceType for quick quotes
+    if (!transformedBody.serviceType) {
+      transformedBody.serviceType = 'repair';
+    }
+
+    // Default consents to true if smsConsent checkbox was checked (legacy behavior)
+    if (body.smsConsent === true && !transformedBody.privacyAcknowledgment) {
+      transformedBody.smsConsent = true;
+      transformedBody.privacyAcknowledgment = true;
+    } else if (!transformedBody.smsConsent) {
+      // If SMS consent wasn't provided, default to false (quote-only, no SMS)
+      transformedBody.smsConsent = false;
+      transformedBody.privacyAcknowledgment = false;
+    }
+
+    // =============================================================================
+    // SECURITY: Anti-Spam (Honeypot + Timestamp)
+    // =============================================================================
+    const honeypotResult = validateHoneypot(transformedBody.website);
+    if (!honeypotResult.valid) {
+      console.warn('⚠️ Honeypot triggered - bot detected');
+      // Return success to bot but don't process
+      return NextResponse.json({
+        success: true,
+        message: 'Quote request received! We\'ll contact you within 5 minutes.',
+        leadId: uuidv4()
+      });
+    }
+
+    const timestampResult = validateTimestamp(transformedBody.formStartTime);
+    if (!timestampResult.valid) {
       return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        {
-          status: 429,
-          headers: { 'Retry-After': retryAfter.toString() }
-        }
+        { error: timestampResult.error },
+        { status: 400 }
       );
     }
+
+    // =============================================================================
+    // SECURITY: Input Validation with Zod
+    // =============================================================================
+    const validationResult = leadFormSchema.safeParse(transformedBody);
+    if (!validationResult.success) {
+      const errors = validationResult.error.format();
+      console.warn('⚠️ Validation failed:', errors);
+      return NextResponse.json(
+        {
+          error: 'Invalid input data',
+          validationErrors: Object.entries(errors)
+            .filter(([key]) => key !== '_errors')
+            .reduce((acc, [key, value]: [string, any]) => {
+              acc[key] = value._errors[0] || 'Invalid value';
+              return acc;
+            }, {} as Record<string, string>)
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use validated and sanitized data
+    const validatedData = validationResult.data;
+
+    // Generate lead ID
+    const leadId = uuidv4();
 
     // Create Supabase client with anon key (not service role)
     const supabase = createClient(
@@ -57,60 +108,26 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const body = await request.json();
-
-    // Basic validation
-    if (!body.name || !body.phone) {
-      return NextResponse.json(
-        { error: 'Name and phone are required' },
-        { status: 400 }
-      );
-    }
-
-    // Split name into first/last
-    const nameParts = body.name.trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    // Normalize phone to E.164 format
-    const normalizePhone = (phone: string): string => {
-      const cleaned = phone.replace(/\D/g, '');
-      if (cleaned.length === 10) {
-        return `+1${cleaned}`;
-      } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-        return `+${cleaned}`;
-      }
-      return `+${cleaned}`;
-    };
-
-    // Parse vehicle string (e.g., "2024 Toyota Camry")
-    const vehicleParts = (body.vehicle || '').trim().split(' ');
-    const vehicleYear = parseInt(vehicleParts[0]) || null;
-    const vehicleMake = vehicleParts[1] || '';
-    const vehicleModel = vehicleParts.slice(2).join(' ') || '';
-
-    // Generate UUID for lead
-    const { randomUUID } = await import('crypto');
-    const leadId = randomUUID();
-
-    // Build camelCase payload for fn_insert_lead RPC
-    // Note: Database enum only accepts 'repair' or 'replacement'
-    // Quick quotes default to 'repair' and we mark them via source field
+    // Build payload for fn_insert_lead RPC using validated data
     const payload = {
-      serviceType: 'repair', // Quick quotes default to repair (distinguished by source)
-      firstName,
-      lastName,
-      phoneE164: normalizePhone(body.phone),
-      vehicleYear,
-      vehicleMake,
-      vehicleModel,
-      zip: body.zip || null,
-      notes: body.hasInsurance ? `Insurance: ${body.hasInsurance}. Source: Quick Quote Form` : 'Source: Quick Quote Form',
-      source: body.source || 'homepage_quote_form',
+      serviceType: validatedData.serviceType,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      phone: validatedData.phone, // Already normalized to E.164 by zod
+      email: validatedData.email,
+      vehicleYear: validatedData.vehicleYear,
+      vehicleMake: validatedData.vehicleMake,
+      vehicleModel: validatedData.vehicleModel,
+      mobileService: validatedData.mobileService,
+      city: validatedData.city || null,
+      state: validatedData.state || null,
+      zipCode: validatedData.zipCode || null,
+      utmSource: validatedData.utmSource || null,
+      utmMedium: validatedData.utmMedium || null,
+      utmCampaign: validatedData.utmCampaign || null,
+      referralCode: validatedData.referralCode || null,
       clientId: body.clientId || null,
       sessionId: body.sessionId || null,
-      firstTouch: body.firstTouch || {},
-      lastTouch: body.lastTouch || {},
     };
 
     // Insert lead via RPC (enforces RLS and business logic)
@@ -121,7 +138,10 @@ export async function POST(request: NextRequest) {
 
     if (leadError) {
       console.error('Lead insert failed:', leadError.message);
-      throw leadError;
+      return NextResponse.json(
+        { error: 'Failed to submit quote request' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(

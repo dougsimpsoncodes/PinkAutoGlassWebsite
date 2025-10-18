@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Mobile Windshield Service Denver - We Come To You',
   description: 'Professional mobile auto glass service across the Front Range. We come to your home, office, or anywhere. Fully equipped vans. Same-day service. No extra charge. Call (720) 918-7465.',
   keywords: 'mobile windshield service denver, mobile auto glass, windshield replacement at home, mobile glass repair denver',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services/mobile-service',
+  },
   openGraph: {
     title: 'Mobile Windshield Service Denver | Pink Auto Glass',
     description: 'Mobile windshield repair and replacement. We come to you. No extra charge for mobile service.',

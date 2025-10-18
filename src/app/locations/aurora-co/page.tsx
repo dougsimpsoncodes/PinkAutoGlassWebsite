@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Aurora, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Aurora, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair aurora, windshield replacement aurora, auto glass aurora co, mobile windshield service aurora',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/aurora-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Aurora, CO | Pink Auto Glass',
     description: 'Aurora\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',

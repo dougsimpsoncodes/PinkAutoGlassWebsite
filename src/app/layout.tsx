@@ -40,7 +40,14 @@ export const metadata: Metadata = {
     description: "Denver's #1 mobile auto glass service. Same-day repair & replacement.",
   },
   verification: {
-    google: 'your-google-verification-code-here',
+    // Get verification code from Google Search Console → Settings → Ownership verification
+    // Set NEXT_PUBLIC_GSC_VERIFICATION in your environment variables (Vercel/hosting)
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || '',
+  },
+  other: {
+    // Technical SEO improvements
+    'viewport': 'width=device-width, initial-scale=1, maximum-scale=5',
+    'theme-color': '#ec4899',
   },
 };
 

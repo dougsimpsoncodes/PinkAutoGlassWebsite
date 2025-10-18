@@ -8,6 +8,9 @@ import CTAButtons from '@/components/CTAButtons';
 export const metadata: Metadata = {
   title: 'Auto Glass Blog | Expert Tips from Pink Auto Glass Denver',
   description: 'Expert advice on windshield repair, replacement, ADAS calibration, insurance claims, and auto glass care from Denver\'s trusted auto glass specialists.',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/blog',
+  },
   openGraph: {
     title: 'Auto Glass Blog | Expert Tips from Pink Auto Glass Denver',
     description: 'Expert advice on windshield repair, replacement, ADAS calibration, insurance claims, and auto glass care from Denver\'s trusted auto glass specialists.',

@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Highlands Ranch, CO | Pink Auto Glass',
   description: 'Professional windshield repair and replacement in Highlands Ranch, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
   keywords: 'windshield repair highlands ranch, windshield replacement highlands ranch, auto glass highlands ranch co',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/locations/highlands-ranch-co',
+  },
   openGraph: {
     title: 'Windshield Repair & Replacement Highlands Ranch, CO | Pink Auto Glass',
     description: 'Highlands Ranch\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
@@ -158,6 +161,22 @@ export default function HighlandsRanchLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* Local Tips & FAQs */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Highlands Ranch Driving Tips & Local FAQs</h2>
+                <p className="text-lg text-gray-700 mb-4">C‑470/E‑470 commutes and family‑vehicle trips mean chips spread quickly here. We provide mobile service in neighborhoods across Highlands Ranch.</p>
+                <div className="space-y-4 text-gray-700 mb-6">
+                  <div>
+                    <h3 className="font-semibold">Can you come during school pickup hours?</h3>
+                    <p>Yes—book a window that avoids the rush or we can meet you at home after.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Do SUVs cost more?</h3>
+                    <p>Typically yes due to glass size and features; we’ll provide an exact quote before scheduling.</p>
                   </div>
                 </div>
               </section>

@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Auto Glass Insurance Claims Denver - We Handle Everything',
   description: 'Hassle-free auto glass insurance claims in Denver. Often zero deductible in Colorado. We bill insurance directly. All paperwork handled. Work with all major insurers. Call (720) 918-7465.',
   keywords: 'auto glass insurance claims denver, windshield insurance colorado, zero deductible windshield, insurance glass replacement',
+  alternates: {
+    canonical: 'https://pinkautoglass.com/services/insurance-claims',
+  },
   openGraph: {
     title: 'Auto Glass Insurance Claims Made Easy | Pink Auto Glass',
     description: 'We handle all insurance paperwork. Often no out-of-pocket cost in Colorado. Direct billing to your insurance.',
