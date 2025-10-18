@@ -40,9 +40,6 @@ export function middleware(request: NextRequest) {
     // Referrer Policy - Control referrer information
     'Referrer-Policy': 'strict-origin-when-cross-origin',
 
-    // X-XSS-Protection - Enable XSS filtering (legacy but still good)
-    'X-XSS-Protection': '1; mode=block',
-
     // Permissions Policy - Control browser features
     'Permissions-Policy': [
       'camera=()',
