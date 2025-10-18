@@ -148,7 +148,7 @@ export default function Home() {
       <section className="bg-gradient-hero py-16 md:py-20 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Colorado's #1
               <span className="block">Mobile Auto Glass</span>
               <span className="block">Repair & Replacement</span>
@@ -272,20 +272,14 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-center mb-12">Quick Answers About Auto Glass Service</h2>
 
             <div className="space-y-8">
-              {/* FAQ 1 */}
+              {/* FAQ 1 (no pricing) */}
               <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-2xl font-bold mb-4">How much does windshield replacement cost in Denver?</h3>
+                <h3 className="text-2xl font-bold mb-4">How do I get a quote?</h3>
                 <p className="text-lg text-gray-700 mb-3">
-                  Windshield replacement in Denver typically costs:
+                  Get a fast, accurate quote online or by phone. Your exact quote depends on your vehicle's year/trim, glass type, and whether ADAS calibration is required.
                 </p>
-                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
-                  <li>Compact sedans: $300-$480</li>
-                  <li>Mid-size vehicles: $350-$550</li>
-                  <li>SUVs and trucks: $380-$650</li>
-                  <li>Premium vehicles with ADAS: $450-$800</li>
-                </ul>
                 <p className="text-gray-700">
-                  <strong>Most customers with comprehensive insurance pay $0</strong> in Colorado, as many insurers waive the deductible for glass claims.
+                  We’ll also verify your insurance and help schedule service — often same‑day mobile in the Denver metro area.
                 </p>
               </div>
 
