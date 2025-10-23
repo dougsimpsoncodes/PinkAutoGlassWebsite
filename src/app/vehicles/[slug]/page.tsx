@@ -6,7 +6,7 @@ import CTAButtons from '@/components/CTAButtons';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { vehiclesData, getVehicleBySlug, getAllVehicleSlugs } from '@/data/makes-models';
-import { generateServiceSchema, generateProductSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 // Generate static params for all vehicles
 export async function generateStaticParams() {
@@ -27,15 +27,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {
-    title: `${vehicle.make} ${vehicle.model} Windshield Replacement Denver - From $${vehicle.avgReplacementPrice} | Pink Auto Glass`,
-    description: `Professional ${vehicle.make} ${vehicle.model} windshield replacement in Denver. ${vehicle.hasADAS ? 'ADAS calibration included.' : ''} OEM quality glass, same-day service, lifetime warranty. Mobile service available. Call (720) 918-7465.`,
-    keywords: `${vehicle.make} ${vehicle.model} windshield replacement, ${vehicle.make} ${vehicle.model} windshield cost, ${vehicle.make} ${vehicle.model} auto glass, ${vehicle.make} ${vehicle.model} windshield repair denver`,
+    title: `${vehicle.make} ${vehicle.model} Windshield Replacement Denver | Pink Auto Glass`,
+    description: `Professional ${vehicle.make} ${vehicle.model} windshield replacement in Denver. ${vehicle.hasADAS ? 'ADAS calibration available.' : ''} OEM-quality glass, same-day service, lifetime warranty. Mobile service available. Call (720) 918-7465.`,
+    keywords: `${vehicle.make} ${vehicle.model} windshield replacement, ${vehicle.make} ${vehicle.model} auto glass, ${vehicle.make} ${vehicle.model} windshield repair denver`,
     alternates: {
       canonical: `https://pinkautoglass.com/vehicles/${vehicle.slug}`,
     },
     openGraph: {
-      title: `${vehicle.make} ${vehicle.model} Windshield Replacement - $${vehicle.avgReplacementPrice}`,
-      description: `Professional windshield replacement for your ${vehicle.make} ${vehicle.model}. OEM glass, mobile service, lifetime warranty.`,
+      title: `${vehicle.make} ${vehicle.model} Windshield Replacement | Pink Auto Glass`,
+      description: `Professional windshield replacement for your ${vehicle.make} ${vehicle.model}. OEM-quality glass, mobile service, lifetime warranty.`,
       url: `https://pinkautoglass.com/vehicles/${vehicle.slug}`,
       type: 'website',
     },
@@ -51,8 +51,8 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
 
   const faqs = [
     {
-      question: `How much does a ${vehicle.make} ${vehicle.model} windshield replacement cost?`,
-      answer: `A ${vehicle.make} ${vehicle.model} windshield replacement typically costs around $${vehicle.avgReplacementPrice} in Denver. This includes OEM-quality glass, professional installation, ${vehicle.hasADAS ? 'ADAS calibration, ' : ''}mobile service, and our lifetime warranty. The final price may vary based on your specific year and trim level. Most insurance policies cover windshield replacement with zero deductible in Colorado.`
+      question: `How do I get a quote for a ${vehicle.make} ${vehicle.model} windshield replacement?`,
+      answer: `Get a fast, accurate quote online or by phone. Your exact quote depends on year/trim, glass type, and ${vehicle.hasADAS ? 'ADAS calibration requirements.' : 'whether your vehicle includes cameras/sensors.'} We handle insurance verification and can often schedule same-day mobile service.`
     },
     {
       question: `Do I need ADAS calibration for my ${vehicle.make} ${vehicle.model}?`,
@@ -82,17 +82,9 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
 
   const serviceSchema = generateServiceSchema({
     serviceName: `${vehicle.make} ${vehicle.model} Windshield Replacement`,
-    description: `Professional windshield replacement service for ${vehicle.make} ${vehicle.model} in Denver metro area. OEM quality glass, mobile service, ADAS calibration included.`,
-    price: vehicle.avgReplacementPrice,
+    description: `Professional windshield replacement service for ${vehicle.make} ${vehicle.model} in Denver metro area. OEM-quality glass, mobile service, ${vehicle.hasADAS ? 'ADAS calibration available.' : 'professional installation.'}`,
     serviceType: 'Auto Glass Replacement',
     areaServed: ['Denver', 'Aurora', 'Lakewood']
-  });
-
-  const productSchema = generateProductSchema({
-    vehicleMake: vehicle.make,
-    vehicleModel: vehicle.model,
-    price: vehicle.avgReplacementPrice,
-    description: `OEM-quality windshield replacement for ${vehicle.make} ${vehicle.model}. Includes professional installation, ${vehicle.hasADAS ? 'ADAS calibration, ' : ''}mobile service, and lifetime warranty.`
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -103,7 +95,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
     { name: `${vehicle.make} ${vehicle.model}`, url: `https://pinkautoglass.com/vehicles/${vehicle.slug}` }
   ]);
 
-  const combinedSchema = combineSchemas(serviceSchema, productSchema, faqSchema, breadcrumbSchema);
+  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema);
 
   return (
     <>
@@ -122,9 +114,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 {vehicle.make} {vehicle.model} Windshield Replacement
               </h1>
-              <div className="text-2xl md:text-3xl font-bold text-yellow-300 mb-6">
-                From ${vehicle.avgReplacementPrice}
-              </div>
+              {/* Pricing intentionally not displayed per site policy */}
               <p className="text-xl md:text-2xl mb-8 text-blue-100">
                 {vehicle.glassType === 'OEM' ? 'OEM Glass Required' : 'OEM Quality Glass'} •
                 {vehicle.hasADAS ? ' ADAS Calibration Included' : ' Professional Installation'} •
@@ -181,66 +171,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                 )}
               </section>
 
-              {/* Pricing Breakdown */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {vehicle.make} {vehicle.model} Pricing - All Inclusive
-                </h2>
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-4xl font-bold text-green-700 mb-2">
-                        ${vehicle.avgReplacementPrice}
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mb-4">Windshield Replacement</div>
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">{vehicle.glassType === 'OEM' ? 'OEM' : 'OEM-Quality'} glass for {vehicle.make} {vehicle.model}</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Professional mobile installation</span>
-                        </li>
-                        {vehicle.hasADAS && (
-                          <li className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                            <span className="text-gray-700"><strong>ADAS calibration included (saves Competitive Pricing)</strong></span>
-                          </li>
-                        )}
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Lifetime warranty</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <div className="text-4xl font-bold text-green-700 mb-2">
-                        ${vehicle.avgRepairPrice}
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mb-4">Chip Repair</div>
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Small chips & cracks under 6"</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Often covered by insurance</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">30-minute service</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                          <span className="text-gray-700">Lifetime warranty</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              {/* Pricing section removed per site policy */}
 
               {/* Model-Specific Info */}
               {vehicle.commonIssues && vehicle.commonIssues.length > 0 && (
