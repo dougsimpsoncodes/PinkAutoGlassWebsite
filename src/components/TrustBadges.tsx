@@ -1,4 +1,4 @@
-import { Shield, Lock, Star, Award } from 'lucide-react';
+import { Shield, Star, Award } from 'lucide-react';
 
 interface TrustBadgesProps {
   variant?: 'horizontal' | 'grid';
@@ -10,13 +10,6 @@ export default function TrustBadges({
   size = 'md'
 }: TrustBadgesProps) {
   const badges = [
-    {
-      icon: Lock,
-      title: 'SSL Secure',
-      description: 'Your data is encrypted and protected',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
-    },
     {
       icon: Shield,
       title: 'Lifetime Warranty',
@@ -46,7 +39,7 @@ export default function TrustBadges({
 
   if (variant === 'grid') {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {badges.map((badge, index) => {
           const Icon = badge.icon;
           return (
