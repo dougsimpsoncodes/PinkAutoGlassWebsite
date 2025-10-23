@@ -86,7 +86,6 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               }`} />
               <div>
                 <h3 className="text-base font-semibold text-gray-900">Repair</h3>
-                <p className="text-sm font-medium text-pink-600">From affordable</p>
               </div>
             </div>
           </button>
@@ -106,7 +105,6 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               }`} />
               <div>
                 <h3 className="text-base font-semibold text-gray-900">Replacement</h3>
-                <p className="text-sm font-medium text-pink-600">From professional service</p>
               </div>
             </div>
           </button>
