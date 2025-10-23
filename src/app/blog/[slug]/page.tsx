@@ -43,6 +43,20 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
       publishedTime: post.publishDate,
       authors: [post.author],
       tags: post.tags,
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: ['/og-image.png'],
     },
   };
 }

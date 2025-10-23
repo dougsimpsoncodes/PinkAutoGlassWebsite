@@ -73,8 +73,6 @@ export function generateOrganizationSchema() {
 export function generateServiceSchema(params: {
   serviceName: string;
   description: string;
-  price?: number;
-  priceRange?: string;
   serviceType: string;
   areaServed?: string[];
 }) {
@@ -98,23 +96,7 @@ export function generateServiceSchema(params: {
     }
   };
 
-  if (params.price) {
-    schema.offers = {
-      "@type": "Offer",
-      "price": params.price,
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "url": "https://pinkautoglass.com/book"
-    };
-  } else if (params.priceRange) {
-    schema.offers = {
-      "@type": "AggregateOffer",
-      "priceCurrency": "USD",
-      "lowPrice": params.priceRange.split('-')[0],
-      "highPrice": params.priceRange.split('-')[1],
-      "availability": "https://schema.org/InStock"
-    };
-  }
+  // No pricing in schema (conversion-first, no-price policy)
 
   if (params.areaServed && params.areaServed.length > 0) {
     schema.areaServed = params.areaServed.map(city => ({
@@ -179,32 +161,6 @@ export function generateLocalBusinessSchema(params: {
       "@type": "AggregateRating",
       "ratingValue": "4.9",
       "reviewCount": "200"
-    },
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Auto Glass Services",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Windshield Repair",
-            "description": `Professional windshield chip and crack repair in ${params.city}`
-          },
-          "price": "89",
-          "priceCurrency": "USD"
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Windshield Replacement",
-            "description": `Full windshield replacement with OEM quality glass in ${params.city}`
-          },
-          "price": "299",
-          "priceCurrency": "USD"
-        }
-      ]
     }
   };
 }
@@ -230,38 +186,7 @@ export function generateFAQSchema(faqs: FAQItem[]) {
 /**
  * Product Schema - Use on vehicle-specific pages (windshield as product)
  */
-export function generateProductSchema(params: {
-  vehicleMake: string;
-  vehicleModel: string;
-  price: number;
-  description: string;
-}) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": `${params.vehicleMake} ${params.vehicleModel} Windshield Replacement`,
-    "description": params.description,
-    "brand": {
-      "@type": "Brand",
-      "name": params.vehicleMake
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": params.price,
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "seller": {
-        "@type": "Organization",
-        "name": "Pink Auto Glass"
-      }
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "200"
-    }
-  };
-}
+// Product schema intentionally omitted (no pricing). Use Service + FAQ instead.
 
 /**
  * Article Schema - Use on blog posts

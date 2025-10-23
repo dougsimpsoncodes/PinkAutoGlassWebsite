@@ -65,7 +65,6 @@ export default function MakePage({ params }: MakePageProps) {
     serviceName: `${makeName} Windshield Replacement`,
     description: `Professional windshield replacement service for all ${makeName} models in the Denver metro area. OEM glass, ADAS calibration, and lifetime warranty included.`,
     serviceType: 'Auto Glass Replacement',
-    priceRange: '299-500',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch']
   });
 
