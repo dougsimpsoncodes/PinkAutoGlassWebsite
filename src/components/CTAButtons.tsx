@@ -41,7 +41,7 @@ export default function CTAButtons({
         className="inline-flex items-center justify-center gap-2 bg-white text-pink-600 hover:bg-gray-50 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all border-2 border-pink-600"
       >
         <Phone className="w-5 h-5" />
-        Call {displayPhone}
+        Call Now
       </a>
 
       {/* Text Button */}
@@ -54,7 +54,7 @@ export default function CTAButtons({
         Text Us
       </a>
 
-      {/* Book Online Button */}
+      {/* Book Button */}
       <Link
         href="/book"
         onClick={handleBookClick}
