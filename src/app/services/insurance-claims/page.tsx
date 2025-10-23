@@ -37,7 +37,6 @@ export default function InsuranceClaimsPage() {
   const serviceSchema = generateServiceSchema({
     serviceName: 'Auto Glass Insurance Claims',
     description: 'Hassle-free auto glass insurance claims service across the Front Range. We handle all paperwork and bill your insurance directly.',
-    priceRange: '0-100',
     serviceType: 'Insurance Claims Assistance',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });

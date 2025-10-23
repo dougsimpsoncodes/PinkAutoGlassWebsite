@@ -37,7 +37,6 @@ export default function MobileServicePage() {
   const serviceSchema = generateServiceSchema({
     serviceName: 'Mobile Windshield Service',
     description: 'Mobile windshield repair and replacement service across the Front Range. We come to your location with fully equipped mobile units. No extra charge for mobile service.',
-    priceRange: '89-500',
     serviceType: 'Mobile Auto Glass Service',
     areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
   });
