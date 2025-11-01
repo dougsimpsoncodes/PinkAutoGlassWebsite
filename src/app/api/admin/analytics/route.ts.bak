@@ -8,7 +8,6 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   // Check authentication with Clerk
-  const { userId } = await auth();
   if (!userId) {
     return NextResponse.json(
       { ok: false, error: 'Unauthorized' },
