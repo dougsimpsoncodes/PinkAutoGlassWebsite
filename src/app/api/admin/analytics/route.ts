@@ -6,10 +6,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Helper function to parse traffic source from referrer
-function parseSourceFromReferrer(referrer: string | null, utmSource?: string | null): string {
+// Helper function to parse traffic source from referrer and landing page
+function parseSourceFromReferrer(
+  referrer: string | null,
+  utmSource?: string | null,
+  landingPage?: string | null
+): string {
   // If UTM source exists, use it
   if (utmSource) return utmSource;
+
+  // Check for gclid in landing page (Google Ads auto-tagging)
+  if (landingPage && landingPage.includes('gclid=')) {
+    return 'google-ads';
+  }
 
   // If no referrer, it's direct traffic
   if (!referrer) return 'direct';
@@ -19,7 +28,7 @@ function parseSourceFromReferrer(referrer: string | null, utmSource?: string | n
     const hostname = url.hostname.toLowerCase();
 
     // Parse common search engines and social media
-    if (hostname.includes('google')) return 'google';
+    if (hostname.includes('google')) return 'google-organic';
     if (hostname.includes('bing')) return 'bing';
     if (hostname.includes('yahoo')) return 'yahoo';
     if (hostname.includes('duckduckgo')) return 'duckduckgo';
@@ -140,15 +149,15 @@ async function getOverviewMetrics(startDate: Date) {
 async function getTrafficSources(startDate: Date) {
   const { data, error } = await supabase
     .from('user_sessions')
-    .select('utm_source, utm_medium, utm_campaign, referrer')
+    .select('utm_source, utm_medium, utm_campaign, referrer, landing_page')
     .gte('started_at', startDate.toISOString());
 
   if (error) throw error;
 
-  // Group by source (parse from referrer if utm_source is missing)
+  // Group by source (parse from referrer and gclid if utm_source is missing)
   const sourceCounts: Record<string, number> = {};
   data?.forEach((session: any) => {
-    const source = parseSourceFromReferrer(session.referrer, session.utm_source);
+    const source = parseSourceFromReferrer(session.referrer, session.utm_source, session.landing_page);
     sourceCounts[source] = (sourceCounts[source] || 0) + 1;
   });
 
@@ -256,7 +265,7 @@ async function getTrafficDetail(startDate: Date) {
   // Get all sessions with their conversions
   const { data: sessions, error: sessionsError } = await supabase
     .from('user_sessions')
-    .select('session_id, utm_source, utm_medium, utm_campaign, page_views_count, referrer')
+    .select('session_id, utm_source, utm_medium, utm_campaign, page_views_count, referrer, landing_page')
     .gte('started_at', startDate.toISOString());
 
   if (sessionsError) throw sessionsError;
@@ -271,11 +280,11 @@ async function getTrafficDetail(startDate: Date) {
 
   if (conversionsError) throw conversionsError;
 
-  // Group by source (parse from referrer if utm_source is missing)
+  // Group by source (parse from referrer and gclid if utm_source is missing)
   const sourceMap = new Map();
 
   sessions?.forEach((session) => {
-    const source = parseSourceFromReferrer(session.referrer, session.utm_source);
+    const source = parseSourceFromReferrer(session.referrer, session.utm_source, session.landing_page);
     if (!sourceMap.has(source)) {
       sourceMap.set(source, {
         source,
@@ -295,7 +304,7 @@ async function getTrafficDetail(startDate: Date) {
     // Find the session for this conversion to get the correct source
     const session = sessions?.find((s: any) => s.session_id === conversion.session_id);
     if (session) {
-      const source = parseSourceFromReferrer(session.referrer, session.utm_source);
+      const source = parseSourceFromReferrer(session.referrer, session.utm_source, session.landing_page);
       if (sourceMap.has(source)) {
         sourceMap.get(source).conversions += 1;
       }
