@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { trackFormStart, trackFormSubmit } from '@/lib/analytics';
 
@@ -11,11 +11,21 @@ export default function QuoteForm() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    vehicle: '',
+    vehicleYear: '',
+    vehicleMake: '',
+    vehicleModel: '',
     zip: '',
     hasInsurance: '',
     smsConsent: false
   });
+  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loadingMakes, setLoadingMakes] = useState(true);
+  const [loadingModels, setLoadingModels] = useState(false);
+
+  // Generate years array (current year back 20 years)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
 
   const formatPhoneNumber = (value: string): string => {
     // Remove all non-numeric characters
@@ -30,6 +40,50 @@ export default function QuoteForm() {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
     }
   };
+
+  // Fetch makes on component mount
+  useEffect(() => {
+    const fetchMakes = async () => {
+      try {
+        setLoadingMakes(true);
+        const response = await fetch('/api/vehicles/makes');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableMakes(data.makes || []);
+        }
+      } catch (error) {
+        console.error('Error fetching makes:', error);
+      } finally {
+        setLoadingMakes(false);
+      }
+    };
+    fetchMakes();
+  }, []);
+
+  // Fetch models when make changes
+  useEffect(() => {
+    if (!formData.vehicleMake) {
+      setAvailableModels([]);
+      return;
+    }
+
+    const fetchModels = async () => {
+      try {
+        setLoadingModels(true);
+        const response = await fetch(`/api/vehicles/models?make=${encodeURIComponent(formData.vehicleMake)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableModels(data.models || []);
+        }
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        setAvailableModels([]);
+      } finally {
+        setLoadingModels(false);
+      }
+    };
+    fetchModels();
+  }, [formData.vehicleMake]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!formStarted) {
@@ -67,11 +121,19 @@ export default function QuoteForm() {
       sessionStorage.setItem('session_id', sessionId);
       localStorage.setItem('client_id', clientId);
 
+      // Combine vehicle data into single string for API
+      const vehicle = `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`.trim();
+
       const response = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          name: formData.name,
+          phone: formData.phone,
+          vehicle: vehicle,
+          zip: formData.zip,
+          hasInsurance: formData.hasInsurance,
+          smsConsent: formData.smsConsent,
           source: 'homepage_quote_form',
           timestamp: new Date().toISOString(),
           clientId,
@@ -103,7 +165,7 @@ export default function QuoteForm() {
 
   return (
     <form id="quote-form" onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-xl border-2 border-pink-100">
-      <h3 className="text-2xl font-bold text-gray-900 mb-6">Get Your FREE Quote in 60 Seconds</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">Get Your Free Quote</h3>
 
       <div className="space-y-4">
         {/* Name */}
@@ -142,21 +204,67 @@ export default function QuoteForm() {
           <p className="text-xs text-gray-600 mt-1">We'll call or text you back in 5 minutes</p>
         </div>
 
-        {/* Vehicle */}
+        {/* Vehicle - Year, Make, Model */}
         <div>
-          <label htmlFor="vehicle" className="block text-sm font-semibold text-gray-700 mb-2">
-            Vehicle (Year Make Model) *
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Vehicle Information *
           </label>
-          <input
-            type="text"
-            id="vehicle"
-            name="vehicle"
-            required
-            value={formData.vehicle}
-            onChange={handleInputChange}
-            className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base"
-            placeholder="2024 Toyota Camry"
-          />
+          <div className="grid grid-cols-3 gap-2">
+            {/* Year */}
+            <select
+              id="vehicleYear"
+              name="vehicleYear"
+              required
+              value={formData.vehicleYear}
+              onChange={(e) => {
+                handleInputChange(e);
+                setFormData(prev => ({ ...prev, vehicleYear: e.target.value, vehicleMake: '', vehicleModel: '' }));
+              }}
+              className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base"
+            >
+              <option value="">Year</option>
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+
+            {/* Make */}
+            <select
+              id="vehicleMake"
+              name="vehicleMake"
+              required
+              value={formData.vehicleMake}
+              onChange={(e) => {
+                handleInputChange(e);
+                setFormData(prev => ({ ...prev, vehicleMake: e.target.value, vehicleModel: '' }));
+              }}
+              disabled={loadingMakes || availableMakes.length === 0}
+              className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">{loadingMakes ? 'Loading...' : 'Make'}</option>
+              {availableMakes.map(make => (
+                <option key={make} value={make}>{make}</option>
+              ))}
+              <option value="Other">Other</option>
+            </select>
+
+            {/* Model */}
+            <select
+              id="vehicleModel"
+              name="vehicleModel"
+              required
+              value={formData.vehicleModel}
+              onChange={handleInputChange}
+              disabled={!formData.vehicleMake || loadingModels}
+              className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">{loadingModels ? 'Loading...' : 'Model'}</option>
+              {availableModels.map(model => (
+                <option key={model} value={model}>{model}</option>
+              ))}
+              <option value="Other">Other</option>
+            </select>
+          </div>
         </div>
 
         {/* ZIP Code */}
@@ -208,7 +316,7 @@ export default function QuoteForm() {
               onChange={(e) => setFormData({ ...formData, smsConsent: e.target.checked })}
               className="mt-1 w-5 h-5 text-pink-600 border-gray-300 rounded focus:ring-pink-500 focus:ring-2"
             />
-            <label htmlFor="smsConsent" className="text-sm text-gray-700 cursor-pointer">
+            <label htmlFor="smsConsent" className="text-xs text-gray-700 cursor-pointer">
               By checking this box, you agree to receive Customer Care SMS messages from Pink Auto Glass. You may reply <strong>STOP</strong> to opt out at any time. Reply <strong>HELP</strong> to (720) 918-7465 for assistance. Messages and data rates may apply. Message frequency will vary. Learn more on our{' '}
               <a href="/privacy" className="text-pink-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Privacy Policy

@@ -65,11 +65,6 @@ export default function Home() {
       "https://www.facebook.com/pinkautoglass",
       "https://www.instagram.com/pinkautoglass"
     ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "200"
-    },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Auto Glass Services",
@@ -243,14 +238,10 @@ export default function Home() {
           
           {/* Quick Stats */}
           <div className="bg-white p-8 rounded-xl shadow-lg">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-pink-600 mb-2">5,000+</div>
                 <div className="text-sm text-gray-600">Happy Customers</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-600 mb-2">4.9★</div>
-                <div className="text-sm text-gray-600">Average Rating</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">Same Day</div>
