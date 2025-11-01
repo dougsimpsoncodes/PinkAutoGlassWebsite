@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/validation";
+import { sendEmail, sendAdminEmail } from "@/lib/notifications/email";
+import { sendSMS, sendAdminSMS } from "@/lib/notifications/sms";
+import {
+  getCustomerConfirmationEmail,
+  getAdminBookingNotificationEmail,
+  getCustomerConfirmationSMS,
+  getAdminBookingNotificationSMS
+} from "@/lib/notifications/templates";
 
 // Initialize Supabase client lazily to avoid build-time errors
 let supabase: ReturnType<typeof createClient> | null = null;
@@ -223,7 +231,7 @@ export async function POST(req: NextRequest) {
     const { data: referenceNumber, error: refError } = await client.rpc(
       "fn_get_reference_number",
       { p_id: leadId }
-    );
+    ) as { data: string | null; error: any };
 
     if (refError) {
       console.error("Reference number fetch failed:", refError.message);
@@ -271,11 +279,63 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // =============================================================================
+    // SEND NOTIFICATIONS (Email + SMS)
+    // =============================================================================
+    const finalReferenceNumber = referenceNumber || leadId.slice(0, 8).toUpperCase();
+
+    // Prepare booking data for templates
+    const bookingData = {
+      referenceNumber: finalReferenceNumber,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      phone: validatedData.phone,
+      email: validatedData.email,
+      vehicleYear: validatedData.vehicleYear,
+      vehicleMake: validatedData.vehicleMake,
+      vehicleModel: validatedData.vehicleModel,
+      serviceType: validatedData.serviceType,
+      mobileService: validatedData.mobileService,
+      city: validatedData.city,
+      state: validatedData.state,
+      zipCode: validatedData.zipCode,
+      streetAddress: validatedData.streetAddress,
+      preferredDate: validatedData.preferredDate,
+      timeWindow: validatedData.timeWindow,
+      damageDescription: validatedData.damageDescription,
+      fileCount: uploadedFiles.length,
+    };
+
+    // Send notifications asynchronously (don't block response)
+    Promise.all([
+      // Customer notifications
+      sendEmail({
+        to: validatedData.email,
+        subject: `Booking Confirmed - ${finalReferenceNumber}`,
+        html: getCustomerConfirmationEmail(bookingData),
+      }).catch(err => console.error('Customer email failed:', err)),
+
+      validatedData.smsConsent ? sendSMS({
+        to: validatedData.phone,
+        message: getCustomerConfirmationSMS(bookingData),
+      }).catch(err => console.error('Customer SMS failed:', err)) : Promise.resolve(),
+
+      // Admin notifications
+      sendAdminEmail(
+        `🚨 New Booking: ${validatedData.firstName} ${validatedData.lastName} - ${finalReferenceNumber}`,
+        getAdminBookingNotificationEmail(bookingData)
+      ).catch(err => console.error('Admin email failed:', err)),
+
+      sendAdminSMS(
+        getAdminBookingNotificationSMS(bookingData)
+      ).catch(err => console.error('Admin SMS failed:', err)),
+    ]).catch(err => console.error('Notification batch failed:', err));
+
     // Return success response
     return NextResponse.json({
       ok: true,
       id: leadId,
-      referenceNumber: referenceNumber || leadId.slice(0, 8).toUpperCase(),
+      referenceNumber: finalReferenceNumber,
       files: uploadedFiles
     });
 

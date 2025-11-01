@@ -2,7 +2,8 @@
 
 import { Phone, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
-import { trackPhoneClick, trackTextClick, trackBookingClick } from '@/lib/analytics';
+import { trackPhoneClick, trackTextClick } from '@/lib/tracking';
+import { trackBookingClick } from '@/lib/analytics';
 
 interface CTAButtonsProps {
   source: string;

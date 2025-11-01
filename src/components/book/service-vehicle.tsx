@@ -155,6 +155,7 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               {availableMakes.map(make => (
                 <option key={make} value={make}>{make}</option>
               ))}
+              <option value="Other">Other</option>
             </select>
             {errors.vehicleMake && (
               <p className="text-red-500 text-sm mt-1">{errors.vehicleMake}</p>
@@ -178,6 +179,7 @@ const ServiceVehicleComponent = ({ formData, updateFormData, errors, onNext }: S
               {availableModels.map(model => (
                 <option key={model} value={model}>{model}</option>
               ))}
+              <option value="Other">Other</option>
             </select>
             {errors.vehicleModel && (
               <p className="text-red-500 text-sm mt-1">{errors.vehicleModel}</p>

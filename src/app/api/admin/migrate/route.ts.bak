@@ -1,0 +1,119 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function POST(req: NextRequest) {
+  // Check authentication
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    // Read the migration file
+    const migrationPath = path.join(process.cwd(), 'supabase/migrations/20251030_google_ads_ringcentral_tracking.sql');
+    const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+
+    // Split into individual statements
+    const statements = migrationSQL
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < statements.length; i++) {
+      const stmt = statements[i];
+
+      // Skip BEGIN and COMMIT
+      if (stmt.toUpperCase().includes('BEGIN') || stmt.toUpperCase().includes('COMMIT')) {
+        continue;
+      }
+
+      try {
+        // Execute via Supabase admin connection
+        const { data, error } = await supabase.rpc('exec', {
+          sql: stmt
+        }).catch(async () => {
+          // If exec RPC doesn't exist, try direct query for CREATE statements
+          if (stmt.toUpperCase().includes('CREATE TABLE')) {
+            // Extract table name
+            const match = stmt.match(/CREATE TABLE (?:IF NOT EXISTS )?(?:public\.)?(\w+)/i);
+            const tableName = match ? match[1] : 'unknown';
+
+            // We can't execute DDL via REST API, so we'll use a workaround
+            // Return a specific error that we can handle
+            return { data: null, error: { message: 'DDL_NEEDS_DASHBOARD' } };
+          }
+          return { data: null, error: { message: 'Unknown error' } };
+        });
+
+        if (error && error.message === 'DDL_NEEDS_DASHBOARD') {
+          errors.push({
+            statement: i + 1,
+            error: 'This migration needs to be run via Supabase Dashboard SQL Editor'
+          });
+        } else if (error) {
+          errors.push({
+            statement: i + 1,
+            error: error.message,
+            sql: stmt.substring(0, 100)
+          });
+        } else {
+          results.push({
+            statement: i + 1,
+            success: true
+          });
+        }
+      } catch (err: any) {
+        errors.push({
+          statement: i + 1,
+          error: err.message,
+          sql: stmt.substring(0, 100)
+        });
+      }
+    }
+
+    // Check if tables were created by querying them
+    const { data: tables, error: tablesError } = await supabase
+      .from('google_ads_daily_performance')
+      .select('id')
+      .limit(1);
+
+    const tablesExist = !tablesError;
+
+    return NextResponse.json({
+      ok: tablesExist,
+      message: tablesExist
+        ? 'Migration completed successfully'
+        : 'Migration needs to be run via Supabase Dashboard',
+      tablesExist,
+      results,
+      errors,
+      instructions: !tablesExist ? {
+        step1: 'Go to https://supabase.com/dashboard/project/fypzafbsfrrlrrufzkol',
+        step2: 'Click "SQL Editor" in left sidebar',
+        step3: 'Click "New Query"',
+        step4: 'Copy/paste contents of supabase/migrations/20251030_google_ads_ringcentral_tracking.sql',
+        step5: 'Click "Run"'
+      } : null
+    });
+
+  } catch (error: any) {
+    console.error('Migration error:', error);
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
