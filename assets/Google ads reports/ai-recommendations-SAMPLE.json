@@ -1,0 +1,331 @@
+{
+  "recommendations": [
+    {
+      "category": "negative_keywords",
+      "priority": "critical",
+      "title": "Add Negative Keywords to Stop Wasted Spend",
+      "description": "You're spending $60+ per day on competitor brand searches and irrelevant terms that don't convert. Adding negative keywords will immediately reduce wasted ad spend.",
+      "reasoning": "Analysis shows 'snow auto glass' ($18.97), 'rear windshield replacement' ($13.59), 'auto glass replacement' ($10.67), and other terms generated clicks but zero conversions. These terms account for ~15% of your total spend with 0% conversion rate.",
+      "expectedImpact": {
+        "metric": "wasted_spend",
+        "value": 1800,
+        "unit": "dollars"
+      },
+      "effort": "low",
+      "implementationSteps": [
+        "Go to Google Ads → Campaigns → Keywords → Negative Keywords",
+        "Click '+ Negative Keywords' button",
+        "Select 'Add to campaign' and choose 'Campaign #1'",
+        "Paste the list from automationData below (exact match)",
+        "Click 'Save' - takes effect immediately"
+      ],
+      "automationData": {
+        "negativeKeywords": [
+          "snow auto glass",
+          "auto glass pro",
+          "anders auto glass",
+          "native auto glass",
+          "primos auto glass",
+          "jiffy auto glass",
+          "jiffy glass",
+          "safe light",
+          "savelite",
+          "windshield doctor"
+        ]
+      }
+    },
+    {
+      "category": "bid_adjustments",
+      "priority": "critical",
+      "title": "Increase Bids on 100% Converting Terms",
+      "description": "'windshield replace' and 'back window replacement' have 100% conversion rates at excellent CPAs ($35.98 and $30.58). You're likely missing additional conversions due to low ad rank.",
+      "reasoning": "These terms converted on the first click, indicating extremely high intent. Current average CPC is $6.83, but these terms are worth $35+ to you. Increasing bids by 50% will improve ad position and capture more of this valuable traffic while still maintaining profitable CPA.",
+      "expectedImpact": {
+        "metric": "conversions",
+        "value": 40,
+        "unit": "percent"
+      },
+      "effort": "low",
+      "implementationSteps": [
+        "Go to Google Ads → Search Terms report",
+        "Find 'windshield replace' → Click 'Add as Keyword'",
+        "Set match type to 'Phrase match'",
+        "Set bid to +50% of current ($10.25 if current is $6.83)",
+        "Repeat for 'back window replacement' and other 100% converters",
+        "Monitor for 7 days and adjust based on volume"
+      ],
+      "automationData": {
+        "bidMultiplier": 1.5,
+        "targetKeywords": [
+          "windshield replace",
+          "back window replacement",
+          "auto glass repair"
+        ]
+      }
+    },
+    {
+      "category": "ad_copy",
+      "priority": "high",
+      "title": "Create 'Near Me' Optimized Ad Copy",
+      "description": "'auto glass repair near me' (21 impr), 'windshield repair near me' (17 impr), and similar local intent terms are showing your ads but getting 0 clicks. Your ad copy isn't resonating with mobile local searchers.",
+      "reasoning": "'Near me' searches indicate mobile users with immediate need, typically higher conversion intent. Your current generic ad copy doesn't emphasize mobile service, local presence, or urgency. Competitors are likely winning these clicks with location-specific copy.",
+      "expectedImpact": {
+        "metric": "CTR",
+        "value": 200,
+        "unit": "percent"
+      },
+      "effort": "medium",
+      "implementationSteps": [
+        "Go to Google Ads → Campaigns → Ads & Extensions",
+        "Click '+ New Responsive Search Ad'",
+        "Use headlines: 'Mobile Auto Glass Repair Near You', 'Same Day Service - Colorado', 'We Come To You | Free Quotes'",
+        "Description: 'Local auto glass experts. Mobile service to your location. Insurance accepted. Lifetime warranty. Book online in 60 seconds.'",
+        "Add location extensions if not already enabled",
+        "Add call extensions with click-to-call",
+        "Save and set to serve alongside existing ads for A/B test"
+      ],
+      "automationData": {
+        "adCopy": {
+          "headlines": [
+            "Mobile Auto Glass Repair Near You",
+            "Same Day Service | Colorado",
+            "We Come To You | Free Quotes",
+            "#1 Rated Auto Glass Repair",
+            "Insurance Accepted | Lifetime Warranty"
+          ],
+          "descriptions": [
+            "Local auto glass experts. Mobile service to your location. Insurance accepted. Lifetime warranty. Book online in 60 seconds.",
+            "Colorado's trusted auto glass repair company. Windshield replacement, chip repair, back glass. We come to you. Same day service available."
+          ]
+        }
+      }
+    },
+    {
+      "category": "landing_pages",
+      "priority": "high",
+      "title": "Create Service-Specific Landing Pages",
+      "description": "Generic landing page for all searches hurts Quality Score. Create dedicated pages for 'windshield replacement', 'chip repair', and 'back window' to improve relevance and conversion rate.",
+      "reasoning": "When someone searches 'windshield chip repair' but lands on a general auto glass page, Google penalizes your Quality Score. This increases your CPC and lowers ad position. Service-specific landing pages improve Quality Score, lower CPC by 20-40%, and increase conversion rate by matching search intent.",
+      "expectedImpact": {
+        "metric": "CPA",
+        "value": 25,
+        "unit": "percent"
+      },
+      "effort": "high",
+      "implementationSteps": [
+        "Create /services/windshield-replacement page with focused content",
+        "Create /services/chip-repair page",
+        "Create /services/back-window-replacement page",
+        "Update ad groups to point to specific pages",
+        "Ensure each page has: service-specific headline, pricing, before/after photos, CTA button",
+        "Add FAQ section addressing common questions for each service",
+        "Implement schema markup for LocalBusiness and Service"
+      ],
+      "automationData": {
+        "landingPages": {
+          "/services/windshield-replacement": [
+            "windshield replace",
+            "windshield replacement",
+            "front windshield replacement"
+          ],
+          "/services/chip-repair": [
+            "windshield chip repair",
+            "chip repair",
+            "windshield repair"
+          ],
+          "/services/back-window": [
+            "back window replacement",
+            "rear windshield",
+            "back glass replacement"
+          ]
+        }
+      }
+    },
+    {
+      "category": "audience_targeting",
+      "priority": "medium",
+      "title": "Add Geographic Bid Adjustments",
+      "description": "Your data shows 'windshield replacement denver' got 1 click but didn't convert, while Colorado Springs terms perform better. Adjust bids by location to focus budget on your strongest areas.",
+      "reasoning": "You're likely based in or near Colorado Springs, making it easier to service those customers same-day. Denver searches may be outside your service area or require longer travel times. By reducing bids for Denver-area searches (-30%) and increasing bids for Colorado Springs area (+30%), you'll allocate budget to higher-converting locations.",
+      "expectedImpact": {
+        "metric": "conversion_rate",
+        "value": 15,
+        "unit": "percent"
+      },
+      "effort": "medium",
+      "implementationSteps": [
+        "Go to Google Ads → Campaigns → Settings → Locations",
+        "Click 'Location options' → 'Advanced search'",
+        "Add Colorado Springs metro area with +30% bid adjustment",
+        "Add Denver metro area with -30% bid adjustment",
+        "Monitor performance for 14 days",
+        "Adjust based on conversion data by location",
+        "Consider excluding areas outside your service zone entirely"
+      ],
+      "automationData": {
+        "geoTargeting": {
+          "increase": [
+            {
+              "location": "Colorado Springs, CO",
+              "bidMultiplier": 1.3
+            },
+            {
+              "location": "Pueblo, CO",
+              "bidMultiplier": 1.2
+            }
+          ],
+          "decrease": [
+            {
+              "location": "Denver, CO",
+              "bidMultiplier": 0.7
+            },
+            {
+              "location": "Boulder, CO",
+              "bidMultiplier": 0.7
+            }
+          ]
+        }
+      }
+    },
+    {
+      "category": "conversion_tracking",
+      "priority": "high",
+      "title": "Verify Conversion Tracking Accuracy",
+      "description": "Your 9.73% conversion rate is excellent, but with only 18 conversions from 185 clicks, ensure all conversion events are being tracked (phone calls, form submissions, booking widget).",
+      "reasoning": "If users are converting via phone calls or other methods not tracked, you're making bid decisions on incomplete data. This could lead to pausing profitable keywords or missing optimization opportunities. Implementing comprehensive conversion tracking will give you the full picture.",
+      "expectedImpact": {
+        "metric": "conversion_rate",
+        "value": 25,
+        "unit": "percent"
+      },
+      "effort": "medium",
+      "implementationSteps": [
+        "Verify Google Ads conversion tracking is on booking confirmation page",
+        "Add call conversion tracking with Google forwarding numbers",
+        "Implement form submission tracking for quote requests",
+        "Set up enhanced conversions for better attribution",
+        "Check Google Analytics to compare GA conversions vs Ads conversions",
+        "Add conversion values if possible (avg booking value)",
+        "Test by completing a booking yourself and verifying it appears in Ads"
+      ],
+      "automationData": {
+        "conversionEvents": [
+          "booking_completed",
+          "quote_requested",
+          "phone_call_clicked",
+          "phone_call_completed"
+        ]
+      }
+    },
+    {
+      "category": "budget_allocation",
+      "priority": "medium",
+      "title": "Implement Dayparting for Mobile Service Hours",
+      "description": "Auto glass repair is a daytime service. Running ads 24/7 wastes budget on searches when you can't immediately respond or service customers.",
+      "reasoning": "Analysis of time-series data shows inconsistent CPC ($6.83 vs $10.83), suggesting bid competition varies by time of day. By focusing ads during business hours (7am-7pm) when you can answer calls and schedule same-day service, you'll improve conversion rate and reduce wasted spend on overnight clicks.",
+      "expectedImpact": {
+        "metric": "wasted_spend",
+        "value": 400,
+        "unit": "dollars"
+      },
+      "effort": "low",
+      "implementationSteps": [
+        "Go to Google Ads → Campaigns → Ad Schedule",
+        "Click '+ AD SCHEDULE'",
+        "Set schedule: Monday-Friday 6:00 AM - 8:00 PM",
+        "Set schedule: Saturday 7:00 AM - 6:00 PM",
+        "Set schedule: Sunday 8:00 AM - 5:00 PM",
+        "Or use bid adjustments: +20% during peak hours (7am-10am, 4pm-7pm), -50% overnight",
+        "Monitor conversion rate by hour and refine schedule"
+      ],
+      "automationData": {
+        "adSchedule": {
+          "bidAdjustments": [
+            {
+              "day": "Monday-Friday",
+              "hours": "6:00-8:00",
+              "multiplier": 1.2
+            },
+            {
+              "day": "Monday-Friday",
+              "hours": "16:00-19:00",
+              "multiplier": 1.2
+            },
+            {
+              "day": "Monday-Sunday",
+              "hours": "22:00-6:00",
+              "multiplier": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "category": "campaign_structure",
+      "priority": "low",
+      "title": "Split Performance Max into Service-Focused Campaigns",
+      "description": "Performance Max is good for discovery but limits control. Consider creating separate Search campaigns for high-intent terms like 'windshield replacement', 'chip repair', 'mobile service' with dedicated budgets.",
+      "reasoning": "Performance Max optimizes across all Google inventory (YouTube, Display, Search, etc), but your best ROI is likely from high-intent Search queries. By creating dedicated Search campaigns for your top 3 service types, you can allocate more budget to proven converters and have better control over bids, ad copy, and landing pages.",
+      "expectedImpact": {
+        "metric": "CPA",
+        "value": 20,
+        "unit": "percent"
+      },
+      "effort": "high",
+      "implementationSteps": [
+        "Keep existing Performance Max campaign running as baseline",
+        "Create new Search campaign: 'Windshield Replacement - High Intent'",
+        "Add exact and phrase match keywords from top converters",
+        "Create dedicated ad copy and landing pages",
+        "Set daily budget at $30-50 to start",
+        "Monitor for 30 days and compare CPA to Performance Max",
+        "Gradually shift budget from Performance Max to Search if better performance",
+        "Use Performance Max for discovery, Search campaigns for conversion"
+      ],
+      "automationData": {
+        "newCampaigns": [
+          {
+            "name": "Search - Windshield Replacement",
+            "budget": 50,
+            "keywords": [
+              "windshield replacement",
+              "windshield replace",
+              "front windshield replacement",
+              "car windshield replacement"
+            ]
+          },
+          {
+            "name": "Search - Mobile Service",
+            "budget": 30,
+            "keywords": [
+              "mobile auto glass",
+              "auto glass repair near me",
+              "windshield repair near me",
+              "mobile windshield replacement"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "generated": "2025-10-27T20:00:00Z",
+    "dataSource": "search-terms.csv",
+    "dateRange": "All time (Oct 26-27, 2025)",
+    "totalRecommendations": 8,
+    "estimatedImplementationTime": "4-6 hours total",
+    "estimatedMonthlySavings": 2200,
+    "estimatedConversionIncrease": 35
+  },
+  "summary": {
+    "criticalActions": 2,
+    "highPriority": 3,
+    "mediumPriority": 2,
+    "lowPriority": 1,
+    "quickWins": [
+      "Add negative keywords (5 min, $1,800/month savings)",
+      "Increase bids on converters (10 min, +40% conversions)",
+      "Enable ad scheduling (5 min, $400/month savings)"
+    ]
+  }
+}

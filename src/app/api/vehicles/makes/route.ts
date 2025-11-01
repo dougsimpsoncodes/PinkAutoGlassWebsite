@@ -1,12 +1,7 @@
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-
-// Create a connection pool
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
 
 /**
  * GET /api/vehicles/makes
@@ -14,12 +9,25 @@ const pool = new Pool({
  */
 export async function GET() {
   try {
-    // Query Postgres directly, bypassing Supabase PostgREST
-    const { rows } = await pool.query(
-      'SELECT make FROM vehicle_makes ORDER BY make ASC'
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const makes = rows.map((row: { make: string }) => row.make);
+    const { data, error } = await supabase
+      .from('vehicle_makes')
+      .select('make')
+      .order('make', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error fetching vehicle makes:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch vehicle makes' },
+        { status: 500 }
+      );
+    }
+
+    const makes = data.map((row: { make: string }) => row.make);
 
     return NextResponse.json({ makes });
   } catch (error) {
