@@ -17,15 +17,41 @@ export default function QuoteForm() {
     smsConsent: false
   });
 
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const phoneNumber = value.replace(/\D/g, '');
+
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!formStarted) {
       trackFormStart('homepage_quote_form');
       setFormStarted(true);
     }
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+
+    const { name, value } = e.target;
+
+    // Format phone number as user types
+    if (name === 'phone') {
+      const formatted = formatPhoneNumber(value);
+      setFormData({
+        ...formData,
+        phone: formatted
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +135,7 @@ export default function QuoteForm() {
             required
             value={formData.phone}
             onChange={handleInputChange}
+            maxLength={14}
             className="w-full p-4 border-2 border-pink-300 bg-pink-50 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base font-medium"
             placeholder="(720) 555-1234"
           />
