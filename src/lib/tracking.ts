@@ -80,7 +80,7 @@ export function getVisitorId(): string {
 }
 
 /**
- * Extract UTM parameters from URL
+ * Extract UTM parameters and gclid from URL
  */
 export function getUTMParams(): UTMParams {
   if (typeof window === 'undefined') return {};
@@ -106,6 +106,25 @@ export function getUTMParams(): UTMParams {
   }
 
   return utmParams;
+}
+
+/**
+ * Get Google Click ID (gclid) from URL
+ */
+export function getGclid(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const gclid = params.get('gclid');
+
+  // Store gclid in session for attribution (it persists across page views in the same session)
+  if (gclid) {
+    sessionStorage.setItem('gclid', gclid);
+    return gclid;
+  }
+
+  // Retrieve stored gclid
+  return sessionStorage.getItem('gclid');
 }
 
 /**
@@ -161,6 +180,7 @@ export async function initializeSession(): Promise<SessionData> {
   const sessionId = getSessionId();
   const visitorId = getVisitorId();
   const utmParams = getUTMParams();
+  const gclid = getGclid();
   const deviceInfo = getDeviceInfo();
 
   const sessionData: SessionData = {
@@ -181,10 +201,13 @@ export async function initializeSession(): Promise<SessionData> {
 
   if (!existingSession) {
     // Create new session in database
+    // Include full URL with query parameters in landing_page
+    const landingPage = window.location.pathname + window.location.search;
+
     await supabase.from('user_sessions').insert({
       session_id: sessionId,
       visitor_id: visitorId,
-      landing_page: window.location.pathname,
+      landing_page: landingPage,
       utm_source: utmParams.source,
       utm_medium: utmParams.medium,
       utm_campaign: utmParams.campaign,
