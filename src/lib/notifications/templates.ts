@@ -111,10 +111,10 @@ export function getCustomerConfirmationEmail(data: BookingData): string {
       <div style="text-align: center; padding: 20px 0; border-top: 1px solid #e5e7eb;">
         <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0;">Questions about your booking?</p>
         <p style="margin: 0;">
-          <a href="tel:+1234567890" style="color: #ec4899; text-decoration: none; font-weight: 600;">Call us: (123) 456-7890</a>
+          <a href="tel:+17209187465" style="color: #ec4899; text-decoration: none; font-weight: 600;">Call us: (720) 918-7465</a>
         </p>
         <p style="margin: 10px 0 0 0;">
-          <a href="mailto:bookings@pinkautoglass.com" style="color: #ec4899; text-decoration: none; font-weight: 600;">bookings@pinkautoglass.com</a>
+          <a href="mailto:doug@pinkautoglass.com" style="color: #ec4899; text-decoration: none; font-weight: 600;">doug@pinkautoglass.com</a>
         </p>
       </div>
     </div>
@@ -343,7 +343,7 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
  * Customer booking confirmation SMS
  */
 export function getCustomerConfirmationSMS(data: BookingData): string {
-  return `Thanks for choosing Pink Auto Glass! Your booking (Ref: ${data.referenceNumber}) is confirmed. We'll call you shortly to finalize your appointment for your ${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel}. Questions? Call us at (123) 456-7890`;
+  return `Thanks for choosing Pink Auto Glass! Your booking (Ref: ${data.referenceNumber}) is confirmed. We'll call you shortly to finalize your appointment for your ${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel}. Questions? Call us at (720) 918-7465`;
 }
 
 /**
