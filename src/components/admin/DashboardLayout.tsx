@@ -3,7 +3,6 @@
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useClerk } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -25,12 +24,12 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useClerk();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleLogout = async () => {
-    await signOut();
+    await fetch('/api/admin/logout', { method: 'POST' });
     router.push('/admin/login');
+    router.refresh();
   };
 
   const navigation = [
