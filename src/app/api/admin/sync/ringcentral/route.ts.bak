@@ -14,7 +14,6 @@ const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
 
 export async function POST(req: NextRequest) {
   // Check authentication
-  const { userId } = await auth();
   if (!userId) {
     return NextResponse.json(
       { ok: false, error: 'Unauthorized' },
@@ -216,7 +215,6 @@ export async function POST(req: NextRequest) {
 
 // GET endpoint to check sync status
 export async function GET(req: NextRequest) {
-  const { userId } = await auth();
   if (!userId) {
     return NextResponse.json(
       { ok: false, error: 'Unauthorized' },

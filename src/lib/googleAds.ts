@@ -255,8 +255,8 @@ export async function testConnection(): Promise<{
       const customerData = results[0];
       return {
         success: true,
-        customerId: customerData.customer.id,
-        customerName: customerData.customer.descriptive_name,
+        customerId: customerData.customer.id?.toString() || '',
+        customerName: customerData.customer.descriptive_name || '',
       };
     }
 
