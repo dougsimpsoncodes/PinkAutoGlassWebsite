@@ -212,9 +212,9 @@ export default function DenverLocationPage() {
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">ADAS Calibration</h3>
-                    <p className="text-blue-600 font-bold text-2xl mb-3">Included Free</p>
+                    <p className="text-blue-600 font-bold text-2xl mb-3">Available</p>
                     <p className="text-gray-700 mb-4">
-                      Required for 2018+ vehicles. We include it with every replacement.
+                      Required for 2018+ vehicles. Professional ADAS calibration service.
                     </p>
                     <Link href="/services/adas-calibration" className="text-blue-600 hover:underline font-semibold">
                       Learn More →
