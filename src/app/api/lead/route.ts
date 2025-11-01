@@ -162,16 +162,41 @@ export async function POST(request: NextRequest) {
     };
 
     // Send admin notifications asynchronously (don't block response)
+    console.log('📧 Attempting to send admin notifications for lead:', leadId);
     Promise.all([
       sendAdminEmail(
         `💬 Quick Quote: ${validatedData.firstName} ${validatedData.lastName}`,
         getAdminQuickQuoteEmail(quoteData)
-      ).catch(err => console.error('Admin quote email failed:', err)),
+      ).then(success => {
+        if (success) {
+          console.log('✅ Admin email sent successfully for lead:', leadId);
+        } else {
+          console.error('❌ Admin email failed to send for lead:', leadId);
+        }
+        return success;
+      }).catch(err => {
+        console.error('❌ Admin quote email exception for lead:', leadId, err);
+        return false;
+      }),
 
       sendAdminSMS(
         getAdminQuickQuoteSMS(quoteData)
-      ).catch(err => console.error('Admin quote SMS failed:', err)),
-    ]).catch(err => console.error('Quote notification batch failed:', err));
+      ).then(success => {
+        if (success) {
+          console.log('✅ Admin SMS sent successfully for lead:', leadId);
+        } else {
+          console.error('❌ Admin SMS failed to send for lead:', leadId);
+        }
+        return success;
+      }).catch(err => {
+        console.error('❌ Admin quote SMS exception for lead:', leadId, err);
+        return false;
+      }),
+    ]).then(results => {
+      console.log(`📊 Notification results for lead ${leadId}: Email=${results[0]}, SMS=${results[1]}`);
+    }).catch(err => {
+      console.error('❌ Quote notification batch failed for lead:', leadId, err);
+    });
 
     return NextResponse.json(
       {

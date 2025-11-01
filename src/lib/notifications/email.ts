@@ -19,8 +19,14 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
+    const fromEmail = process.env.FROM_EMAIL;
+    if (!fromEmail) {
+      console.error('FROM_EMAIL environment variable not configured');
+      return false;
+    }
+
     const { data, error } = await resend.emails.send({
-      from: options.from || `Pink Auto Glass <${process.env.FROM_EMAIL || 'bookings@pinkautoglass.com'}>`,
+      from: options.from || `Pink Auto Glass <${fromEmail}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -46,7 +52,10 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
  */
 export async function sendAdminEmail(subject: string, html: string): Promise<boolean> {
   const adminEmailsStr = process.env.ADMIN_EMAIL || 'admin@pinkautoglass.com';
-  const adminEmails = adminEmailsStr.split(',').map(email => email.trim());
+  const adminEmails = adminEmailsStr.split(',').map(email => email.trim().replace(/\\n/g, ''));
+
+  console.log(`📧 Sending admin email to: ${adminEmails.join(', ')}`);
+  console.log(`   Subject: ${subject}`);
 
   // Send one email to all admin addresses (avoids rate limiting)
   return sendEmail({ to: adminEmails, subject, html });
