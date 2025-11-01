@@ -27,7 +27,7 @@ const vehicleData = {
   'Buick': ['Enclave', 'Encore', 'Envision'],
   'Cadillac': ['CT4', 'CT5', 'Escalade', 'XT4', 'XT5', 'XT6', 'Lyriq'],
   'Chevrolet': ['Blazer', 'Camaro', 'Colorado', 'Corvette', 'Equinox', 'Malibu', 'Silverado 1500', 'Silverado 2500HD', 'Suburban', 'Tahoe', 'Trailblazer', 'Traverse', 'Trax'],
-  'Chrysler': ['300', 'Pacifica'],
+  'Chrysler': ['200', '300', 'Aspen', 'Cirrus', 'Concorde', 'Crossfire', 'LHS', 'Pacifica', 'PT Cruiser', 'Sebring', 'Town & Country', 'Voyager'],
   'Dodge': ['Challenger', 'Charger', 'Durango', 'Grand Caravan', 'Hornet', 'Ram 1500', 'Ram 2500', 'Ram 3500'],
   'Ford': ['Bronco', 'Bronco Sport', 'Edge', 'Escape', 'Expedition', 'Explorer', 'F-150', 'F-250', 'F-350', 'Maverick', 'Mustang', 'Ranger', 'Transit'],
   'Genesis': ['G70', 'G80', 'G90', 'GV60', 'GV70', 'GV80'],
