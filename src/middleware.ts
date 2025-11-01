@@ -4,21 +4,37 @@ import type { NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   // Check if this is an admin route
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-  const isLoginPage = request.nextUrl.pathname === '/admin/login';
   const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
 
-  // Protect admin routes
-  if ((isAdminRoute && !isLoginPage) || isAdminApi) {
-    const sessionCookie = request.cookies.get('admin_session');
+  // Protect admin routes with HTTP Basic Auth
+  if (isAdminRoute || isAdminApi) {
+    const authHeader = request.headers.get('authorization');
 
-    if (!sessionCookie || sessionCookie.value !== (process.env.ADMIN_SESSION_SECRET || 'change-this-in-production')) {
-      if (isAdminApi) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      return new NextResponse('Authentication required', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Admin Area"',
+        },
+      });
+    }
 
-      const loginUrl = new URL('/admin/login', request.url);
-      loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
+    // Decode credentials
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    // Verify credentials
+    const validUsername = process.env.ADMIN_USERNAME || 'admin';
+    const validPassword = process.env.ADMIN_PASSWORD || 'changeme';
+
+    if (username !== validUsername || password !== validPassword) {
+      return new NextResponse('Invalid credentials', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Admin Area"',
+        },
+      });
     }
   }
 
