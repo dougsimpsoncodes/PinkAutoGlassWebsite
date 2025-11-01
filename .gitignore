@@ -41,4 +41,20 @@ yarn-error.log*
 next-env.d.ts
 
 # build test script
-test-build.jsassets/
+test-build.js
+
+# Security - prevent committing secrets
+**/client_secret*.json
+**/credentials*.json
+**/*AUDIT*.md
+*COMPREHENSIVE*.md
+*SECRET*.md
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+
+# Keep assets directory but ignore sensitive files
+!assets/
+assets/**/client_secret*.json
+assets/**/credentials*.json
