@@ -16,6 +16,7 @@ interface Call {
   to_name: string | null;
   result: string;
   action: string;
+  recording_id: string | null;
   recording_uri: string | null;
   transport: string;
 }
@@ -395,9 +396,9 @@ export default function CallAnalyticsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {call.recording_uri ? (
+                      {call.recording_id ? (
                         <a
-                          href={call.recording_uri}
+                          href={`/api/admin/recording/${call.recording_id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-pink-600 hover:text-pink-700"
