@@ -1,4 +1,4 @@
-import { Shield, Star, Clock, Award } from 'lucide-react';
+import { Shield, Clock, Award } from 'lucide-react';
 
 export default function TrustSignals() {
   return (
@@ -8,21 +8,13 @@ export default function TrustSignals() {
       </h3>
 
       {/* Trust Badges */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-3">
             <Shield className="w-8 h-8 text-pink-600" />
           </div>
           <h4 className="font-bold text-sm text-gray-900">Licensed & Insured</h4>
           <p className="text-xs text-gray-600 mt-1">Fully certified</p>
-        </div>
-
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-3">
-            <Star className="w-8 h-8 text-green-600" />
-          </div>
-          <h4 className="font-bold text-sm text-gray-900">4.9★ Rating</h4>
-          <p className="text-xs text-gray-600 mt-1">200+ reviews</p>
         </div>
 
         <div className="flex flex-col items-center text-center">
