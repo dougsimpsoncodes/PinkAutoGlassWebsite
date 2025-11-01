@@ -30,8 +30,15 @@ export async function isAdminAuthenticated(): Promise<boolean> {
 export async function verifyAdminPassword(password: string): Promise<boolean> {
   const hash = ADMIN_PASSWORD_HASH || DEFAULT_PASSWORD_HASH;
 
+  console.log('Debug - verifyAdminPassword called');
+  console.log('Debug - ADMIN_PASSWORD_HASH exists:', !!ADMIN_PASSWORD_HASH);
+  console.log('Debug - Hash being used:', hash.substring(0, 20) + '...');
+  console.log('Debug - Password received:', password);
+
   try {
-    return await bcrypt.compare(password, hash);
+    const result = await bcrypt.compare(password, hash);
+    console.log('Debug - Password match result:', result);
+    return result;
   } catch (error) {
     console.error('Password verification error:', error);
     return false;
