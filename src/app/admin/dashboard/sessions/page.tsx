@@ -39,7 +39,6 @@ export default function SessionsPage() {
       const res = await fetch(`/api/admin/analytics?metric=sessions&range=${dateRange}`);
 
       if (!res.ok) {
-        router.push('/admin/login');
         return;
       }
 

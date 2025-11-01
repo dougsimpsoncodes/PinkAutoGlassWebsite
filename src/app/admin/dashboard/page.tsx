@@ -43,7 +43,6 @@ export default function AdminDashboard() {
       ]);
 
       if (!overviewRes.ok) {
-        router.push('/admin/login');
         return;
       }
 

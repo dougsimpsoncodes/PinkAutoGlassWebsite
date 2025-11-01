@@ -33,7 +33,6 @@ export default function TrafficSourcesPage() {
       const res = await fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}`);
 
       if (!res.ok) {
-        router.push('/admin/login');
         return;
       }
 

@@ -47,7 +47,6 @@ export default function LiveActivityPage() {
       ]);
 
       if (!sessionsRes.ok) {
-        router.push('/admin/login');
         return;
       }
 
