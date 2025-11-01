@@ -10,6 +10,7 @@ export default function QuoteForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
     vehicleYear: '',
     vehicleMake: '',
@@ -129,6 +130,7 @@ export default function QuoteForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
+          email: formData.email,
           phone: formData.phone,
           vehicle: vehicle,
           zip: formData.zip,
@@ -182,6 +184,23 @@ export default function QuoteForm() {
             onChange={handleInputChange}
             className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base"
             placeholder="John Doe"
+          />
+        </div>
+
+        {/* Email */}
+        <div>
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            Email Address *
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base"
+            placeholder="john@example.com"
           />
         </div>
 
