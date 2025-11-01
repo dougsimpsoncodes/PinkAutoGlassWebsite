@@ -1,0 +1,55 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function GET(req: NextRequest) {
+  // Check authentication
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get('limit') || '100');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const sortBy = searchParams.get('sortBy') || 'start_time';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+
+    // Fetch calls from database
+    const { data: calls, error } = await supabase
+      .from('ringcentral_calls')
+      .select('*')
+      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      throw new Error(`Failed to fetch calls: ${error.message}`);
+    }
+
+    // Get total count
+    const { count } = await supabase
+      .from('ringcentral_calls')
+      .select('*', { count: 'exact', head: true });
+
+    return NextResponse.json({
+      ok: true,
+      calls: calls || [],
+      total: count || 0,
+      limit,
+      offset,
+    });
+  } catch (error: any) {
+    console.error('Fetch calls error:', error);
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}

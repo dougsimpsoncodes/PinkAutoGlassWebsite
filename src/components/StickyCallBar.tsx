@@ -2,7 +2,7 @@
 
 import { Phone, MessageSquare, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { trackPhoneClick, trackTextClick } from '@/lib/analytics';
+import { trackPhoneClick, trackTextClick } from '@/lib/tracking';
 
 export default function StickyCallBar() {
   const [isVisible, setIsVisible] = useState(false);

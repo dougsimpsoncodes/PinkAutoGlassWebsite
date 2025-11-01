@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1"># Google Ads API Design Documentation</p>
+<p class="p1">## Pink Auto Glass Analytics Platform</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Company Name</p>
+<p class="p1">Pink Auto Glass</p>
+<p class="p2"><br></p>
+<p class="p1">**Website**: www.pinkautoglass.com</p>
+<p class="p1">**Business Type**: Auto glass repair and replacement service provider</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Business Model</p>
+<p class="p1">Pink Auto Glass is a local auto glass repair and replacement company serving customers in Arizona. We operate a single business entity (www.pinkautoglass.com) providing mobile and in-shop auto glass services.</p>
+<p class="p2"><br></p>
+<p class="p1">We advertise our own business through Google Ads campaigns to generate leads and drive phone calls from customers needing windshield repair, replacement, and ADAS calibration services. We do not manage advertising for any other companies or clients - we only advertise for our own business.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Tool Access/Use</p>
+<p class="p1">Our Google Ads API integration will be used exclusively by internal staff at Pink Auto Glass for the following purposes:</p>
+<p class="p2"><br></p>
+<p class="p1">**Primary Users:**</p>
+<p class="p1">- Business owner/administrators</p>
+<p class="p1">- Marketing staff</p>
+<p class="p2"><br></p>
+<p class="p1">**Tool Functionality:**</p>
+<p class="p1">1. **Performance Dashboard**: View real-time Google Ads campaign performance metrics including impressions, clicks, cost, conversions, and ROI</p>
+<p class="p1">2. **ROI Analytics**: Combine Google Ads data with phone call tracking data to calculate true return on investment</p>
+<p class="p1">3. **Historical Reporting**: Analyze campaign performance trends over various time periods (daily, weekly, monthly, yearly)</p>
+<p class="p1">4. **Data Syncing**: Automated daily sync of Google Ads metrics into our internal database for reporting</p>
+<p class="p2"><br></p>
+<p class="p1">**Access Restrictions:**</p>
+<p class="p1">- Tool is hosted on our private website behind authentication</p>
+<p class="p1">- Only Pink Auto Glass employees will have access to the dashboard</p>
+<p class="p1">- No external parties, agencies, or third-party users will have access</p>
+<p class="p1">- Tool is for internal business intelligence and reporting only</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Tool Design</p>
+<p class="p2"><br></p>
+<p class="p1">### Architecture Overview</p>
+<p class="p1">Our tool consists of three main components:</p>
+<p class="p2"><br></p>
+<p class="p1">**1. Data Collection Layer**</p>
+<p class="p1">- Automated API sync runs daily at 2:00 AM MST</p>
+<p class="p1">- Pulls campaign performance data for the previous day</p>
+<p class="p1">- Stores data in our PostgreSQL database</p>
+<p class="p2"><br></p>
+<p class="p1">**2. Database Layer**</p>
+<p class="p1">- PostgreSQL database stores historical performance data</p>
+<p class="p1">- Table structure:</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- `google_ads_daily_performance`: Daily campaign metrics</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Stores: date, campaign_id, campaign_name, impressions, clicks, cost, conversions, conversion_value</p>
+<p class="p1">- Data retention: Indefinite (for historical trend analysis)</p>
+<p class="p2"><br></p>
+<p class="p1">**3. Reporting Dashboard**</p>
+<p class="p1">- Web-based dashboard accessible only to authenticated Pink Auto Glass staff</p>
+<p class="p1">- Pulls data from our internal database (not directly from Google Ads API)</p>
+<p class="p1">- Displays:</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Campaign performance summary</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Daily/weekly/monthly trend charts</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- ROI calculations combining ad spend with revenue data</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Key performance indicators (CPC, CTR, conversion rate, ROAS)</p>
+<p class="p2"><br></p>
+<p class="p1">### Data Flow</p>
+<p class="p1">1. Google Ads API → Daily Sync Script → PostgreSQL Database</p>
+<p class="p1">2. PostgreSQL Database → Web Dashboard → Authenticated Users</p>
+<p class="p1">3. Read-only access to Google Ads data (no campaign management or modifications)</p>
+<p class="p2"><br></p>
+<p class="p1">### Security &amp; Privacy</p>
+<p class="p1">- All API credentials stored securely as environment variables</p>
+<p class="p1">- Dashboard requires authentication (username/password)</p>
+<p class="p1">- Data accessed only by authorized Pink Auto Glass employees</p>
+<p class="p1">- No public access to Google Ads data</p>
+<p class="p1">- HTTPS encryption for all data transmission</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## API Services Called</p>
+<p class="p2"><br></p>
+<p class="p1">We will use the following Google Ads API resources and services:</p>
+<p class="p2"><br></p>
+<p class="p1">**1. Customer Resource**</p>
+<p class="p1">- **Purpose**: Pull account-level performance metrics</p>
+<p class="p1">- **Metrics**: impressions, clicks, cost_micros, conversions, conversions_value</p>
+<p class="p1">- **Frequency**: Daily automated sync</p>
+<p class="p2"><br></p>
+<p class="p1">**2. Campaign Resource**</p>
+<p class="p1">- **Purpose**: Retrieve campaign-level performance data</p>
+<p class="p1">- **Fields**: campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type</p>
+<p class="p1">- **Metrics**: Same as Customer resource, segmented by campaign</p>
+<p class="p1">- **Frequency**: Daily automated sync</p>
+<p class="p2"><br></p>
+<p class="p1">**3. Ad Group Resource** (Optional/Future)</p>
+<p class="p1">- **Purpose**: Detailed ad group performance analysis</p>
+<p class="p1">- **Use Case**: Drill-down reporting for specific ad groups within campaigns</p>
+<p class="p2"><br></p>
+<p class="p1">**4. Search Terms View** (Optional/Future)</p>
+<p class="p1">- **Purpose**: Analyze which search queries triggered our ads</p>
+<p class="p1">- **Use Case**: Keyword optimization insights</p>
+<p class="p2"><br></p>
+<p class="p1">**API Access Level**: Basic Access (read-only)</p>
+<p class="p1">**Data Access**: Historical performance metrics only (no campaign management or modification)</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Tool Mockups</p>
+<p class="p2"><br></p>
+<p class="p1">### Dashboard Overview</p>
+<p class="p1">Our analytics dashboard displays:</p>
+<p class="p2"><br></p>
+<p class="p1">**Header Section:**</p>
+<p class="p1">- Date range selector (Last 7 days, Last 30 days, Last 90 days, Custom range)</p>
+<p class="p1">- Total metrics summary cards:</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Total Impressions</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Total Clicks</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Total Spend</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Total Conversions</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- ROI %</p>
+<p class="p2"><br></p>
+<p class="p1">**Campaign Performance Table:**</p>
+<p class="p1">| Campaign Name | Impressions | Clicks | Cost | Conversions | Conv. Value | ROI |</p>
+<p class="p1">|---------------|-------------|--------|------|-------------|-------------|-----|</p>
+<p class="p1">| Mobile Service | 1,234 | 45 | $125.50 | 8 | $1,200 | 856% |</p>
+<p class="p1">| Windshield Repair | 2,456 | 78 | $245.30 | 12 | $1,800 | 634% |</p>
+<p class="p1">| ADAS Calibration | 890 | 23 | $89.75 | 3 | $450 | 401% |</p>
+<p class="p2"><br></p>
+<p class="p1">**Trend Charts:**</p>
+<p class="p1">- Line chart showing daily spend vs. conversions over time</p>
+<p class="p1">- Bar chart showing campaign comparison by ROI</p>
+<p class="p1">- Pie chart showing budget distribution across campaigns</p>
+<p class="p2"><br></p>
+<p class="p1">**ROI Analysis Section:**</p>
+<p class="p1">- Combines Google Ads cost data with phone call tracking (RingCentral API)</p>
+<p class="p1">- Calculates: (Revenue - Ad Spend) / Ad Spend × 100</p>
+<p class="p1">- Displays cost per lead and cost per conversion</p>
+<p class="p2"><br></p>
+<p class="p1">### Sync Status Page</p>
+<p class="p1">- Last sync timestamp</p>
+<p class="p1">- Sync status (Success/Failed)</p>
+<p class="p1">- Records synced count</p>
+<p class="p1">- Next scheduled sync time</p>
+<p class="p1">- Manual sync trigger button (admin only)</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Technical Implementation</p>
+<p class="p2"><br></p>
+<p class="p1">**Programming Language**: TypeScript/JavaScript (Node.js)</p>
+<p class="p1">**Framework**: Next.js 14</p>
+<p class="p1">**Database**: PostgreSQL (Neon serverless)</p>
+<p class="p1">**Hosting**: Vercel</p>
+<p class="p1">**Authentication**: NextAuth.js</p>
+<p class="p2"><br></p>
+<p class="p1">**Cron Job**: Daily sync at 2:00 AM MST using Vercel Cron Jobs</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Use Case Summary</p>
+<p class="p2"><br></p>
+<p class="p1">Pink Auto Glass will use the Google Ads API to:</p>
+<p class="p1">1. **Monitor campaign performance** - Track which campaigns drive the most leads</p>
+<p class="p1">2. **Calculate ROI** - Understand the true return on ad spend by combining with call tracking</p>
+<p class="p1">3. **Optimize budget allocation** - Identify high-performing campaigns to inform budget decisions</p>
+<p class="p1">4. **Historical analysis** - Analyze performance trends over time to improve marketing strategy</p>
+<p class="p2"><br></p>
+<p class="p1">All data access is read-only and for internal business intelligence purposes only. We will not modify campaigns, create ads, or manage bidding through the API.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Contact Information</p>
+<p class="p2"><br></p>
+<p class="p1">**Company**: Pink Auto Glass</p>
+<p class="p1">**Primary Contact**: Doug Simpson</p>
+<p class="p1">**Email**: doug@pinkautoglass.com</p>
+<p class="p1">**Phone**: (435) 045-1821</p>
+<p class="p1">**Website**: www.pinkautoglass.com</p>
+<p class="p2"><br></p>
+<p class="p1">**API Contact Email**: dougiefreshcodes@gmail.com</p>
+<p class="p1">**Manager Account ID**: 435-045-1821</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## Compliance Statement</p>
+<p class="p2"><br></p>
+<p class="p1">Pink Auto Glass commits to:</p>
+<p class="p1">- Using Google Ads API data solely for internal business reporting</p>
+<p class="p1">- Not sharing API data with third parties</p>
+<p class="p1">- Maintaining secure storage of all credentials</p>
+<p class="p1">- Complying with Google Ads API Terms of Service</p>
+<p class="p1">- Using data only for the purposes described in this document</p>
+<p class="p2"><br></p>
+<p class="p1">We understand that our access may be audited by Google and we will provide any additional information required to maintain compliance.</p>
+</body>
+</html>

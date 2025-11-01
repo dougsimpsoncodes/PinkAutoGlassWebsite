@@ -1,12 +1,7 @@
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-
-// Create a connection pool
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
 
 /**
  * GET /api/vehicles/models?make=Toyota
@@ -24,24 +19,48 @@ export async function GET(request: Request) {
       );
     }
 
-    // Query Postgres directly, bypassing Supabase PostgREST
-    const { rows } = await pool.query(
-      `SELECT vm.model
-       FROM vehicle_models vm
-       JOIN vehicle_makes vma ON vm.make_id = vma.id
-       WHERE vma.make = $1
-       ORDER BY vm.model ASC`,
-      [make]
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    if (rows.length === 0) {
+    // First, get the make_id for the given make
+    const { data: makeData, error: makeError } = await supabase
+      .from('vehicle_makes')
+      .select('id')
+      .eq('make', make)
+      .single();
+
+    if (makeError || !makeData) {
       return NextResponse.json(
         { error: 'Make not found' },
         { status: 404 }
       );
     }
 
-    const models = rows.map((row: { model: string }) => row.model);
+    // Then get all models for that make_id
+    const { data: modelsData, error: modelsError } = await supabase
+      .from('vehicle_models')
+      .select('model')
+      .eq('make_id', makeData.id)
+      .order('model', { ascending: true });
+
+    if (modelsError) {
+      console.error('Supabase error fetching vehicle models:', modelsError);
+      return NextResponse.json(
+        { error: 'Failed to fetch vehicle models' },
+        { status: 500 }
+      );
+    }
+
+    if (!modelsData || modelsData.length === 0) {
+      return NextResponse.json(
+        { error: 'No models found for this make' },
+        { status: 404 }
+      );
+    }
+
+    const models = modelsData.map((row: { model: string }) => row.model);
 
     return NextResponse.json({ models });
   } catch (error) {

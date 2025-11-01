@@ -1,0 +1,524 @@
+
+> pink-auto-glass-demo@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.32
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1907ms
+ ✓ Compiled /src/middleware in 426ms (117 modules)
+ ○ Compiling /admin/login ...
+ ✓ Compiled /admin/login in 1871ms (810 modules)
+ GET /admin/login 200 in 2349ms
+ ✓ Compiled in 454ms (362 modules)
+ GET /admin/login? 200 in 38ms
+ ✓ Compiled /api/admin/login in 220ms (545 modules)
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"","password":""}
+ POST /api/admin/login 400 in 345ms
+ GET /admin/login 200 in 135ms
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"admin@pinkautoglass.com","password":"PinkGlass2025!"}
+User lookup: {
+  email: 'admin@pinkautoglass.com',
+  found: true,
+  error: undefined,
+  errorDetails: null
+}
+Verifying password for user: admin@pinkautoglass.com
+Password valid: true
+ POST /api/admin/login 200 in 414ms
+ ✓ Compiled /admin/dashboard in 286ms (899 modules)
+ ✓ Compiled /api/admin/analytics in 109ms (551 modules)
+ GET /admin/dashboard 200 in 309ms
+ GET /api/admin/analytics?metric=overview&range=7days 401 in 20ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 401 in 19ms
+ GET /api/admin/analytics?metric=conversions&range=7days 401 in 19ms
+ GET /api/admin/analytics?metric=overview&range=7days 401 in 17ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 401 in 17ms
+ GET /api/admin/analytics?metric=conversions&range=7days 401 in 16ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1016ms (1127 modules)
+ GET /favicon.ico 500 in 1223ms
+ GET /admin/login 200 in 126ms
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"","password":""}
+ POST /api/admin/login 400 in 58ms
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"admin@pinkautoglass.com","password":"PinkGlass2025!"}
+User lookup: {
+  email: 'admin@pinkautoglass.com',
+  found: true,
+  error: undefined,
+  errorDetails: null
+}
+Verifying password for user: admin@pinkautoglass.com
+Password valid: true
+ POST /api/admin/login 200 in 376ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 160ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 176ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 196ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 199ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 210ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 225ms
+ ✓ Compiled in 704ms (1040 modules)
+ ✓ Compiled in 858ms (1040 modules)
+ ✓ Compiled in 651ms (1040 modules)
+ ✓ Compiled in 373ms (1040 modules)
+ ✓ Compiled /api/admin/analytics in 256ms (588 modules)
+ GET /api/admin/analytics?metric=traffic_sources&range=90days 200 in 590ms
+ GET /api/admin/analytics?metric=conversions&range=90days 200 in 644ms
+ GET /api/admin/analytics?metric=overview&range=90days 200 in 646ms
+ GET /admin/login 200 in 152ms
+ ○ Compiling / ...
+ ✓ Compiled / in 723ms (1045 modules)
+ GET /?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign 200 in 956ms
+ ✓ Compiled /book in 394ms (1094 modules)
+ GET /book 200 in 579ms
+ ✓ Compiled /api/vehicles/makes in 120ms (562 modules)
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 349ms
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 92ms
+ ✓ Compiled /services in 256ms (1141 modules)
+ GET /services 200 in 443ms
+ GET /admin/login 200 in 45ms
+ ✓ Compiled /api/admin/login in 299ms (646 modules)
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"admin@pinkautoglass.com","password":"PinkGlass2025!"}
+User lookup: {
+  email: 'admin@pinkautoglass.com',
+  found: true,
+  error: undefined,
+  errorDetails: null
+}
+Verifying password for user: admin@pinkautoglass.com
+Password valid: true
+ POST /api/admin/login 200 in 741ms
+ ✓ Compiled /api/admin/analytics in 191ms (648 modules)
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 336ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 411ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 415ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 81ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 87ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 115ms
+ GET /?utm_source=facebook&utm_medium=social 200 in 147ms
+ GET /?utm_source=google&utm_medium=cpc 200 in 56ms
+ GET /services 200 in 73ms
+ GET /book 200 in 58ms
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 111ms
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 98ms
+ GET / 200 in 49ms
+ GET /?utm_source=test&utm_medium=automated 200 in 52ms
+ GET /book 200 in 30ms
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 124ms
+Error fetching vehicle makes: error: Tenant or user not found
+    at /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/vehicles/makes/route.ts:24:26)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/dougsimpson/Projects/pinkautoglasswebsite/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  length: 52,
+  severity: 'FATAL',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+ GET /api/vehicles/makes 500 in 95ms
+ GET /services 200 in 55ms
+ GET /admin/login 200 in 34ms
+Environment check: {
+  hasSupabaseUrl: true,
+  hasServiceKey: true,
+  supabaseUrl: 'https://fypzafbsfrrlrrufzkol.s...'
+}
+Received text: {"email":"admin@pinkautoglass.com","password":"PinkGlass2025!"}
+User lookup: {
+  email: 'admin@pinkautoglass.com',
+  found: true,
+  error: undefined,
+  errorDetails: null
+}
+Verifying password for user: admin@pinkautoglass.com
+Password valid: true
+ POST /api/admin/login 200 in 312ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 133ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 150ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 157ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 65ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 76ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 93ms
+ ✓ Compiled in 1523ms (1111 modules)
+ GET / 200 in 400ms
+ GET / 200 in 52ms
+ ✓ Compiled in 1199ms (1111 modules)
+ GET / 200 in 350ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.7s (1230 modules)
+ GET /favicon.ico 500 in 2183ms
+ ○ Compiling /test-tracking ...
+ ✓ Compiled /test-tracking in 1461ms (1117 modules)
+ GET /test-tracking 200 in 1747ms
+ GET /admin/dashboard 200 in 48ms
+ ○ Compiling /api/admin/analytics ...
+ ✓ Compiled /api/admin/analytics in 715ms (621 modules)
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 1078ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 1106ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 1164ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 1187ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 1206ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 1322ms
+ ✓ Compiled in 1454ms (582 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1115ms (1108 modules)
+ GET /favicon.ico 500 in 1195ms
+ ✓ Compiled in 4s (1132 modules)
+ ✓ Compiled in 2.9s (1233 modules)
+ ✓ Compiled in 754ms (594 modules)
+ ✓ Compiled in 766ms (594 modules)
+ GET /admin/dashboard 200 in 554ms
+ ○ Compiling /api/admin/analytics ...
+ ✓ Compiled /api/admin/analytics in 1141ms (633 modules)
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 1761ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 1787ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 1794ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 1824ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 1837ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 1897ms
+ ○ Compiling /admin/dashboard/traffic ...
+ ✓ Compiled /admin/dashboard/traffic in 1435ms (1225 modules)
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 426ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 435ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1042ms (1228 modules)
+ GET /admin/dashboard/conversions 404 in 340ms
+ GET /admin/dashboard/traffic 200 in 139ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 270ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 263ms
+ GET /admin/dashboard/conversions 404 in 30ms
+ GET /admin/dashboard/traffic 200 in 104ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 542ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 587ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 251ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 266ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 268ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 251ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 310ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 347ms
+ ✓ Compiled in 3.1s (1238 modules)
+ ✓ Compiled in 2.3s (1238 modules)
+ ✓ Compiled in 618ms (599 modules)
+ ✓ Compiled in 435ms (599 modules)
+ ✓ Compiled in 2.7s (1252 modules)
+ ✓ Compiled in 548ms (599 modules)
+ ✓ Compiled in 2.1s (1238 modules)
+ GET /admin/dashboard 200 in 417ms
+ ○ Compiling /api/admin/analytics ...
+ ✓ Compiled /api/admin/analytics in 1573ms (633 modules)
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 2113ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 2128ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 2163ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 2157ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 2172ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 2237ms
+ ✓ Compiled /admin/dashboard/traffic in 352ms (640 modules)
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 378ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 434ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 177ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 183ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 196ms
+ GET /api/admin/analytics?metric=conversions&range=7days 200 in 186ms
+ GET /api/admin/analytics?metric=traffic_sources&range=7days 200 in 214ms
+ GET /api/admin/analytics?metric=overview&range=7days 200 in 206ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 177ms
+ GET /api/admin/analytics?metric=traffic_detail&range=7days 200 in 207ms
+ ○ Compiling /admin/dashboard/conversions ...
+ ✓ Compiled /admin/dashboard/conversions in 986ms (1219 modules)
+ GET /api/admin/analytics?metric=conversions_detail&range=7days 200 in 468ms
+ GET /api/admin/analytics?metric=conversions_detail&range=7days 200 in 507ms
+ ○ Compiling /admin/dashboard/pages ...
+ ✓ Compiled /admin/dashboard/pages in 1430ms (1229 modules)
+Analytics API error: {
+  code: '42703',
+  details: null,
+  hint: null,
+  message: 'column user_sessions.entry_page does not exist'
+}
+ GET /api/admin/analytics?metric=page_performance&range=7days 500 in 352ms
+Analytics API error: {
+  code: '42703',
+  details: null,
+  hint: null,
+  message: 'column user_sessions.entry_page does not exist'
+}
+ GET /api/admin/analytics?metric=page_performance&range=7days 500 in 415ms
+ ✓ Compiled in 1165ms (1120 modules)
+ ✓ Compiled in 772ms (1120 modules)
+ ✓ Compiled in 1647ms (1237 modules)
+ ✓ Compiled in 219ms (606 modules)
+ ✓ Compiled in 623ms (1251 modules)
+ ✓ Compiled in 1565ms (1136 modules)
+ ✓ Compiled in 267ms (607 modules)
+ ✓ Compiled in 1478ms (607 modules)
+ ✓ Compiled in 350ms (607 modules)
+ ✓ Compiled in 1925ms (607 modules)
+ ✓ Compiled in 384ms (607 modules)
+ ✓ Compiled in 369ms (607 modules)
+ ✓ Compiled in 461ms (607 modules)
+ ✓ Compiled in 1957ms (1239 modules)
+ ✓ Compiled in 250ms (607 modules)
+ ✓ Compiled in 246ms (607 modules)
+ ✓ Compiled in 296ms (607 modules)
+ ✓ Compiled in 342ms (607 modules)
+ ✓ Compiled in 301ms (607 modules)
+ ✓ Compiled in 770ms (607 modules)
+ ✓ Compiled in 484ms (607 modules)
+[?25h

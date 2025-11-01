@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
+import { sendAdminEmail } from '@/lib/notifications/email';
+import { sendAdminSMS } from '@/lib/notifications/sms';
+import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
 
 export async function POST(request: NextRequest) {
   try {
@@ -143,6 +146,32 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // =============================================================================
+    // SEND ADMIN NOTIFICATIONS (Email + SMS)
+    // =============================================================================
+    const quoteData = {
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      phone: validatedData.phone,
+      email: validatedData.email,
+      vehicleYear: validatedData.vehicleYear,
+      vehicleMake: validatedData.vehicleMake,
+      vehicleModel: validatedData.vehicleModel,
+      serviceType: validatedData.serviceType,
+    };
+
+    // Send admin notifications asynchronously (don't block response)
+    Promise.all([
+      sendAdminEmail(
+        `💬 Quick Quote: ${validatedData.firstName} ${validatedData.lastName}`,
+        getAdminQuickQuoteEmail(quoteData)
+      ).catch(err => console.error('Admin quote email failed:', err)),
+
+      sendAdminSMS(
+        getAdminQuickQuoteSMS(quoteData)
+      ).catch(err => console.error('Admin quote SMS failed:', err)),
+    ]).catch(err => console.error('Quote notification batch failed:', err));
 
     return NextResponse.json(
       {

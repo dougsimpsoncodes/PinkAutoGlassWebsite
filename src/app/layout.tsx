@@ -6,6 +6,9 @@ import Footer from "@/components/footer";
 import StickyCallBar from "@/components/StickyCallBar";
 import StickyCallbackBar from "@/components/StickyCallbackBar";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import TrackingProvider from "@/components/TrackingProvider";
+import { Analytics } from '@vercel/analytics/react';
+import { Suspense } from 'react';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,51 +69,55 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        {/* Favicons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
+      <html lang="en">
+        <head>
+          {/* Favicons */}
+          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+          <link rel="manifest" href="/site.webmanifest" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
 
-        {/* Google Analytics */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-                    page_path: window.location.pathname,
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
-      </head>
-      <body
-        className={`${inter.variable} ${poppins.variable} antialiased`}
-      >
-        <Header />
-        <main id="main-content">
-          {children}
-        </main>
-        <Footer />
-        <StickyCallBar />
-        <StickyCallbackBar />
-        <AnalyticsTracker />
-      </body>
-    </html>
+          {/* Google Analytics */}
+          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+            <>
+              <script
+                async
+                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              />
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                      page_path: window.location.pathname,
+                    });
+                  `,
+                }}
+              />
+            </>
+          )}
+        </head>
+        <body
+          className={`${inter.variable} ${poppins.variable} antialiased`}
+        >
+          <Header />
+          <main id="main-content">
+            {children}
+          </main>
+          <Footer />
+          <StickyCallBar />
+          <StickyCallbackBar />
+          <AnalyticsTracker />
+          <Suspense fallback={null}>
+            <TrackingProvider />
+          </Suspense>
+          <Analytics />
+        </body>
+      </html>
   );
 }

@@ -2,16 +2,16 @@
 
 Professional auto glass repair and replacement website for Denver Metro area. Built with Next.js, TypeScript, and Tailwind CSS.
 
-## ⚠️ Security Notice
+## 🔒 Security
 
-**Before deploying to production**, review the comprehensive security audit:
-- **Start here:** [SECURITY_SUMMARY.md](SECURITY_SUMMARY.md) - Quick overview
-- **Action items:** [IMMEDIATE_ACTIONS.md](IMMEDIATE_ACTIONS.md) - Step-by-step fixes
-- **Full audit:** [SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md) - Complete findings
-- **Policies:** [SECURITY_POLICIES.md](SECURITY_POLICIES.md) - Ongoing procedures
-- **Daily checklist:** [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) - Developer reference
+This project follows security best practices including:
+- Pre-commit secret scanning with gitleaks
+- Row-Level Security (RLS) on database
+- Input validation and sanitization
+- Security headers and CSP
+- Regular security audits
 
-**Current Status:** ⛔ Deployment blocked pending critical security fixes (~8-10 hours work)
+See [SECURITY.md](SECURITY.md) for comprehensive security documentation and [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) for daily developer guidelines.
 
 ---
 
@@ -227,12 +227,34 @@ All team members must follow security policies outlined in [SECURITY_POLICIES.md
 - **Incident Response:** Security event procedures, breach notification
 - **Deployment Security:** Environment separation, CI/CD security
 
-## Support
+## Documentation Structure
 
-### Documentation
-- [SECURITY_SUMMARY.md](SECURITY_SUMMARY.md) - Security overview
-- [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) - Daily developer checklist
-- [SECURITY_POLICIES.md](SECURITY_POLICIES.md) - Official policies
+### Quick Start
+- **[START_HERE.md](START_HERE.md)** - New to the project? Start here
+- **[AGENT_SETUP_GUIDE.md](AGENT_SETUP_GUIDE.md)** - Comprehensive developer setup guide
+- **[agents.md](agents.md)** - AI agent roles and coordination
+
+### Security
+- **[SECURITY.md](SECURITY.md)** - Main security documentation
+- **[SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)** - Daily developer security checklist
+- **[SECURITY_POLICIES.md](SECURITY_POLICIES.md)** - Official security policies and procedures
+
+### Deployment
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Comprehensive deployment guide
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Security-focused deployment checklist
+
+### Organized Documentation
+- **spec/** - Specifications (booking flow, SEO, components, layouts)
+- **qa/** - QA and testing documentation (performance, accessibility, reviews)
+- **design/** - Design guidelines (brand, copy, design tokens)
+- **security/** - Security policies (baseline, CI/CD, incident response)
+- **content/** - Content planning and drafts
+
+### Historical Documentation
+- **archive/** - Historical reports, completed phase documents, and resolved issues
+  - See [archive/README.md](archive/README.md) for details
+
+## Support
 
 ### Contact
 - Security Issues: security@pinkautoglass.com
@@ -243,27 +265,29 @@ All team members must follow security policies outlined in [SECURITY_POLICIES.md
 
 Private - Pink Auto Glass
 
-## Deployment Status
+## Project Status
 
-**Last Security Audit:** October 17, 2025
-**Deployment Status:** ⛔ BLOCKED - Pending security fixes
-**Target Deployment:** After critical and high-priority security issues resolved (~1-2 business days)
-**Security Approval:** Required from Security Officer
+**Current Version:** Production v1.0
+**Build Status:** ✅ Clean build (0 errors)
+**Security Status:** ✅ Security measures implemented
+**Documentation:** Organized and current (see Documentation Structure below)
 
 ---
 
 ## Quick Start for New Developers
 
-1. **Read security overview:** [SECURITY_SUMMARY.md](SECURITY_SUMMARY.md) (10 min)
+1. **Read the overview:** [START_HERE.md](START_HERE.md) (10 min)
 2. **Install dependencies:** `npm install` (5 min)
 3. **Set up git hooks:** `chmod +x .git-hooks/pre-commit && git config core.hooksPath .git-hooks` (1 min)
 4. **Copy environment template:** `cp .env.example .env.local` (1 min)
 5. **Get credentials from tech lead:** Ask for development Supabase credentials
 6. **Start development:** `npm run dev`
-7. **Review checklist before commits:** [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)
+7. **Review security checklist:** [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)
 
 **Total setup time:** ~20 minutes
 
+For comprehensive setup instructions, see [AGENT_SETUP_GUIDE.md](AGENT_SETUP_GUIDE.md).
+
 ---
 
-**Ready to deploy?** Start with [IMMEDIATE_ACTIONS.md](IMMEDIATE_ACTIONS.md) for the complete security fix checklist.
+**Ready to deploy?** See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) and [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md).
