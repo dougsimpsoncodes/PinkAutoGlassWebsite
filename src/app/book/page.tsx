@@ -257,6 +257,49 @@ export default function BookingPage() {
 
       // Photos not included in MVP
 
+      // Convert friendly date values to YYYY-MM-DD format
+      const convertDateToISO = (dateValue: string): string | undefined => {
+        if (!dateValue) return undefined;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let targetDate = new Date(today);
+
+        switch (dateValue) {
+          case 'today':
+            // targetDate is already today
+            break;
+          case 'tomorrow':
+            targetDate.setDate(today.getDate() + 1);
+            break;
+          case 'day_after':
+            targetDate.setDate(today.getDate() + 2);
+            break;
+          case 'this_week':
+            targetDate.setDate(today.getDate() + 3);
+            break;
+          case 'next_week':
+            targetDate.setDate(today.getDate() + 7);
+            break;
+          case 'custom':
+            // Custom date - leave undefined to indicate flexible
+            return undefined;
+          default:
+            // If already in YYYY-MM-DD format or another valid format, use it
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+              return dateValue;
+            }
+            return undefined;
+        }
+
+        // Format as YYYY-MM-DD
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
       // Prepare submission data matching bookingFormSchema
       const submissionData: any = {
         serviceType: formData.serviceType,
@@ -272,7 +315,7 @@ export default function BookingPage() {
         city: formData.city,
         state: formData.state,
         zipCode: formData.zipCode,
-        preferredDate: formData.preferredDate || undefined,
+        preferredDate: convertDateToISO(formData.preferredDate),
         timeWindow: formData.timeWindow || 'flexible',
         damageDescription: formData.damageDescription || undefined,
         smsConsent: true, // Must be literal true (user checked the box)
