@@ -6,6 +6,42 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Helper function to parse traffic source from referrer
+function parseSourceFromReferrer(referrer: string | null, utmSource?: string | null): string {
+  // If UTM source exists, use it
+  if (utmSource) return utmSource;
+
+  // If no referrer, it's direct traffic
+  if (!referrer) return 'direct';
+
+  try {
+    const url = new URL(referrer);
+    const hostname = url.hostname.toLowerCase();
+
+    // Parse common search engines and social media
+    if (hostname.includes('google')) return 'google';
+    if (hostname.includes('bing')) return 'bing';
+    if (hostname.includes('yahoo')) return 'yahoo';
+    if (hostname.includes('duckduckgo')) return 'duckduckgo';
+    if (hostname.includes('facebook')) return 'facebook';
+    if (hostname.includes('instagram')) return 'instagram';
+    if (hostname.includes('twitter') || hostname.includes('t.co')) return 'twitter';
+    if (hostname.includes('linkedin')) return 'linkedin';
+    if (hostname.includes('youtube')) return 'youtube';
+    if (hostname.includes('tiktok')) return 'tiktok';
+    if (hostname.includes('pinterest')) return 'pinterest';
+    if (hostname.includes('reddit')) return 'reddit';
+
+    // If it's from your own domain, it's direct
+    if (hostname.includes('pinkautoglass.com') || hostname.includes('localhost')) return 'direct';
+
+    // Otherwise, use the domain name as referral
+    return hostname.replace('www.', '');
+  } catch (e) {
+    return 'direct';
+  }
+}
+
 export async function GET(req: NextRequest) {
 
   try {
@@ -104,15 +140,15 @@ async function getOverviewMetrics(startDate: Date) {
 async function getTrafficSources(startDate: Date) {
   const { data, error } = await supabase
     .from('user_sessions')
-    .select('utm_source, utm_medium, utm_campaign')
+    .select('utm_source, utm_medium, utm_campaign, referrer')
     .gte('started_at', startDate.toISOString());
 
   if (error) throw error;
 
-  // Group by source
+  // Group by source (parse from referrer if utm_source is missing)
   const sourceCounts: Record<string, number> = {};
   data?.forEach((session: any) => {
-    const source = session.utm_source || 'direct';
+    const source = parseSourceFromReferrer(session.referrer, session.utm_source);
     sourceCounts[source] = (sourceCounts[source] || 0) + 1;
   });
 
@@ -220,7 +256,7 @@ async function getTrafficDetail(startDate: Date) {
   // Get all sessions with their conversions
   const { data: sessions, error: sessionsError } = await supabase
     .from('user_sessions')
-    .select('session_id, utm_source, utm_medium, utm_campaign, page_views_count')
+    .select('session_id, utm_source, utm_medium, utm_campaign, page_views_count, referrer')
     .gte('started_at', startDate.toISOString());
 
   if (sessionsError) throw sessionsError;
@@ -228,18 +264,18 @@ async function getTrafficDetail(startDate: Date) {
   // Get all conversions - exclude admin and test pages
   const { data: conversions, error: conversionsError } = await supabase
     .from('conversion_events')
-    .select('session_id, utm_source')
+    .select('session_id, utm_source, page_path')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%');
 
   if (conversionsError) throw conversionsError;
 
-  // Group by source
+  // Group by source (parse from referrer if utm_source is missing)
   const sourceMap = new Map();
 
   sessions?.forEach((session) => {
-    const source = session.utm_source || 'direct';
+    const source = parseSourceFromReferrer(session.referrer, session.utm_source);
     if (!sourceMap.has(source)) {
       sourceMap.set(source, {
         source,
@@ -256,9 +292,13 @@ async function getTrafficDetail(startDate: Date) {
   });
 
   conversions?.forEach((conversion) => {
-    const source = conversion.utm_source || 'direct';
-    if (sourceMap.has(source)) {
-      sourceMap.get(source).conversions += 1;
+    // Find the session for this conversion to get the correct source
+    const session = sessions?.find((s: any) => s.session_id === conversion.session_id);
+    if (session) {
+      const source = parseSourceFromReferrer(session.referrer, session.utm_source);
+      if (sourceMap.has(source)) {
+        sourceMap.get(source).conversions += 1;
+      }
     }
   });
 
