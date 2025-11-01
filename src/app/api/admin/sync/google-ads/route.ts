@@ -16,13 +16,6 @@ const supabase = createClient(
  * Sync Google Ads campaign performance data to database
  */
 export async function POST(req: NextRequest) {
-  // Check authentication
-  if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   try {
     // Step 1: Validate configuration
@@ -202,12 +195,7 @@ export async function POST(req: NextRequest) {
  * Check Google Ads sync status and configuration
  */
 export async function GET(req: NextRequest) {
-  if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  // Auth handled by middleware
 
   try {
     // Check configuration

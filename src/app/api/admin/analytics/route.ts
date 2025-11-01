@@ -7,13 +7,6 @@ const supabase = createClient(
 );
 
 export async function GET(req: NextRequest) {
-  // Check authentication with Clerk
-  if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   try {
     const { searchParams } = new URL(req.url);

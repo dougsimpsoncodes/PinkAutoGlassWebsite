@@ -13,13 +13,6 @@ const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
 const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
 
 export async function POST(req: NextRequest) {
-  // Check authentication
-  if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   try {
     // Step 1: Exchange JWT for access token
@@ -215,12 +208,7 @@ export async function POST(req: NextRequest) {
 
 // GET endpoint to check sync status
 export async function GET(req: NextRequest) {
-  if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  // Auth handled by middleware
 
   try {
     // Get last sync time
