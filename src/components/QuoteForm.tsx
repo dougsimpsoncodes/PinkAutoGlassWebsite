@@ -76,7 +76,7 @@ export default function QuoteForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-xl border-2 border-pink-100">
+    <form id="quote-form" onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-xl border-2 border-pink-100">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Get Your FREE Quote in 60 Seconds</h3>
 
       <div className="space-y-4">
