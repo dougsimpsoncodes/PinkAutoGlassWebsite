@@ -118,7 +118,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'After windshield replacement, federal law requires ADAS recalibration to ensure these safety systems function correctly. Many auto glass shops charge Contact for Quote for this service on top of the windshield replacement cost. However, quality shops include ADAS calibration free with your replacement - so always ask what\'s included in the quoted price.'
+        content: 'After windshield replacement, federal law requires ADAS recalibration to ensure these safety systems function correctly. Many auto glass shops charge Contact for Quote for this service on top of the windshield replacement cost. However, quality shops provide ADAS calibration with your replacement - so always ask what\'s included in the quoted price.'
       },
       {
         type: 'heading',
@@ -297,7 +297,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'However, quality auto glass companies include ADAS calibration free with windshield replacement. Why? Because it\'s not an optional extra - it\'s a required part of proper windshield replacement on modern vehicles. When getting quotes, always ask: "Is ADAS calibration included in this price?" If not, you\'re likely being upsold or the shop is cutting corners.'
+        content: 'However, quality auto glass companies provide ADAS calibration with windshield replacement. Why? Because it\'s not an optional extra - it\'s a required part of proper windshield replacement on modern vehicles. When getting quotes, always ask: "Is ADAS calibration included in this price?" If not, you\'re likely being upsold or the shop is cutting corners.'
       },
       {
         type: 'heading',
@@ -381,7 +381,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'cta',
-        content: 'We include ADAS calibration free with every windshield replacement that requires it. Get a quote and confirm your coverage in under 2 minutes.'
+        content: 'We provide ADAS calibration with every windshield replacement that requires it. Get a quote and confirm your coverage in under 2 minutes.'
       }
     ]
   },
@@ -1068,7 +1068,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'cta',
-        content: 'We perform ADAS calibration in-house using manufacturer-certified equipment for all major vehicle brands. Calibration is always included free with your windshield replacement - never an extra charge. Book online or call (720) 918-7465 for same-day service.'
+        content: 'We perform ADAS calibration in-house using manufacturer-certified equipment for all major vehicle brands. Professional calibration service available with your windshield replacement - never an extra charge. Book online or call (720) 918-7465 for same-day service.'
       }
     ]
   },

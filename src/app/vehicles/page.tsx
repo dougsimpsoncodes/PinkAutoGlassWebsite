@@ -9,14 +9,14 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement by Vehicle | Denver Auto Glass Pricing | Pink Auto Glass',
-  description: 'Get exact windshield replacement pricing for your vehicle. OEM glass, ADAS calibration included free. Serving all makes and models in Denver metro. Professional Service.',
+  description: 'Get exact windshield replacement pricing for your vehicle. OEM glass, ADAS calibration available. Serving all makes and models in Denver metro. Professional Service.',
   keywords: 'windshield replacement by vehicle, auto glass pricing by car, vehicle windshield cost, adas calibration by make model',
   alternates: {
     canonical: 'https://pinkautoglass.com/vehicles',
   },
   openGraph: {
     title: 'Windshield Replacement Pricing by Vehicle | Pink Auto Glass',
-    description: 'Find exact pricing for your vehicle make and model. ADAS calibration included free.',
+    description: 'Find exact pricing for your vehicle make and model. ADAS calibration available.',
     url: 'https://pinkautoglass.com/vehicles',
     type: 'website',
   },
@@ -40,7 +40,7 @@ export default function VehiclesPage() {
     },
     {
       question: 'What is ADAS and which vehicles need it?',
-      answer: 'ADAS (Advanced Driver Assistance Systems) includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. Most vehicles from 2018 and newer have ADAS cameras mounted on or near the windshield that require recalibration after replacement. We include ADAS calibration free with every replacement - other shops charge Competitive Pricing extra.'
+      answer: 'ADAS (Advanced Driver Assistance Systems) includes features like lane departure warning, automatic emergency braking, and adaptive cruise control. Most vehicles from 2018 and newer have ADAS cameras mounted on or near the windshield that require recalibration after replacement. ADAS calibration available with every replacement - other shops charge Competitive Pricing extra.'
     },
     {
       question: 'Should I use OEM or aftermarket glass for my vehicle?',
@@ -102,7 +102,7 @@ export default function VehiclesPage() {
                 </h1>
               </div>
               <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-                Get exact pricing for your make and model • OEM quality glass • ADAS calibration included free • Professional Service
+                Get exact pricing for your make and model • OEM quality glass • ADAS calibration available • Professional Service
               </p>
               <CTAButtons source="vehicles-hub-hero" />
             </div>
@@ -181,7 +181,7 @@ export default function VehiclesPage() {
                       {vehicle.hasADAS && (
                         <div className="flex items-center text-sm text-gray-700">
                           <CheckCircle className="w-4 h-4 text-green-600 mr-2 flex-shrink-0" />
-                          <span className="font-semibold text-green-700">ADAS Calibration Included Free</span>
+                          <span className="font-semibold text-green-700">Professional ADAS Calibration</span>
                         </div>
                       )}
                       <div className="flex items-center text-sm text-gray-700">
@@ -242,11 +242,11 @@ export default function VehiclesPage() {
                     Advanced Driver Assistance Systems (ADAS) are safety features in modern vehicles that rely on cameras and sensors mounted on or near your windshield. After windshield replacement, these systems must be recalibrated to work correctly.
                   </p>
                   <p className="text-lg text-gray-700 mb-6">
-                    <strong>Most vehicles from 2018 and newer require ADAS calibration.</strong> Other shops charge Competitive Pricing for this service. We include it free with every replacement.
+                    <strong>Most vehicles from 2018 and newer require ADAS calibration.</strong> Other shops charge Competitive Pricing for this service. Professional service available with every replacement.
                   </p>
                   <div className="bg-white rounded-lg p-4 border-l-4 border-green-500">
                     <p className="text-sm font-semibold text-green-900">
-                      💰 Save Competitive Pricing - ADAS calibration included free with our windshield replacement!
+                      💰 Save Competitive Pricing - ADAS calibration available with our windshield replacement!
                     </p>
                   </div>
                 </div>
@@ -447,7 +447,7 @@ export default function VehiclesPage() {
               Find Exact Pricing for Your Vehicle
             </h2>
             <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-              Browse by make and model above or call for instant pricing. ADAS calibration included free.
+              Browse by make and model above or call for instant pricing. ADAS calibration available.
             </p>
             <CTAButtons source="vehicles-hub-bottom" />
           </section>

@@ -4,7 +4,7 @@ export default function WhyChooseUs() {
   const comparisonData = [
     {
       feature: 'Mobile Service',
-      pinkAutoGlass: 'Always FREE',
+      pinkAutoGlass: 'Available',
       competitors: 'Extra charge or not available',
       highlight: true
     },

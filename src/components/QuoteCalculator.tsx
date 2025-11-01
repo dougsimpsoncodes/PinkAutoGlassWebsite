@@ -30,7 +30,7 @@ export default function QuoteCalculator() {
 
     let range = basePrice.replacement[vehicleType];
 
-    // Add ADAS cost if applicable (though we include it free)
+    // Add ADAS cost if applicable
     if (hasADAS && serviceType === 'replacement') {
       range = { ...range }; // ADAS included in our pricing
     }
