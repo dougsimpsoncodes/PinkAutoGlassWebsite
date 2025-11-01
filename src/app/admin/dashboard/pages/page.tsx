@@ -33,7 +33,6 @@ export default function PagePerformancePage() {
       const res = await fetch(`/api/admin/analytics?metric=page_performance&range=${dateRange}`);
 
       if (!res.ok) {
-        router.push('/admin/login');
         return;
       }
 

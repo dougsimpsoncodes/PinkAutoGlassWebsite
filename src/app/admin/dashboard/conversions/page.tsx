@@ -39,7 +39,6 @@ export default function ConversionsPage() {
       const res = await fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}`);
 
       if (!res.ok) {
-        router.push('/admin/login');
         return;
       }
 
