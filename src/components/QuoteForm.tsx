@@ -190,13 +190,12 @@ export default function QuoteForm() {
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-            Email Address *
+            Email Address <span className="text-gray-500 font-normal">(optional)</span>
           </label>
           <input
             type="email"
             id="email"
             name="email"
-            required
             value={formData.email}
             onChange={handleInputChange}
             className="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-base"
