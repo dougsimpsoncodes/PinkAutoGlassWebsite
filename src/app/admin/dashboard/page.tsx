@@ -32,7 +32,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
+    // Auto-sync RingCentral data in background when dashboard loads
+    syncRingCentral();
   }, [dateRange]);
+
+  const syncRingCentral = async () => {
+    try {
+      console.log('Auto-syncing RingCentral data...');
+      await fetch('/api/admin/sync/ringcentral', { method: 'POST' });
+      console.log('RingCentral auto-sync completed');
+    } catch (error) {
+      console.error('RingCentral auto-sync error (non-fatal):', error);
+      // Non-blocking - don't show error to user
+    }
+  };
 
   const fetchData = async () => {
     try {
