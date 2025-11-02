@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Download, Play, RefreshCw } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Download, Play } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -24,9 +24,8 @@ interface Call {
 export default function CallAnalyticsPage() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [dateRange, setDateRange] = useState('7days');
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('inbound');
 
   useEffect(() => {
     fetchCalls();
@@ -46,26 +45,7 @@ export default function CallAnalyticsPage() {
     }
   };
 
-  const syncRingCentral = async () => {
-    setSyncing(true);
-    try {
-      const res = await fetch('/api/admin/sync/ringcentral', { method: 'POST' });
-      const data = await res.json();
-
-      if (data.ok) {
-        alert(`Synced! ${data.summary.recordsFetched} calls fetched, ${data.summary.newCalls} new`);
-        fetchCalls();
-      } else {
-        alert(`Sync failed: ${data.error}`);
-      }
-    } catch (error: any) {
-      alert(`Sync error: ${error.message}`);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const filterCalls = () => {
+  const getCallsInDateRange = () => {
     const now = new Date();
     let startDate = new Date();
 
@@ -83,7 +63,11 @@ export default function CallAnalyticsPage() {
         startDate.setDate(now.getDate() - 7);
     }
 
-    let filtered = calls.filter(call => new Date(call.start_time) >= startDate);
+    return calls.filter(call => new Date(call.start_time) >= startDate);
+  };
+
+  const filterCalls = () => {
+    let filtered = getCallsInDateRange();
 
     if (filter !== 'all') {
       filtered = filtered.filter(call => {
@@ -98,16 +82,17 @@ export default function CallAnalyticsPage() {
     return filtered;
   };
 
+  const callsInDateRange = getCallsInDateRange();
   const filteredCalls = filterCalls();
 
   const stats = {
-    total: filteredCalls.length,
-    inbound: filteredCalls.filter(c => c.direction === 'Inbound').length,
-    outbound: filteredCalls.filter(c => c.direction === 'Outbound').length,
-    answered: filteredCalls.filter(c => c.result === 'Accepted' || c.result === 'Call connected').length,
-    missed: filteredCalls.filter(c => c.result === 'Missed').length,
-    avgDuration: filteredCalls.length > 0
-      ? Math.round(filteredCalls.reduce((sum, c) => sum + c.duration, 0) / filteredCalls.length)
+    total: callsInDateRange.length,
+    inbound: callsInDateRange.filter(c => c.direction === 'Inbound').length,
+    outbound: callsInDateRange.filter(c => c.direction === 'Outbound').length,
+    answered: callsInDateRange.filter(c => c.result === 'Accepted' || c.result === 'Call connected').length,
+    missed: callsInDateRange.filter(c => c.result === 'Missed').length,
+    avgDuration: callsInDateRange.length > 0
+      ? Math.round(callsInDateRange.reduce((sum, c) => sum + c.duration, 0) / callsInDateRange.length)
       : 0,
   };
 
@@ -165,20 +150,8 @@ export default function CallAnalyticsPage() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Call Analytics</h1>
-            <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
-          </div>
-          <button
-            onClick={syncRingCentral}
-            disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync RingCentral'}
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Call Analytics</h1>
+        <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
       </div>
 
       {/* Controls */}
@@ -205,11 +178,8 @@ export default function CallAnalyticsPage() {
                 onChange={(e) => setFilter(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
               >
-                <option value="all">All Calls</option>
                 <option value="inbound">Inbound</option>
-                <option value="outbound">Outbound</option>
-                <option value="answered">Answered</option>
-                <option value="missed">Missed</option>
+                <option value="all">All</option>
               </select>
             </div>
           </div>
