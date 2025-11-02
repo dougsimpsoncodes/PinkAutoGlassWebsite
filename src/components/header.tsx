@@ -32,8 +32,38 @@ export default function Header() {
       </a>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between h-16 md:h-20" role="navigation" aria-label="Main navigation">
+        {/* Mobile Layout: Vertical Stack */}
+        <nav className="md:hidden flex flex-col items-center justify-center py-3" role="navigation" aria-label="Main navigation">
+          {/* Logo - Smaller on mobile */}
+          <Link
+            href="/"
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded mb-2"
+            aria-label="Pink Auto Glass - Go to homepage"
+          >
+            <Image
+              src="/pink-logo-horizontal.png"
+              alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
+              width={972}
+              height={292}
+              className="w-auto"
+              style={{ height: '80px' }}
+              priority
+            />
+          </Link>
 
+          {/* Phone Number - Below logo on mobile */}
+          <a
+            href="tel:+17209187465"
+            className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
+            aria-label="Call Pink Auto Glass"
+          >
+            <Phone className="w-4 h-4" />
+            <span className="font-medium">(720) 918-7465</span>
+          </a>
+        </nav>
+
+        {/* Desktop/Tablet Layout: Horizontal */}
+        <nav className="hidden md:flex items-center justify-between h-20 lg:h-24" role="navigation" aria-label="Main navigation">
           {/* Left side spacer */}
           <div className="flex-1"></div>
 
