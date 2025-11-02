@@ -140,22 +140,22 @@ export default function Home() {
       />
       {/* Compact Hero Section - Lead Generation Focused */}
       <div className="page-top-padding">
-      <section className="bg-gradient-hero py-16 md:py-20 text-white">
+      <section className="bg-gradient-hero py-3 md:py-20 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-[30px] leading-tight md:text-6xl font-bold mb-3 md:mb-6">
               Colorado's #1
               <span className="block">Mobile Auto Glass</span>
               <span className="block">Repair & Replacement</span>
             </h1>
-            
-            <p className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-              We come to you! Professional windshield service at your home or office. 
+
+            <p className="text-[15px] leading-snug md:text-xl mb-6 md:mb-8 text-white/90 max-w-2xl mx-auto">
+              We come to you! Professional windshield service at your home or office.
               Quick repairs, quality replacements, professional service.
             </p>
-            
+
             {/* Primary CTAs */}
-            <div className="mb-8">
+            <div className="mb-6 md:mb-8">
               <CTAButtons source="hero" />
             </div>
             

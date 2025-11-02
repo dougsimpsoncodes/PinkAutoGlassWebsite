@@ -8,8 +8,6 @@ import {
   TrendingUp,
   MousePointerClick,
   FileText,
-  Users,
-  Activity,
   LogOut,
   Menu,
   X,
@@ -38,8 +36,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Traffic Sources', href: '/admin/dashboard/traffic', icon: TrendingUp },
     { name: 'Conversions', href: '/admin/dashboard/conversions', icon: MousePointerClick },
     { name: 'Page Performance', href: '/admin/dashboard/pages', icon: FileText },
-    { name: 'User Sessions', href: '/admin/dashboard/sessions', icon: Users },
-    { name: 'Live Activity', href: '/admin/dashboard/live', icon: Activity },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
   ];
 

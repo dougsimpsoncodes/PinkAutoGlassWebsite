@@ -15,13 +15,42 @@ function parseSourceFromReferrer(
   // If UTM source exists, use it
   if (utmSource) return utmSource;
 
-  // Check for gclid in landing page (Google Ads auto-tagging)
-  if (landingPage && landingPage.includes('gclid=')) {
-    return 'google-ads';
+  // Check for ad platform auto-tagging in landing page
+  if (landingPage) {
+    // Google Ads: gclid, gad_source, or gbraid
+    if (landingPage.includes('gclid') || landingPage.includes('gad_source') || landingPage.includes('gbraid')) {
+      return 'google-ads';
+    }
+    // Microsoft Ads (Bing): msclkid
+    if (landingPage.includes('msclkid')) {
+      return 'microsoft-ads';
+    }
+    // Facebook: fbclid
+    if (landingPage.includes('fbclid')) {
+      return 'facebook-ads';
+    }
   }
 
-  // If no referrer, it's direct traffic
-  if (!referrer) return 'direct';
+  // If no referrer, check if it's likely organic search with stripped referrer
+  if (!referrer) {
+    // Heuristic: Landing on specific deep pages without referrer = likely Google organic
+    // (Privacy features strip referrers, especially on mobile)
+    if (landingPage) {
+      const cleanPath = landingPage.split('?')[0]; // Remove query params
+
+      // If landing on deep page (not homepage or common pages), likely organic search
+      const isDeepPage = cleanPath !== '/' &&
+                         cleanPath !== '' &&
+                         !cleanPath.startsWith('/admin') &&
+                         !cleanPath.startsWith('/test');
+
+      if (isDeepPage) {
+        return 'google-organic'; // Most likely Google with stripped referrer
+      }
+    }
+
+    return 'direct'; // True direct traffic (homepage, bookmarks, typed URL)
+  }
 
   try {
     const url = new URL(referrer);
@@ -265,10 +294,20 @@ async function getTrafficDetail(startDate: Date) {
   // Get all sessions with their conversions
   const { data: sessions, error: sessionsError } = await supabase
     .from('user_sessions')
-    .select('session_id, utm_source, utm_medium, utm_campaign, page_views_count, referrer, landing_page')
+    .select('session_id, utm_source, utm_medium, utm_campaign, referrer, landing_page')
     .gte('started_at', startDate.toISOString());
 
   if (sessionsError) throw sessionsError;
+
+  // Get ACTUAL page views from page_views table - exclude admin and test pages
+  const { data: pageViews, error: pageViewsError } = await supabase
+    .from('page_views')
+    .select('session_id')
+    .gte('created_at', startDate.toISOString())
+    .not('page_path', 'like', '/admin%')
+    .not('page_path', 'like', '/test%');
+
+  if (pageViewsError) throw pageViewsError;
 
   // Get all conversions - exclude admin and test pages
   const { data: conversions, error: conversionsError } = await supabase
@@ -279,6 +318,12 @@ async function getTrafficDetail(startDate: Date) {
     .not('page_path', 'like', '/test%');
 
   if (conversionsError) throw conversionsError;
+
+  // Count page views per session
+  const sessionPageViewsCount = new Map();
+  pageViews?.forEach((pv) => {
+    sessionPageViewsCount.set(pv.session_id, (sessionPageViewsCount.get(pv.session_id) || 0) + 1);
+  });
 
   // Group by source (parse from referrer and gclid if utm_source is missing)
   const sourceMap = new Map();
@@ -297,7 +342,8 @@ async function getTrafficDetail(startDate: Date) {
 
     const sourceData = sourceMap.get(source);
     sourceData.visitors += 1;
-    sourceData.page_views += session.page_views_count || 0;
+    // Use actual page view count from page_views table
+    sourceData.page_views += sessionPageViewsCount.get(session.session_id) || 0;
   });
 
   conversions?.forEach((conversion) => {

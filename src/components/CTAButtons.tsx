@@ -31,7 +31,7 @@ export default function CTAButtons({
     trackBookingClick(source);
   };
 
-  const buttonClasses = layout === 'vertical' ? 'flex flex-col gap-3 items-center' : 'flex flex-col sm:flex-row gap-4 justify-center items-center';
+  const buttonClasses = layout === 'vertical' ? 'flex flex-col gap-3 items-center' : 'flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center';
 
   return (
     <div className={buttonClasses}>
@@ -39,7 +39,7 @@ export default function CTAButtons({
       <a
         href={`tel:+1${phoneNumber}`}
         onClick={handlePhoneClick}
-        className="inline-flex items-center justify-center gap-2 bg-white text-pink-600 hover:bg-gray-50 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all border-2 border-pink-600"
+        className="inline-flex items-center justify-center gap-2 bg-white text-pink-600 hover:bg-gray-50 font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all border-2 border-pink-600"
       >
         <Phone className="w-5 h-5" />
         Call Now
@@ -49,7 +49,7 @@ export default function CTAButtons({
       <a
         href={`sms:+1${phoneNumber}`}
         onClick={handleTextClick}
-        className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+        className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
       >
         <MessageSquare className="w-5 h-5" />
         Text Us
@@ -59,7 +59,7 @@ export default function CTAButtons({
       <Link
         href="/#quote-form"
         onClick={handleBookClick}
-        className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+        className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
       >
         💬 Get a Quick Quote
       </Link>
