@@ -46,7 +46,7 @@ export default function Header() {
               width={972}
               height={292}
               className="w-auto"
-              style={{ height: '80px' }}
+              style={{ height: '96px' }}
               priority
             />
           </Link>
@@ -54,10 +54,10 @@ export default function Header() {
           {/* Phone Number - Below logo on mobile */}
           <a
             href="tel:+17209187465"
-            className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
+            className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors text-lg"
             aria-label="Call Pink Auto Glass"
           >
-            <Phone className="w-4 h-4" />
+            <Phone className="w-5 h-5" />
             <span className="font-medium">(720) 918-7465</span>
           </a>
         </nav>
