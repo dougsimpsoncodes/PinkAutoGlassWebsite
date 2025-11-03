@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:watch": "nodemon --watch .env.local --watch .env --exec 'rm -rf .next && next dev'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -58,7 +59,8 @@
     "@playwright/test": "^1.54.2",
     "dotenv": "^17.2.3",
     "eslint": "8.56.0",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "nodemon": "^3.1.10"
   },
   "engines": {
     "node": ">=18.17.0"

@@ -12,7 +12,9 @@ import {
   Copy,
   ExternalLink,
   Zap,
-  AlertTriangle
+  AlertTriangle,
+  Phone,
+  Users
 } from 'lucide-react';
 
 interface SearchTerm {
@@ -37,12 +39,48 @@ interface AnalysisResults {
   highIntent: SearchTerm[];
 }
 
+interface CallDataSingle {
+  totalCalls: number;
+  answeredCalls: number;
+  missedCalls: number;
+  costPerCall: number;
+}
+
+interface LeadDataSingle {
+  formSubmissions: number;
+  costPerFormSubmission: number;
+}
+
+interface DateRangeSingle {
+  start: string;
+  end: string;
+  display: string;
+}
+
+interface CallData {
+  [key: string]: CallDataSingle;
+}
+
+interface LeadData {
+  [key: string]: LeadDataSingle;
+}
+
+interface DateRange {
+  [key: string]: DateRangeSingle;
+}
+
+type DateRangeFilter = 'all' | 'today' | 'yesterday' | '7days' | '30days';
+
 export default function GoogleAdsOptimizer() {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResults | null>(null);
+  const [callData, setCallData] = useState<CallData | null>(null);
+  const [leadData, setLeadData] = useState<LeadData | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateRangeFilter>('all');
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('handleFileUpload called!', e);
@@ -109,12 +147,20 @@ export default function GoogleAdsOptimizer() {
       const data = await response.json();
       console.log('Analysis complete:', data);
       setAnalysis(data.analysis);
+      setCallData(data.callData);
+      setLeadData(data.leadData);
+      setDateRange(data.dateRange);
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleDateFilterChange = (filter: DateRangeFilter) => {
+    setDateFilter(filter);
+    // No API call needed - data is already pre-calculated!
   };
 
   const copyToClipboard = (text: string, id: string) => {
@@ -229,6 +275,148 @@ export default function GoogleAdsOptimizer() {
       {/* Analysis Results */}
       {analysis && (
         <>
+          {/* Date Range Display with Filter Buttons */}
+          {dateRange && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Report Period:</strong> {dateRange[dateFilter]?.display}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleDateFilterChange('today')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateFilter === 'today'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-blue-800 hover:bg-blue-100 border border-blue-300'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => handleDateFilterChange('yesterday')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateFilter === 'yesterday'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-blue-800 hover:bg-blue-100 border border-blue-300'
+                    }`}
+                  >
+                    Yesterday
+                  </button>
+                  <button
+                    onClick={() => handleDateFilterChange('7days')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateFilter === '7days'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-blue-800 hover:bg-blue-100 border border-blue-300'
+                    }`}
+                  >
+                    Last 7 Days
+                  </button>
+                  <button
+                    onClick={() => handleDateFilterChange('30days')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateFilter === '30days'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-blue-800 hover:bg-blue-100 border border-blue-300'
+                    }`}
+                  >
+                    Last 30 Days
+                  </button>
+                  <button
+                    onClick={() => handleDateFilterChange('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      dateFilter === 'all'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-blue-800 hover:bg-blue-100 border border-blue-300'
+                    }`}
+                  >
+                    All Time
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Primary Metrics - Spend vs Calls (THE #1 METRIC) */}
+          {callData && (
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 shadow-lg">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Phone className="w-6 h-6 text-pink-600" />
+                Primary Metric: Ad Spend vs Calls
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Total Spend */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-600">Total Ad Spend</p>
+                    <DollarSign className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">
+                    ${analysis.totalCost.toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Total Calls */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-600">Total Calls Received</p>
+                    <Phone className="w-5 h-5 text-green-600" />
+                  </div>
+                  <p className="text-3xl font-bold text-green-600">
+                    {callData[dateFilter]?.totalCalls || 0}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {callData[dateFilter]?.answeredCalls || 0} answered • {callData[dateFilter]?.missedCalls || 0} missed
+                  </p>
+                </div>
+
+                {/* Cost Per Call */}
+                <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-pink-300">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-pink-600">Cost Per Call</p>
+                    <Target className="w-5 h-5 text-pink-600" />
+                  </div>
+                  <p className="text-3xl font-bold text-pink-600">
+                    ${(callData[dateFilter]?.costPerCall || 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Primary KPI: Lower is better
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Form Submissions - Separate from Calls */}
+          {leadData && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                Form Submissions (Website Conversions)
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Total Form Submissions</p>
+                  <p className="text-2xl font-bold text-blue-600">{leadData[dateFilter]?.formSubmissions || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">Contact forms filled out during this period</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Cost Per Form Submission</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    ${(leadData[dateFilter]?.costPerFormSubmission || 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Ad spend ÷ form submissions</p>
+                </div>
+              </div>
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600">
+                  <strong>Note:</strong> Form submissions and phone calls are tracked separately. Calls are shown in the primary metrics above.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Overview Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">

@@ -1,78 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { SDK } from '@ringcentral/sdk';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// RingCentral API configuration
+// RingCentral SDK configuration - handles auth automatically
 const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';
 const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
 const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
 const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
 
+// Initialize RingCentral SDK
+function createRingCentralSDK() {
+  if (!RC_JWT_TOKEN || !RC_CLIENT_ID || !RC_CLIENT_SECRET) {
+    throw new Error('RingCentral credentials not configured');
+  }
+
+  const rcsdk = new SDK({
+    server: RC_SERVER_URL,
+    clientId: RC_CLIENT_ID.trim(),
+    clientSecret: RC_CLIENT_SECRET.trim(),
+  });
+
+  return rcsdk.platform();
+}
+
 export async function POST(req: NextRequest) {
-
   try {
-    // Step 1: Exchange JWT for access token
-    console.log('Authenticating with RingCentral...');
+    console.log('Initializing RingCentral SDK...');
+    const platform = createRingCentralSDK();
 
-    if (!RC_JWT_TOKEN || !RC_CLIENT_ID || !RC_CLIENT_SECRET) {
-      throw new Error('RingCentral credentials not configured');
-    }
-
-    // Trim whitespace from credentials (common cause of OAU-156 error)
-    const clientId = RC_CLIENT_ID.trim();
-    const clientSecret = RC_CLIENT_SECRET.trim();
-    const jwtToken = RC_JWT_TOKEN.trim();
-
-    // Validate credentials don't contain invalid characters
-    if (clientId.includes('\n') || clientSecret.includes('\n') || jwtToken.includes('\n')) {
-      throw new Error('RingCentral credentials contain newline characters');
-    }
-
-    console.log('Client ID length:', clientId.length);
-    console.log('Client Secret length:', clientSecret.length);
-    console.log('JWT Token length:', jwtToken.length);
-
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-
-    const tokenResponse = await fetch(`${RC_SERVER_URL}/restapi/oauth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${basicAuth}`,
-      },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: jwtToken,
-      }),
-    });
-
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('RingCentral auth error:', errorText);
-      console.error('Client ID (first 8 chars):', clientId.substring(0, 8));
-      console.error('Using server URL:', RC_SERVER_URL);
-      throw new Error(`RingCentral authentication failed: ${errorText}`);
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-
-    // Helpful diagnostics: verify required permission exists on the token
-    const scope: string | undefined = tokenData.scope;
-    console.log('RingCentral token scopes:', scope);
-    if (!scope || !scope.split(' ').includes('ReadCallLog')) {
-      throw new Error(
-        'RingCentral token missing required permission: ReadCallLog. ' +
-          'Add "Read Call Log" to your RingCentral app permissions (ensure Production app), ' +
-          'then restart the server to obtain a new token.'
-      );
-    }
-
-    console.log('Successfully authenticated with RingCentral');
+    // Step 1: Authenticate using JWT - SDK handles token refresh automatically
+    console.log('Authenticating with JWT...');
+    await platform.login({ jwt: RC_JWT_TOKEN!.trim() });
+    console.log('✓ Successfully authenticated with RingCentral');
 
     // Step 2: Fetch call log data (last 30 days)
     const dateFrom = new Date();
@@ -81,25 +45,12 @@ export async function POST(req: NextRequest) {
 
     console.log(`Fetching call logs from ${dateFromISO}...`);
 
-    const callLogResponse = await fetch(
-      `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
-        new URLSearchParams({
-          dateFrom: dateFromISO,
-          perPage: '1000',
-          view: 'Detailed',
-        }),
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (!callLogResponse.ok) {
-      const errorText = await callLogResponse.text();
-      console.error('RingCentral call log error:', errorText);
-      throw new Error(`Failed to fetch call logs: ${errorText}`);
-    }
+    // SDK automatically handles authentication headers and token refresh
+    const callLogResponse = await platform.get('/restapi/v1.0/account/~/call-log', {
+      dateFrom: dateFromISO,
+      perPage: '1000',
+      view: 'Detailed',
+    });
 
     const callLogData = await callLogResponse.json();
     const records = callLogData.records || [];
