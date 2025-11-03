@@ -39,18 +39,14 @@ export async function GET(
     console.log('Fetching recording content...');
 
     const recordingResponse = await platform.get(contentUrl);
-
-    if (!recordingResponse.ok()) {
-      const errorText = await recordingResponse.text();
-      console.error('Recording fetch error:', errorText);
-      throw new Error(`Failed to fetch recording (${recordingResponse.status()}): ${errorText}`);
-    }
-
     console.log('Recording fetched successfully');
 
+    // Get the raw response object for headers and binary data
+    const rawResponse = recordingResponse.response();
+
     // Stream the recording to the client
-    const contentType = recordingResponse._response.headers.get('content-type') || 'audio/mpeg';
-    const contentLength = recordingResponse._response.headers.get('content-length');
+    const contentType = rawResponse.headers.get('content-type') || 'audio/mpeg';
+    const contentLength = rawResponse.headers.get('content-length');
 
     const headers: Record<string, string> = {
       'Content-Type': contentType,
@@ -62,7 +58,7 @@ export async function GET(
     }
 
     // Get the recording data
-    const recordingData = await recordingResponse._response.arrayBuffer();
+    const recordingData = await rawResponse.arrayBuffer();
 
     return new NextResponse(recordingData, {
       status: 200,
