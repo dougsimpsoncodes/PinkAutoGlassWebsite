@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { SDK } from '@ringcentral/sdk';
 
 const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';
 const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
 const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
 const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
+
+// Initialize RingCentral SDK
+function createRingCentralSDK() {
+  if (!RC_JWT_TOKEN || !RC_CLIENT_ID || !RC_CLIENT_SECRET) {
+    throw new Error('RingCentral credentials not configured');
+  }
+
+  const rcsdk = new SDK({
+    server: RC_SERVER_URL,
+    clientId: RC_CLIENT_ID.trim(),
+    clientSecret: RC_CLIENT_SECRET.trim(),
+  });
+
+  return rcsdk.platform();
+}
 
 export async function GET(
   req: NextRequest,
@@ -17,49 +27,30 @@ export async function GET(
 ) {
   try {
     const recordingId = params.id;
+    console.log('Fetching recording:', recordingId);
 
-    // Step 1: Get access token
-    if (!RC_JWT_TOKEN || !RC_CLIENT_ID || !RC_CLIENT_SECRET) {
-      throw new Error('RingCentral credentials not configured');
+    // Initialize and authenticate with SDK
+    const platform = createRingCentralSDK();
+    await platform.login({ jwt: RC_JWT_TOKEN!.trim() });
+    console.log('✓ Successfully authenticated with RingCentral');
+
+    // Fetch recording content using SDK
+    const contentUrl = `/restapi/v1.0/account/~/recording/${recordingId}/content`;
+    console.log('Fetching recording content...');
+
+    const recordingResponse = await platform.get(contentUrl);
+
+    if (!recordingResponse.ok()) {
+      const errorText = await recordingResponse.text();
+      console.error('Recording fetch error:', errorText);
+      throw new Error(`Failed to fetch recording (${recordingResponse.status()}): ${errorText}`);
     }
 
-    const basicAuth = Buffer.from(`${RC_CLIENT_ID}:${RC_CLIENT_SECRET}`).toString('base64');
+    console.log('Recording fetched successfully');
 
-    const tokenResponse = await fetch(`${RC_SERVER_URL}/restapi/oauth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${basicAuth}`,
-      },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: RC_JWT_TOKEN,
-      }),
-    });
-
-    if (!tokenResponse.ok) {
-      throw new Error('Failed to authenticate with RingCentral');
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-
-    // Step 2: Fetch recording content
-    const contentUrl = `${RC_SERVER_URL}/restapi/v1.0/account/~/recording/${recordingId}/content`;
-
-    const recordingResponse = await fetch(contentUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!recordingResponse.ok) {
-      throw new Error(`Failed to fetch recording: ${recordingResponse.statusText}`);
-    }
-
-    // Step 3: Stream the recording to the client
-    const contentType = recordingResponse.headers.get('content-type') || 'audio/mpeg';
-    const contentLength = recordingResponse.headers.get('content-length');
+    // Stream the recording to the client
+    const contentType = recordingResponse._response.headers.get('content-type') || 'audio/mpeg';
+    const contentLength = recordingResponse._response.headers.get('content-length');
 
     const headers: Record<string, string> = {
       'Content-Type': contentType,
@@ -71,7 +62,7 @@ export async function GET(
     }
 
     // Get the recording data
-    const recordingData = await recordingResponse.arrayBuffer();
+    const recordingData = await recordingResponse._response.arrayBuffer();
 
     return new NextResponse(recordingData, {
       status: 200,
