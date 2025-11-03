@@ -22,7 +22,21 @@ export async function POST(req: NextRequest) {
       throw new Error('RingCentral credentials not configured');
     }
 
-    const basicAuth = Buffer.from(`${RC_CLIENT_ID}:${RC_CLIENT_SECRET}`).toString('base64');
+    // Trim whitespace from credentials (common cause of OAU-156 error)
+    const clientId = RC_CLIENT_ID.trim();
+    const clientSecret = RC_CLIENT_SECRET.trim();
+    const jwtToken = RC_JWT_TOKEN.trim();
+
+    // Validate credentials don't contain invalid characters
+    if (clientId.includes('\n') || clientSecret.includes('\n') || jwtToken.includes('\n')) {
+      throw new Error('RingCentral credentials contain newline characters');
+    }
+
+    console.log('Client ID length:', clientId.length);
+    console.log('Client Secret length:', clientSecret.length);
+    console.log('JWT Token length:', jwtToken.length);
+
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
     const tokenResponse = await fetch(`${RC_SERVER_URL}/restapi/oauth/token`, {
       method: 'POST',
@@ -32,13 +46,15 @@ export async function POST(req: NextRequest) {
       },
       body: new URLSearchParams({
         grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: RC_JWT_TOKEN,
+        assertion: jwtToken,
       }),
     });
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('RingCentral auth error:', errorText);
+      console.error('Client ID (first 8 chars):', clientId.substring(0, 8));
+      console.error('Using server URL:', RC_SERVER_URL);
       throw new Error(`RingCentral authentication failed: ${errorText}`);
     }
 
