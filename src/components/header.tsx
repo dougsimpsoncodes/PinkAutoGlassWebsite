@@ -33,11 +33,11 @@ export default function Header() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile Layout: Vertical Stack */}
-        <nav className="md:hidden flex flex-col items-center justify-center py-3" role="navigation" aria-label="Main navigation">
+        <nav className="md:hidden flex flex-col items-center justify-center py-0.5" role="navigation" aria-label="Main navigation">
           {/* Logo - Smaller on mobile */}
           <Link
             href="/"
-            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded mb-2"
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded mb-0"
             aria-label="Pink Auto Glass - Go to homepage"
           >
             <Image
@@ -46,7 +46,7 @@ export default function Header() {
               width={972}
               height={292}
               className="w-auto"
-              style={{ height: '125px' }}
+              style={{ height: '170px' }}
               priority
             />
           </Link>
