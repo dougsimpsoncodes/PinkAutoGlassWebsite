@@ -13,7 +13,7 @@ const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
 const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
 const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
 
-// Initialize RingCentral SDK
+// Initialize RingCentral SDK for authentication only
 function createRingCentralSDK() {
   if (!RC_JWT_TOKEN || !RC_CLIENT_ID || !RC_CLIENT_SECRET) {
     throw new Error('RingCentral credentials not configured');
@@ -38,26 +38,42 @@ export async function POST(req: NextRequest) {
     await platform.login({ jwt: RC_JWT_TOKEN!.trim() });
     console.log('✓ Successfully authenticated with RingCentral');
 
-    // Step 2: Fetch call log data (last 30 days)
+    // Step 2: Get the access token from the SDK
+    const authData = await platform.auth().data();
+    const accessToken = authData.access_token;
+
+    // Step 3: Fetch call log data using standard fetch (we know this works)
     const dateFrom = new Date();
     dateFrom.setDate(dateFrom.getDate() - 30);
     const dateFromISO = dateFrom.toISOString();
 
     console.log(`Fetching call logs from ${dateFromISO}...`);
 
-    // SDK automatically handles authentication headers and token refresh
-    const callLogResponse = await platform.get('/restapi/v1.0/account/~/call-log', {
-      dateFrom: dateFromISO,
-      perPage: '1000',
-      view: 'Detailed',
-    });
+    const callLogResponse = await fetch(
+      `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
+        new URLSearchParams({
+          dateFrom: dateFromISO,
+          perPage: '1000',
+          view: 'Detailed',
+        }),
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!callLogResponse.ok) {
+      const errorText = await callLogResponse.text();
+      throw new Error(`Failed to fetch call logs: ${errorText}`);
+    }
 
     const callLogData = await callLogResponse.json();
     const records = callLogData.records || [];
 
     console.log(`Found ${records.length} call records`);
 
-    // Step 3: Store calls in database
+    // Step 4: Store calls in database
     let newCalls = 0;
     let updatedCalls = 0;
     const errors = [];
@@ -115,7 +131,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 4: Calculate summary statistics
+    // Step 5: Calculate summary statistics
     const { data: stats } = await supabase
       .from('ringcentral_calls')
       .select('direction, result, duration')
