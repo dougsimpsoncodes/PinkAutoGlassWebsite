@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { SDK } from '@ringcentral/sdk';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // RingCentral SDK configuration - handles auth automatically
 const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';
@@ -29,6 +32,8 @@ function createRingCentralSDK() {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseClient();
+
   try {
     console.log('Initializing RingCentral SDK...');
     const platform = createRingCentralSDK();
@@ -213,6 +218,7 @@ export async function POST(req: NextRequest) {
 
 // GET endpoint to check sync status
 export async function GET(req: NextRequest) {
+  const supabase = getSupabaseClient();
   // Auth handled by middleware
 
   try {
