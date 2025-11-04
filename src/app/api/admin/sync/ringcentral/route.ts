@@ -131,10 +131,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 5: Calculate summary statistics
+    // Step 5: Calculate summary statistics with unique caller deduplication
     const { data: stats } = await supabase
       .from('ringcentral_calls')
-      .select('direction, result, duration')
+      .select('direction, result, duration, from_number, start_time')
       .gte('start_time', dateFromISO);
 
     const totalCalls = stats?.length || 0;
@@ -142,6 +142,23 @@ export async function POST(req: NextRequest) {
     const outboundCalls = stats?.filter((c) => c.direction === 'Outbound').length || 0;
     const answeredCalls = stats?.filter((c) => c.result === 'Accepted').length || 0;
     const missedCalls = stats?.filter((c) => c.result === 'Missed').length || 0;
+
+    // Calculate unique leads: first answered inbound call per phone number in 30-day window
+    const answeredInbound = stats?.filter(
+      (c) => c.direction === 'Inbound' && c.result === 'Accepted'
+    ) || [];
+
+    // Group by phone number and take earliest call
+    const uniqueLeadsMap = new Map<string, any>();
+    answeredInbound.forEach((call) => {
+      const existing = uniqueLeadsMap.get(call.from_number);
+      if (!existing || new Date(call.start_time) < new Date(existing.start_time)) {
+        uniqueLeadsMap.set(call.from_number, call);
+      }
+    });
+
+    const uniqueLeads = uniqueLeadsMap.size;
+
     const avgDuration =
       stats && stats.length > 0
         ? Math.round(
@@ -168,10 +185,15 @@ export async function POST(req: NextRequest) {
         outboundCalls,
         answeredCalls,
         missedCalls,
+        uniqueLeads, // Deduplicated count
         avgDuration,
         answeredRate:
           inboundCalls > 0
             ? Math.round((answeredCalls / inboundCalls) * 100)
+            : 0,
+        leadConversionRate:
+          inboundCalls > 0
+            ? Math.round((uniqueLeads / inboundCalls) * 100)
             : 0,
       },
       errors: errors.length > 0 ? errors : undefined,
@@ -207,14 +229,27 @@ export async function GET(req: NextRequest) {
       .from('ringcentral_calls')
       .select('*', { count: 'exact', head: true });
 
-    // Get calls from last 7 days
+    // Get calls from last 7 days with deduplication
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const { data: recentCalls } = await supabase
       .from('ringcentral_calls')
-      .select('direction, result')
+      .select('direction, result, from_number, start_time')
       .gte('start_time', sevenDaysAgo.toISOString());
+
+    // Calculate unique leads for last 7 days
+    const answeredInbound = recentCalls?.filter(
+      (c) => c.direction === 'Inbound' && c.result === 'Accepted'
+    ) || [];
+
+    const uniqueLeadsMap = new Map<string, any>();
+    answeredInbound.forEach((call) => {
+      const existing = uniqueLeadsMap.get(call.from_number);
+      if (!existing || new Date(call.start_time) < new Date(existing.start_time)) {
+        uniqueLeadsMap.set(call.from_number, call);
+      }
+    });
 
     return NextResponse.json({
       ok: true,
@@ -226,6 +261,7 @@ export async function GET(req: NextRequest) {
         answered:
           recentCalls?.filter((c) => c.result === 'Accepted').length || 0,
         missed: recentCalls?.filter((c) => c.result === 'Missed').length || 0,
+        uniqueLeads: uniqueLeadsMap.size, // Deduplicated count
       },
     });
   } catch (error: any) {
