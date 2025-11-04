@@ -27,17 +27,14 @@ export async function GET(req: NextRequest) {
     console.log('✓ Webhook validation request received');
     console.log(`   Validation Token: ${validationToken}`);
 
-    // RingCentral expects validation token in BOTH header AND body
-    return new NextResponse(
-      JSON.stringify({ validationToken }),
-      {
-        status: 200,
-        headers: {
-          'Validation-Token': validationToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // RingCentral expects validation token ONLY in header with empty body
+    // Response must be under 1024 bytes (per official RingCentral docs)
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Validation-Token': validationToken,
+      },
+    });
   }
 
   return NextResponse.json({
