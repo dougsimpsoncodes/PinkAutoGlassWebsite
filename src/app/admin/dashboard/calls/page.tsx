@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Download, Play, RefreshCw } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -150,26 +150,6 @@ export default function CallAnalyticsPage() {
     });
   };
 
-  const exportCSV = () => {
-    const headers = ['Date', 'Direction', 'From', 'To', 'Duration', 'Result'];
-    const rows = callsInDateRange.map(c => [
-      new Date(c.start_time).toLocaleString(),
-      c.direction,
-      `${c.from_name || ''} ${c.from_number}`.trim(),
-      `${c.to_name || ''} ${c.to_number}`.trim(),
-      formatDuration(c.duration),
-      c.result,
-    ]);
-
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `calls-${dateRange}.csv`;
-    a.click();
-  };
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -217,13 +197,6 @@ export default function CallAnalyticsPage() {
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
-            </button>
-            <button
-              onClick={exportCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
             </button>
           </div>
         </div>
