@@ -87,26 +87,20 @@ export default function CallAnalyticsPage() {
 
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
 
-  // Group calls by day for chart
-  const callsByDay = callsInDateRange.reduce((acc: Record<string, { total: number; inbound: number; outbound: number; }>, call) => {
-    const date = new Date(call.start_time).toLocaleDateString();
-    if (!acc[date]) {
-      acc[date] = { total: 0, inbound: 0, outbound: 0 };
-    }
-    acc[date].total++;
-    if (call.direction === 'Inbound') {
-      acc[date].inbound++;
-    } else {
-      acc[date].outbound++;
-    }
-    return acc;
-  }, {});
+  // Group inbound calls by day for line chart
+  const callsByDay = callsInDateRange
+    .filter(call => call.direction === 'Inbound') // Only inbound calls
+    .reduce((acc: Record<string, number>, call) => {
+      const date = new Date(call.start_time).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {});
 
   const chartData = Object.entries(callsByDay)
-    .map(([date, data]) => ({ date, ...data }))
+    .map(([date, inbound]) => ({ date, inbound }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const maxCallsInDay = Math.max(...chartData.map(d => d.total), 1);
+  const maxCallsInDay = Math.max(...chartData.map(d => d.inbound), 1);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -278,53 +272,111 @@ export default function CallAnalyticsPage() {
         </div>
       </div>
 
-      {/* Calls by Day Chart */}
+      {/* Inbound Calls Line Chart */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h3 className="font-semibold text-gray-900 mb-6">Calls by Day</h3>
+        <h3 className="font-semibold text-gray-900 mb-6">Inbound Calls by Day</h3>
         {chartData.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             No call data available for this date range
           </div>
         ) : (
-          <div className="space-y-4">
-            {chartData.map((day, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-gray-700 min-w-[100px]">{day.date}</span>
-                  <div className="flex items-center gap-4 text-xs text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      Inbound: {day.inbound}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                      Outbound: {day.outbound}
-                    </span>
-                    <span className="font-semibold">Total: {day.total}</span>
-                  </div>
-                </div>
-                <div className="flex gap-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
-                  {day.inbound > 0 && (
-                    <div
-                      className="bg-green-500 transition-all duration-300 hover:bg-green-600 flex items-center justify-center text-white text-xs font-medium"
-                      style={{ width: `${(day.inbound / day.total) * 100}%` }}
-                      title={`${day.inbound} inbound calls`}
+          <div className="w-full h-64">
+            <svg className="w-full h-full" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+              {/* Y-axis grid lines and labels */}
+              {[0, 1, 2, 3, 4, 5].map((tick) => {
+                const y = 250 - (tick * 50);
+                const value = Math.round((tick / 5) * maxCallsInDay);
+                return (
+                  <g key={tick}>
+                    <line
+                      x1="60"
+                      y1={y}
+                      x2="760"
+                      y2={y}
+                      stroke="#e5e7eb"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x="50"
+                      y={y + 4}
+                      textAnchor="end"
+                      fontSize="12"
+                      fill="#6b7280"
                     >
-                      {day.inbound > 2 && day.inbound}
-                    </div>
-                  )}
-                  {day.outbound > 0 && (
-                    <div
-                      className="bg-blue-500 transition-all duration-300 hover:bg-blue-600 flex items-center justify-center text-white text-xs font-medium"
-                      style={{ width: `${(day.outbound / day.total) * 100}%` }}
-                      title={`${day.outbound} outbound calls`}
-                    >
-                      {day.outbound > 2 && day.outbound}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                      {value}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* X-axis labels */}
+              {chartData.map((point, index) => {
+                const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                return (
+                  <text
+                    key={index}
+                    x={x}
+                    y="275"
+                    textAnchor="middle"
+                    fontSize="11"
+                    fill="#6b7280"
+                  >
+                    {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </text>
+                );
+              })}
+
+              {/* Line path */}
+              <path
+                d={chartData.map((point, index) => {
+                  const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                  const y = 250 - ((point.inbound / maxCallsInDay) * 250);
+                  return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(' ')}
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* Data points */}
+              {chartData.map((point, index) => {
+                const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                const y = 250 - ((point.inbound / maxCallsInDay) * 250);
+                return (
+                  <g key={index}>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="5"
+                      fill="#10b981"
+                      stroke="#fff"
+                      strokeWidth="2"
+                    />
+                    <title>{`${point.date}: ${point.inbound} call${point.inbound !== 1 ? 's' : ''}`}</title>
+                  </g>
+                );
+              })}
+
+              {/* X-axis */}
+              <line x1="60" y1="250" x2="760" y2="250" stroke="#9ca3af" strokeWidth="2" />
+
+              {/* Y-axis */}
+              <line x1="60" y1="0" x2="60" y2="250" stroke="#9ca3af" strokeWidth="2" />
+
+              {/* Y-axis label */}
+              <text
+                x="20"
+                y="130"
+                textAnchor="middle"
+                fontSize="12"
+                fill="#6b7280"
+                transform="rotate(-90 20 130)"
+              >
+                Inbound Calls
+              </text>
+            </svg>
           </div>
         )}
       </div>
