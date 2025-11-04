@@ -237,24 +237,6 @@ export default function AdminDashboard() {
           </div>
         </Link>
       </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link href="/admin/dashboard/sessions" className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors">
-          <h4 className="font-semibold text-blue-900 mb-1">View User Sessions</h4>
-          <p className="text-sm text-blue-700">See individual user journeys</p>
-        </Link>
-
-        <Link href="/admin/dashboard/live" className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors">
-          <h4 className="font-semibold text-green-900 mb-1">Live Activity</h4>
-          <p className="text-sm text-green-700">Monitor real-time visitors</p>
-        </Link>
-
-        <button className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors text-left">
-          <h4 className="font-semibold text-gray-900 mb-1">Export Data</h4>
-          <p className="text-sm text-gray-700">Download CSV report</p>
-        </button>
-      </div>
     </DashboardLayout>
   );
 }

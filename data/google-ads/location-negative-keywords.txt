@@ -1,0 +1,149 @@
+GOOGLE ADS NEGATIVE KEYWORD LIST - LOCATION BLOCKING
+Generated: November 4, 2025
+Based on criteria: Population < 5,000 AND Impressions < 20 AND (CPC > $10 OR No Clicks)
+
+======================================================================
+PASTE-READY NEGATIVE KEYWORDS (Phrase Match)
+======================================================================
+Copy and paste these into Google Ads as PHRASE MATCH negative keywords:
+
+"Divide Colorado"
+"Grover Colorado"
+"Elbert Colorado"
+"Sedalia Colorado"
+"Strasburg Colorado"
+"Wiggins Colorado"
+"Kersey Colorado"
+"Kremmling Colorado"
+"Walden Colorado"
+"Victor Colorado"
+"Tabernash Colorado"
+"Agate Colorado"
+"Peyton Colorado"
+"Silver Plume Colorado"
+"Fort Lupton Colorado"
+"Monument Colorado"
+"Mount Pleasant Texas"
+"Long Beach California"
+"Bellingham Washington"
+
+======================================================================
+PROTECTED LOCATIONS (DO NOT BLOCK - HAS CONVERSIONS)
+======================================================================
+These locations have converted and should NOT be blocked:
+
+"Briggsdale Colorado" - Population: 86, Impressions: 4, CPC: $17.84, CONVERSIONS: 1.00
+  - Despite meeting criteria (small pop + high CPC), this location converted!
+  - Cost per conversion: $17.84 (excellent)
+
+"Woodmoor Colorado" - Population: Small CDP, Impressions: 9, CPC: $40.30, CONVERSIONS: 1.00
+  - High CPC but converted
+  - Cost per conversion: $40.30
+
+======================================================================
+BLOCKING ANALYSIS BY CATEGORY
+======================================================================
+
+CATEGORY 1: SMALL POPULATION + LOW IMPRESSIONS (No High CPC Data)
+------------------------------------------------------------------
+Divide, CO - Pop: 88, Impr: 1, Clicks: 0, Cost: $0
+Grover, CO - Pop: 152, Impr: 2, Clicks: 0, Cost: $0
+Elbert, CO - Pop: 150, Impr: 1, Clicks: 0, Cost: $0
+Strasburg, CO - Pop: 3,249, Impr: 2, Clicks: 0, Cost: $0
+Wiggins, CO - Pop: 1,872, Impr: 3, Clicks: 0, Cost: $0
+Kersey, CO - Pop: 1,499, Impr: 1, Clicks: 0, Cost: $0
+Kremmling, CO - Pop: 1,436, Impr: 1, Clicks: 0, Cost: $0
+Walden, CO - Pop: 557, Impr: 2, Clicks: 0, Cost: $0
+Victor, CO - Pop: 363, Impr: 1, Clicks: 0, Cost: $0
+Tabernash, CO - Pop: 401, Impr: 2, Clicks: 0, Cost: $0
+Agate, CO - Pop: 392, Impr: 2, Clicks: 0, Cost: $0
+Peyton, CO - Pop: 120, Impr: 1, Clicks: 0, Cost: $0
+Silver Plume, CO - Pop: 188, Impr: 1, Clicks: 0, Cost: $0
+
+Total waste from this category: $0 (but low conversion potential)
+
+
+CATEGORY 2: HIGH CPC + LOW IMPRESSIONS
+------------------------------------------------------------------
+Sedalia, CO - Pop: 49, Impr: 2, Clicks: 1, CPC: $13.86, Cost: $13.86
+  - Meets ALL THREE criteria: tiny population + low impressions + high CPC
+
+Fort Lupton, CO - Pop: 9,948, Impr: 11, Clicks: 1, CPC: $33.55, Cost: $33.55
+  - Highest CPC in dataset, no conversions
+
+Monument, CO - Pop: 13,408, Impr: 14, Clicks: 1, CPC: $18.97, Cost: $19.97
+  - High CPC, suburban Denver area but not converting
+
+Total waste from high CPC locations: $67.38
+
+
+CATEGORY 3: OUT-OF-STATE LOCATIONS (Auto-Block)
+------------------------------------------------------------------
+Mount Pleasant, TX - Impr: 1, Clicks: 0, Cost: $0
+Long Beach, CA - Impr: 1, Clicks: 0, Cost: $0
+Bellingham, WA - Impr: 2, Clicks: 0, Cost: $0
+
+Total waste from out-of-state: $0 (but outside service area)
+
+
+======================================================================
+LOCATIONS ANALYZED BUT NOT BLOCKED (With Reasons)
+======================================================================
+
+Major Metro Areas (Keep despite high CPC):
+- Denver: 1,220 impressions, 36 clicks, $8.80 CPC, 5 conversions
+- Colorado Springs: 788 impressions, 21 clicks, $11.07 CPC, 2 conversions
+- Aurora: 249 impressions, 8 clicks, $12.61 CPC, 3 conversions
+- Fort Collins: 120 impressions, 7 clicks, $13.52 CPC, 1.5 conversions
+- Lakewood: 153 impressions, 3 clicks, $14.78 CPC, 2 conversions
+
+Mid-Size Cities with Conversions:
+- Longmont: 75 impressions, 3 clicks, $11.14 CPC, 1 conversion
+- Leadville: 29 impressions, 2 clicks, $8.73 CPC, 1 conversion (small pop: 2,602)
+- Severance: 59 impressions, 4 clicks, $7.58 CPC, 2.5 conversions (pop: 11,554)
+- Federal Heights: 195 impressions, 7 clicks, $15.52 CPC, 1 conversion
+
+High Impression Count (Keep to gather more data):
+- Golden: 21 impressions, 0 clicks
+- Vail: 20 impressions, 0 clicks
+- Windsor: 35 impressions, 0 clicks
+- Commerce City: 53 impressions, 0 clicks
+- Wheat Ridge: 34 impressions, 2 clicks, $4.79 CPC
+
+======================================================================
+ESTIMATED IMPACT
+======================================================================
+
+Total Locations to Block: 19
+  - 13 small population + low impression locations
+  - 3 high CPC locations
+  - 3 out-of-state locations
+
+Direct Cost Savings: $67.38 per 2-week period
+  - Annualized: ~$1,750/year
+
+Impressions to Eliminate: 66 impressions (1.4% of total)
+  - This frees up budget for better-performing locations
+
+Clicks to Eliminate: 3 clicks
+  - All clicks that didn't convert
+
+Conversion Impact: ZERO
+  - None of the blocked locations have converted
+
+======================================================================
+RECOMMENDED NEXT STEPS
+======================================================================
+
+1. Add negative keywords to Google Ads campaign
+2. Monitor for 30 days to ensure no impact on conversions
+3. Consider adding radius exclusions for small mountain towns
+4. Focus budget on high-performing areas:
+   - Denver metro (Denver, Aurora, Lakewood)
+   - Northern corridor (Fort Collins, Loveland, Greeley)
+   - Colorado Springs metro area
+
+5. Watch list (low impressions but larger population - gather more data):
+   - Castle Rock: 9 impressions, 0 clicks
+   - Broomfield: 8 impressions, 0 clicks
+   - Breckenridge: 15 impressions, 0 clicks (tourist area)

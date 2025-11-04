@@ -1,0 +1,42 @@
+Negative Keyword,Match Type,Reason,Impressions,Wasted Cost
+tavos,Phrase,Top competitor - 142 impressions,142,$83.03
+auto glass now,Phrase,Major competitor - multiple locations,75,$0.00
+safelite,Exact,National competitor brand,0,$0.00
+safelight,Exact,Safelite misspelling,4,$0.00
+savelite,Exact,Safelite misspelling,2,$0.00
+jiffy,Phrase,Jiffy Lube competitor,13,$8.34
+native auto glass,Exact,Local competitor,25,$0.00
+complete auto glass,Exact,Competitor,23,$0.00
+anders,Phrase,Fort Collins competitor,22,$0.00
+primos,Phrase,Greeley competitor,27,$0.00
+quick set,Phrase,Denver competitor,27,$0.00
+snow auto glass,Exact,Competitor,12,$18.97
+starlite,Phrase,Competitor,10,$0.00
+latinos,Phrase,Local competitor,14,$0.00
+satellite,Phrase,Local competitor,10,$0.00
+precision auto glass,Phrase,Multiple location competitor,24,$0.00
+elite auto glass,Phrase,Multiple location competitor,11,$0.00
+absolute auto glass,Phrase,Multiple location competitor,8,$0.00
+windshield express,Exact,Competitor,11,$0.00
+polaris,Phrase,Competitor,7,$0.00
+cheyenne,Broad,Wyoming - out of service area,22,$0.00
+wyoming,Broad,Out of state,5,$0.00
+laramie,Broad,Wyoming city,1,$0.00
+how much,Phrase,Informational query,7,$0.00
+how to,Phrase,DIY informational,1,$0.00
+estimate,Broad,Price shopping/informational,1,$0.00
+where to buy,Phrase,Parts seeking not service,1,$0.00
+mobile mechanics,Phrase,Wrong service type,2,$0.00
+semi truck,Phrase,Commercial vehicles,2,$0.00
+used auto glass,Phrase,Parts only not service,5,$0.00
+jobs,Broad,Job seekers,1,$0.00
+careers,Broad,Job seekers,0,$0.00
+hiring,Broad,Job seekers,0,$0.00
+charlotte,Broad,Out of state - North Carolina,2,$0.00
+lodi,Broad,Out of state - California,2,$0.00
+cincinnati,Broad,Out of state - Ohio,1,$0.00
+lincoln ne,Exact,Out of state - Nebraska,2,$0.00
+el paso,Broad,Out of state - Texas,1,$0.00
+emergency glass repair,Phrase,Generic/wrong intent,1,$0.00
+24 hour,Phrase,Generic/wrong intent,1,$0.00
+glass company,Phrase,Too generic,1,$0.00

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Download, Play } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Download, Play, RefreshCw } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -24,8 +24,8 @@ interface Call {
 export default function CallAnalyticsPage() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState('7days');
-  const [filter, setFilter] = useState('inbound');
 
   useEffect(() => {
     fetchCalls();
@@ -43,6 +43,12 @@ export default function CallAnalyticsPage() {
       console.error('Failed to fetch calls:', error);
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchCalls();
+    setRefreshing(false);
   };
 
   const getCallsInDateRange = () => {
@@ -66,24 +72,7 @@ export default function CallAnalyticsPage() {
     return calls.filter(call => new Date(call.start_time) >= startDate);
   };
 
-  const filterCalls = () => {
-    let filtered = getCallsInDateRange();
-
-    if (filter !== 'all') {
-      filtered = filtered.filter(call => {
-        if (filter === 'inbound') return call.direction === 'Inbound';
-        if (filter === 'outbound') return call.direction === 'Outbound';
-        if (filter === 'missed') return call.result === 'Missed';
-        if (filter === 'answered') return call.result === 'Accepted' || call.result === 'Call connected';
-        return true;
-      });
-    }
-
-    return filtered;
-  };
-
   const callsInDateRange = getCallsInDateRange();
-  const filteredCalls = filterCalls();
 
   const stats = {
     total: callsInDateRange.length,
@@ -97,6 +86,27 @@ export default function CallAnalyticsPage() {
   };
 
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
+
+  // Group calls by day for chart
+  const callsByDay = callsInDateRange.reduce((acc: Record<string, { total: number; inbound: number; outbound: number; }>, call) => {
+    const date = new Date(call.start_time).toLocaleDateString();
+    if (!acc[date]) {
+      acc[date] = { total: 0, inbound: 0, outbound: 0 };
+    }
+    acc[date].total++;
+    if (call.direction === 'Inbound') {
+      acc[date].inbound++;
+    } else {
+      acc[date].outbound++;
+    }
+    return acc;
+  }, {});
+
+  const chartData = Object.entries(callsByDay)
+    .map(([date, data]) => ({ date, ...data }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const maxCallsInDay = Math.max(...chartData.map(d => d.total), 1);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -113,9 +123,42 @@ export default function CallAnalyticsPage() {
     return num;
   };
 
+  const getLastUpdateTime = () => {
+    if (calls.length === 0) return 'No data';
+
+    // Find the most recent call timestamp
+    const mostRecentCall = calls.reduce((latest, call) => {
+      const callTime = new Date(call.start_time).getTime();
+      const latestTime = new Date(latest.start_time).getTime();
+      return callTime > latestTime ? call : latest;
+    });
+
+    const lastCallTime = new Date(mostRecentCall.start_time);
+    const now = new Date();
+    const diffMs = now.getTime() - lastCallTime.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    // Format relative time
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? '' : 's'} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+
+    // For older data, show absolute date/time
+    return lastCallTime.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   const exportCSV = () => {
     const headers = ['Date', 'Direction', 'From', 'To', 'Duration', 'Result'];
-    const rows = filteredCalls.map(c => [
+    const rows = callsInDateRange.map(c => [
       new Date(c.start_time).toLocaleString(),
       c.direction,
       `${c.from_name || ''} ${c.from_number}`.trim(),
@@ -170,27 +213,25 @@ export default function CallAnalyticsPage() {
                 <option value="30days">Last 30 Days</option>
               </select>
             </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Filter:</label>
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-              >
-                <option value="inbound">Inbound</option>
-                <option value="all">All</option>
-              </select>
-            </div>
           </div>
 
-          <button
-            onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button
+              onClick={exportCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
@@ -237,6 +278,57 @@ export default function CallAnalyticsPage() {
         </div>
       </div>
 
+      {/* Calls by Day Chart */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <h3 className="font-semibold text-gray-900 mb-6">Calls by Day</h3>
+        {chartData.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            No call data available for this date range
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {chartData.map((day, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-gray-700 min-w-[100px]">{day.date}</span>
+                  <div className="flex items-center gap-4 text-xs text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      Inbound: {day.inbound}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      Outbound: {day.outbound}
+                    </span>
+                    <span className="font-semibold">Total: {day.total}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
+                  {day.inbound > 0 && (
+                    <div
+                      className="bg-green-500 transition-all duration-300 hover:bg-green-600 flex items-center justify-center text-white text-xs font-medium"
+                      style={{ width: `${(day.inbound / day.total) * 100}%` }}
+                      title={`${day.inbound} inbound calls`}
+                    >
+                      {day.inbound > 2 && day.inbound}
+                    </div>
+                  )}
+                  {day.outbound > 0 && (
+                    <div
+                      className="bg-blue-500 transition-all duration-300 hover:bg-blue-600 flex items-center justify-center text-white text-xs font-medium"
+                      style={{ width: `${(day.outbound / day.total) * 100}%` }}
+                      title={`${day.outbound} outbound calls`}
+                    >
+                      {day.outbound > 2 && day.outbound}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
@@ -281,8 +373,17 @@ export default function CallAnalyticsPage() {
       {/* Calls Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
-          <p className="text-sm text-gray-600 mt-1">Showing {filteredCalls.length} calls</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
+              <p className="text-sm text-gray-600 mt-1">Showing {callsInDateRange.length} calls</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Most Recent Call</p>
+              <p className="text-sm font-medium text-gray-700 mt-0.5">{getLastUpdateTime()}</p>
+              <p className="text-xs text-gray-500 mt-1">Updates automatically via webhooks</p>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -313,14 +414,14 @@ export default function CallAnalyticsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCalls.length === 0 ? (
+              {callsInDateRange.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    No calls found for selected filters
+                    No calls found for selected date range
                   </td>
                 </tr>
               ) : (
-                filteredCalls.map((call) => (
+                callsInDateRange.map((call) => (
                   <tr key={call.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
