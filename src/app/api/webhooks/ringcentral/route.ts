@@ -45,6 +45,22 @@ export async function GET(req: NextRequest) {
 
 // Handle incoming webhook events
 export async function POST(req: NextRequest) {
+  // Check for validation token FIRST (before parsing body)
+  // RingCentral sends validation request as POST with validation-token header
+  const validationToken = req.headers.get('validation-token');
+  if (validationToken) {
+    console.log('✓ Webhook validation request received (POST)');
+    console.log(`   Validation Token: ${validationToken}`);
+
+    // Return validation token in header with empty body
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Validation-Token': validationToken,
+      },
+    });
+  }
+
   const supabase = getSupabaseClient();
 
   try {
@@ -55,18 +71,6 @@ export async function POST(req: NextRequest) {
       event: body.event,
       uuid: body.uuid,
     });
-
-    // Validate webhook signature if needed
-    const validationToken = req.headers.get('validation-token');
-    if (validationToken) {
-      // This is the initial validation request
-      return new NextResponse(null, {
-        status: 200,
-        headers: {
-          'Validation-Token': validationToken,
-        },
-      });
-    }
 
     // Process telephony session event
     if (body.event && body.event.includes('/telephony/sessions')) {
