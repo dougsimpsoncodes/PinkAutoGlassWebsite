@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET - Fetch all recommendations
 export async function GET(request: NextRequest) {
+  const supabase = getSupabaseClient();
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -37,6 +41,7 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new recommendation
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
   try {
     const body = await request.json();
     const {
@@ -78,6 +83,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH - Update recommendation status
 export async function PATCH(request: NextRequest) {
+  const supabase = getSupabaseClient();
   try {
     const body = await request.json();
     const { id, status, notes, implemented_action, results_after } = body;

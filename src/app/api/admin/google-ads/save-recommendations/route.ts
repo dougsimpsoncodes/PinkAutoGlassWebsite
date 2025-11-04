@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // POST - Save analysis results as actionable recommendations
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
   try {
     const { analysis } = await request.json();
 

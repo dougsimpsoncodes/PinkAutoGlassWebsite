@@ -6,16 +6,20 @@ import {
   fetchCampaignPerformance,
 } from '@/lib/googleAds';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 /**
  * POST /api/admin/sync/google-ads
  * Sync Google Ads campaign performance data to database
  */
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseClient();
 
   try {
     // Step 1: Validate configuration
