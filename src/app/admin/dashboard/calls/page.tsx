@@ -280,7 +280,7 @@ export default function CallAnalyticsPage() {
             No call data available for this date range
           </div>
         ) : (
-          <div className="w-full h-64">
+          <div className="w-full h-96">
             <svg className="w-full h-full" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
               {/* Y-axis grid lines and labels */}
               {[0, 1, 2, 3, 4, 5].map((tick) => {
