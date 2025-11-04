@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Helper function to parse traffic source from referrer and landing page
 function parseSourceFromReferrer(
@@ -143,6 +146,7 @@ export async function GET(req: NextRequest) {
 }
 
 async function getOverviewMetrics(startDate: Date) {
+  const supabase = getSupabaseClient();
   const [sessionsResult, pageViewsResult, conversionsResult] = await Promise.all([
     supabase
       .from('user_sessions')
@@ -176,6 +180,7 @@ async function getOverviewMetrics(startDate: Date) {
 }
 
 async function getTrafficSources(startDate: Date) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('user_sessions')
     .select('utm_source, utm_medium, utm_campaign, referrer, landing_page')
@@ -200,6 +205,7 @@ async function getTrafficSources(startDate: Date) {
 }
 
 async function getConversions(startDate: Date) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('conversion_events')
     .select('*')
@@ -226,6 +232,7 @@ async function getConversions(startDate: Date) {
 }
 
 async function getTopPages(startDate: Date) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('page_views')
     .select('page_path')
@@ -253,6 +260,7 @@ async function getTopPages(startDate: Date) {
 }
 
 async function getSessions(startDate: Date) {
+  const supabase = getSupabaseClient();
   // Get all sessions
   const { data: sessions, error: sessionsError } = await supabase
     .from('user_sessions')
@@ -291,6 +299,7 @@ async function getSessions(startDate: Date) {
 
 // Get detailed traffic sources with conversions
 async function getTrafficDetail(startDate: Date) {
+  const supabase = getSupabaseClient();
   // Get all sessions with their conversions
   const { data: sessions, error: sessionsError } = await supabase
     .from('user_sessions')
@@ -371,6 +380,7 @@ async function getTrafficDetail(startDate: Date) {
 
 // Get detailed conversions with session context
 async function getConversionsDetail(startDate: Date) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('conversion_events')
     .select('*')
@@ -389,6 +399,7 @@ async function getConversionsDetail(startDate: Date) {
 
 // Get page performance metrics
 async function getPagePerformance(startDate: Date) {
+  const supabase = getSupabaseClient();
   // Get all page views - exclude admin and test pages
   const { data: pageViews, error: pageViewsError } = await supabase
     .from('page_views')
