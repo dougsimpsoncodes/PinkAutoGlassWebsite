@@ -102,18 +102,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  // Location pages
+  // Location pages - All 22 cities in service area
   const locations = [
+    // Denver Metro - Core Cities
     'denver-co',
     'aurora-co',
     'lakewood-co',
-    'boulder-co',
-    'highlands-ranch-co',
     'thornton-co',
     'arvada-co',
     'westminster-co',
-    'parker-co',
     'centennial-co',
+    'parker-co',
+    'highlands-ranch-co',
+    'littleton-co',
+    'commerce-city-co',
+    'englewood-co',
+    'broomfield-co',
+    'brighton-co',
+    // Boulder County
+    'boulder-co',
+    'longmont-co',
+    // Northern Front Range
+    'fort-collins-co',
+    'loveland-co',
+    'greeley-co',
+    'windsor-co',
+    // Southern Colorado
+    'colorado-springs-co',
+    // Mountain Communities
+    'evergreen-co',
   ].map((slug) => ({
     url: `${baseUrl}/locations/${slug}`,
     lastModified: now,
