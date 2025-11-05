@@ -104,7 +104,7 @@ export default function CallAnalyticsPage() {
     total: callsInDateRange.length,
     inbound: callsInDateRange.filter(c => c.direction === 'Inbound').length,
     outbound: callsInDateRange.filter(c => c.direction === 'Outbound').length,
-    answered: callsInDateRange.filter(c => c.result === 'Accepted' || c.result === 'Call connected').length,
+    answered: callsInDateRange.filter(c => c.direction === 'Inbound' && (c.result === 'Accepted' || c.result === 'Call connected')).length,
     missed: callsInDateRange.filter(c => c.result === 'Missed').length,
     avgDuration: callsInDateRange.length > 0
       ? Math.round(callsInDateRange.reduce((sum, c) => sum + c.duration, 0) / callsInDateRange.length)
