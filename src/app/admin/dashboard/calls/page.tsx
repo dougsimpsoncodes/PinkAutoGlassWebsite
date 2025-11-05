@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw, Users, CheckCircle, TrendingUp } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -116,18 +116,29 @@ export default function CallAnalyticsPage() {
 
   const callsInDateRange = getCallsInDateRange();
 
+  // Calculate unique callers (distinct phone numbers)
+  const inboundCalls = callsInDateRange.filter(c => c.direction === 'Inbound');
+  const uniqueCallers = new Set(inboundCalls.map(c => c.from_number)).size;
+
+  // Calculate answered unique callers (customers who got through)
+  const answeredCalls = inboundCalls.filter(c => c.result === 'Accepted' || c.result === 'Call connected');
+  const answeredUniqueCallers = new Set(answeredCalls.map(c => c.from_number)).size;
+
   const stats = {
     total: callsInDateRange.length,
-    inbound: callsInDateRange.filter(c => c.direction === 'Inbound').length,
+    inbound: inboundCalls.length,
     outbound: callsInDateRange.filter(c => c.direction === 'Outbound').length,
-    answered: callsInDateRange.filter(c => c.direction === 'Inbound' && (c.result === 'Accepted' || c.result === 'Call connected')).length,
+    answered: answeredCalls.length,
     missed: callsInDateRange.filter(c => c.result === 'Missed').length,
+    uniqueCallers, // Unique phone numbers that called
+    answeredUniqueCallers, // Unique customers who got through
     avgDuration: callsInDateRange.length > 0
       ? Math.round(callsInDateRange.reduce((sum, c) => sum + c.duration, 0) / callsInDateRange.length)
       : 0,
   };
 
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
+  const uniqueCallerConversionRate = stats.uniqueCallers > 0 ? Math.round((stats.answeredUniqueCallers / stats.uniqueCallers) * 100) : 0;
 
   // Group inbound calls by day for line chart
   const callsByDay = callsInDateRange
@@ -275,6 +286,48 @@ export default function CallAnalyticsPage() {
               <div className="text-3xl font-bold text-gray-900">{stats.missed}</div>
             </div>
             <PhoneMissed className="w-8 h-8 text-red-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Unique Caller Metrics */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-sm border border-purple-200 p-6 mb-8">
+        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5 text-purple-600" />
+          Unique Customer Tracking
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 mb-2">Unique Callers</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.uniqueCallers}</div>
+                <div className="text-xs text-gray-500 mt-1">Distinct phone numbers</div>
+              </div>
+              <Users className="w-8 h-8 text-purple-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 mb-2">Customers Reached</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.answeredUniqueCallers}</div>
+                <div className="text-xs text-gray-500 mt-1">Unique calls answered</div>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-pink-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 mb-2">Answer Rate</div>
+                <div className="text-3xl font-bold text-gray-900">{uniqueCallerConversionRate}%</div>
+                <div className="text-xs text-gray-500 mt-1">Unique callers answered</div>
+              </div>
+              <TrendingUp className="w-8 h-8 text-pink-600" />
+            </div>
           </div>
         </div>
       </div>
