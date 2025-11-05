@@ -80,6 +80,50 @@ export default function RootLayout({
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
 
+          {/* Microsoft Ads UET (Universal Event Tracking) */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(w,d,t,r,u)
+                {
+                  var f,n,i;
+                  w[u]=w[u]||[],f=function()
+                  {
+                    var o={ti:"343218744", enableAutoSpaTracking: true};
+                    o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad")
+                  },
+                  n=d.createElement(t),n.src=r,n.async=1,n.onload=n.onreadystatechange=function()
+                  {
+                    var s=this.readyState;
+                    s&&s!=="loaded"&&s!=="complete"||(f(),n.onload=n.onreadystatechange=null)
+                  },
+                  i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)
+                })
+                (window,document,"script","//bat.bing.com/bat.js","uetq");
+              `,
+            }}
+          />
+
+          {/* Microsoft Ads Consent Mode - GDPR Compliant */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.uetq=window.uetq||[];
+                window.uetq.push('consent', 'default', {
+                  'ad_storage': 'denied',
+                });
+
+                // Auto-grant consent for US visitors (primary market)
+                // For European visitors, consent remains denied until they accept
+                if (navigator.language && navigator.language.startsWith('en-US')) {
+                  window.uetq.push('consent', 'update', {
+                    'ad_storage': 'granted',
+                  });
+                }
+              `,
+            }}
+          />
+
           {/* Google Analytics */}
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
             <>
