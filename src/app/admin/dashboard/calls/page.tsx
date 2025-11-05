@@ -14,6 +14,7 @@ interface Call {
   from_name: string | null;
   to_number: string;
   to_name: string | null;
+  session_id: string;
   result: string;
   action: string;
   recording_id: string | null;
@@ -31,13 +32,38 @@ export default function CallAnalyticsPage() {
     fetchCalls();
   }, []);
 
+  // Deduplicate calls - only show one call per session_id
+  const deduplicateCalls = (calls: Call[]): Call[] => {
+    const sessionMap = new Map<string, Call>();
+
+    calls.forEach(call => {
+      const existing = sessionMap.get(call.session_id);
+
+      if (!existing) {
+        // First party in this session - add it
+        sessionMap.set(call.session_id, call);
+      } else {
+        // Prefer Inbound calls to our business number (+17209187465)
+        const isInboundToUs = call.direction === 'Inbound' && call.to_number === '+17209187465';
+        const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === '+17209187465';
+
+        if (isInboundToUs && !existingIsInboundToUs) {
+          sessionMap.set(call.session_id, call);
+        }
+      }
+    });
+
+    return Array.from(sessionMap.values());
+  };
+
   const fetchCalls = async () => {
     try {
       const res = await fetch('/api/admin/calls?limit=100');
       if (!res.ok) return;
 
       const data = await res.json();
-      setCalls(data.calls || []);
+      const deduplicatedCalls = deduplicateCalls(data.calls || []);
+      setCalls(deduplicatedCalls);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch calls:', error);
