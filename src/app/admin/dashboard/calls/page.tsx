@@ -130,12 +130,30 @@ export default function CallAnalyticsPage() {
     const groups = new Map<string, Call[]>();
     const businessNumber = '+17209187465';
 
-    // Group calls by customer number
+    // Group calls by external customer phone number only
     calls.forEach(call => {
-      // Determine the customer number (the number that's NOT ours)
-      const customerNumber = call.direction === 'Inbound'
-        ? call.from_number
-        : call.to_number;
+      // For INBOUND calls: customer is the person calling us (from_number)
+      // For OUTBOUND calls: customer is the person we're calling (to_number)
+      // This ensures we group by the external customer number, not employee extensions
+      let customerNumber: string;
+
+      if (call.direction === 'Inbound') {
+        // Customer called us - use their number (from_number)
+        customerNumber = call.from_number;
+      } else {
+        // We called out - use the number we called (to_number)
+        customerNumber = call.to_number;
+      }
+
+      // Skip our own business number and internal extensions
+      if (customerNumber === businessNumber) {
+        return; // Don't group calls to/from our own business line
+      }
+
+      // Skip internal extensions (typically 3-4 digit numbers without country code)
+      if (customerNumber && !customerNumber.startsWith('+') && customerNumber.length <= 4) {
+        return; // Don't group internal extension numbers
+      }
 
       if (!groups.has(customerNumber)) {
         groups.set(customerNumber, []);
