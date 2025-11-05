@@ -27,6 +27,7 @@ export default function CallAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState('7days');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchCalls();
@@ -64,6 +65,7 @@ export default function CallAnalyticsPage() {
       const data = await res.json();
       const deduplicatedCalls = deduplicateCalls(data.calls || []);
       setCalls(deduplicatedCalls);
+      setLastUpdated(new Date());
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch calls:', error);
@@ -144,18 +146,10 @@ export default function CallAnalyticsPage() {
   };
 
   const getLastUpdateTime = () => {
-    if (calls.length === 0) return 'No data';
+    if (!lastUpdated) return 'Not yet loaded';
 
-    // Find the most recent call timestamp
-    const mostRecentCall = calls.reduce((latest, call) => {
-      const callTime = new Date(call.start_time).getTime();
-      const latestTime = new Date(latest.start_time).getTime();
-      return callTime > latestTime ? call : latest;
-    });
-
-    const lastCallTime = new Date(mostRecentCall.start_time);
     const now = new Date();
-    const diffMs = now.getTime() - lastCallTime.getTime();
+    const diffMs = now.getTime() - lastUpdated.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -167,7 +161,7 @@ export default function CallAnalyticsPage() {
     if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
 
     // For older data, show absolute date/time
-    return lastCallTime.toLocaleString('en-US', {
+    return lastUpdated.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -430,7 +424,7 @@ export default function CallAnalyticsPage() {
               <p className="text-sm text-gray-600 mt-1">Showing {callsInDateRange.length} calls</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Most Recent Call</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Last Update</p>
               <p className="text-sm font-medium text-gray-700 mt-0.5">{getLastUpdateTime()}</p>
               <p className="text-xs text-gray-500 mt-1">Updates automatically via webhooks</p>
             </div>
