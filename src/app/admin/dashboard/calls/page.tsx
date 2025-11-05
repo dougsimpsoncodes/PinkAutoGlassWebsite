@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw, Users, CheckCircle, TrendingUp } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -28,6 +28,7 @@ export default function CallAnalyticsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState('7days');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCalls();
@@ -115,6 +116,73 @@ export default function CallAnalyticsPage() {
   };
 
   const callsInDateRange = getCallsInDateRange();
+
+  // Group calls by customer phone number (conversation-style)
+  interface CallGroup {
+    customerNumber: string;
+    customerName: string | null;
+    calls: Call[];
+    mostRecentCall: Call;
+    totalCalls: number;
+  }
+
+  const groupCallsByCustomer = (calls: Call[]): CallGroup[] => {
+    const groups = new Map<string, Call[]>();
+    const businessNumber = '+17209187465';
+
+    // Group calls by customer number
+    calls.forEach(call => {
+      // Determine the customer number (the number that's NOT ours)
+      const customerNumber = call.direction === 'Inbound'
+        ? call.from_number
+        : call.to_number;
+
+      if (!groups.has(customerNumber)) {
+        groups.set(customerNumber, []);
+      }
+      groups.get(customerNumber)!.push(call);
+    });
+
+    // Convert to CallGroup array and sort
+    const groupArray: CallGroup[] = Array.from(groups.entries()).map(([customerNumber, groupCalls]) => {
+      // Sort calls within group by timestamp (newest first)
+      groupCalls.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+
+      const mostRecentCall = groupCalls[0];
+      const customerName = mostRecentCall.direction === 'Inbound'
+        ? mostRecentCall.from_name
+        : mostRecentCall.to_name;
+
+      return {
+        customerNumber,
+        customerName,
+        calls: groupCalls,
+        mostRecentCall,
+        totalCalls: groupCalls.length,
+      };
+    });
+
+    // Sort groups by most recent call timestamp (newest first)
+    groupArray.sort((a, b) =>
+      new Date(b.mostRecentCall.start_time).getTime() - new Date(a.mostRecentCall.start_time).getTime()
+    );
+
+    return groupArray;
+  };
+
+  const callGroups = groupCallsByCustomer(callsInDateRange);
+
+  const toggleGroup = (customerNumber: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(customerNumber)) {
+        next.delete(customerNumber);
+      } else {
+        next.add(customerNumber);
+      }
+      return next;
+    });
+  };
 
   // Calculate unique callers (distinct phone numbers)
   const inboundCalls = callsInDateRange.filter(c => c.direction === 'Inbound');
@@ -487,8 +555,8 @@ export default function CallAnalyticsPage() {
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
-              <p className="text-sm text-gray-600 mt-1">Showing {callsInDateRange.length} calls</p>
+              <h2 className="text-lg font-semibold text-gray-900">Call History by Customer</h2>
+              <p className="text-sm text-gray-600 mt-1">Showing {callGroups.length} unique customers ({callsInDateRange.length} total calls)</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Last Update</p>
@@ -526,75 +594,170 @@ export default function CallAnalyticsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {callsInDateRange.length === 0 ? (
+              {callGroups.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     No calls found for selected date range
                   </td>
                 </tr>
               ) : (
-                callsInDateRange.map((call) => (
-                  <tr key={call.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {new Date(call.start_time).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(call.start_time).toLocaleTimeString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {call.direction === 'Inbound' ? (
-                          <PhoneIncoming className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <PhoneOutgoing className="w-4 h-4 text-blue-500" />
-                        )}
-                        <span className="text-sm text-gray-900">{call.direction}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{call.from_name || 'Unknown'}</div>
-                      <div className="text-xs text-gray-500">{formatPhoneNumber(call.from_number)}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{call.to_name || 'Unknown'}</div>
-                      <div className="text-xs text-gray-500">{formatPhoneNumber(call.to_number)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-900">{formatDuration(call.duration)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        call.result === 'Accepted' || call.result === 'Call connected'
-                          ? 'bg-green-100 text-green-800'
-                          : call.result === 'Missed'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {call.result}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {call.recording_id ? (
-                        <a
-                          href={`/api/admin/recording/${call.recording_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-pink-600 hover:text-pink-700"
+                callGroups.map((group) => {
+                  const isExpanded = expandedGroups.has(group.customerNumber);
+                  const call = group.mostRecentCall;
+
+                  return (
+                    <>
+                      {/* Primary row - Most recent call */}
+                      <tr
+                        key={`group-${group.customerNumber}`}
+                        className="hover:bg-gray-50 cursor-pointer border-l-4 border-l-purple-500"
+                        onClick={() => toggleGroup(group.customerNumber)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-gray-500" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-gray-500" />
+                            )}
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {new Date(call.start_time).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(call.start_time).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {call.direction === 'Inbound' ? (
+                              <PhoneIncoming className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <PhoneOutgoing className="w-4 h-4 text-blue-500" />
+                            )}
+                            <span className="text-sm text-gray-900">{call.direction}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">{group.customerName || 'Unknown'}</div>
+                          <div className="text-xs text-gray-500">{formatPhoneNumber(group.customerNumber)}</div>
+                          {group.totalCalls > 1 && (
+                            <div className="text-xs text-purple-600 font-medium mt-1">
+                              {group.totalCalls} total calls
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">{call.direction === 'Inbound' ? (call.to_name || 'Unknown') : (call.from_name || 'Unknown')}</div>
+                          <div className="text-xs text-gray-500">{formatPhoneNumber(call.direction === 'Inbound' ? call.to_number : call.from_number)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-900">{formatDuration(call.duration)}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            call.result === 'Accepted' || call.result === 'Call connected'
+                              ? 'bg-green-100 text-green-800'
+                              : call.result === 'Missed'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {call.result}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {call.recording_id ? (
+                            <a
+                              href={`/api/admin/recording/${call.recording_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-pink-600 hover:text-pink-700"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Play className="w-4 h-4" />
+                              <span className="text-xs">Play</span>
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+
+                      {/* Expanded rows - Previous calls from same customer */}
+                      {isExpanded && group.calls.slice(1).map((prevCall, index) => (
+                        <tr
+                          key={`${group.customerNumber}-${prevCall.id}`}
+                          className="bg-purple-50 border-l-4 border-l-purple-300"
                         >
-                          <Play className="w-4 h-4" />
-                          <span className="text-xs">Play</span>
-                        </a>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                          <td className="px-6 py-3 whitespace-nowrap">
+                            <div className="pl-6">
+                              <div className="text-xs text-gray-600">
+                                {new Date(prevCall.start_time).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(prevCall.start_time).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {prevCall.direction === 'Inbound' ? (
+                                <PhoneIncoming className="w-3 h-3 text-green-500" />
+                              ) : (
+                                <PhoneOutgoing className="w-3 h-3 text-blue-500" />
+                              )}
+                              <span className="text-xs text-gray-700">{prevCall.direction}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-3">
+                            <div className="text-xs text-gray-600">Previous call</div>
+                          </td>
+                          <td className="px-6 py-3">
+                            <div className="text-xs text-gray-600">{prevCall.direction === 'Inbound' ? (prevCall.to_name || 'Unknown') : (prevCall.from_name || 'Unknown')}</div>
+                            <div className="text-xs text-gray-500">{formatPhoneNumber(prevCall.direction === 'Inbound' ? prevCall.to_number : prevCall.from_number)}</div>
+                          </td>
+                          <td className="px-6 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-700">{formatDuration(prevCall.duration)}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-3 whitespace-nowrap">
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                              prevCall.result === 'Accepted' || prevCall.result === 'Call connected'
+                                ? 'bg-green-100 text-green-800'
+                                : prevCall.result === 'Missed'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {prevCall.result}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3 whitespace-nowrap">
+                            {prevCall.recording_id ? (
+                              <a
+                                href={`/api/admin/recording/${prevCall.recording_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-pink-600 hover:text-pink-700"
+                              >
+                                <Play className="w-3 h-3" />
+                                <span className="text-xs">Play</span>
+                              </a>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  );
+                })
               )}
             </tbody>
           </table>
