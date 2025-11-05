@@ -13,9 +13,9 @@ test.describe('Call Dashboard Refresh', () => {
 
     if (isLoginPage) {
       console.log('Authentication required - filling in credentials');
-      // Fill in admin credentials
-      await page.fill('input[name="username"]', 'admin');
-      await page.fill('input[name="password"]', 'Pink!');
+      // Fill in admin credentials from environment variables
+      await page.fill('input[name="username"]', process.env.ADMIN_USERNAME || 'admin');
+      await page.fill('input[name="password"]', process.env.ADMIN_PASSWORD);
       await page.click('button[type="submit"]');
 
       // Wait for dashboard to load
@@ -98,8 +98,8 @@ test.describe('Call Dashboard Refresh', () => {
     // Check if we need to authenticate
     const isLoginPage = await page.locator('input[type="password"]').isVisible().catch(() => false);
     if (isLoginPage) {
-      await page.fill('input[name="username"]', 'admin');
-      await page.fill('input[name="password"]', 'Pink!');
+      await page.fill('input[name="username"]', process.env.ADMIN_USERNAME || 'admin');
+      await page.fill('input[name="password"]', process.env.ADMIN_PASSWORD);
       await page.click('button[type="submit"]');
       await page.waitForLoadState('networkidle');
     }
