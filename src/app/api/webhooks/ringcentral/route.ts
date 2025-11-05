@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { SDK } from '@ringcentral/sdk';
 
 // Create Supabase client
 function getSupabaseClient() {
@@ -7,6 +8,15 @@ function getSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+// Create RingCentral client
+function getRingCentralClient() {
+  return new SDK({
+    server: process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com',
+    clientId: process.env.RINGCENTRAL_CLIENT_ID!,
+    clientSecret: process.env.RINGCENTRAL_CLIENT_SECRET!
+  });
 }
 
 /**
@@ -98,10 +108,12 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Process telephony session events and update/create call records
+ * Process telephony session events and fetch full call details from Call Log API
+ * Telephony webhooks notify us when calls happen, but don't include duration
+ * So we fetch the full call details from the Call Log API
  */
 async function processTelephonyEvent(supabase: any, webhookBody: any) {
-  const { body } = webhookBody;
+  const { body, timestamp } = webhookBody;
 
   if (!body || !body.sessionId) {
     console.log('⚠️  No session data in webhook body');
@@ -113,46 +125,77 @@ async function processTelephonyEvent(supabase: any, webhookBody: any) {
 
   console.log(`📊 Processing session ${sessionId} with ${parties.length} parties`);
 
-  // Process each party in the session (typically 2: caller and receiver)
+  // For each party that has ended (Disconnected status), fetch full call details
   for (const party of parties) {
     try {
-      // Extract call details from party data
-      const callData = {
-        call_id: party.id, // Unique call/party ID
-        session_id: sessionId,
-        start_time: party.status?.startTime || new Date().toISOString(),
-        end_time: party.status?.endTime || null,
-        duration: party.status?.duration || 0,
-        direction: party.direction, // 'Inbound' or 'Outbound'
-        from_number: party.from?.phoneNumber || '',
-        from_name: party.from?.name || null,
-        to_number: party.to?.phoneNumber || '',
-        to_name: party.to?.name || null,
-        result: mapPartyStatus(party.status?.code), // Map to familiar result names
-        action: party.status?.reason || 'Phone Call',
-        recording_id: null, // Will be populated when recording is available
-        recording_uri: null,
-        recording_type: null,
-        recording_content_uri: null,
-        transport: party.transport || null,
-        sync_timestamp: new Date().toISOString(),
-        raw_data: party, // Store full party data
-      };
+      const statusCode = party.status?.code;
 
-      // Upsert call data (insert or update if exists)
-      const { error } = await supabase
-        .from('ringcentral_calls')
-        .upsert(callData, {
-          onConflict: 'call_id',
+      // Only fetch full details when call has ended
+      if (statusCode === 'Disconnected' || statusCode === 'Gone') {
+        console.log(`📞 Call ended, fetching full details from Call Log API...`);
+
+        // Initialize RingCentral client
+        const rcsdk = getRingCentralClient();
+        const platform = rcsdk.platform();
+        await platform.login({ jwt: process.env.RINGCENTRAL_JWT_TOKEN! });
+
+        // Fetch call log records from the last 5 minutes
+        const response = await platform.get('/restapi/v1.0/account/~/call-log', {
+          dateFrom: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          view: 'Detailed',
+          perPage: 10
         });
 
-      if (error) {
-        console.error(`❌ Failed to upsert call ${party.id}:`, error.message);
-      } else {
-        console.log(`✓ Updated call ${party.id} - ${callData.direction} ${callData.result}`);
+        const callLogData = await response.json();
+
+        // Find the matching call by phone number and approximate time
+        const matchingCall = callLogData.records.find((record: any) => {
+          const fromMatch = record.from?.phoneNumber === party.from?.phoneNumber;
+          const toMatch = record.to?.phoneNumber === party.to?.phoneNumber;
+          return fromMatch && toMatch;
+        });
+
+        if (matchingCall) {
+          console.log(`✓ Found matching call in Call Log with duration: ${matchingCall.duration}s`);
+
+          // Store full call details with duration
+          const callData = {
+            call_id: party.id,
+            session_id: sessionId,
+            start_time: matchingCall.startTime,
+            end_time: new Date().toISOString(),
+            duration: matchingCall.duration || 0,
+            direction: matchingCall.direction,
+            from_number: matchingCall.from?.phoneNumber || '',
+            from_name: matchingCall.from?.name || null,
+            to_number: matchingCall.to?.phoneNumber || '',
+            to_name: matchingCall.to?.name || null,
+            result: matchingCall.result || 'Unknown',
+            action: matchingCall.action || 'Phone Call',
+            recording_id: matchingCall.recording?.id || null,
+            recording_uri: matchingCall.recording?.contentUri || null,
+            recording_type: matchingCall.recording?.type || null,
+            recording_content_uri: matchingCall.recording?.contentUri || null,
+            transport: party.transport || null,
+            sync_timestamp: new Date().toISOString(),
+            raw_data: matchingCall,
+          };
+
+          const { error } = await supabase
+            .from('ringcentral_calls')
+            .upsert(callData, { onConflict: 'call_id' });
+
+          if (error) {
+            console.error(`❌ Failed to upsert call:`, error.message);
+          } else {
+            console.log(`✓ Stored call with duration ${callData.duration}s - ${callData.direction} ${callData.result}`);
+          }
+        } else {
+          console.log(`⚠️  Call not found in Call Log yet (may take 15-30 seconds)`);
+        }
       }
     } catch (err: any) {
-      console.error(`❌ Error processing party ${party.id}:`, err.message);
+      console.error(`❌ Error processing party:`, err.message);
     }
   }
 }
