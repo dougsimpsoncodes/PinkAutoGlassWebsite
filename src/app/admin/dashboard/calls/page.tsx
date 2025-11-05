@@ -75,7 +75,21 @@ export default function CallAnalyticsPage() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchCalls();
+    try {
+      // Step 1: Sync from RingCentral API to database
+      const syncRes = await fetch('/api/admin/sync/ringcentral', {
+        method: 'POST',
+      });
+
+      if (!syncRes.ok) {
+        console.error('Sync failed:', await syncRes.text());
+      }
+
+      // Step 2: Fetch updated calls from database
+      await fetchCalls();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
     setRefreshing(false);
   };
 
@@ -426,7 +440,7 @@ export default function CallAnalyticsPage() {
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Last Update</p>
               <p className="text-sm font-medium text-gray-700 mt-0.5">{getLastUpdateTime()}</p>
-              <p className="text-xs text-gray-500 mt-1">Updates automatically via webhooks</p>
+              <p className="text-xs text-gray-500 mt-1">Click refresh to sync from RingCentral</p>
             </div>
           </div>
         </div>
