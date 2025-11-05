@@ -48,8 +48,9 @@ export async function POST(req: NextRequest) {
     const accessToken = authData.access_token;
 
     // Step 3: Fetch call log data using standard fetch (we know this works)
+    // Fetch last 90 days of call history
     const dateFrom = new Date();
-    dateFrom.setDate(dateFrom.getDate() - 30);
+    dateFrom.setDate(dateFrom.getDate() - 90);
     const dateFromISO = dateFrom.toISOString();
 
     console.log(`Fetching call logs from ${dateFromISO}...`);
