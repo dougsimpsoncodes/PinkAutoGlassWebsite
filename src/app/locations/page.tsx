@@ -8,7 +8,7 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
-  description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 10+ metro cities. We come to you - no extra charge. Call (720) 918-7465.',
+  description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 20+ cities statewide. We come to you - no extra charge. Call (720) 918-7465.',
   keywords: 'windshield repair locations colorado, mobile auto glass denver metro, windshield replacement near me, auto glass service areas colorado',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations',
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 
 export default function LocationsPage() {
   const locations = [
+    // Denver Metro - Core Cities
     {
       name: 'Denver',
       slug: 'denver-co',
@@ -36,34 +37,14 @@ export default function LocationsPage() {
       slug: 'aurora-co',
       description: 'Colorado\'s 3rd largest city',
       neighborhoods: '15+ neighborhoods',
-      responseTime: 'Same-day'
+      responseTime: 'Same-day',
+      popular: true
     },
     {
       name: 'Lakewood',
       slug: 'lakewood-co',
       description: 'West Denver metro',
       neighborhoods: '12+ neighborhoods',
-      responseTime: 'Same-day'
-    },
-    {
-      name: 'Boulder',
-      slug: 'boulder-co',
-      description: 'University city north of Denver',
-      neighborhoods: '10+ neighborhoods',
-      responseTime: 'Same-day'
-    },
-    {
-      name: 'Highlands Ranch',
-      slug: 'highlands-ranch-co',
-      description: 'South metro community',
-      neighborhoods: '8+ neighborhoods',
-      responseTime: 'Same-day'
-    },
-    {
-      name: 'Thornton',
-      slug: 'thornton-co',
-      description: 'North Denver metro',
-      neighborhoods: '10+ neighborhoods',
       responseTime: 'Same-day'
     },
     {
@@ -81,10 +62,10 @@ export default function LocationsPage() {
       responseTime: 'Same-day'
     },
     {
-      name: 'Parker',
-      slug: 'parker-co',
-      description: 'Southeast Denver metro',
-      neighborhoods: '8+ neighborhoods',
+      name: 'Thornton',
+      slug: 'thornton-co',
+      description: 'North Denver metro',
+      neighborhoods: '10+ neighborhoods',
       responseTime: 'Same-day'
     },
     {
@@ -94,12 +75,156 @@ export default function LocationsPage() {
       neighborhoods: '10+ neighborhoods',
       responseTime: 'Same-day'
     },
+    {
+      name: 'Highlands Ranch',
+      slug: 'highlands-ranch-co',
+      description: 'South metro community',
+      neighborhoods: '8+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Parker',
+      slug: 'parker-co',
+      description: 'Southeast Denver metro',
+      neighborhoods: '8+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Littleton',
+      slug: 'littleton-co',
+      description: 'Southwest metro area',
+      neighborhoods: '8+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Englewood',
+      slug: 'englewood-co',
+      description: 'South Denver metro',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Commerce City',
+      slug: 'commerce-city-co',
+      description: 'Northeast Denver metro',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Brighton',
+      slug: 'brighton-co',
+      description: 'North Adams County',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Broomfield',
+      slug: 'broomfield-co',
+      description: 'North Denver metro',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+
+    // Boulder County
+    {
+      name: 'Boulder',
+      slug: 'boulder-co',
+      description: 'University city & tech hub',
+      neighborhoods: '10+ neighborhoods',
+      responseTime: 'Same-day',
+      popular: true
+    },
+    {
+      name: 'Longmont',
+      slug: 'longmont-co',
+      description: 'Boulder County city',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+
+    // Northern Front Range
+    {
+      name: 'Fort Collins',
+      slug: 'fort-collins-co',
+      description: 'Northern Front Range city',
+      neighborhoods: '12+ neighborhoods',
+      responseTime: 'Same-day',
+      popular: true
+    },
+    {
+      name: 'Loveland',
+      slug: 'loveland-co',
+      description: 'Larimer County city',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Greeley',
+      slug: 'greeley-co',
+      description: 'Weld County seat',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Windsor',
+      slug: 'windsor-co',
+      description: 'Northern Colorado',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+
+    // Southern Colorado
+    {
+      name: 'Colorado Springs',
+      slug: 'colorado-springs-co',
+      description: 'Colorado\'s 2nd largest city',
+      neighborhoods: '15+ neighborhoods',
+      responseTime: 'Same-day',
+      popular: true
+    },
+    {
+      name: 'Pueblo',
+      slug: 'pueblo-co',
+      description: 'Southern Colorado city',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+
+    // Mountain Communities
+    {
+      name: 'Evergreen',
+      slug: 'evergreen-co',
+      description: 'Mountain community west of Denver',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
+    {
+      name: 'Glenwood Springs',
+      slug: 'glenwood-springs-co',
+      description: 'I-70 mountain corridor',
+      neighborhoods: '6+ areas',
+      responseTime: 'Scheduled'
+    },
+    {
+      name: 'Steamboat Springs',
+      slug: 'steamboat-springs-co',
+      description: 'Northwest ski resort town',
+      neighborhoods: '6+ areas',
+      responseTime: 'Scheduled'
+    },
+    {
+      name: 'Durango',
+      slug: 'durango-co',
+      description: 'Southwest mountain city',
+      neighborhoods: '6+ areas',
+      responseTime: 'Scheduled'
+    },
   ];
 
   const faqs = [
     {
       question: 'How far will you travel for mobile service?',
-      answer: 'We provide mobile service throughout the entire Denver metro area including Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, and surrounding communities. If you\'re within our service area, there\'s no extra charge for mobile service. Call us to confirm coverage in your specific location.'
+      answer: 'We provide mobile service throughout Colorado including all Denver metro cities (Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Littleton, Englewood, Commerce City, Brighton, Broomfield), Northern Front Range (Fort Collins, Loveland, Greeley, Longmont, Windsor), Southern Colorado (Colorado Springs, Pueblo), and mountain communities (Evergreen, Glenwood Springs, Steamboat Springs, Durango). If you\'re within our service area, there\'s no extra charge for mobile service in metro areas. Call us to confirm coverage in your specific location.'
     },
     {
       question: 'Do you charge extra for mobile service?',
@@ -178,7 +303,7 @@ export default function LocationsPage() {
               Professional Windshield Service Across Denver Metro
             </h2>
             <p className="text-lg text-gray-700 mb-4">
-              Pink Auto Glass brings expert windshield repair and replacement directly to you. Our fully equipped mobile units serve 10+ cities throughout the Denver metro area, providing the same quality service you'd receive at a shop—right at your home, office, or any convenient location.
+              Pink Auto Glass brings expert windshield repair and replacement directly to you. Our fully equipped mobile units serve 26 cities throughout Colorado, from Denver metro to Fort Collins, Colorado Springs, and mountain communities, providing the same quality service you'd receive at a shop—right at your home, office, or any convenient location.
             </p>
             <p className="text-lg text-gray-700">
               Whether you're in downtown Denver, the suburbs of Aurora, or anywhere in between, we come to you with OEM-quality glass, certified technicians, and all the equipment needed for windshield replacement and ADAS calibration.
@@ -202,7 +327,7 @@ export default function LocationsPage() {
                     <div className="flex items-center mb-2">
                       <MapPin className="w-8 h-8 text-blue-600 mr-3" />
                       <div>
-                        <div className="text-3xl font-bold text-gray-900">10+</div>
+                        <div className="text-3xl font-bold text-gray-900">26</div>
                         <div className="text-gray-600">Cities Served</div>
                       </div>
                     </div>
@@ -212,7 +337,7 @@ export default function LocationsPage() {
                     <div className="flex items-center mb-2">
                       <Car className="w-8 h-8 text-purple-600 mr-3" />
                       <div>
-                        <div className="text-3xl font-bold text-gray-900">100+</div>
+                        <div className="text-3xl font-bold text-gray-900">200+</div>
                         <div className="text-gray-600">Neighborhoods</div>
                       </div>
                     </div>
@@ -501,7 +626,7 @@ export default function LocationsPage() {
             </p>
             <CTAButtons source="locations-hub-bottom" />
             <p className="mt-6 text-sm text-blue-100">
-              Serving Denver, Aurora, Lakewood, Boulder, and 6+ more metro cities
+              Serving 26 cities statewide including Denver, Aurora, Fort Collins, Colorado Springs, Boulder, and more
             </p>
           </section>
         </div>
