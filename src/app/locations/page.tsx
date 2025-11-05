@@ -8,7 +8,7 @@ import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/sc
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
-  description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 20+ cities statewide. We come to you - no extra charge. Call (720) 918-7465.',
+  description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 23 cities statewide. We come to you - no extra charge. Call (720) 918-7465.',
   keywords: 'windshield repair locations colorado, mobile auto glass denver metro, windshield replacement near me, auto glass service areas colorado',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations',
@@ -182,13 +182,6 @@ export default function LocationsPage() {
       responseTime: 'Same-day',
       popular: true
     },
-    {
-      name: 'Pueblo',
-      slug: 'pueblo-co',
-      description: 'Southern Colorado city',
-      neighborhoods: '6+ neighborhoods',
-      responseTime: 'Same-day'
-    },
 
     // Mountain Communities
     {
@@ -205,26 +198,12 @@ export default function LocationsPage() {
       neighborhoods: '6+ areas',
       responseTime: 'Scheduled'
     },
-    {
-      name: 'Steamboat Springs',
-      slug: 'steamboat-springs-co',
-      description: 'Northwest ski resort town',
-      neighborhoods: '6+ areas',
-      responseTime: 'Scheduled'
-    },
-    {
-      name: 'Durango',
-      slug: 'durango-co',
-      description: 'Southwest mountain city',
-      neighborhoods: '6+ areas',
-      responseTime: 'Scheduled'
-    },
   ];
 
   const faqs = [
     {
       question: 'How far will you travel for mobile service?',
-      answer: 'We provide mobile service throughout Colorado including all Denver metro cities (Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Littleton, Englewood, Commerce City, Brighton, Broomfield), Northern Front Range (Fort Collins, Loveland, Greeley, Longmont, Windsor), Southern Colorado (Colorado Springs, Pueblo), and mountain communities (Evergreen, Glenwood Springs, Steamboat Springs, Durango). If you\'re within our service area, there\'s no extra charge for mobile service in metro areas. Call us to confirm coverage in your specific location.'
+      answer: 'We provide mobile service throughout Colorado including all Denver metro cities (Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Littleton, Englewood, Commerce City, Brighton, Broomfield), Northern Front Range (Fort Collins, Loveland, Greeley, Longmont, Windsor), Southern Colorado (Colorado Springs), and select mountain communities (Evergreen, Glenwood Springs). If you\'re within our service area, there\'s no extra charge for mobile service in metro areas. Call us to confirm coverage in your specific location.'
     },
     {
       question: 'Do you charge extra for mobile service?',
@@ -303,7 +282,7 @@ export default function LocationsPage() {
               Professional Windshield Service Across Denver Metro
             </h2>
             <p className="text-lg text-gray-700 mb-4">
-              Pink Auto Glass brings expert windshield repair and replacement directly to you. Our fully equipped mobile units serve 26 cities throughout Colorado, from Denver metro to Fort Collins, Colorado Springs, and mountain communities, providing the same quality service you'd receive at a shop—right at your home, office, or any convenient location.
+              Pink Auto Glass brings expert windshield repair and replacement directly to you. Our fully equipped mobile units serve 23 cities throughout Colorado, from Denver metro to Fort Collins, Colorado Springs, and select mountain communities, providing the same quality service you'd receive at a shop—right at your home, office, or any convenient location.
             </p>
             <p className="text-lg text-gray-700">
               Whether you're in downtown Denver, the suburbs of Aurora, or anywhere in between, we come to you with OEM-quality glass, certified technicians, and all the equipment needed for windshield replacement and ADAS calibration.
@@ -327,7 +306,7 @@ export default function LocationsPage() {
                     <div className="flex items-center mb-2">
                       <MapPin className="w-8 h-8 text-blue-600 mr-3" />
                       <div>
-                        <div className="text-3xl font-bold text-gray-900">26</div>
+                        <div className="text-3xl font-bold text-gray-900">23</div>
                         <div className="text-gray-600">Cities Served</div>
                       </div>
                     </div>
@@ -626,7 +605,7 @@ export default function LocationsPage() {
             </p>
             <CTAButtons source="locations-hub-bottom" />
             <p className="mt-6 text-sm text-blue-100">
-              Serving 26 cities statewide including Denver, Aurora, Fort Collins, Colorado Springs, Boulder, and more
+              Serving 23 cities statewide including Denver, Aurora, Fort Collins, Colorado Springs, Boulder, and more
             </p>
           </section>
         </div>

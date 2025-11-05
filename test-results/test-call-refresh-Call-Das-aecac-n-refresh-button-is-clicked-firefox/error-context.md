@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- link "Skip to content":
+  - /url: "#geist-skip-nav"
+- banner:
+  - link "Vercel logo":
+    - /url: /home
+    - button "Vercel Logo":
+      - img "Vercel Logo"
+  - navigation:
+    - navigation:
+      - link "Sign Up":
+        - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fpinkautoglasswebsite-mielicsqn-dougsimpsoncodes-projects.vercel.app%252Fadmin%252Fdashboard%252Fcalls%26nonce%3De4603d0163d1ffe8d2277ac3e3a383019b719063c0cfdcf9fbe31280bbab88ee
+        - paragraph: Sign Up
+- main:
+  - heading "Log in to Vercel" [level=1]
+  - textbox "Email Address"
+  - button "Continue with Email"
+  - button "Continue with Google":
+    - img
+    - text: Continue with Google
+  - button "Continue with GitHub":
+    - img
+    - text: Continue with GitHub
+  - button "Continue with SAML SSO":
+    - img
+    - text: Continue with SAML SSO
+  - button "Continue with Passkey":
+    - img
+    - text: Continue with Passkey
+  - button "Show other options"
+  - paragraph:
+    - text: Don't have an account?
+    - link "Sign Up":
+      - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%3A%2F%2Fpinkautoglasswebsite-mielicsqn-dougsimpsoncodes-projects.vercel.app%2Fadmin%2Fdashboard%2Fcalls%26nonce%3De4603d0163d1ffe8d2277ac3e3a383019b719063c0cfdcf9fbe31280bbab88ee
+  - link "Terms":
+    - /url: /legal/terms
+  - link "Privacy Policy":
+    - /url: /legal/privacy-policy
+- alert
+- img
+- iframe
+```
