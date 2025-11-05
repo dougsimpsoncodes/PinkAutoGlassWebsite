@@ -1,5 +1,22 @@
 # Project-Specific Instructions for Claude Code
 
+## 🚨 RingCentral JWT Authentication
+
+**BEFORE working with RingCentral authentication, READ THIS FIRST:**
+
+📖 **Comprehensive Reference:** `/docs/RINGCENTRAL_JWT_EXPERT_GUIDE.md`
+
+This expert guide contains:
+- Complete JWT authentication troubleshooting
+- Solutions to "Unauthorized for this grant type" errors
+- Token lifecycle and refresh patterns
+- Emergency recovery procedures
+- Checklist to prevent recurring issues
+
+**This document was created after 5 debugging sessions to prevent future mistakes.**
+
+---
+
 ## Authentication & API Integration Troubleshooting Protocol
 
 ### When You Encounter Authentication Errors:
