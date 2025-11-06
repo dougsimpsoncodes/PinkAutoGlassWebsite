@@ -256,7 +256,7 @@ export default function GoogleAdsOptimizer() {
               <Upload className="w-12 h-12 text-gray-400 mb-3" />
             )}
             <span className="text-lg font-medium text-gray-700">
-              {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Click to upload search-terms.csv'}
+              {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Click to upload Search terms report.csv'}
             </span>
             <span className="text-sm text-gray-500 mt-1">
               {uploading || analyzing ? 'Please wait...' : 'CSV files only'}
