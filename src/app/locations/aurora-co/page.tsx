@@ -9,14 +9,14 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Aurora, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Aurora, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair aurora, windshield replacement aurora, auto glass aurora co, mobile windshield service aurora',
+  description: 'Aurora windshield replacement & repair - same-day mobile service to Stapleton, Green Valley Ranch, Southlands & all Aurora neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair aurora, windshield replacement aurora, auto glass aurora co, mobile windshield service aurora, windshield replacement near me aurora, stapleton windshield repair, green valley ranch auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/aurora-co',
   },
   openGraph: {
     title: 'Windshield Repair & Replacement Aurora, CO | Pink Auto Glass',
-    description: 'Aurora\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    description: 'Aurora\'s trusted auto glass experts. Mobile service to all neighborhoods, same-day appointments, lifetime warranty. Serving Stapleton, GVR, Southlands & more.',
     url: 'https://pinkautoglass.com/locations/aurora-co',
     type: 'website',
   },
@@ -29,8 +29,16 @@ export default function AuroraLocationPage() {
       answer: 'Yes! Mobile service is our specialty in Aurora. We come to your home, office, or anywhere in Aurora. Whether you\'re in Stapleton, Green Valley Ranch, Southlands, or anywhere else in Aurora, we\'ll come to you with our fully equipped mobile units.'
     },
     {
+      question: 'How quickly can you replace a windshield in Aurora?',
+      answer: 'We offer same-day windshield replacement throughout Aurora. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. We understand Aurora residents are busy, so we work around your schedule.'
+    },
+    {
       question: 'What Aurora neighborhoods do you serve?',
-      answer: 'We serve all of Aurora including: Stapleton (Central Park), Green Valley Ranch, Southlands, Buckley AFB area, Murphy Creek, Aurora Highlands, Saddle Rock, Tollgate Crossing, and all other Aurora neighborhoods.'
+      answer: 'We serve all of Aurora including: Stapleton (Central Park), Green Valley Ranch, Southlands, Buckley AFB area, Murphy Creek, Aurora Highlands, Saddle Rock, Tollgate Crossing, and all other Aurora neighborhoods. If you\'re anywhere in Aurora city limits, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Aurora?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Aurora residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function AuroraLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Aurora Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Aurora's growing community needs reliable auto glass service. From Stapleton to Green Valley Ranch, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Aurora. We understand Aurora's diverse neighborhoods and bring our mobile service directly to you.
+                  Aurora's growing community needs reliable auto glass service. From Stapleton to Green Valley Ranch, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Aurora. As Colorado's third-largest city with over 390,000 residents, Aurora's unique driving conditions demand expert windshield care.
                 </p>
                 <AboveFoldCTA location="location-aurora" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Whether you're near Buckley AFB, shopping at Southlands, or at home in Aurora Highlands, we come to you. Our fully equipped mobile units handle everything on-site.
+                  Whether you're commuting on E-470, traveling to DIA Airport, driving near Buckley Space Force Base, or navigating I-225 and I-70, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Aurora.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Aurora's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>E-470 Toll Road:</strong> High-speed highway traffic increases rock chip risks from gravel trucks and construction vehicles</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>DIA Airport Proximity:</strong> Heavy commercial and airport traffic on Peña Boulevard means more road debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-70 & I-225 Corridors:</strong> Major interstate traffic brings increased windshield damage from highway debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Rapid Development:</strong> Ongoing construction in neighborhoods like Stapleton creates more opportunities for rock chips</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Colorado Weather:</strong> Temperature swings from 90°F summers to below-zero winters cause small chips to spread quickly</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Aurora. Our technicians understand the specific challenges Aurora drivers face and provide expert windshield replacement and repair services tailored to your needs. Don't let a small chip from E-470 debris turn into a full windshield replacement - we offer same-day mobile service throughout all Aurora neighborhoods.
                 </p>
               </section>
 

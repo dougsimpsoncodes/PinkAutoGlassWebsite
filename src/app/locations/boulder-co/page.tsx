@@ -9,14 +9,14 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Boulder, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair boulder, windshield replacement boulder, auto glass boulder co',
+  description: 'Boulder windshield replacement & repair - same-day mobile service to CU Boulder, Pearl Street, Table Mesa, Gunbarrel & all Boulder neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair boulder, windshield replacement boulder, auto glass boulder co, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement, windshield replacement near me boulder',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/boulder-co',
   },
   openGraph: {
     title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
-    description: 'Boulder\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    description: 'Boulder\'s trusted auto glass experts. Mobile service to CU campus, Pearl Street, Table Mesa & all neighborhoods. Same-day appointments, lifetime warranty.',
     url: 'https://pinkautoglass.com/locations/boulder-co',
     type: 'website',
   },
@@ -26,11 +26,19 @@ export default function BoulderLocationPage() {
   const faqs = [
     {
       question: 'Do you offer mobile windshield service in Boulder?',
-      answer: 'Yes! Mobile service is our specialty in Boulder. We come to your home, office, or anywhere in Boulder. Our fully equipped mobile units serve all Boulder neighborhoods.'
+      answer: 'Yes! Mobile service is our specialty in Boulder. We come to your home, office, or anywhere in Boulder. Our fully equipped mobile units serve all Boulder neighborhoods including University Hill, Table Mesa, Gunbarrel, Pearl Street, and North/South Boulder.'
+    },
+    {
+      question: 'How quickly can you replace a windshield in Boulder?',
+      answer: 'We offer same-day windshield replacement throughout Boulder. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. Perfect for busy Boulder residents and CU students.'
     },
     {
       question: 'What Boulder neighborhoods do you serve?',
-      answer: 'We serve all of Boulder including: University Hill, Table Mesa, Gunbarrel, North Boulder, South Boulder, and all other Boulder neighborhoods. If you\'re in Boulder, we\'ll come to you.'
+      answer: 'We serve all of Boulder including: University Hill, Table Mesa, Gunbarrel, North Boulder, South Boulder, Pearl Street, Downtown Boulder, Chautauqua, Martin Acres, Newlands, and all other Boulder neighborhoods. From CU campus to Niwot, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Boulder?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Boulder residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function BoulderLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Boulder Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Boulder drivers deserve reliable auto glass service. From CU Boulder, Pearl Street Mall, Flatirons, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Boulder. We bring our mobile service directly to you.
+                  With over 105,000 residents and home to CU Boulder, Boulder drivers deserve reliable auto glass service. From Pearl Street Mall to the Flatirons, University Hill to Gunbarrel, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Boulder. We bring our mobile service directly to you - whether you're on campus, at work in the Tech Center, or at home in Table Mesa.
                 </p>
                 <AboveFoldCTA location="location-boulder-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Our fully equipped mobile units serve all Boulder neighborhoods. Whether you're at home, work, or anywhere in Boulder, we come to you.
+                  Whether you're commuting on Highway 36, driving through Boulder Canyon, or navigating Baseline Road, our fully equipped mobile units serve all Boulder neighborhoods. We understand the unique challenges Boulder drivers face and provide expert windshield care tailored to your needs.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Boulder's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Highway 36 (Boulder Turnpike):</strong> Main commuter route to Denver with heavy traffic and frequent rock chips from construction and gravel trucks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Mountain Canyon Roads:</strong> Boulder Canyon and Flagstaff Road bring mountain debris, gravel, and loose rocks from mountain driving</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Extreme Weather:</strong> Boulder's location at 5,430 ft elevation means severe temperature swings causing chips to crack quickly</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Outdoor Activities:</strong> Ski trips, hiking, and mountain biking mean frequent exposure to unpaved roads and loose gravel</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Tech Corridor Traffic:</strong> Growing tech industry in Gunbarrel and East Boulder increases commuter traffic and road wear</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Boulder. Our technicians understand the specific challenges Boulder drivers face on Highway 36, canyon roads, and mountain access routes. Don't let a small chip from your ski trip turn into a full windshield replacement - we offer same-day mobile service throughout all Boulder neighborhoods, including CU campus areas.
                 </p>
               </section>
 
