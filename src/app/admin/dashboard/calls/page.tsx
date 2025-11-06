@@ -452,7 +452,7 @@ export default function CallAnalyticsPage() {
           </div>
         ) : (
           <div className="w-full h-64">
-            <svg className="w-full h-full" viewBox="0 -20 800 320" preserveAspectRatio="xMidYMid meet">
+            <svg className="w-full h-full" viewBox="0 -20 1600 320" preserveAspectRatio="xMidYMid meet">
               {/* Y-axis grid lines and labels */}
               {[0, 1, 2, 3, 4, 5].map((tick) => {
                 const y = 250 - (tick * 50);
@@ -462,7 +462,7 @@ export default function CallAnalyticsPage() {
                     <line
                       x1="60"
                       y1={y}
-                      x2="760"
+                      x2="1540"
                       y2={y}
                       stroke="#e5e7eb"
                       strokeWidth="1"
@@ -482,7 +482,7 @@ export default function CallAnalyticsPage() {
 
               {/* X-axis labels */}
               {chartData.map((point, index) => {
-                const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                const x = 60 + (index * (1480 / Math.max(chartData.length - 1, 1)));
                 return (
                   <text
                     key={index}
@@ -500,7 +500,7 @@ export default function CallAnalyticsPage() {
               {/* Line path */}
               <path
                 d={chartData.map((point, index) => {
-                  const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                  const x = 60 + (index * (1480 / Math.max(chartData.length - 1, 1)));
                   const y = 250 - ((point.uniqueCustomers / maxCustomersInDay) * 250);
                   return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
                 }).join(' ')}
@@ -513,7 +513,7 @@ export default function CallAnalyticsPage() {
 
               {/* Data points */}
               {chartData.map((point, index) => {
-                const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
+                const x = 60 + (index * (1480 / Math.max(chartData.length - 1, 1)));
                 const y = 250 - ((point.uniqueCustomers / maxCustomersInDay) * 250);
                 return (
                   <g key={index}>
@@ -531,7 +531,7 @@ export default function CallAnalyticsPage() {
               })}
 
               {/* X-axis */}
-              <line x1="60" y1="250" x2="760" y2="250" stroke="#9ca3af" strokeWidth="2" />
+              <line x1="60" y1="250" x2="1540" y2="250" stroke="#9ca3af" strokeWidth="2" />
 
               {/* Y-axis */}
               <line x1="60" y1="0" x2="60" y2="250" stroke="#9ca3af" strokeWidth="2" />
