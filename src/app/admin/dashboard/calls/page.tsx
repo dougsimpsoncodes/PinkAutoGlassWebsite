@@ -26,7 +26,7 @@ export default function CallAnalyticsPage() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [dateRange, setDateRange] = useState('7days');
+  const [dateRange, setDateRange] = useState('all');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -108,8 +108,12 @@ export default function CallAnalyticsPage() {
       case '30days':
         startDate.setDate(now.getDate() - 30);
         break;
+      case 'all':
+        // Return all calls without filtering
+        return calls;
       default:
-        startDate.setDate(now.getDate() - 7);
+        // Default to all calls
+        return calls;
     }
 
     return calls.filter(call => new Date(call.start_time) >= startDate);
@@ -333,6 +337,7 @@ export default function CallAnalyticsPage() {
                 onChange={(e) => setDateRange(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
               >
+                <option value="all">All Time</option>
                 <option value="today">Today</option>
                 <option value="7days">Last 7 Days</option>
                 <option value="30days">Last 30 Days</option>
