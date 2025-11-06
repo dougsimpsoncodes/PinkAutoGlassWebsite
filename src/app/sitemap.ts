@@ -102,7 +102,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  // Location pages - All 22 cities in service area
+  // Location pages - All 24 cities in service area
   const locations = [
     // Denver Metro - Core Cities
     'denver-co',
@@ -129,8 +129,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'windsor-co',
     // Southern Colorado
     'colorado-springs-co',
+    'castle-rock-co',
     // Mountain Communities
     'evergreen-co',
+    'golden-co',
   ].map((slug) => ({
     url: `${baseUrl}/locations/${slug}`,
     lastModified: now,
