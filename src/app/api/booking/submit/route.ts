@@ -213,10 +213,75 @@ export async function POST(req: NextRequest) {
     // Get Supabase client
     const client = getSupabaseClient();
 
-    // Insert lead using RPC with validated data
+    // =============================================================================
+    // ATTRIBUTION: Capture session context and UTM parameters
+    // =============================================================================
+    let sessionId: string | null = null;
+    let utmParams: any = {};
+    let adPlatform: string | null = null;
+
+    try {
+      // Get session ID from cookie
+      const sessionCookie = req.cookies.get('session_id');
+      sessionId = sessionCookie?.value || null;
+
+      if (sessionId) {
+        // Look up session in user_sessions table to get UTM params
+        const { data: sessionData, error: sessionError } = await client
+          .from('user_sessions')
+          .select('utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, fbclid, msclkid')
+          .eq('session_id', sessionId)
+          .single();
+
+        if (!sessionError && sessionData) {
+          utmParams = {
+            utm_source: sessionData.utm_source,
+            utm_medium: sessionData.utm_medium,
+            utm_campaign: sessionData.utm_campaign,
+            utm_term: sessionData.utm_term,
+            utm_content: sessionData.utm_content,
+            gclid: sessionData.gclid,
+            msclkid: sessionData.msclkid,
+          };
+
+          // Determine ad platform from click IDs
+          if (sessionData.gclid) {
+            adPlatform = 'google';
+          } else if (sessionData.msclkid) {
+            adPlatform = 'bing';
+          } else if (sessionData.utm_source === 'google' && sessionData.utm_medium === 'organic') {
+            adPlatform = 'organic';
+          } else if (sessionData.utm_source) {
+            adPlatform = sessionData.utm_source;
+          } else {
+            adPlatform = 'direct';
+          }
+
+          console.log(`📊 Attribution captured for session ${sessionId}:`, {
+            platform: adPlatform,
+            source: sessionData.utm_source,
+            campaign: sessionData.utm_campaign,
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to capture session attribution (non-fatal):', error);
+      // Continue with lead creation even if attribution fails
+    }
+
+    // Enhance validated data with attribution
+    const leadData = {
+      ...validatedData,
+      website_session_id: sessionId,
+      ad_platform: adPlatform,
+      first_contact_method: 'form', // This is a form submission
+      ...utmParams,
+    };
+
+    // Insert lead using RPC with validated data + attribution
     const { error: leadError } = await client.rpc("fn_insert_lead", {
       p_id: leadId,
-      p_payload: validatedData
+      p_payload: leadData
     });
 
     if (leadError) {
