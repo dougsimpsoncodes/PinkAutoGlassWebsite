@@ -240,20 +240,26 @@ export default function CallAnalyticsPage() {
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
   const uniqueCallerConversionRate = stats.uniqueCallers > 0 ? Math.round((stats.answeredUniqueCallers / stats.uniqueCallers) * 100) : 0;
 
-  // Group inbound calls by day for line chart
-  const callsByDay = callsInDateRange
+  // Group unique customers by day for line chart
+  const customersByDay = callsInDateRange
     .filter(call => call.direction === 'Inbound') // Only inbound calls
-    .reduce((acc: Record<string, number>, call) => {
+    .reduce((acc: Record<string, Set<string>>, call) => {
       const date = new Date(call.start_time).toLocaleDateString();
-      acc[date] = (acc[date] || 0) + 1;
+      if (!acc[date]) {
+        acc[date] = new Set();
+      }
+      acc[date].add(call.from_number); // Track unique phone numbers per day
       return acc;
     }, {});
 
-  const chartData = Object.entries(callsByDay)
-    .map(([date, inbound]) => ({ date, inbound }))
+  const chartData = Object.entries(customersByDay)
+    .map(([date, numbersSet]) => ({
+      date,
+      uniqueCustomers: numbersSet.size
+    }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const maxCallsInDay = Math.max(...chartData.map(d => d.inbound), 1);
+  const maxCustomersInDay = Math.max(...chartData.map(d => d.uniqueCustomers), 1);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -432,9 +438,9 @@ export default function CallAnalyticsPage() {
         </div>
       </div>
 
-      {/* Inbound Calls Line Chart */}
+      {/* Unique Customers Line Chart */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h3 className="font-semibold text-gray-900 mb-6">Inbound Calls by Day</h3>
+        <h3 className="font-semibold text-gray-900 mb-6">Unique Customers by Day</h3>
         {chartData.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             No call data available for this date range
@@ -445,7 +451,7 @@ export default function CallAnalyticsPage() {
               {/* Y-axis grid lines and labels */}
               {[0, 1, 2, 3, 4, 5].map((tick) => {
                 const y = 250 - (tick * 50);
-                const value = Math.round((tick / 5) * maxCallsInDay);
+                const value = Math.round((tick / 5) * maxCustomersInDay);
                 return (
                   <g key={tick}>
                     <line
@@ -490,11 +496,11 @@ export default function CallAnalyticsPage() {
               <path
                 d={chartData.map((point, index) => {
                   const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
-                  const y = 250 - ((point.inbound / maxCallsInDay) * 250);
+                  const y = 250 - ((point.uniqueCustomers / maxCustomersInDay) * 250);
                   return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
                 }).join(' ')}
                 fill="none"
-                stroke="#10b981"
+                stroke="#9333ea"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -503,18 +509,18 @@ export default function CallAnalyticsPage() {
               {/* Data points */}
               {chartData.map((point, index) => {
                 const x = 60 + (index * (700 / Math.max(chartData.length - 1, 1)));
-                const y = 250 - ((point.inbound / maxCallsInDay) * 250);
+                const y = 250 - ((point.uniqueCustomers / maxCustomersInDay) * 250);
                 return (
                   <g key={index}>
                     <circle
                       cx={x}
                       cy={y}
                       r="5"
-                      fill="#10b981"
+                      fill="#9333ea"
                       stroke="#fff"
                       strokeWidth="2"
                     />
-                    <title>{`${point.date}: ${point.inbound} call${point.inbound !== 1 ? 's' : ''}`}</title>
+                    <title>{`${point.date}: ${point.uniqueCustomers} unique customer${point.uniqueCustomers !== 1 ? 's' : ''}`}</title>
                   </g>
                 );
               })}
@@ -534,7 +540,7 @@ export default function CallAnalyticsPage() {
                 fill="#6b7280"
                 transform="rotate(-90 20 130)"
               >
-                Inbound Calls
+                Unique Customers
               </text>
             </svg>
           </div>
