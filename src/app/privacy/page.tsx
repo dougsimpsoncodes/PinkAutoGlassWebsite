@@ -4,7 +4,6 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy Policy | Pink Auto Glass',
   description: 'Privacy Policy for Pink Auto Glass - Learn how we collect, use, and protect your personal information.',
-  robots: 'noindex, follow',
   alternates: {
     canonical: 'https://pinkautoglass.com/privacy',
   },
