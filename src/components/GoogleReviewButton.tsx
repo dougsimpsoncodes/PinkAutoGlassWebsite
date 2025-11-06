@@ -14,10 +14,8 @@ export default function GoogleReviewButton({
   className = '',
   source = 'website'
 }: GoogleReviewButtonProps) {
-  // TODO: Once Google Business Profile is verified, replace this with your actual review link
-  // Format: https://g.page/r/YOUR_PLACE_ID/review
-  // You can find this in Google Business Profile under "Get more reviews"
-  const GOOGLE_REVIEW_URL = 'https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID';
+  // Pink Auto Glass Google Business Profile review link
+  const GOOGLE_REVIEW_URL = 'https://g.page/r/CZ2YTY_EELLQEAI/review';
 
   const [clicked, setClicked] = useState(false);
 
