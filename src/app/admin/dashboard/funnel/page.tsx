@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import SyncButton from '@/components/admin/SyncButton';
 import { TrendingUp, Users, MousePointerClick, Eye, DollarSign, Phone, FileText } from 'lucide-react';
 
 interface PlatformMetrics {
@@ -136,9 +137,12 @@ export default function MarketingFunnelDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Marketing Funnel Analysis</h1>
-        <p className="text-gray-600 mt-1">Three-Metric System: Impressions → Clicks → Unique Customers</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Marketing Funnel Analysis</h1>
+          <p className="text-gray-600 mt-1">Three-Metric System: Impressions → Clicks → Unique Customers</p>
+        </div>
+        <SyncButton scope="funnel" onSyncComplete={fetchFunnelData} />
       </div>
 
       {/* Date Range Selector */}
