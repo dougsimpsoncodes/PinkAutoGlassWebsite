@@ -9,8 +9,8 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Arvada, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Arvada, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair arvada, windshield replacement arvada, auto glass arvada co',
+  description: 'Arvada windshield replacement & repair - same-day mobile service to Old Town Arvada, Ralston Valley, Leyden Rock & all Arvada neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair arvada, windshield replacement arvada, auto glass arvada co, mobile windshield service arvada, windshield replacement near me arvada, old town arvada windshield repair, candelas auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/arvada-co',
   },
@@ -26,11 +26,19 @@ export default function ArvadaLocationPage() {
   const faqs = [
     {
       question: 'Do you offer mobile windshield service in Arvada?',
-      answer: 'Yes! Mobile service is our specialty in Arvada. We come to your home, office, or anywhere in Arvada. Our fully equipped mobile units serve all Arvada neighborhoods.'
+      answer: 'Yes! Mobile service is our specialty in Arvada. We come to your home, office, or anywhere in Arvada. Whether you\'re in Old Town Arvada, Candelas, Leyden Rock, or anywhere else in Arvada, we\'ll come to you with our fully equipped mobile units.'
+    },
+    {
+      question: 'How quickly can you replace a windshield in Arvada?',
+      answer: 'We offer same-day windshield replacement throughout Arvada. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. We understand Arvada residents are busy, so we work around your schedule.'
     },
     {
       question: 'What Arvada neighborhoods do you serve?',
-      answer: 'We serve all of Arvada including: Olde Town Arvada, Candelas, Leyden Rock, Stonebridge, Ralston Creek, and all other Arvada neighborhoods. If you\'re in Arvada, we\'ll come to you.'
+      answer: 'We serve all of Arvada including: Olde Town Arvada, Candelas, Leyden Rock, Stonebridge, Ralston Creek, Berkeley Park, Arvada West, and all other Arvada neighborhoods. If you\'re anywhere in Arvada city limits, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Arvada?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Arvada residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function ArvadaLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Arvada Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Arvada drivers deserve reliable auto glass service. From I-76, Wadsworth, 80th Avenue, historic downtown, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Arvada. We bring our mobile service directly to you.
+                  Arvada's historic community needs reliable auto glass service. With over 125,000 residents, Arvada's unique blend of old-town charm and modern development creates specific windshield challenges. From Old Town Arvada to the new Candelas and Leyden Rock developments, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Arvada.
                 </p>
                 <AboveFoldCTA location="location-arvada-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Our fully equipped mobile units serve all Arvada neighborhoods. Whether you're at home, work, or anywhere in Arvada, we come to you.
+                  Whether you're commuting on US-36, traveling along Wadsworth Boulevard, navigating I-70, or exploring historic Olde Town, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Arvada.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Arvada's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>US-36 Corridor:</strong> High-speed traffic between Denver and Boulder increases rock chip risks from commercial vehicles and highway debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-70 Mountain Traffic:</strong> Heavy weekend traffic to ski resorts brings road debris and gravel from mountain highways</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>New Development Construction:</strong> Ongoing builds in Candelas and Leyden Rock create construction debris and dust hazards</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Wadsworth Boulevard:</strong> Heavy commercial traffic on this major north-south route increases windshield damage frequency</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Proximity to Mountains:</strong> Arvada's location near the foothills means temperature swings that cause chips to spread quickly</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Arvada. Our technicians understand the specific challenges Arvada drivers face and provide expert windshield replacement and repair services tailored to your needs. Don't let a small chip from US-36 debris turn into a full windshield replacement - we offer same-day mobile service throughout all Arvada neighborhoods.
                 </p>
               </section>
 

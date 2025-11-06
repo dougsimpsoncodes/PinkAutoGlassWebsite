@@ -9,8 +9,8 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Thornton, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Thornton, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair thornton, windshield replacement thornton, auto glass thornton co',
+  description: 'Thornton windshield replacement & repair - same-day mobile service to Thornton Town Center, Eastlake, Riverdale & all Thornton neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair thornton, windshield replacement thornton, auto glass thornton co, mobile windshield service thornton, windshield replacement near me thornton, eastlake windshield repair, thornton town center auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/thornton-co',
   },
@@ -26,11 +26,19 @@ export default function ThorntonLocationPage() {
   const faqs = [
     {
       question: 'Do you offer mobile windshield service in Thornton?',
-      answer: 'Yes! Mobile service is our specialty in Thornton. We come to your home, office, or anywhere in Thornton. Our fully equipped mobile units serve all Thornton neighborhoods.'
+      answer: 'Yes! Mobile service is our specialty in Thornton. We come to your home, office, or anywhere in Thornton. Whether you\'re in Thornton Town Center, Eastlake, Riverdale, or anywhere else in Thornton, we\'ll come to you with our fully equipped mobile units.'
+    },
+    {
+      question: 'How quickly can you replace a windshield in Thornton?',
+      answer: 'We offer same-day windshield replacement throughout Thornton. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. We understand Thornton residents are busy, so we work around your schedule.'
     },
     {
       question: 'What Thornton neighborhoods do you serve?',
-      answer: 'We serve all of Thornton including: Heritage, Eastlake, Thornton Town Center, Thorncreek, Northglenn, and all other Thornton neighborhoods. If you\'re in Thornton, we\'ll come to you.'
+      answer: 'We serve all of Thornton including: Thornton Town Center, Eastlake, Riverdale, Heritage, Thorncreek, Trail Winds, and all other Thornton neighborhoods. If you\'re anywhere in Thornton, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Thornton?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Thornton residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function ThorntonLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Thornton Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Thornton drivers deserve reliable auto glass service. From I-25, E-470, 120th Avenue, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Thornton. We bring our mobile service directly to you.
+                  Thornton's rapidly growing community needs reliable auto glass service. As Colorado's 6th largest city with over 145,000 residents, Thornton's fast-paced northern suburb expansion creates unique windshield challenges. From Thornton Town Center to Eastlake to Riverdale, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Thornton.
                 </p>
                 <AboveFoldCTA location="location-thornton-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Our fully equipped mobile units serve all Thornton neighborhoods. Whether you're at home, work, or anywhere in Thornton, we come to you.
+                  Whether you're commuting on I-25, traveling along E-470, navigating Washington Street, or shopping at Town Center, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Thornton.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Thornton's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-25 Corridor:</strong> Major interstate traffic through northern metro brings constant exposure to highway debris and gravel trucks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>E-470 Beltway:</strong> High-speed toll road traffic increases rock chip risks from commercial and commuter vehicles</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Washington Street Traffic:</strong> Heavy commercial corridor creates frequent debris hazards from delivery and construction trucks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Rapid Development:</strong> Thornton's fast growth means constant construction debris and dust from new residential and commercial projects</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Northern Metro Weather:</strong> Temperature extremes and seasonal winds cause small chips to quickly spread into large cracks</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Thornton. Our technicians understand the specific challenges Thornton drivers face and provide expert windshield replacement and repair services tailored to your needs. Don't let a small chip from I-25 debris turn into a full windshield replacement - we offer same-day mobile service throughout all Thornton neighborhoods.
                 </p>
               </section>
 
