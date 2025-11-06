@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import SyncButton from '@/components/admin/SyncButton';
 import { DollarSign, TrendingUp, TrendingDown, Users, Target } from 'lucide-react';
 
 interface PlatformROI {
@@ -132,9 +133,12 @@ export default function ROIDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">ROI Dashboard</h1>
-        <p className="text-gray-600 mt-1">Cost per unique customer and revenue analysis</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">ROI Dashboard</h1>
+          <p className="text-gray-600 mt-1">Cost per unique customer and revenue analysis</p>
+        </div>
+        <SyncButton scope="roi" onSyncComplete={fetchROIData} />
       </div>
 
       {/* Date Range Selector */}
