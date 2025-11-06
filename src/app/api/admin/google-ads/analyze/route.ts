@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import { parse } from 'csv-parse/sync';
-import { existsSync } from 'fs';
 import { createClient } from '@supabase/supabase-js';
 
 interface SearchTerm {
@@ -43,17 +40,24 @@ export async function POST(request: NextRequest) {
       // Don't fail the entire request if sync fails
     }
 
-    // Read the latest uploaded CSV
-    const filepath = join(process.cwd(), 'data', 'google-ads', 'search-terms-latest.csv');
+    // Read the latest uploaded CSV from Supabase Storage
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    if (!existsSync(filepath)) {
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('google-ads')
+      .download('search-terms-latest.csv');
+
+    if (downloadError || !fileData) {
       return NextResponse.json(
         { error: 'No data file found. Please upload a search terms report first.' },
         { status: 404 }
       );
     }
 
-    const content = await readFile(filepath, 'utf-8');
+    const content = await fileData.text();
     const lines = content.trim().split('\n');
 
     // Find the header line (must include "Search term" AND "Clicks")

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,33 +29,46 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Ensure upload directory exists
-    const uploadDir = join(process.cwd(), 'data', 'google-ads');
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    // Save file with timestamp
+    // Save to Supabase Storage with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `search-terms-${timestamp}.csv`;
-    const filepath = join(uploadDir, filename);
 
-    await writeFile(filepath, buffer);
+    // Upload timestamped version
+    const { error: uploadError } = await supabase.storage
+      .from('google-ads')
+      .upload(filename, buffer, {
+        contentType: 'text/csv',
+        upsert: false,
+      });
 
-    // Also save as "latest" for easy access
-    const latestPath = join(uploadDir, 'search-terms-latest.csv');
-    await writeFile(latestPath, buffer);
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      throw uploadError;
+    }
+
+    // Also upload as "latest" for easy access
+    const { error: latestError } = await supabase.storage
+      .from('google-ads')
+      .upload('search-terms-latest.csv', buffer, {
+        contentType: 'text/csv',
+        upsert: true, // Overwrite existing
+      });
+
+    if (latestError) {
+      console.error('Supabase latest upload error:', latestError);
+      throw latestError;
+    }
 
     return NextResponse.json({
       success: true,
       message: 'File uploaded successfully',
       filename,
-      filepath: latestPath,
+      filepath: 'search-terms-latest.csv',
     });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: 'Failed to upload file', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
