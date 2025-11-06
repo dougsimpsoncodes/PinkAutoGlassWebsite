@@ -9,8 +9,8 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Westminster, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Westminster, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair westminster, windshield replacement westminster, auto glass westminster co',
+  description: 'Westminster windshield replacement & repair - same-day mobile service to The Orchard, Westminster Station, Legacy Ridge & all Westminster neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair westminster, windshield replacement westminster, auto glass westminster co, mobile windshield service westminster, windshield replacement near me westminster, legacy ridge windshield repair, westminster station auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/westminster-co',
   },
@@ -26,11 +26,19 @@ export default function WestminsterLocationPage() {
   const faqs = [
     {
       question: 'Do you offer mobile windshield service in Westminster?',
-      answer: 'Yes! Mobile service is our specialty in Westminster. We come to your home, office, or anywhere in Westminster. Our fully equipped mobile units serve all Westminster neighborhoods.'
+      answer: 'Yes! Mobile service is our specialty in Westminster. We come to your home, office, or anywhere in Westminster. Whether you\'re at The Orchard, Westminster Station, Legacy Ridge, or anywhere else in Westminster, we\'ll come to you with our fully equipped mobile units.'
+    },
+    {
+      question: 'How quickly can you replace a windshield in Westminster?',
+      answer: 'We offer same-day windshield replacement throughout Westminster. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. We understand Westminster residents are busy, so we work around your schedule.'
     },
     {
       question: 'What Westminster neighborhoods do you serve?',
-      answer: 'We serve all of Westminster including: Legacy Ridge, Westminster Station, Standley Lake, Country Club Hills, McKay Lake, and all other Westminster neighborhoods. If you\'re in Westminster, we\'ll come to you.'
+      answer: 'We serve all of Westminster including: The Orchard, Westminster Station, Legacy Ridge, Standley Lake, Country Club Hills, McKay Lake, and all other Westminster neighborhoods. If you\'re anywhere in Westminster, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Westminster?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Westminster residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function WestminsterLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Westminster Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Westminster drivers deserve reliable auto glass service. From US-36, I-25, 120th Avenue, between Denver and Boulder, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Westminster. We bring our mobile service directly to you.
+                  Westminster's strategic location needs reliable auto glass service. With over 116,000 residents positioned between Denver and Boulder, Westminster's unique commuter patterns and major shopping centers create specific windshield challenges. From The Orchard to Westminster Station to Legacy Ridge, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Westminster.
                 </p>
                 <AboveFoldCTA location="location-westminster-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Our fully equipped mobile units serve all Westminster neighborhoods. Whether you're at home, work, or anywhere in Westminster, we come to you.
+                  Whether you're commuting on US-36, traveling along I-25, navigating Sheridan Boulevard, or shopping at major centers, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Westminster.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Westminster's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>US-36 Corridor:</strong> High-speed highway between Denver and Boulder brings heavy commuter traffic and increased rock chip risks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-25 Traffic:</strong> Major north-south interstate creates constant exposure to commercial trucks and highway debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Sheridan Boulevard:</strong> Heavy commercial corridor with delivery and construction vehicles increases debris hazards</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Major Shopping Centers:</strong> High traffic volume at The Orchard and Westminster Promenade means more parking lot damage risks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Mid-Metro Weather:</strong> Location between Denver and mountains means temperature extremes that cause chips to spread quickly</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Westminster. Our technicians understand the specific challenges Westminster drivers face and provide expert windshield replacement and repair services tailored to your needs. Don't let a small chip from US-36 debris turn into a full windshield replacement - we offer same-day mobile service throughout all Westminster neighborhoods.
                 </p>
               </section>
 
