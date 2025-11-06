@@ -12,7 +12,9 @@ import {
   Menu,
   X,
   Zap,
-  Phone
+  Phone,
+  BarChart3,
+  Users
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -32,6 +34,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Marketing Funnel', href: '/admin/dashboard/funnel', icon: BarChart3 },
+    { name: 'ROI Analysis', href: '/admin/dashboard/roi', icon: TrendingUp },
+    { name: 'Lead Management', href: '/admin/dashboard/leads', icon: Users },
     { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
     { name: 'Traffic Sources', href: '/admin/dashboard/traffic', icon: TrendingUp },
     { name: 'Conversions', href: '/admin/dashboard/conversions', icon: MousePointerClick },
