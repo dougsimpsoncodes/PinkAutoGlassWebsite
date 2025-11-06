@@ -9,14 +9,14 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Windshield Repair & Replacement Centennial, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Centennial, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
-  keywords: 'windshield repair centennial, windshield replacement centennial, auto glass centennial co',
+  description: 'Centennial windshield replacement & repair - same-day mobile service to Southglenn, Dry Creek, Walnut Hills & all Centennial neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  keywords: 'windshield repair centennial, windshield replacement centennial, auto glass centennial co, mobile windshield service centennial, southglenn windshield repair, dry creek auto glass, windshield replacement near me centennial',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/centennial-co',
   },
   openGraph: {
     title: 'Windshield Repair & Replacement Centennial, CO | Pink Auto Glass',
-    description: 'Centennial\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    description: 'Centennial\'s trusted auto glass experts. Mobile service to Southglenn, Dry Creek, all neighborhoods. Same-day appointments, lifetime warranty.',
     url: 'https://pinkautoglass.com/locations/centennial-co',
     type: 'website',
   },
@@ -26,11 +26,19 @@ export default function CentennialLocationPage() {
   const faqs = [
     {
       question: 'Do you offer mobile windshield service in Centennial?',
-      answer: 'Yes! Mobile service is our specialty in Centennial. We come to your home, office, or anywhere in Centennial. Our fully equipped mobile units serve all Centennial neighborhoods.'
+      answer: 'Yes! Mobile service is our specialty in Centennial. We come to your home, office, or anywhere in Centennial. Our fully equipped mobile units serve all Centennial neighborhoods including Southglenn, Walnut Hills, Dry Creek, and Piney Creek.'
+    },
+    {
+      question: 'How quickly can you replace a windshield in Centennial?',
+      answer: 'We offer same-day windshield replacement throughout Centennial. Most appointments are completed within 2-4 hours of your call. The actual replacement takes 60-90 minutes, and we recommend at least 1 hour of cure time before driving. We work around your schedule.'
     },
     {
       question: 'What Centennial neighborhoods do you serve?',
-      answer: 'We serve all of Centennial including: Southglenn, Centennial Airport, Walnut Hills, Dry Creek, Piney Creek, and all other Centennial neighborhoods. If you\'re in Centennial, we\'ll come to you.'
+      answer: 'We serve all of Centennial including: Southglenn, Centennial Airport, Walnut Hills, Dry Creek, Piney Creek, Heritage Greens, Smoky Hill, and all other Centennial neighborhoods. If you\'re anywhere in Centennial city limits, we\'ll come to you.'
+    },
+    {
+      question: 'Does insurance cover windshield replacement in Centennial?',
+      answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Centennial residents. We can verify your coverage and bill your insurance directly.'
     },
   ];
 
@@ -90,11 +98,41 @@ export default function CentennialLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Centennial Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Centennial drivers deserve reliable auto glass service. From I-25, E-470, Arapahoe Road, southeast quality market, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Centennial. We bring our mobile service directly to you.
+                  With over 108,000 residents, Centennial is one of Colorado's most desirable suburbs. From Southglenn to Dry Creek, Walnut Hills to Piney Creek, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Centennial. We bring our mobile service directly to you - whether you're at home, at your office park, or shopping at the Streets at SouthGlenn.
                 </p>
                 <AboveFoldCTA location="location-centennial-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Our fully equipped mobile units serve all Centennial neighborhoods. Whether you're at home, work, or anywhere in Centennial, we come to you.
+                  Whether you're commuting on I-25, E-470, or Arapahoe Road, our fully equipped mobile units serve all Centennial neighborhoods. We understand the unique challenges Centennial drivers face and provide expert windshield care tailored to your needs.
+                </p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Centennial's Unique Windshield Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-25 Corridor:</strong> Major north-south highway with heavy commuter traffic increases rock chip risks from construction and commercial vehicles</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>E-470 Toll Road:</strong> High-speed traffic and gravel trucks create frequent windshield damage for Centennial commuters</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Arapahoe Road Traffic:</strong> Busy east-west corridor with constant construction and development bringing road debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Suburban Growth:</strong> Ongoing development and construction in new neighborhoods means increased exposure to construction debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Colorado Weather:</strong> Temperature extremes cause windshield chips to crack quickly, especially during seasonal transitions</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Centennial. Our technicians understand the specific challenges Centennial drivers face on I-25, E-470, and Arapahoe Road. Don't let a small chip turn into a full windshield replacement - we offer same-day mobile service throughout all Centennial neighborhoods.
                 </p>
               </section>
 
