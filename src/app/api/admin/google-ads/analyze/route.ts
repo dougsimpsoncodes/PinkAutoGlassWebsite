@@ -272,15 +272,18 @@ export async function POST(request: NextRequest) {
             .eq('direction', 'Inbound');
 
           if (!callsError && calls) {
-            const totalCalls = calls.length;
-            const answeredCalls = calls.filter(c => c.result === 'Accepted').length;
-            const missedCalls = calls.filter(c => c.result === 'Missed').length;
+            // Calculate unique callers (distinct phone numbers)
+            const uniqueCallers = new Set(calls.map(c => c.from_number)).size;
+            const answeredCallsList = calls.filter(c => c.result === 'Accepted');
+            const uniqueAnsweredCallers = new Set(answeredCallsList.map(c => c.from_number)).size;
+            const missedCallsList = calls.filter(c => c.result === 'Missed');
+            const uniqueMissedCallers = new Set(missedCallsList.map(c => c.from_number)).size;
 
             callDataByRange[rangeKey] = {
-              totalCalls,
-              answeredCalls,
-              missedCalls,
-              costPerCall: totalCalls > 0 ? insights.totalCost / totalCalls : 0,
+              uniqueCallers,
+              uniqueAnsweredCallers,
+              uniqueMissedCallers,
+              costPerCaller: uniqueCallers > 0 ? insights.totalCost / uniqueCallers : 0,
             };
           }
 
