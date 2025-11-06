@@ -48,12 +48,13 @@ export async function POST(req: NextRequest) {
     const accessToken = authData.access_token;
 
     // Step 3: Fetch call log data using standard fetch (we know this works)
-    // Fetch last 90 days of call history
+    // Fetch last 120 days of call history (extended to capture all October data)
     const dateFrom = new Date();
-    dateFrom.setDate(dateFrom.getDate() - 90);
+    dateFrom.setDate(dateFrom.getDate() - 120);
     const dateFromISO = dateFrom.toISOString();
 
     console.log(`Fetching call logs from ${dateFromISO}...`);
+    console.log(`Date range: ${dateFromISO} to ${new Date().toISOString()}`);
 
     const callLogResponse = await fetch(
       `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
@@ -78,6 +79,16 @@ export async function POST(req: NextRequest) {
     const records = callLogData.records || [];
 
     console.log(`Found ${records.length} call records`);
+
+    // Log date range of returned records for debugging
+    if (records.length > 0) {
+      const dates = records.map((r: any) => new Date(r.startTime));
+      const earliest = new Date(Math.min(...dates.map((d: Date) => d.getTime())));
+      const latest = new Date(Math.max(...dates.map((d: Date) => d.getTime())));
+      console.log(`Earliest call: ${earliest.toISOString()}`);
+      console.log(`Latest call: ${latest.toISOString()}`);
+      console.log(`RingCentral returned calls spanning ${Math.ceil((latest.getTime() - earliest.getTime()) / (1000 * 60 * 60 * 24))} days`);
+    }
 
     // Step 4: Store calls in database
     let newCalls = 0;
