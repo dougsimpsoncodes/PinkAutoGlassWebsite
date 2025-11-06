@@ -17,6 +17,12 @@ const nextConfig = {
         destination: '/vehicles/brands/:make',
         permanent: true, // 301 redirect
       },
+      // Redirect privacy-policy to privacy
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true, // 301 redirect
+      },
     ];
   },
 }
