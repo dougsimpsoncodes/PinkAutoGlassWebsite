@@ -25,5 +25,27 @@
         }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/sync-google-ads",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-bing-ads",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-search-console",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/sync-ringcentral",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/run-attribution",
+      "schedule": "0 3 * * *"
+    }
   ]
 }

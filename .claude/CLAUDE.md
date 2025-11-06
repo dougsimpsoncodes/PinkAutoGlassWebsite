@@ -249,4 +249,105 @@ rm -rf .next
 
 ---
 
+## 🚫 NEVER ASSUME - ALWAYS VERIFY
+
+**Critical Rule:** Never make assumptions about production systems, database instances, environment configurations, or any technical infrastructure.
+
+### The Problem with Assumptions
+
+**Real Example - Database Migration Mistake (November 2025):**
+
+**What Happened:**
+- User has two Supabase projects: "Auto Glass Staging" and "Pink Auto Glass Website"
+- I assumed "Pink Auto Glass Website" was production based on the NAME
+- I told user to run migrations on the wrong database
+- User caught the mistake by checking activity levels
+
+**Why This Was Dangerous:**
+- Could have run migrations on wrong database (wasted time)
+- Could have missed updating actual production database (broken features)
+- Violated user trust by making lazy assumption
+
+**What I Should Have Done:**
+1. ✅ Check the project ID in the code (`fypzafbsfrrlrrufzkol`)
+2. ✅ Ask user which project that ID belongs to
+3. ✅ Verify by checking activity/data in Supabase dashboard
+4. ✅ Confirm with user before proceeding
+
+**What I Actually Did:**
+❌ Assumed based on project name sounding "more official"
+
+### When to Verify (Not Assume)
+
+**ALWAYS VERIFY in these situations:**
+
+#### Database & Infrastructure
+- [ ] Which database instance is production vs staging
+- [ ] Which project ID matches which environment
+- [ ] Which API keys belong to which service account
+- [ ] Which branch is deployed to production
+- [ ] Which domain points to which deployment
+
+#### Configuration & Credentials
+- [ ] Which `.env` file is being used
+- [ ] Which credentials are for which environment
+- [ ] Which API version is configured
+- [ ] Which service account has which permissions
+
+#### Code & Deployments
+- [ ] Which Git branch is active
+- [ ] Which version is deployed
+- [ ] Which build is running in production
+- [ ] Which feature flags are enabled
+
+### How to Verify (Don't Guess)
+
+**Instead of assuming, do this:**
+
+1. **Check the Code:**
+   - Look at project IDs in environment variables
+   - Check connection strings
+   - Review configuration files
+
+2. **Check the Dashboard:**
+   - Verify activity levels (production has traffic)
+   - Check data volume
+   - Review recent requests
+
+3. **Ask the User:**
+   - "Which Supabase project is using ID `xyz`?"
+   - "Is this the production database or staging?"
+   - "Can you confirm which environment this is?"
+
+4. **Cross-Reference:**
+   - Match project IDs to `.env` values
+   - Match domains to deployment URLs
+   - Match API keys to service accounts
+
+### Assumptions That Broke Things (Learn from These)
+
+| Assumption | Reality | Consequence |
+|------------|---------|-------------|
+| "Pink Auto Glass Website sounds like production" | Name was misleading | Almost ran migrations on wrong DB |
+| "Existing .env credentials are valid" | App was deleted | 3-4 wasted debugging iterations |
+| "This CLIENT_ID should work" | CLIENT_ID was from different app | Authentication kept failing |
+
+### The Verification Mantra
+
+**When in doubt:**
+1. ❌ **Don't assume** based on names, conventions, or "what makes sense"
+2. ✅ **Verify** by checking IDs, activity, data, or asking the user
+3. ✅ **Confirm** before making changes to production systems
+4. ✅ **Document** what you verified and how you verified it
+
+**Remember:** Assumptions in production can cause:
+- Data loss
+- Broken features
+- Wasted time
+- Lost trust
+
+**Verification takes 30 seconds. Fixing a wrong assumption can take hours.**
+
+---
+
 **Remember:** When in doubt, research first. The official documentation is always more reliable than guessing.
