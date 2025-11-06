@@ -88,18 +88,6 @@ export default function GoogleAdsAssetsPage() {
               </p>
             </div>
 
-            {/* Horizontal Logo - 500x500 */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <Image
-                src="/pink-logo-horizontal.png"
-                alt="Pink Auto Glass Horizontal Logo"
-                width={500}
-                height={500}
-                className="w-full h-auto"
-              />
-              <p className="text-sm text-gray-600 mt-2">Horizontal Logo (500x500)</p>
-            </div>
-
           </div>
         </section>
 
