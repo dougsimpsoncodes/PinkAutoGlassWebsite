@@ -60,7 +60,7 @@ export default function CallAnalyticsPage() {
 
   const fetchCalls = async () => {
     try {
-      const res = await fetch('/api/admin/calls?limit=100');
+      const res = await fetch('/api/admin/calls?limit=1000');
       if (!res.ok) return;
 
       const data = await res.json();
