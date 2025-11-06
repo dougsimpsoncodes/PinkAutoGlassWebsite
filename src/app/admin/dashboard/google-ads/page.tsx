@@ -40,10 +40,10 @@ interface AnalysisResults {
 }
 
 interface CallDataSingle {
-  totalCalls: number;
-  answeredCalls: number;
-  missedCalls: number;
-  costPerCall: number;
+  uniqueCallers: number;
+  uniqueAnsweredCallers: number;
+  uniqueMissedCallers: number;
+  costPerCaller: number;
 }
 
 interface LeadDataSingle {
@@ -343,7 +343,7 @@ export default function GoogleAdsOptimizer() {
             <div className="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 shadow-lg">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Phone className="w-6 h-6 text-pink-600" />
-                Primary Metric: Ad Spend vs Calls
+                Primary Metric: Ad Spend vs Unique Callers
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Total Spend */}
@@ -357,28 +357,28 @@ export default function GoogleAdsOptimizer() {
                   </p>
                 </div>
 
-                {/* Total Calls */}
+                {/* Unique Callers */}
                 <div className="bg-white rounded-lg p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-gray-600">Total Calls Received</p>
+                    <p className="text-sm font-medium text-gray-600">Unique Callers</p>
                     <Phone className="w-5 h-5 text-green-600" />
                   </div>
                   <p className="text-3xl font-bold text-green-600">
-                    {callData[dateFilter]?.totalCalls || 0}
+                    {callData[dateFilter]?.uniqueCallers || 0}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {callData[dateFilter]?.answeredCalls || 0} answered • {callData[dateFilter]?.missedCalls || 0} missed
+                    {callData[dateFilter]?.uniqueAnsweredCallers || 0} answered • {callData[dateFilter]?.uniqueMissedCallers || 0} missed
                   </p>
                 </div>
 
-                {/* Cost Per Call */}
+                {/* Cost Per Caller */}
                 <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-pink-300">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-pink-600">Cost Per Call</p>
+                    <p className="text-sm font-medium text-pink-600">Cost Per Caller</p>
                     <Target className="w-5 h-5 text-pink-600" />
                   </div>
                   <p className="text-3xl font-bold text-pink-600">
-                    ${(callData[dateFilter]?.costPerCall || 0).toFixed(2)}
+                    ${(callData[dateFilter]?.costPerCaller || 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-600 mt-1">
                     Primary KPI: Lower is better
