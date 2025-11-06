@@ -130,11 +130,25 @@ export default function CallAnalyticsPage() {
     const groups = new Map<string, Call[]>();
     const businessNumber = '+17209187465';
 
-    // Group calls by external customer phone number only
+    // Step 1: Identify all customer numbers that have called us (inbound calls only)
+    // These are the ONLY numbers we consider "customers"
+    const inboundCustomerNumbers = new Set<string>();
+
     calls.forEach(call => {
-      // For INBOUND calls: customer is the person calling us (from_number)
-      // For OUTBOUND calls: customer is the person we're calling (to_number)
-      // This ensures we group by the external customer number, not employee extensions
+      if (call.direction === 'Inbound') {
+        const customerNumber = call.from_number;
+
+        // Skip our business number and internal extensions
+        if (customerNumber === businessNumber) return;
+        if (customerNumber && !customerNumber.startsWith('+') && customerNumber.length <= 4) return;
+
+        inboundCustomerNumbers.add(customerNumber);
+      }
+    });
+
+    // Step 2: Group ALL calls (inbound and outbound) but ONLY for customers who have called us
+    calls.forEach(call => {
+      // Determine the customer number for this call
       let customerNumber: string;
 
       if (call.direction === 'Inbound') {
@@ -146,13 +160,13 @@ export default function CallAnalyticsPage() {
       }
 
       // Skip our own business number and internal extensions
-      if (customerNumber === businessNumber) {
-        return; // Don't group calls to/from our own business line
-      }
+      if (customerNumber === businessNumber) return;
+      if (customerNumber && !customerNumber.startsWith('+') && customerNumber.length <= 4) return;
 
-      // Skip internal extensions (typically 3-4 digit numbers without country code)
-      if (customerNumber && !customerNumber.startsWith('+') && customerNumber.length <= 4) {
-        return; // Don't group internal extension numbers
+      // CRITICAL: Only include this call if the customer has called us at least once
+      // This filters out standalone outbound calls (employees cold-calling)
+      if (!inboundCustomerNumbers.has(customerNumber)) {
+        return; // Skip outbound-only calls - not a customer yet
       }
 
       if (!groups.has(customerNumber)) {
