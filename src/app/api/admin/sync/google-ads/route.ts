@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       try {
         const dbRecord = {
           date: record.date,
+          report_date: record.date, // For backwards compatibility
           campaign_id: record.campaign_id.toString(),
           campaign_name: record.campaign_name,
           campaign_status: record.campaign_status,
