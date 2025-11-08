@@ -124,19 +124,28 @@ export default function RootLayout({
             }}
           />
 
+          {/* Google Ads Conversion Tracking */}
+          <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=AW-1746760782B"
+          />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'AW-1746760782B');
+              `,
+            }}
+          />
+
           {/* Google Analytics */}
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
             <>
               <script
-                async
-                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-              />
-              <script
                 dangerouslySetInnerHTML={{
                   __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
                     gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
                       page_path: window.location.pathname,
                     });
