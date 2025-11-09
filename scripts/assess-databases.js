@@ -8,8 +8,8 @@
 const { createClient } = require('@supabase/supabase-js');
 
 // Production database (Auto Glass Staging)
-const PROD_URL = 'https://fypzafbsfrrlrrufzkol.supabase.co';
-const PROD_KEY = 'REDACTED_SECRET_REMOVED_FROM_HISTORY';
+const PROD_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fypzafbsfrrlrrufzkol.supabase.co';
+const PROD_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Other database (Pink Auto Glass Website)
 const OTHER_URL = process.env.OTHER_SUPABASE_URL || 'https://jhbhwusdqdcdpvgucvsr.supabase.co';
