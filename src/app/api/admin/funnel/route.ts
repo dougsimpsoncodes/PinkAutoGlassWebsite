@@ -7,6 +7,11 @@ import {
   type FormLead,
 } from '@/lib/customerDeduplication';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/admin/funnel?startDate=2025-10-01&endDate=2025-11-01
  *

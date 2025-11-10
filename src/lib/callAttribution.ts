@@ -42,16 +42,27 @@ interface AttributionResult {
 }
 
 interface ConversionEvent {
-  event_id: string;
+  id: string;
+  created_at: string;
   session_id: string;
-  event_timestamp: string;
+  visitor_id?: string;
   event_type: string;
-  phone_number?: string;
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  gclid?: string;
-  msclkid?: string;
+  event_category?: string;
+  event_label?: string;
+  event_value?: number;
+  page_path: string;
+  button_text?: string;
+  button_location?: string;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
+  device_type?: string;
+  metadata?: any;
+  phone_number?: string; // Not in schema yet, but algorithm needs it
+  gclid?: string; // Not in schema yet
+  msclkid?: string; // Not in schema yet
 }
 
 interface RingCentralCall {
@@ -112,8 +123,8 @@ export async function matchDirectConversions(
       .from('conversion_events')
       .select('*')
       .eq('event_type', 'phone_click')
-      .gte('event_timestamp', fiveMinBefore.toISOString())
-      .lte('event_timestamp', oneMinAfter.toISOString());
+      .gte('created_at', fiveMinBefore.toISOString())
+      .lte('created_at', oneMinAfter.toISOString());
 
     if (error) {
       console.error('Error fetching conversion events:', error);
@@ -129,7 +140,7 @@ export async function matchDirectConversions(
 
     if (matchingEvent) {
       // Direct match found!
-      const timeDiffMs = Math.abs(callTime.getTime() - new Date(matchingEvent.event_timestamp).getTime());
+      const timeDiffMs = Math.abs(callTime.getTime() - new Date(matchingEvent.created_at).getTime());
       const timeDiffMin = Math.round(timeDiffMs / 60000);
 
       // Calculate confidence based on time proximity

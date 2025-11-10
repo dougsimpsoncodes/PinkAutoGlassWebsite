@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SDK } from '@ringcentral/sdk';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';
 const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
 const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;

@@ -35,7 +35,7 @@ export default function StickyCallBar() {
   };
 
   const handlePhoneClick = () => {
-    trackPhoneClick('sticky_call_bar');
+    trackPhoneClick('sticky_call_bar', 'Call Now', `+1${phoneNumber}`);
   };
 
   const handleTextClick = () => {
