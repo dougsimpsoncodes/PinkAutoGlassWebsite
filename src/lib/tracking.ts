@@ -10,11 +10,14 @@ import * as analytics from './analytics';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseKey)) {
+// During build time (CI/CD), environment variables may not be available
+const isBuildTime = !supabaseUrl || !supabaseKey;
+
+if (!isBuildTime && typeof window !== 'undefined' && (!supabaseUrl || !supabaseKey)) {
   console.error('❌ Supabase environment variables not loaded!', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = isBuildTime ? null as any : createClient(supabaseUrl, supabaseKey);
 
 // ============================================================================
 // SESSION MANAGEMENT
@@ -128,6 +131,44 @@ export function getGclid(): string | null {
 }
 
 /**
+ * Get Microsoft/Bing Click ID (msclkid) from URL
+ */
+export function getMsclkid(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const msclkid = params.get('msclkid');
+
+  // Store msclkid in session for attribution
+  if (msclkid) {
+    sessionStorage.setItem('msclkid', msclkid);
+    return msclkid;
+  }
+
+  // Retrieve stored msclkid
+  return sessionStorage.getItem('msclkid');
+}
+
+/**
+ * Get Facebook Click ID (fbclid) from URL
+ */
+export function getFbclid(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const fbclid = params.get('fbclid');
+
+  // Store fbclid in session for attribution
+  if (fbclid) {
+    sessionStorage.setItem('fbclid', fbclid);
+    return fbclid;
+  }
+
+  // Retrieve stored fbclid
+  return sessionStorage.getItem('fbclid');
+}
+
+/**
  * Get device information
  */
 export function getDeviceInfo(): DeviceInfo {
@@ -213,6 +254,9 @@ export async function initializeSession(): Promise<SessionData> {
       utm_campaign: utmParams.campaign,
       utm_term: utmParams.term,
       utm_content: utmParams.content,
+      gclid: getGclid(),
+      msclkid: getMsclkid(),
+      fbclid: getFbclid(),
       referrer: document.referrer || null,
       device_type: deviceInfo.deviceType,
       browser: deviceInfo.browser,
@@ -250,6 +294,9 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
     utm_campaign: utmParams.campaign,
     utm_term: utmParams.term,
     utm_content: utmParams.content,
+    gclid: getGclid(),
+    msclkid: getMsclkid(),
+    fbclid: getFbclid(),
     user_agent: deviceInfo.userAgent,
     device_type: deviceInfo.deviceType,
     browser: deviceInfo.browser,
@@ -269,6 +316,7 @@ export interface ConversionEvent {
   buttonText?: string;
   buttonLocation?: string;
   eventValue?: number;
+  phoneNumber?: string; // The phone number that was clicked
   metadata?: Record<string, any>;
 }
 
@@ -292,11 +340,14 @@ export async function trackConversion(event: ConversionEvent) {
     page_path: window.location.pathname,
     button_text: event.buttonText,
     button_location: event.buttonLocation,
+    phone_number: event.phoneNumber, // ← NEW: Capture phone number for attribution
     utm_source: utmParams.source,
     utm_medium: utmParams.medium,
     utm_campaign: utmParams.campaign,
     utm_term: utmParams.term,
     utm_content: utmParams.content,
+    gclid: getGclid(), // ← NEW: Google Ads click ID
+    msclkid: getMsclkid(), // ← NEW: Microsoft Ads click ID
     device_type: deviceInfo.deviceType,
     event_value: event.eventValue,
     metadata: event.metadata,
@@ -410,11 +461,12 @@ export function resetScrollTracking() {
 /**
  * Track phone click
  */
-export function trackPhoneClick(source: string, buttonText?: string) {
+export function trackPhoneClick(source: string, buttonText?: string, phoneNumber?: string) {
   trackConversion({
     eventType: 'phone_click',
     buttonText,
     buttonLocation: source,
+    phoneNumber, // ← NEW: Pass phone number for attribution
   });
   analytics.trackPhoneClick(source);
 }
