@@ -44,7 +44,7 @@ Configured Resend email service in production with admin notifications:
 
 **Environment Variables Added to Vercel Production:**
 ```
-RESEND_API_KEY=[REDACTED_SECRET_REMOVED_FROM_HISTORY]
+RESEND_API_KEY=[configured in Vercel]
 FROM_EMAIL=doug@pinkautoglass.com
 ADMIN_EMAIL=doug@pinkautoglass.com,kody@pinkautoglass.com,dan@pinkautoglass.com
 SUPABASE_SERVICE_ROLE_KEY=[configured]
