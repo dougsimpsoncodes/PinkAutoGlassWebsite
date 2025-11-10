@@ -127,6 +127,61 @@ export async function fetchCampaignPerformance(
 }
 
 /**
+ * Fetch campaign performance data with hourly breakdown
+ * Used for time-based attribution matching
+ */
+export async function fetchCampaignPerformanceHourly(
+  startDate: string, // Format: YYYY-MM-DD
+  endDate: string // Format: YYYY-MM-DD
+): Promise<any[]> {
+  const { customer } = getGoogleAdsClient();
+
+  // GAQL query with hourly segmentation
+  const query = `
+    SELECT
+      campaign.id,
+      campaign.name,
+      campaign.status,
+      campaign.advertising_channel_type,
+      segments.date,
+      segments.hour,
+      metrics.impressions,
+      metrics.clicks,
+      metrics.interactions,
+      metrics.cost_micros,
+      metrics.conversions,
+      metrics.conversions_value
+    FROM campaign
+    WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+      AND campaign.status != 'REMOVED'
+    ORDER BY segments.date DESC, segments.hour DESC
+  `;
+
+  try {
+    const results = await customer.query(query);
+
+    // Transform the results to a more usable format
+    return results.map((row: any) => ({
+      campaign_id: row.campaign.id,
+      campaign_name: row.campaign.name,
+      campaign_status: row.campaign.status,
+      channel_type: row.campaign.advertising_channel_type,
+      date: row.segments.date,
+      hour_of_day: parseInt(row.segments.hour || '0'), // 0-23
+      impressions: parseInt(row.metrics.impressions || '0'),
+      clicks: parseInt(row.metrics.clicks || '0'),
+      interactions: parseInt(row.metrics.interactions || '0'),
+      cost: parseFloat((row.metrics.cost_micros / 1000000).toFixed(2)),
+      conversions: parseFloat(row.metrics.conversions || '0'),
+      conversions_value: parseFloat(row.metrics.conversions_value || '0'),
+    }));
+  } catch (error: any) {
+    console.error('Error fetching hourly campaign performance:', error);
+    throw new Error(`Failed to fetch hourly campaign performance: ${error.message}`);
+  }
+}
+
+/**
  * Fetch ad group performance data
  */
 export async function fetchAdGroupPerformance(

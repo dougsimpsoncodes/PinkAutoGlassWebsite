@@ -6,6 +6,11 @@ import {
   fetchCampaignPerformance,
 } from '@/lib/googleAds';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(

@@ -20,7 +20,7 @@ export default function CTAButtons({
   const displayPhone = '(720) 918-7465';
 
   const handlePhoneClick = () => {
-    trackPhoneClick(source);
+    trackPhoneClick(source, `Call Now`, `+1${phoneNumber}`);
   };
 
   const handleTextClick = () => {

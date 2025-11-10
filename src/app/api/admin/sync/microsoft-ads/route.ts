@@ -8,6 +8,11 @@ import {
   getAccountSummary,
 } from '@/lib/microsoftAds';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(

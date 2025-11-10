@@ -5,6 +5,11 @@ import {
   getAttributionBreakdown,
 } from '@/lib/callAttribution';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * POST /api/admin/attribution/match-calls
  *
@@ -38,13 +43,24 @@ import {
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { startDate, endDate, saveToDatabase = true } = body;
+    // Parse body, handle empty body gracefully
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      // Empty body - that's okay, we'll get dates from query params instead
+    }
+
+    // Try to get dates from body first, then query params as fallback
+    const { searchParams } = new URL(req.url);
+    const startDate = body.startDate || searchParams.get('startDate');
+    const endDate = body.endDate || searchParams.get('endDate');
+    const saveToDatabase = body.saveToDatabase !== undefined ? body.saveToDatabase : true;
 
     // Validate inputs
     if (!startDate || !endDate) {
       return NextResponse.json(
-        { ok: false, error: 'startDate and endDate are required' },
+        { ok: false, error: 'startDate and endDate are required (in body or query params)' },
         { status: 400 }
       );
     }

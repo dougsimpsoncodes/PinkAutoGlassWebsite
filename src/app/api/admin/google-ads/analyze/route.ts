@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';
 
+
+// Force dynamic rendering - prevents static analysis during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 interface SearchTerm {
   'Search term': string;
   Clicks: string;
