@@ -11,11 +11,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl) {
+// During build time (CI/CD), environment variables may not be available
+// In that case, we create a null client that will be properly initialized at runtime
+const isBuildTime = !supabaseUrl || !supabaseAnonKey;
+
+if (!isBuildTime && !supabaseUrl) {
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_URL');
 }
 
-if (!supabaseAnonKey) {
+if (!isBuildTime && !supabaseAnonKey) {
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
@@ -27,18 +31,20 @@ if (!supabaseAnonKey) {
  * Client-side Supabase client with anon key
  * Used for public operations like booking submissions and file uploads
  */
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false, // No user sessions for booking flow
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'pink-auto-glass-web'
-    }
-  }
-});
+export const supabase = isBuildTime
+  ? null as any // Placeholder during build time
+  : createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        persistSession: false, // No user sessions for booking flow
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'pink-auto-glass-web'
+        }
+      }
+    });
 
 // =============================================================================
 // SERVER-SIDE SUPABASE CLIENT (Service Role)
@@ -50,12 +56,14 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
  * ONLY use this on the server side (API routes)
  */
 export const supabaseAdmin = (() => {
-  if (!supabaseServiceKey) {
-    console.warn('Service role key not available - admin operations will be limited');
+  if (isBuildTime || !supabaseServiceKey) {
+    if (!isBuildTime && !supabaseServiceKey) {
+      console.warn('Service role key not available - admin operations will be limited');
+    }
     return null;
   }
 
-  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  return createClient<Database>(supabaseUrl!, supabaseServiceKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
