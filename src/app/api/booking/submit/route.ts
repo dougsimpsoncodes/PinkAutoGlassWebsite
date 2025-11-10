@@ -270,13 +270,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Enhance validated data with attribution
+    // IMPORTANT: Field names must match what fn_insert_lead expects in the SQL function
     const leadData = {
       ...validatedData,
+      phoneE164: validatedData.phone, // Map phone -> phoneE164
+      zip: validatedData.zipCode, // Map zipCode -> zip
       website_session_id: sessionId,
       ad_platform: adPlatform,
       first_contact_method: 'form', // This is a form submission
       ...utmParams,
     };
+
+    // Remove the original fields that were renamed
+    delete leadData.phone;
+    delete leadData.zipCode;
 
     // Insert lead using RPC with validated data + attribution
     const { error: leadError } = await client.rpc("fn_insert_lead", {

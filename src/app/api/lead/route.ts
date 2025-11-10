@@ -112,11 +112,12 @@ export async function POST(request: NextRequest) {
     );
 
     // Build payload for fn_insert_lead RPC using validated data
+    // IMPORTANT: Field names must match what fn_insert_lead expects in the SQL function
     const payload = {
       serviceType: validatedData.serviceType,
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
-      phone: validatedData.phone, // Already normalized to E.164 by zod
+      phoneE164: validatedData.phone, // Already normalized to E.164 by zod
       email: validatedData.email,
       vehicleYear: validatedData.vehicleYear,
       vehicleMake: validatedData.vehicleMake,
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
       mobileService: validatedData.mobileService,
       city: validatedData.city || null,
       state: validatedData.state || null,
-      zipCode: validatedData.zipCode || null,
+      zip: validatedData.zipCode || null,
       utmSource: validatedData.utmSource || null,
       utmMedium: validatedData.utmMedium || null,
       utmCampaign: validatedData.utmCampaign || null,
