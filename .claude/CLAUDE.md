@@ -1,5 +1,110 @@
 # Project-Specific Instructions for Claude Code
 
+## 🔐 SECURITY RULE #1: NEVER HARDCODE SECRETS
+
+**ABSOLUTE RULE - NO EXCEPTIONS:**
+
+### ❌ NEVER Write Secrets to These Files:
+- **Code files** (*.js, *.ts, *.tsx, *.jsx, *.py, etc.)
+- **Documentation files** (*.md, *.txt, README, etc.)
+- **Configuration files** (config.json, settings.yaml, etc.)
+- **Scripts** (any executable file)
+- **Any file that gets committed to git**
+
+### ✅ ONLY Place Secrets Here:
+- `.env.local` (gitignored - for local development)
+- `.env.production` (gitignored - for production reference)
+- Vercel/hosting provider environment variable settings (encrypted)
+- Password managers / secret management systems
+
+### Writing Documentation
+
+When documenting environment variables in markdown files:
+
+**❌ WRONG:**
+```
+RESEND_API_KEY=re_WpTtwkzV_CvvGd4WSYnuY5AhzfzDzXFjs
+DATABASE_PASSWORD=mySecretPassword123
+```
+
+**✅ CORRECT:**
+```
+RESEND_API_KEY=[configured in Vercel]
+DATABASE_PASSWORD=[set in .env.local]
+API_KEY=***
+SECRET_TOKEN=(stored securely in hosting dashboard)
+```
+
+### Writing Scripts
+
+**❌ WRONG:**
+```javascript
+const API_KEY = 're_WpTtwkzV_CvvGd4WSYnuY5AhzfzDzXFjs';
+const client = createClient('https://example.com', 'hardcoded_secret');
+```
+
+**✅ CORRECT:**
+```javascript
+const API_KEY = process.env.RESEND_API_KEY;
+if (!API_KEY) {
+  throw new Error('RESEND_API_KEY environment variable is required');
+}
+const client = createClient(process.env.DATABASE_URL, process.env.SERVICE_KEY);
+```
+
+### Before Creating/Editing Any File:
+
+**Ask yourself:**
+1. Does this file contain API keys, passwords, tokens, or credentials?
+2. Will this file be committed to git?
+3. If YES to both → **STOP. Use environment variables instead.**
+
+### Why This Matters:
+
+**What happens when secrets are hardcoded:**
+1. ✅ They get committed to git
+2. ✅ They get pushed to GitHub (public repository)
+3. ✅ Bots scrape GitHub for exposed secrets within minutes
+4. ✅ GitGuardian/security scanners raise alerts
+5. ✅ Secrets must be rotated (regenerated)
+6. ✅ Git history must be rewritten (time-consuming)
+7. ✅ All collaborators must force pull
+8. ❌ Potential security breach / unauthorized access
+
+**Cost of one hardcoded secret:**
+- 2-4 hours to clean git history
+- Risk of service compromise
+- Loss of trust
+
+**Cost of using .env from the start:**
+- 30 seconds
+
+### Enforcement Rule:
+
+**Before writing to ANY file, check:**
+```
+Does this line contain a secret? (API key, password, token, credential)
+  → YES: Use process.env.VARIABLE_NAME
+  → NO: Safe to write directly
+```
+
+**If you catch yourself hardcoding a secret:**
+1. STOP immediately
+2. Replace with environment variable
+3. Add variable to .env.local (gitignored)
+4. Verify .gitignore includes .env* pattern
+5. Test that code still works
+
+### This Rule Saved Us From:
+- Supabase service role key exposure (November 2025)
+- Resend API key exposure (November 2025)
+- Multiple hours of git history cleanup
+- Potential unauthorized database access
+
+**REMEMBER: If it's a secret, it belongs in .env - PERIOD.**
+
+---
+
 ## 🚨 RingCentral JWT Authentication
 
 **BEFORE working with RingCentral authentication, READ THIS FIRST:**
