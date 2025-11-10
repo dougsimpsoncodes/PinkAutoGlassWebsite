@@ -6,11 +6,14 @@ require('dotenv').config({ path: '.env.local' });
 const ADMIN_EMAIL = 'admin@pinkautoglass.com';
 const ADMIN_PASSWORD = 'PinkGlass2025!';
 
-// Database connection
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Database connection - only initialize if env vars are available
+let supabase = null;
+if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
 // Helper function to login
 async function loginAsAdmin(page) {
@@ -24,6 +27,11 @@ async function loginAsAdmin(page) {
 
 // Helper to create test data
 async function createTestData() {
+  if (!supabase) {
+    console.warn('⚠️  Skipping test data creation - Supabase not configured');
+    return null;
+  }
+
   const sessionId = `test_dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Create session
@@ -55,6 +63,8 @@ async function createTestData() {
 
 // Helper to cleanup test data
 async function cleanupTestData(sessionId) {
+  if (!supabase || !sessionId) return;
+
   await supabase.from('conversion_events').delete().eq('session_id', sessionId);
   await supabase.from('analytics_events').delete().eq('session_id', sessionId);
   await supabase.from('page_views').delete().eq('session_id', sessionId);
