@@ -1,5 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
       "source": "/(.*)",
@@ -25,32 +24,6 @@
           "value": "camera=(), microphone=(), geolocation=()"
         }
       ]
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/admin/(.*)",
-      "missing": [
-        {
-          "type": "header",
-          "key": "x-firewall-bypass-not-needed"
-        }
-      ],
-      "mitigate": {
-        "action": "bypass"
-      }
-    },
-    {
-      "src": "/admin/(.*)",
-      "missing": [
-        {
-          "type": "header",
-          "key": "x-firewall-bypass-not-needed"
-        }
-      ],
-      "mitigate": {
-        "action": "bypass"
-      }
     }
   ]
 }
