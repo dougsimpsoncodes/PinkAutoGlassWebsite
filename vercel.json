@@ -25,5 +25,14 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/**": {
+      "regions": ["iad1"]
+    },
+    "api/admin/**": {
+      "maxDuration": 30,
+      "regions": ["iad1"]
+    }
+  }
 }
