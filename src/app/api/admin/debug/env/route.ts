@@ -1,0 +1,14 @@
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  // Show environment variable info (safely)
+  return NextResponse.json({
+    supabase_url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    supabase_key_prefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 30) + '...',
+    supabase_key_length: process.env.SUPABASE_SERVICE_ROLE_KEY?.length,
+    node_env: process.env.NODE_ENV,
+    vercel_env: process.env.VERCEL_ENV,
+  });
+}
