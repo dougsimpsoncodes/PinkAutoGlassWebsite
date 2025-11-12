@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
       "source": "/(.*)",
@@ -26,50 +27,30 @@
       ]
     }
   ],
-  "firewall": {
-    "rules": [
-      {
-        "name": "bypass-admin-api",
-        "description": "Bypass firewall for authenticated admin API routes",
-        "active": true,
-        "conditionGroup": [
-          {
-            "conditions": [
-              {
-                "type": "path",
-                "op": "pre",
-                "value": "/api/admin/"
-              }
-            ]
-          }
-        ],
-        "action": {
-          "mitigate": {
-            "action": "bypass"
-          }
+  "routes": [
+    {
+      "src": "/api/admin/(.*)",
+      "missing": [
+        {
+          "type": "header",
+          "key": "x-firewall-bypass-not-needed"
         }
-      },
-      {
-        "name": "bypass-admin-pages",
-        "description": "Bypass firewall for authenticated admin pages",
-        "active": true,
-        "conditionGroup": [
-          {
-            "conditions": [
-              {
-                "type": "path",
-                "op": "pre",
-                "value": "/admin/"
-              }
-            ]
-          }
-        ],
-        "action": {
-          "mitigate": {
-            "action": "bypass"
-          }
-        }
+      ],
+      "mitigate": {
+        "action": "bypass"
       }
-    ]
-  }
+    },
+    {
+      "src": "/admin/(.*)",
+      "missing": [
+        {
+          "type": "header",
+          "key": "x-firewall-bypass-not-needed"
+        }
+      ],
+      "mitigate": {
+        "action": "bypass"
+      }
+    }
+  ]
 }
