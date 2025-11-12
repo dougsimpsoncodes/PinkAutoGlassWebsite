@@ -4,17 +4,47 @@ import { createClient } from '@supabase/supabase-js';
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-// Create Supabase client function to avoid build-time initialization
-function getSupabaseClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
-  const supabase = getSupabaseClient();
+  // Create a FRESH Supabase client for THIS request only
+  // No module-level caching, no session persistence
+  const ts = Date.now().toString();
+
+  const customFetch = async (input: RequestInfo, init?: RequestInit) => {
+    let reqUrl = typeof input === 'string' ? input : input.url;
+    const sep = reqUrl.includes('?') ? '&' : '?';
+    reqUrl = `${reqUrl}${sep}__ts=${ts}`;
+
+    return fetch(reqUrl, {
+      ...init,
+      cache: 'no-store',
+      headers: {
+        ...(init?.headers || {}),
+        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+        'Pragma': 'no-cache',
+        'X-Request-Ts': ts,
+      },
+    });
+  };
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        persistSession: false, // Disable session caching
+        autoRefreshToken: false,
+      },
+      global: {
+        fetch: customFetch,
+        headers: {
+          'X-Client-Info': 'pink-admin-no-store',
+          'X-Request-Id': ts,
+        },
+      },
+    }
+  );
 
   try {
     const { searchParams } = new URL(req.url);
@@ -39,13 +69,18 @@ export async function GET(req: NextRequest) {
       .from('ringcentral_calls')
       .select('*', { count: 'exact', head: true });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       ok: true,
       calls: calls || [],
       total: count || 0,
       limit,
       offset,
+      mostRecentStartTime:
+        calls && calls.length > 0 ? (calls[0] as any).start_time ?? null : null,
     });
+    // Ensure the API response itself is never cached
+    res.headers.set('Cache-Control', 'no-store');
+    return res;
   } catch (error: any) {
     console.error('Fetch calls error:', error);
     return NextResponse.json(
