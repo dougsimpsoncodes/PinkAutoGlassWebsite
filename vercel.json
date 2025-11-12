@@ -25,10 +25,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/admin/**": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
