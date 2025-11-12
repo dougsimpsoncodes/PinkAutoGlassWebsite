@@ -455,4 +455,219 @@ rm -rf .next
 
 ---
 
+## 🚨 DON'T OVER-ENGINEER: Start Simple, Add Complexity Only When Needed
+
+**Critical Rule:** When working with SDKs, API clients, and third-party libraries, DO NOT create custom wrappers or "optimizations" unless absolutely necessary. Simple solutions work better than clever ones.
+
+### The Problem with Over-Engineering
+
+**Real Example - Custom Fetch Wrapper Broke Supabase Auth (November 2025):**
+
+**What Happened:**
+- Admin dashboard showed stale data (stuck on Nov 7)
+- I assumed the issue was caching and created a custom fetch wrapper to add cache-busting headers
+- The custom wrapper broke Supabase authentication by dropping critical headers
+- API returned: `"No API key found in request"`
+- User saw: Dashboard stuck on "Loading calls..."
+
+**Why This Was Wrong:**
+```typescript
+// ❌ BROKEN: Custom fetch wrapper (40 lines)
+const customFetch = async (input: RequestInfo, init?: RequestInit) => {
+  let reqUrl = typeof input === 'string' ? input : input.url;
+  reqUrl = `${reqUrl}?__ts=${Date.now()}`;
+
+  return fetch(reqUrl, {
+    ...init,
+    cache: 'no-store',
+    headers: {
+      ...(init?.headers || {}),  // ⚠️ Spread doesn't work on Headers objects!
+      'Cache-Control': 'no-cache',
+      'X-Request-Ts': Date.now(),
+    },
+  });
+};
+
+const supabase = createClient(url, key, {
+  global: { fetch: customFetch }  // ⚠️ Breaks authentication!
+});
+```
+
+**What I Should Have Done:**
+```typescript
+// ✅ WORKING: Simple solution (10 lines)
+const supabase = createClient(url, key, {
+  auth: {
+    persistSession: false,  // This alone prevents caching
+    autoRefreshToken: false,
+  }
+});
+```
+
+### Why Custom Wrappers Break Things
+
+1. **Headers objects aren't plain objects** - `...init?.headers` silently fails to spread `apikey` and `Authorization` headers
+2. **SDKs expect specific fetch behavior** - Custom wrappers can break retry logic, timeouts, error handling
+3. **Authentication relies on precise headers** - Any modification risks dropping critical auth headers
+4. **You're fighting the library** - If the SDK doesn't work with default fetch, the problem is elsewhere
+
+### The "Start Simple" Protocol
+
+When debugging API/SDK issues, follow this order:
+
+#### 1. Try the Simplest Config First
+```typescript
+// Start here
+const client = createClient(url, apiKey);
+
+// NOT here
+const client = createClient(url, apiKey, {
+  global: {
+    fetch: myCustomFetch,
+    headers: { 'X-Custom': 'value' },
+  },
+  auth: { persistSession: false },
+  db: { schema: 'public' },
+});
+```
+
+#### 2. Add ONE Config Option at a Time
+```typescript
+// Step 1: Test basic client
+const client = createClient(url, apiKey);
+
+// Step 2: If caching is an issue, add ONLY this:
+const client = createClient(url, apiKey, {
+  auth: { persistSession: false }
+});
+
+// Step 3: If still broken, add ONLY the next minimal option
+```
+
+#### 3. Test After Each Change
+- Don't add multiple config options without testing
+- Use curl to verify each change independently
+- Check browser DevTools Network tab for actual headers sent
+
+#### 4. If Simple Doesn't Work, Debug WHY
+- Is the API key correct?
+- Are environment variables loaded?
+- Is the endpoint accessible?
+- What error does curl show?
+
+**Don't jump to "I need a custom wrapper" until you've verified the basics.**
+
+### When Custom Wrappers Are Actually Needed
+
+✅ **Valid reasons:**
+- SDK doesn't support a critical use case (after confirming with documentation)
+- Need to add authentication that the SDK doesn't handle (e.g., AWS Signature v4)
+- Need to integrate with a monitoring/logging system
+- Official SDK recommendation says to customize fetch
+
+❌ **Invalid reasons:**
+- "I think this will be faster"
+- "I want to add caching" (use SDK config options instead)
+- "I want to log requests" (use SDK hooks/interceptors if available)
+- "The SDK might be caching" (test first, don't assume)
+
+### Testing Strategy: Direct Before Wrapped
+
+**Always test the API directly before wrapping it:**
+
+```bash
+# 1. Test with curl (bypasses all code)
+curl -H "apikey: $KEY" -H "Authorization: Bearer $KEY" \
+  "https://api.supabase.io/rest/v1/table?select=*"
+
+# 2. If curl works, test with basic SDK
+const client = createClient(url, key);
+const { data } = await client.from('table').select('*');
+
+# 3. If basic SDK works, you don't need a custom wrapper
+# 4. If basic SDK fails but curl works, check SDK config, not fetch
+```
+
+### Red Flags That You're Over-Engineering
+
+🚩 **You've written more wrapper code than SDK usage code**
+🚩 **You're spreading Headers objects** - `...init?.headers`
+🚩 **You're reimplementing retry logic, timeout handling, or error parsing**
+🚩 **You haven't tested the simple solution first**
+🚩 **You're "optimizing" before measuring actual performance**
+🚩 **You're adding features the SDK already has (check docs first)**
+
+### The Cost of Over-Engineering
+
+**This custom fetch wrapper cost:**
+- 3 hours of debugging
+- Multiple failed deployments
+- User frustration ("admin site hasn't updated")
+- Wasted Playwright tests
+- False belief that RingCentral integration was broken
+
+**The simple solution took:**
+- 5 minutes to write
+- Worked immediately
+- No broken authentication
+- No header manipulation complexity
+
+### The Rule: KISS (Keep It Simple, Stupid)
+
+**When working with SDKs and API clients:**
+
+1. ✅ **Use default configuration first**
+2. ✅ **Add config options from SDK documentation**
+3. ✅ **Test with curl to isolate issues**
+4. ✅ **Check SDK changelog/issues for known problems**
+5. ❌ **Don't create custom fetch wrappers**
+6. ❌ **Don't spread Headers objects**
+7. ❌ **Don't "optimize" without measuring**
+8. ❌ **Don't assume the SDK needs customization**
+
+### Lessons from November 2025 Debugging Session
+
+| What I Did | What I Should Have Done | Time Wasted |
+|------------|-------------------------|-------------|
+| Created custom fetch wrapper to "fix caching" | Used `persistSession: false` | 3 hours |
+| Spread `init?.headers` (broke auth) | Let SDK manage headers | Multiple deployments |
+| Assumed caching was the issue | Used curl to test API first | User frustration |
+| Added cache-busting to fetch | Trusted SDK's built-in cache control | Playwright test failures |
+
+**Total time wasted: 3+ hours**
+**Working solution: 5 minutes**
+**Complexity ratio: 60:1 (worse is bad)**
+
+### Enforcement Rule
+
+**Before creating ANY custom wrapper or fetch function:**
+
+```
+STOP and ask:
+1. Have I tested the SDK with default config? → If NO, do that first
+2. Have I tested with curl to verify the API works? → If NO, do that first
+3. Have I checked SDK docs for config options? → If NO, do that first
+4. Do I have concrete evidence that a wrapper is needed? → If NO, don't create it
+5. Am I trying to be clever instead of simple? → If YES, stop and use simple approach
+```
+
+**If you catch yourself writing a custom fetch wrapper:**
+1. STOP immediately
+2. Test with default SDK config
+3. Test with curl
+4. Check SDK documentation for config options
+5. Only create wrapper if steps 2-4 prove it's absolutely necessary
+
+### This Rule Will Prevent
+
+- Broken authentication from dropped headers
+- Hours of debugging over-engineered solutions
+- False assumptions about caching/performance
+- Fighting against well-designed SDKs
+- Creating maintenance burden with custom code
+
+**REMEMBER: The best code is code you don't write. Use the SDK as designed first.**
+
+---
+
 **Remember:** When in doubt, research first. The official documentation is always more reliable than guessing.
