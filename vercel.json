@@ -25,5 +25,51 @@
         }
       ]
     }
-  ]
+  ],
+  "firewall": {
+    "rules": [
+      {
+        "name": "bypass-admin-api",
+        "description": "Bypass firewall for authenticated admin API routes",
+        "active": true,
+        "conditionGroup": [
+          {
+            "conditions": [
+              {
+                "type": "path",
+                "op": "pre",
+                "value": "/api/admin/"
+              }
+            ]
+          }
+        ],
+        "action": {
+          "mitigate": {
+            "action": "bypass"
+          }
+        }
+      },
+      {
+        "name": "bypass-admin-pages",
+        "description": "Bypass firewall for authenticated admin pages",
+        "active": true,
+        "conditionGroup": [
+          {
+            "conditions": [
+              {
+                "type": "path",
+                "op": "pre",
+                "value": "/admin/"
+              }
+            ]
+          }
+        ],
+        "action": {
+          "mitigate": {
+            "action": "bypass"
+          }
+        }
+      }
+    ]
+  }
 }
