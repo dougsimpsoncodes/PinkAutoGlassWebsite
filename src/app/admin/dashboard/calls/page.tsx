@@ -60,7 +60,9 @@ export default function CallAnalyticsPage() {
 
   const fetchCalls = async () => {
     try {
-      const res = await fetch('/api/admin/calls?limit=1000');
+      const res = await fetch('/api/admin/calls?limit=1000', {
+        credentials: 'include' // Include Basic Auth credentials
+      });
       if (!res.ok) return;
 
       const data = await res.json();
@@ -80,6 +82,7 @@ export default function CallAnalyticsPage() {
       // Step 1: Sync from RingCentral API to database
       const syncRes = await fetch('/api/admin/sync/ringcentral', {
         method: 'POST',
+        credentials: 'include' // Include Basic Auth credentials
       });
 
       if (!syncRes.ok) {
