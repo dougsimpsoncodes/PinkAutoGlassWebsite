@@ -14,6 +14,9 @@ export async function GET() {
     'RINGCENTRAL_SERVER_URL',
     'ADMIN_USERNAME',
     'ADMIN_PASSWORD',
+    'RESEND_API_KEY',
+    'FROM_EMAIL',
+    'ADMIN_EMAIL',
   ];
 
   const envStatus = requiredEnvVars.map((key) => ({
