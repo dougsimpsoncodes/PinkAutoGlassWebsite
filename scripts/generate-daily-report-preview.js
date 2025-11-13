@@ -1,5 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Load environment variables from .env.local
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '../.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -48,6 +56,30 @@ function getDayName(date) {
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
 }
 
+// Fetch Google Ads data from API
+async function fetchGoogleAdsData(startDate, endDate) {
+  try {
+    const url = `http://localhost:3000/api/google-ads/daily-stats?startDate=${startDate}&endDate=${endDate}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      return result.data;
+    } else {
+      throw new Error(result.error || 'Failed to fetch Google Ads data');
+    }
+  } catch (error) {
+    console.error('Error fetching Google Ads data:', error.message);
+    console.error('Using empty data for Google Ads metrics');
+    return [];
+  }
+}
+
 async function fetchData() {
   const { today, sevenDaysAgo, fourteenDaysAgo } = getDateRanges();
 
@@ -79,22 +111,32 @@ async function fetchData() {
     console.error('Error fetching leads:', leadsError);
   }
 
-  // Since we don't have Google Ads data stored, we'll use placeholder data
-  // In the real implementation, this would fetch from google_ads_daily_stats table
+  // Fetch Google Ads data
+  const fourteenDaysAgoDate = new Date(fourteenDaysAgo).toISOString().split('T')[0];
+  const todayDate = new Date(today).toISOString().split('T')[0];
+  const adsData = await fetchGoogleAdsData(fourteenDaysAgoDate, todayDate);
+
+  console.log(`✅ Fetched ${adsData.length} days of Google Ads data`);
 
   return {
     calls: calls || [],
     leads: leads || [],
-    adsData: [],  // Placeholder
+    adsData: adsData,
     analyticsData: []  // Placeholder
   };
 }
 
-function aggregateDataByDay(calls, leads) {
+function aggregateDataByDay(calls, leads, adsData) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const dailyStats = [];
+
+  // Create a lookup map for Google Ads data by date
+  const adsDataByDate = {};
+  adsData.forEach(ad => {
+    adsDataByDate[ad.date] = ad;
+  });
 
   // Get last 14 days
   for (let i = 0; i < 14; i++) {
@@ -116,15 +158,18 @@ function aggregateDataByDay(calls, leads) {
       return leadDate.toISOString().split('T')[0] === dateStr;
     }).length;
 
+    // Get Google Ads data for this day (or use zeros if not available)
+    const adsForDay = adsDataByDate[dateStr] || { impressions: 0, clicks: 0, spend: 0 };
+
     dailyStats.push({
       date: dateStr,
       dayName: getDayName(date),
       uniqueCallers,
       webLeads: dayLeads,
-      webVisitors: Math.floor(Math.random() * 100) + 200,  // Placeholder
-      impressions: Math.floor(Math.random() * 2000) + 7000,  // Placeholder
-      clicks: Math.floor(Math.random() * 100) + 200,  // Placeholder
-      spend: Math.floor(Math.random() * 50) + 200  // Placeholder
+      webVisitors: Math.floor(Math.random() * 100) + 200,  // Still placeholder - needs Google Analytics
+      impressions: adsForDay.impressions,
+      clicks: adsForDay.clicks,
+      spend: adsForDay.spend
     });
   }
 
@@ -608,8 +653,9 @@ async function main() {
     console.log(`\nData summary:`);
     console.log(`- Calls (last 14 days): ${data.calls.length}`);
     console.log(`- Leads (last 14 days): ${data.leads.length}`);
+    console.log(`- Google Ads days: ${data.adsData.length}`);
 
-    const dailyStats = aggregateDataByDay(data.calls, data.leads);
+    const dailyStats = aggregateDataByDay(data.calls, data.leads, data.adsData);
     const metrics = calculateTrends(dailyStats);
     const contacts = getTodaysContacts(data.calls, data.leads);
 
