@@ -53,6 +53,78 @@ function formatTime(dateStr: string): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
+// Deduplicate calls - only show one call per session_id
+// Logic copied from /src/app/admin/dashboard/calls/page.tsx
+function deduplicateCalls(calls: any[]): any[] {
+  const sessionMap = new Map<string, any>();
+
+  calls.forEach(call => {
+    const existing = sessionMap.get(call.session_id);
+
+    if (!existing) {
+      // First party in this session - add it
+      sessionMap.set(call.session_id, call);
+    } else {
+      // Prefer Inbound calls to our business number (+17209187465)
+      const isInboundToUs = call.direction === 'Inbound' && call.to_number === '+17209187465';
+      const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === '+17209187465';
+
+      if (isInboundToUs && !existingIsInboundToUs) {
+        sessionMap.set(call.session_id, call);
+      }
+    }
+  });
+
+  return Array.from(sessionMap.values());
+}
+
+// Deduplicate leads - only show one lead per email/phone
+function deduplicateLeads(leads: any[]): any[] {
+  const contactMap = new Map<string, any>();
+
+  leads.forEach(lead => {
+    // Use email as primary key, fallback to phone
+    const key = (lead.email || lead.phone || lead.id).toLowerCase();
+    const existing = contactMap.get(key);
+
+    if (!existing) {
+      contactMap.set(key, lead);
+    } else {
+      // Keep the most recent one
+      const leadDate = new Date(lead.created_at);
+      const existingDate = new Date(existing.created_at);
+      if (leadDate > existingDate) {
+        contactMap.set(key, lead);
+      }
+    }
+  });
+
+  return Array.from(contactMap.values());
+}
+
+// Filter out test leads
+// Test leads = has "test" in name OR email, AND domain is @pink.com or @pinkautoglass.com
+function filterTestLeads(leads: any[]): any[] {
+  return leads.filter(lead => {
+    const email = (lead.email || '').toLowerCase();
+    const firstName = (lead.first_name || '').toLowerCase();
+    const lastName = (lead.last_name || '').toLowerCase();
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    // Check if "test" appears in email or name
+    const hasTestInEmail = email.includes('test');
+    const hasTestInName = fullName.includes('test') || firstName.includes('test') || lastName.includes('test');
+    const hasTest = hasTestInEmail || hasTestInName;
+
+    const isPinkDomain = email.endsWith('@pink.com') || email.endsWith('@pinkautoglass.com');
+
+    // Exclude if BOTH conditions are true
+    const isTestLead = hasTest && isPinkDomain;
+
+    return !isTestLead;
+  });
+}
+
 // Fetch all data
 async function fetchData() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -65,19 +137,25 @@ async function fetchData() {
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
   // Fetch calls
-  const { data: calls } = await supabase
+  const { data: allCalls } = await supabase
     .from('ringcentral_calls')
     .select('*')
     .gte('start_time', fourteenDaysAgo.toISOString())
     .eq('direction', 'Inbound')
     .order('start_time', { ascending: false });
 
-  // Fetch leads
-  const { data: leads } = await supabase
+  // Deduplicate calls (same logic as call analytics page)
+  const calls = deduplicateCalls(allCalls || []);
+
+  // Fetch leads, filter test leads, and deduplicate
+  const { data: allLeads } = await supabase
     .from('leads')
     .select('*')
     .gte('created_at', fourteenDaysAgo.toISOString())
     .order('created_at', { ascending: false });
+
+  const filteredLeads = filterTestLeads(allLeads || []);
+  const leads = deduplicateLeads(filteredLeads);
 
   // Fetch Google Ads data
   const startDate = fourteenDaysAgo.toISOString().split('T')[0];
@@ -186,7 +264,24 @@ function getTodaysContacts(calls: any[], leads: any[]): Contact[] {
 
   contacts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-  return contacts;
+  // Deduplicate contacts by phone or email
+  const uniqueContacts: Contact[] = [];
+  const seen = new Set<string>();
+
+  contacts.forEach((contact) => {
+    // Use email as primary key, fallback to phone
+    const key = (contact.email || contact.phone || '').toLowerCase().replace(/\D/g, '');
+
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      uniqueContacts.push(contact);
+    } else if (!key) {
+      // If no email or phone, include it (shouldn't happen but be safe)
+      uniqueContacts.push(contact);
+    }
+  });
+
+  return uniqueContacts;
 }
 
 // Calculate trends
@@ -230,7 +325,7 @@ function calculateTrends(dailyStats: DailyStats[]) {
 }
 
 // Generate HTML email (simplified version from the script)
-function generateEmailHTML(metrics: any, contacts: Contact[]): string {
+function generateEmailHTML(metrics: any, contacts: Contact[], actualPhoneLeads: number, actualWebLeads: number): string {
   const { trends, thisWeek } = metrics;
   const today = thisWeek[thisWeek.length - 1];
 
@@ -257,14 +352,14 @@ function generateEmailHTML(metrics: any, contacts: Contact[]): string {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
           <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Phone Leads</div>
-          <div style="font-size: 28px; font-weight: 600; color: #333;">${today.uniqueCallers}</div>
+          <div style="font-size: 28px; font-weight: 600; color: #333;">${actualPhoneLeads}</div>
           <div style="font-size: 12px; color: ${parseFloat(trends.uniqueCallers.change) >= 0 ? '#10b981' : '#ef4444'}; margin-top: 4px;">
             ${parseFloat(trends.uniqueCallers.change) >= 0 ? '↑' : '↓'} ${Math.abs(parseFloat(trends.uniqueCallers.change))}% vs last week
           </div>
         </div>
         <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
           <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Web Leads</div>
-          <div style="font-size: 28px; font-weight: 600; color: #333;">${today.webLeads}</div>
+          <div style="font-size: 28px; font-weight: 600; color: #333;">${actualWebLeads}</div>
           <div style="font-size: 12px; color: ${parseFloat(trends.webLeads.change) >= 0 ? '#10b981' : '#ef4444'}; margin-top: 4px;">
             ${parseFloat(trends.webLeads.change) >= 0 ? '↑' : '↓'} ${Math.abs(parseFloat(trends.webLeads.change))}% vs last week
           </div>
@@ -339,8 +434,12 @@ export async function GET(request: NextRequest) {
     const metrics = calculateTrends(dailyStats);
     const contacts = getTodaysContacts(data.calls, data.leads);
 
+    // Count actual unique contacts after final deduplication
+    const actualPhoneLeads = contacts.filter(c => c.source === 'phone').length;
+    const actualWebLeads = contacts.filter(c => c.source === 'web').length;
+
     // Generate HTML
-    const html = generateEmailHTML(metrics, contacts);
+    const html = generateEmailHTML(metrics, contacts, actualPhoneLeads, actualWebLeads);
 
     // Send email
     const subject = `Daily Report - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;

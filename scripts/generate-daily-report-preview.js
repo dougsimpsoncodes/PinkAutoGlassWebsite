@@ -14,19 +14,21 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Get date range for last 14 days (7 days this week + 7 days last week)
+// IMPORTANT: Reports go out a day late, so "today" in the report is actually yesterday
 function getDateRanges() {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Shift back 1 day - report shows yesterday's data
+  const reportDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
 
-  // Get last 14 days for comparison
-  const fourteenDaysAgo = new Date(todayStart);
+  // Get last 14 days for comparison (from yesterday back)
+  const fourteenDaysAgo = new Date(reportDate);
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-  const sevenDaysAgo = new Date(todayStart);
+  const sevenDaysAgo = new Date(reportDate);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   return {
-    today: todayStart.toISOString(),
+    today: reportDate.toISOString(),
     sevenDaysAgo: sevenDaysAgo.toISOString(),
     fourteenDaysAgo: fourteenDaysAgo.toISOString()
   };
@@ -80,6 +82,78 @@ async function fetchGoogleAdsData(startDate, endDate) {
   }
 }
 
+// Deduplicate calls - only show one call per session_id
+// Logic copied from /src/app/admin/dashboard/calls/page.tsx
+function deduplicateCalls(calls) {
+  const sessionMap = new Map();
+
+  calls.forEach(call => {
+    const existing = sessionMap.get(call.session_id);
+
+    if (!existing) {
+      // First party in this session - add it
+      sessionMap.set(call.session_id, call);
+    } else {
+      // Prefer Inbound calls to our business number (+17209187465)
+      const isInboundToUs = call.direction === 'Inbound' && call.to_number === '+17209187465';
+      const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === '+17209187465';
+
+      if (isInboundToUs && !existingIsInboundToUs) {
+        sessionMap.set(call.session_id, call);
+      }
+    }
+  });
+
+  return Array.from(sessionMap.values());
+}
+
+// Deduplicate leads - only show one lead per email/phone
+function deduplicateLeads(leads) {
+  const contactMap = new Map();
+
+  leads.forEach(lead => {
+    // Use email as primary key, fallback to phone
+    const key = (lead.email || lead.phone || lead.id).toLowerCase();
+    const existing = contactMap.get(key);
+
+    if (!existing) {
+      contactMap.set(key, lead);
+    } else {
+      // Keep the most recent one
+      const leadDate = new Date(lead.created_at);
+      const existingDate = new Date(existing.created_at);
+      if (leadDate > existingDate) {
+        contactMap.set(key, lead);
+      }
+    }
+  });
+
+  return Array.from(contactMap.values());
+}
+
+// Filter out test leads
+function filterTestLeads(leads) {
+  return leads.filter(lead => {
+    const email = (lead.email || '').toLowerCase();
+    const firstName = (lead.first_name || '').toLowerCase();
+    const lastName = (lead.last_name || '').toLowerCase();
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    // Test lead criteria:
+    // Has "test" in name OR email, AND domain is @pink.com or @pinkautoglass.com
+    const hasTestInEmail = email.includes('test');
+    const hasTestInName = fullName.includes('test') || firstName.includes('test') || lastName.includes('test');
+    const hasTest = hasTestInEmail || hasTestInName;
+
+    const isPinkDomain = email.endsWith('@pink.com') || email.endsWith('@pinkautoglass.com');
+
+    // Exclude if BOTH conditions are true
+    const isTestLead = hasTest && isPinkDomain;
+
+    return !isTestLead;
+  });
+}
+
 async function fetchData() {
   const { today, sevenDaysAgo, fourteenDaysAgo } = getDateRanges();
 
@@ -88,7 +162,7 @@ async function fetchData() {
   console.log('7 days ago:', sevenDaysAgo);
   console.log('14 days ago:', fourteenDaysAgo);
 
-  // Fetch RingCentral calls
+  // Fetch RingCentral calls (no filtering needed - all phone leads are real)
   const { data: calls, error: callsError } = await supabase
     .from('ringcentral_calls')
     .select('*')
@@ -101,7 +175,7 @@ async function fetchData() {
   }
 
   // Fetch web leads
-  const { data: leads, error: leadsError } = await supabase
+  const { data: allLeads, error: leadsError } = await supabase
     .from('leads')
     .select('*')
     .gte('created_at', fourteenDaysAgo)
@@ -109,6 +183,27 @@ async function fetchData() {
 
   if (leadsError) {
     console.error('Error fetching leads:', leadsError);
+  }
+
+  // Deduplicate calls (same logic as call analytics page)
+  const deduplicatedCalls = deduplicateCalls(calls || []);
+  const duplicateCallsCount = (calls || []).length - deduplicatedCalls.length;
+  if (duplicateCallsCount > 0) {
+    console.log(`🔄 Deduplicated ${duplicateCallsCount} duplicate calls`);
+  }
+
+  // Filter out test leads
+  const filteredLeads = filterTestLeads(allLeads || []);
+  const testLeadsCount = (allLeads || []).length - filteredLeads.length;
+  if (testLeadsCount > 0) {
+    console.log(`🧪 Filtered out ${testLeadsCount} test leads`);
+  }
+
+  // Deduplicate leads (by email/phone)
+  const leads = deduplicateLeads(filteredLeads);
+  const duplicateLeadsCount = filteredLeads.length - leads.length;
+  if (duplicateLeadsCount > 0) {
+    console.log(`🔄 Deduplicated ${duplicateLeadsCount} duplicate leads`);
   }
 
   // Fetch Google Ads data
@@ -119,16 +214,18 @@ async function fetchData() {
   console.log(`✅ Fetched ${adsData.length} days of Google Ads data`);
 
   return {
-    calls: calls || [],
-    leads: leads || [],
+    calls: deduplicatedCalls,
+    leads: leads,
     adsData: adsData,
     analyticsData: []  // Placeholder
   };
 }
 
 function aggregateDataByDay(calls, leads, adsData) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // IMPORTANT: Reports go out a day late, so we're aggregating from yesterday back 14 days
+  const now = new Date();
+  const reportDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  reportDate.setHours(0, 0, 0, 0);
 
   const dailyStats = [];
 
@@ -138,9 +235,9 @@ function aggregateDataByDay(calls, leads, adsData) {
     adsDataByDate[ad.date] = ad;
   });
 
-  // Get last 14 days
+  // Get last 14 days (from yesterday back)
   for (let i = 0; i < 14; i++) {
-    const date = new Date(today);
+    const date = new Date(reportDate);
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split('T')[0];
 
@@ -166,7 +263,7 @@ function aggregateDataByDay(calls, leads, adsData) {
       dayName: getDayName(date),
       uniqueCallers,
       webLeads: dayLeads,
-      webVisitors: Math.floor(Math.random() * 100) + 200,  // Still placeholder - needs Google Analytics
+      // webVisitors removed - need to integrate Google Analytics for real data
       impressions: adsForDay.impressions,
       clicks: adsForDay.clicks,
       spend: adsForDay.spend
@@ -184,7 +281,6 @@ function calculateTrends(dailyStats) {
   const avgThisWeek = {
     uniqueCallers: thisWeek.reduce((sum, d) => sum + d.uniqueCallers, 0) / 7,
     webLeads: thisWeek.reduce((sum, d) => sum + d.webLeads, 0) / 7,
-    webVisitors: thisWeek.reduce((sum, d) => sum + d.webVisitors, 0) / 7,
     impressions: thisWeek.reduce((sum, d) => sum + d.impressions, 0) / 7,
     clicks: thisWeek.reduce((sum, d) => sum + d.clicks, 0) / 7,
     spend: thisWeek.reduce((sum, d) => sum + d.spend, 0) / 7
@@ -193,7 +289,6 @@ function calculateTrends(dailyStats) {
   const avgLastWeek = {
     uniqueCallers: lastWeek.reduce((sum, d) => sum + d.uniqueCallers, 0) / 7,
     webLeads: lastWeek.reduce((sum, d) => sum + d.webLeads, 0) / 7,
-    webVisitors: lastWeek.reduce((sum, d) => sum + d.webVisitors, 0) / 7,
     impressions: lastWeek.reduce((sum, d) => sum + d.impressions, 0) / 7,
     clicks: lastWeek.reduce((sum, d) => sum + d.clicks, 0) / 7,
     spend: lastWeek.reduce((sum, d) => sum + d.spend, 0) / 7
@@ -226,15 +321,20 @@ function generateSparklinePath(data, maxValue) {
 }
 
 function getTodaysContacts(calls, leads) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // IMPORTANT: Reports go out a day late, so "today's contacts" are actually yesterday's
+  const now = new Date();
+  const reportDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  reportDate.setHours(0, 0, 0, 0);
+
+  const nextDay = new Date(reportDate);
+  nextDay.setDate(nextDay.getDate() + 1);
 
   const contacts = [];
 
-  // Add phone calls
+  // Add phone calls from the report date
   calls.forEach(call => {
     const callDate = new Date(call.start_time);
-    if (callDate >= today) {
+    if (callDate >= reportDate && callDate < nextDay) {
       contacts.push({
         source: 'phone',
         name: call.from_name || 'Unknown Caller',
@@ -247,10 +347,10 @@ function getTodaysContacts(calls, leads) {
     }
   });
 
-  // Add web leads
+  // Add web leads from the report date
   leads.forEach(lead => {
     const leadDate = new Date(lead.created_at);
-    if (leadDate >= today) {
+    if (leadDate >= reportDate && leadDate < nextDay) {
       const vehicleInfo = lead.vehicle_info || (lead.year && lead.make && lead.model
         ? `${lead.year} ${lead.make} ${lead.model}`
         : '');
@@ -270,13 +370,30 @@ function getTodaysContacts(calls, leads) {
   // Sort by time (most recent first)
   contacts.sort((a, b) => b.timestamp - a.timestamp);
 
-  return contacts;
+  // Deduplicate contacts by phone or email
+  const uniqueContacts = [];
+  const seen = new Set();
+
+  contacts.forEach(contact => {
+    // Use email as primary key, fallback to phone
+    const key = (contact.email || contact.phone || '').toLowerCase().replace(/\D/g, '');
+
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      uniqueContacts.push(contact);
+    } else if (!key) {
+      // If no email or phone, include it (shouldn't happen but be safe)
+      uniqueContacts.push(contact);
+    }
+  });
+
+  return uniqueContacts;
 }
 
-function generateHTML(metrics, contacts) {
+function generateHTML(metrics, contacts, actualPhoneLeads, actualWebLeads) {
   const { trends, thisWeek, lastWeek } = metrics;
 
-  // Get today's totals
+  // Get today's totals (for sparklines and trends)
   const today = thisWeek[thisWeek.length - 1];
 
   // Calculate CPM
@@ -292,7 +409,6 @@ function generateHTML(metrics, contacts) {
   // Generate sparkline paths
   const maxCallers = Math.max(...thisWeek.map(d => d.uniqueCallers), ...lastWeek.map(d => d.uniqueCallers), 1);
   const maxLeads = Math.max(...thisWeek.map(d => d.webLeads), ...lastWeek.map(d => d.webLeads), 1);
-  const maxVisitors = Math.max(...thisWeek.map(d => d.webVisitors), ...lastWeek.map(d => d.webVisitors), 1);
   const maxImpressions = Math.max(...thisWeek.map(d => d.impressions), ...lastWeek.map(d => d.impressions), 1);
   const maxClicks = Math.max(...thisWeek.map(d => d.clicks), ...lastWeek.map(d => d.clicks), 1);
   const maxSpend = Math.max(...thisWeek.map(d => d.spend), ...lastWeek.map(d => d.spend), 1);
@@ -302,9 +418,6 @@ function generateHTML(metrics, contacts) {
 
   const leadsPathThisWeek = generateSparklinePath(thisWeek.map(d => d.webLeads), maxLeads);
   const leadsPathLastWeek = generateSparklinePath(lastWeek.map(d => d.webLeads), maxLeads);
-
-  const visitorsPathThisWeek = generateSparklinePath(thisWeek.map(d => d.webVisitors), maxVisitors);
-  const visitorsPathLastWeek = generateSparklinePath(lastWeek.map(d => d.webVisitors), maxVisitors);
 
   const impressionsPathThisWeek = generateSparklinePath(thisWeek.map(d => d.impressions), maxImpressions);
   const impressionsPathLastWeek = generateSparklinePath(lastWeek.map(d => d.impressions), maxImpressions);
@@ -335,14 +448,18 @@ function generateHTML(metrics, contacts) {
     </tr>
   `).join('');
 
-  const totalClicks = thisWeek.reduce((sum, d) => sum + d.clicks, 0);
-  const totalSpendWeek = thisWeek.reduce((sum, d) => sum + d.spend, 0);
+  // Yesterday's Google Ads metrics (not weekly totals)
+  const yesterdayClicks = today.clicks;
+  const yesterdaySpend = today.spend;
+  const yesterdayImpressions = today.impressions;
+  const yesterdayCpm = yesterdayImpressions > 0 ? (yesterdaySpend / yesterdayImpressions * 1000) : 0;
 
-  const lastWeekClicks = lastWeek.reduce((sum, d) => sum + d.clicks, 0);
-  const lastWeekSpendTotal = lastWeek.reduce((sum, d) => sum + d.spend, 0);
-
-  const clicksChange = lastWeekClicks > 0 ? ((totalClicks - lastWeekClicks) / lastWeekClicks * 100) : 0;
-  const spendChange = lastWeekSpendTotal > 0 ? ((totalSpendWeek - lastWeekSpendTotal) / lastWeekSpendTotal * 100) : 0;
+  // Calculate trends by comparing to same day last week
+  const lastWeekSameDay = lastWeek[lastWeek.length - 1]; // Same weekday from previous week
+  const clicksChange = lastWeekSameDay.clicks > 0 ? ((yesterdayClicks - lastWeekSameDay.clicks) / lastWeekSameDay.clicks * 100) : 0;
+  const spendChange = lastWeekSameDay.spend > 0 ? ((yesterdaySpend - lastWeekSameDay.spend) / lastWeekSameDay.spend * 100) : 0;
+  const yesterdayLastWeekCpm = lastWeekSameDay.impressions > 0 ? (lastWeekSameDay.spend / lastWeekSameDay.impressions * 1000) : 0;
+  const cpmChangeYesterday = yesterdayLastWeekCpm > 0 ? ((yesterdayCpm - yesterdayLastWeekCpm) / yesterdayLastWeekCpm * 100) : 0;
 
   // Read the logo base64
   const logoBase64 = fs.readFileSync('/tmp/logo-base64.txt', 'utf-8').trim();
@@ -375,12 +492,14 @@ function generateHTML(metrics, contacts) {
     .date-badge .time { font-size: 12px; color: rgba(255, 255, 255, 0.85); margin-top: 4px; }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 24px; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
     .metric-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
     .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
-    .metric-card.blue::before { background: linear-gradient(90deg, #5c6ac4, #4f5bd5); }
+    .metric-card.blue::before { background: linear-gradient(90deg, #00606e, #004d5a); }
     .metric-card.green::before { background: linear-gradient(90deg, #00a47c, #008060); }
     .metric-card.purple::before { background: linear-gradient(90deg, #9c6ade, #8657c8); }
+    .metric-card.teal::before { background: linear-gradient(90deg, #00a47c, #008060); }
+    .metric-card.indigo::before { background: linear-gradient(90deg, #5c6ac4, #4f5bd5); }
     .metric-card.orange::before { background: linear-gradient(90deg, #f49342, #ee7d2b); }
     .metric-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
     .metric-label { font-size: 13px; color: #6d7175; font-weight: 500; margin-bottom: 8px; }
@@ -454,7 +573,7 @@ function generateHTML(metrics, contacts) {
         <div class="metric-top">
           <div class="metric-info">
             <div class="metric-label">Phone Leads</div>
-            <div class="metric-value">${today.uniqueCallers}</div>
+            <div class="metric-value">${actualPhoneLeads}</div>
             <div class="metric-trend ${trends.uniqueCallers.change >= 0 ? 'up' : 'down'}">${trends.uniqueCallers.change >= 0 ? '+' : ''}${trends.uniqueCallers.change}% vs last week avg</div>
           </div>
         </div>
@@ -462,15 +581,15 @@ function generateHTML(metrics, contacts) {
           <svg viewBox="0 0 200 60" preserveAspectRatio="none">
             <defs>
               <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#5c6ac4;stop-opacity:0.3" />
-                <stop offset="100%" style="stop-color:#5c6ac4;stop-opacity:0" />
+                <stop offset="0%" style="stop-color:#00606e;stop-opacity:0.3" />
+                <stop offset="100%" style="stop-color:#00606e;stop-opacity:0" />
               </linearGradient>
             </defs>
-            <path d="${callersPathLastWeek}" stroke="#5c6ac4" class="chart-line-prior" />
-            <path d="${callersPathThisWeek}" stroke="#5c6ac4" class="chart-line" />
+            <path d="${callersPathLastWeek}" stroke="#00606e" class="chart-line-prior" />
+            <path d="${callersPathThisWeek}" stroke="#00606e" class="chart-line" />
             <path d="${callersPathThisWeek} L 200,60 L 0,60 Z" fill="url(#blueGradient)" class="chart-area" />
           </svg>
-          <div class="chart-legend-small" style="color: #5c6ac4;">
+          <div class="chart-legend-small" style="color: #00606e;">
             <span><span class="legend-line solid"></span>This week</span>
             <span><span class="legend-line dashed"></span>Last week</span>
           </div>
@@ -481,7 +600,7 @@ function generateHTML(metrics, contacts) {
         <div class="metric-top">
           <div class="metric-info">
             <div class="metric-label">Web Leads</div>
-            <div class="metric-value">${today.webLeads}</div>
+            <div class="metric-value">${actualWebLeads}</div>
             <div class="metric-trend ${trends.webLeads.change >= 0 ? 'up' : 'down'}">${trends.webLeads.change >= 0 ? '+' : ''}${trends.webLeads.change}% vs last week avg</div>
           </div>
         </div>
@@ -504,12 +623,39 @@ function generateHTML(metrics, contacts) {
         </div>
       </div>
 
+      <div class="metric-card teal">
+        <div class="metric-top">
+          <div class="metric-info">
+            <div class="metric-label">Ad Spend</div>
+            <div class="metric-value">$${yesterdaySpend.toFixed(0)}</div>
+            <div class="metric-trend ${spendChange >= 0 ? 'down' : 'up'}">${spendChange >= 0 ? '+' : ''}${spendChange.toFixed(1)}% vs last week</div>
+          </div>
+        </div>
+        <div class="sparkline">
+          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="tealGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#00a47c;stop-opacity:0.3" />
+                <stop offset="100%" style="stop-color:#00a47c;stop-opacity:0" />
+              </linearGradient>
+            </defs>
+            <path d="${spendPathLastWeek}" stroke="#00a47c" class="chart-line-prior" />
+            <path d="${spendPathThisWeek}" stroke="#00a47c" class="chart-line" />
+            <path d="${spendPathThisWeek} L 200,60 L 0,60 Z" fill="url(#tealGradient)" class="chart-area" />
+          </svg>
+          <div class="chart-legend-small" style="color: #00a47c;">
+            <span><span class="legend-line solid"></span>This week</span>
+            <span><span class="legend-line dashed"></span>Last week</span>
+          </div>
+        </div>
+      </div>
+
       <div class="metric-card purple">
         <div class="metric-top">
           <div class="metric-info">
-            <div class="metric-label">Web Visitors</div>
-            <div class="metric-value">${today.webVisitors}</div>
-            <div class="metric-trend ${trends.webVisitors.change >= 0 ? 'up' : 'down'}">${trends.webVisitors.change >= 0 ? '+' : ''}${trends.webVisitors.change}% vs last week avg</div>
+            <div class="metric-label">Ad Clicks</div>
+            <div class="metric-value">${yesterdayClicks}</div>
+            <div class="metric-trend ${clicksChange >= 0 ? 'up' : 'down'}">${clicksChange >= 0 ? '+' : ''}${clicksChange.toFixed(1)}% vs last week</div>
           </div>
         </div>
         <div class="sparkline">
@@ -520,9 +666,9 @@ function generateHTML(metrics, contacts) {
                 <stop offset="100%" style="stop-color:#9c6ade;stop-opacity:0" />
               </linearGradient>
             </defs>
-            <path d="${visitorsPathLastWeek}" stroke="#9c6ade" class="chart-line-prior" />
-            <path d="${visitorsPathThisWeek}" stroke="#9c6ade" class="chart-line" />
-            <path d="${visitorsPathThisWeek} L 200,60 L 0,60 Z" fill="url(#purpleGradient)" class="chart-area" />
+            <path d="${clicksPathLastWeek}" stroke="#9c6ade" class="chart-line-prior" />
+            <path d="${clicksPathThisWeek}" stroke="#9c6ade" class="chart-line" />
+            <path d="${clicksPathThisWeek} L 200,60 L 0,60 Z" fill="url(#purpleGradient)" class="chart-area" />
           </svg>
           <div class="chart-legend-small" style="color: #9c6ade;">
             <span><span class="legend-line solid"></span>This week</span>
@@ -535,7 +681,7 @@ function generateHTML(metrics, contacts) {
         <div class="metric-top">
           <div class="metric-info">
             <div class="metric-label">Ad Impressions</div>
-            <div class="metric-value">${today.impressions.toLocaleString()}</div>
+            <div class="metric-value">${yesterdayImpressions.toLocaleString()}</div>
             <div class="metric-trend ${trends.impressions.change >= 0 ? 'up' : 'down'}">${trends.impressions.change >= 0 ? '+' : ''}${trends.impressions.change}% vs last week avg</div>
           </div>
         </div>
@@ -552,6 +698,33 @@ function generateHTML(metrics, contacts) {
             <path d="${impressionsPathThisWeek} L 200,60 L 0,60 Z" fill="url(#orangeGradient)" class="chart-area" />
           </svg>
           <div class="chart-legend-small" style="color: #f49342;">
+            <span><span class="legend-line solid"></span>This week</span>
+            <span><span class="legend-line dashed"></span>Last week</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card indigo">
+        <div class="metric-top">
+          <div class="metric-info">
+            <div class="metric-label">CPM</div>
+            <div class="metric-value">$${yesterdayCpm.toFixed(2)}</div>
+            <div class="metric-trend ${cpmChangeYesterday <= 0 ? 'up' : 'down'}">${cpmChangeYesterday >= 0 ? '+' : ''}${cpmChangeYesterday.toFixed(1)}% vs last week</div>
+          </div>
+        </div>
+        <div class="sparkline">
+          <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="indigoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#5c6ac4;stop-opacity:0.3" />
+                <stop offset="100%" style="stop-color:#5c6ac4;stop-opacity:0" />
+              </linearGradient>
+            </defs>
+            <path d="${impressionsPathLastWeek}" stroke="#5c6ac4" class="chart-line-prior" />
+            <path d="${impressionsPathThisWeek}" stroke="#5c6ac4" class="chart-line" />
+            <path d="${impressionsPathThisWeek} L 200,60 L 0,60 Z" fill="url(#indigoGradient)" class="chart-area" />
+          </svg>
+          <div class="chart-legend-small" style="color: #5c6ac4;">
             <span><span class="legend-line solid"></span>This week</span>
             <span><span class="legend-line dashed"></span>Last week</span>
           </div>
@@ -580,65 +753,6 @@ function generateHTML(metrics, contacts) {
       </table>
     </div>
 
-    <div class="ads-grid">
-      <div class="ads-card">
-        <div class="label">Clicks</div>
-        <div class="value">${totalClicks}</div>
-        <div class="change ${clicksChange >= 0 ? 'up' : 'down'}">${clicksChange >= 0 ? '+' : ''}${clicksChange.toFixed(1)}%</div>
-        <div class="sparkline-compact">
-          <svg viewBox="0 0 200 50" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="clicksGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#5c6ac4;stop-opacity:0.2" />
-                <stop offset="100%" style="stop-color:#5c6ac4;stop-opacity:0" />
-              </linearGradient>
-            </defs>
-            <path d="${clicksPathLastWeek.replace(/60/g, '50')}" stroke="#8c9196" stroke-width="1.5" opacity="0.4" stroke-dasharray="3,2" fill="none" />
-            <path d="${clicksPathThisWeek.replace(/60/g, '50')}" stroke="#5c6ac4" stroke-width="2" fill="none" />
-            <path d="${clicksPathThisWeek.replace(/60/g, '50')} L 200,50 L 0,50 Z" fill="url(#clicksGradient)" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="ads-card">
-        <div class="label">Spend</div>
-        <div class="value">$${totalSpendWeek.toFixed(0)}</div>
-        <div class="change ${spendChange >= 0 ? 'up' : 'down'}">${spendChange >= 0 ? '+' : ''}${spendChange.toFixed(1)}%</div>
-        <div class="sparkline-compact">
-          <svg viewBox="0 0 200 50" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="spendGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#00a47c;stop-opacity:0.2" />
-                <stop offset="100%" style="stop-color:#00a47c;stop-opacity:0" />
-              </linearGradient>
-            </defs>
-            <path d="${spendPathLastWeek.replace(/60/g, '50')}" stroke="#8c9196" stroke-width="1.5" opacity="0.4" stroke-dasharray="3,2" fill="none" />
-            <path d="${spendPathThisWeek.replace(/60/g, '50')}" stroke="#00a47c" stroke-width="2" fill="none" />
-            <path d="${spendPathThisWeek.replace(/60/g, '50')} L 200,50 L 0,50 Z" fill="url(#spendGradient)" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="ads-card">
-        <div class="label">CPM</div>
-        <div class="value">$${cpm.toFixed(2)}</div>
-        <div class="change ${cpmChange <= 0 ? 'up' : 'down'}">${cpmChange >= 0 ? '+' : ''}${cpmChange.toFixed(1)}%</div>
-        <div class="sparkline-compact">
-          <svg viewBox="0 0 200 50" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="cpmGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#9c6ade;stop-opacity:0.2" />
-                <stop offset="100%" style="stop-color:#9c6ade;stop-opacity:0" />
-              </linearGradient>
-            </defs>
-            <path d="M 0,32 L 33,30 L 66,35 L 100,28 L 133,33 L 166,30 L 200,36" stroke="#8c9196" stroke-width="1.5" opacity="0.4" stroke-dasharray="3,2" fill="none" />
-            <path d="M 0,30 L 33,28 L 66,33 L 100,26 L 133,31 L 166,28 L 200,34" stroke="#9c6ade" stroke-width="2" fill="none" />
-            <path d="M 0,30 L 33,28 L 66,33 L 100,26 L 133,31 L 166,28 L 200,34 L 200,50 L 0,50 Z" fill="url(#cpmGradient)" />
-          </svg>
-        </div>
-      </div>
-    </div>
-
     <div class="footer">Pink Auto Glass • Generated at ${timeStr} MT</div>
     </div>
   </div>
@@ -659,12 +773,16 @@ async function main() {
     const metrics = calculateTrends(dailyStats);
     const contacts = getTodaysContacts(data.calls, data.leads);
 
-    console.log(`\nToday's summary:`);
-    console.log(`- Phone leads: ${dailyStats[13].uniqueCallers}`);
-    console.log(`- Web leads: ${dailyStats[13].webLeads}`);
+    // Count actual unique contacts after final deduplication
+    const actualPhoneLeads = contacts.filter(c => c.source === 'phone').length;
+    const actualWebLeads = contacts.filter(c => c.source === 'web').length;
+
+    console.log(`\nToday's summary (after final deduplication):`);
+    console.log(`- Phone leads: ${actualPhoneLeads}`);
+    console.log(`- Web leads: ${actualWebLeads}`);
     console.log(`- Total contacts: ${contacts.length}`);
 
-    const html = generateHTML(metrics, contacts);
+    const html = generateHTML(metrics, contacts, actualPhoneLeads, actualWebLeads);
 
     fs.writeFileSync('/tmp/daily-report-live-data.html', html);
     console.log(`\n✅ Report generated: /tmp/daily-report-live-data.html`);
