@@ -18,6 +18,7 @@ interface Lead {
   serviceType?: string;
   city?: string;
   state?: string;
+  zipCode?: string;
   quote_amount?: number;
   revenue_amount?: number;
   close_date?: string;
@@ -225,13 +226,13 @@ export default function LeadManagementDashboard() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Submitted</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -243,78 +244,87 @@ export default function LeadManagementDashboard() {
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map(lead => (
-                  <tr key={lead.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <User className="w-5 h-5 text-gray-400" />
-                        <div>
+                filteredLeads.map(lead => {
+                  // Service badge color
+                  const serviceBadgeColor = lead.serviceType === 'repair' ? 'orange' : 'blue';
+                  const serviceBadgeText = lead.serviceType === 'repair' ? 'REPAIR' : 'REPLACEMENT';
+
+                  // Format date like "Nov 12, 2025 5:27 PM"
+                  const formattedDate = new Date(lead.created_at).toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  });
+
+                  return (
+                    <tr key={lead.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <User className="w-5 h-5 text-gray-400" />
                           <div className="font-medium text-gray-900">{lead.firstName} {lead.lastName}</div>
-                          <div className="text-sm text-gray-500">{lead.city}, {lead.state}</div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        <div className="flex items-center gap-2 text-gray-900">
-                          <Phone className="w-4 h-4" />
-                          {lead.phone}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm space-y-1">
+                          <div className="flex items-center gap-2 text-gray-900">
+                            <Mail className="w-4 h-4 text-gray-400" />
+                            <a href={`mailto:${lead.email}`} className="hover:text-pink-600">{lead.email}</a>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-900">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <a href={`tel:${lead.phone}`} className="hover:text-pink-600">{lead.phone}</a>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-500 mt-1">
-                          <Mail className="w-4 h-4" />
-                          {lead.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Car className="w-4 h-4 text-gray-400" />
+                          <div className="text-sm text-gray-900">
+                            {lead.vehicleYear} {lead.vehicleMake} {lead.vehicleModel}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Car className="w-4 h-4 text-gray-400" />
-                        <div className="text-sm text-gray-900">
-                          {lead.vehicleYear} {lead.vehicleMake} {lead.vehicleModel}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm text-gray-900">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          {lead.zipCode || lead.city || '-'}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-${getStatusColor(lead.status || 'new')}-100 text-${getStatusColor(lead.status || 'new')}-800`}>
-                        {getStatusIcon(lead.status || 'new')}
-                        {lead.status || 'new'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        {lead.quote_amount && (
-                          <div className="text-gray-900">Quote: ${lead.quote_amount.toLocaleString()}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {lead.serviceType ? (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-${serviceBadgeColor}-100 text-${serviceBadgeColor}-800`}>
+                            {serviceBadgeText}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
                         )}
-                        {lead.revenue_amount && (
-                          <div className="text-green-600 font-medium">Revenue: ${lead.revenue_amount.toLocaleString()}</div>
-                        )}
-                        {!lead.quote_amount && !lead.revenue_amount && (
-                          <div className="text-gray-400">-</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        <div className="text-gray-900 capitalize">{lead.ad_platform || 'direct'}</div>
-                        <div className="text-gray-500 text-xs capitalize">{lead.first_contact_method || '-'}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => {
-                          setSelectedLead(lead);
-                          setEditMode(false);
-                        }}
-                        className="text-pink-600 hover:text-pink-900 font-medium text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formattedDate}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(lead.status || 'new')}-100 text-${getStatusColor(lead.status || 'new')}-800`}>
+                          {getStatusIcon(lead.status || 'new')}
+                          {lead.status || 'NEW'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => {
+                            setSelectedLead(lead);
+                            setEditMode(false);
+                          }}
+                          className="text-pink-600 hover:text-pink-900 font-medium text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
