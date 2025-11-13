@@ -6,19 +6,19 @@ import { Search, Filter, DollarSign, Calendar, User, Phone, Mail, MapPin, Car, F
 
 interface Lead {
   id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   status: string;
   created_at: string;
-  vehicleYear?: number;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  serviceType?: string;
+  vehicle_year?: number;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  service_type?: string;
   city?: string;
   state?: string;
-  zipCode?: string;
+  zip?: string;
   quote_amount?: number;
   revenue_amount?: number;
   close_date?: string;
@@ -95,11 +95,11 @@ export default function LeadManagementDashboard() {
 
     const search = searchTerm.toLowerCase();
     return (
-      lead.firstName?.toLowerCase().includes(search) ||
-      lead.lastName?.toLowerCase().includes(search) ||
+      lead.first_name?.toLowerCase().includes(search) ||
+      lead.last_name?.toLowerCase().includes(search) ||
       lead.email?.toLowerCase().includes(search) ||
       lead.phone?.toLowerCase().includes(search) ||
-      lead.vehicleMake?.toLowerCase().includes(search)
+      lead.vehicle_make?.toLowerCase().includes(search)
     );
   });
 
@@ -246,8 +246,8 @@ export default function LeadManagementDashboard() {
               ) : (
                 filteredLeads.map(lead => {
                   // Service badge color
-                  const serviceBadgeColor = lead.serviceType === 'repair' ? 'orange' : 'blue';
-                  const serviceBadgeText = lead.serviceType === 'repair' ? 'REPAIR' : 'REPLACEMENT';
+                  const serviceBadgeColor = lead.service_type === 'repair' ? 'orange' : 'blue';
+                  const serviceBadgeText = lead.service_type === 'repair' ? 'REPAIR' : 'REPLACEMENT';
 
                   // Format date like "Nov 12, 2025 5:27 PM"
                   const formattedDate = new Date(lead.created_at).toLocaleString('en-US', {
@@ -264,7 +264,7 @@ export default function LeadManagementDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <User className="w-5 h-5 text-gray-400" />
-                          <div className="font-medium text-gray-900">{lead.firstName} {lead.lastName}</div>
+                          <div className="font-medium text-gray-900">{lead.first_name} {lead.last_name}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -283,18 +283,18 @@ export default function LeadManagementDashboard() {
                         <div className="flex items-center gap-2">
                           <Car className="w-4 h-4 text-gray-400" />
                           <div className="text-sm text-gray-900">
-                            {lead.vehicleYear} {lead.vehicleMake} {lead.vehicleModel}
+                            {lead.vehicle_year} {lead.vehicle_make} {lead.vehicle_model}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-sm text-gray-900">
                           <MapPin className="w-4 h-4 text-gray-400" />
-                          {lead.zipCode || lead.city || '-'}
+                          {lead.zip || lead.city || '-'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {lead.serviceType ? (
+                        {lead.service_type ? (
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-${serviceBadgeColor}-100 text-${serviceBadgeColor}-800`}>
                             {serviceBadgeText}
                           </span>
@@ -338,7 +338,7 @@ export default function LeadManagementDashboard() {
             {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
-                {selectedLead.firstName} {selectedLead.lastName}
+                {selectedLead.first_name} {selectedLead.last_name}
               </h2>
               <button
                 onClick={() => {
@@ -497,7 +497,7 @@ export default function LeadManagementDashboard() {
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Service Type</div>
-                    <div className="text-gray-900 capitalize">{selectedLead.serviceType || '-'}</div>
+                    <div className="text-gray-900 capitalize">{selectedLead.service_type || '-'}</div>
                   </div>
                 </div>
               </div>
@@ -506,7 +506,7 @@ export default function LeadManagementDashboard() {
               <div>
                 <h3 className="font-bold text-gray-900 mb-3">Vehicle Information</h3>
                 <div className="text-gray-900">
-                  {selectedLead.vehicleYear} {selectedLead.vehicleMake} {selectedLead.vehicleModel}
+                  {selectedLead.vehicle_year} {selectedLead.vehicle_make} {selectedLead.vehicle_model}
                 </div>
               </div>
 
