@@ -291,10 +291,6 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
     hour12: true
   });
 
-  // Service badge styling
-  const serviceBadgeColor = data.serviceType === 'repair' ? '#f97316' : '#3b82f6';
-  const serviceBadgeText = data.serviceType === 'repair' ? 'REPAIR' : 'REPLACEMENT';
-
   return `
 <!DOCTYPE html>
 <html>
@@ -332,12 +328,6 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
         <tr>
           <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Location</td>
           <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb;">${data.zipCode || 'Not provided'}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Service</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
-            <span style="display: inline-block; background-color: ${serviceBadgeColor}; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${serviceBadgeText}</span>
-          </td>
         </tr>
         <tr>
           <td style="padding: 12px; color: #6b7280; font-size: 14px;">Date Submitted</td>
