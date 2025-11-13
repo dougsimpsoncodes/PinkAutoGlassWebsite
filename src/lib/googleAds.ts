@@ -5,13 +5,6 @@
 
 import { GoogleAdsApi, Customer } from 'google-ads-api';
 
-// Google Ads API configuration
-const GOOGLE_ADS_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID;
-const GOOGLE_ADS_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET;
-const GOOGLE_ADS_REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN;
-const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-const GOOGLE_ADS_CUSTOMER_ID = process.env.GOOGLE_ADS_CUSTOMER_ID;
-
 /**
  * Validate that all required Google Ads credentials are configured
  */
@@ -40,6 +33,11 @@ export function validateGoogleAdsConfig(): {
 
 /**
  * Create and return authenticated Google Ads API client
+ *
+ * IMPORTANT: Reads environment variables lazily (at call time, not at module import time)
+ * This ensures compatibility with both:
+ * - Production (Vercel) where env vars are injected before code execution
+ * - Local scripts that use dotenv to load .env files after module imports
  */
 export function getGoogleAdsClient(): {
   client: GoogleAdsApi;
@@ -52,17 +50,34 @@ export function getGoogleAdsClient(): {
     );
   }
 
-  // Initialize the Google Ads API client
-  const client = new GoogleAdsApi({
-    client_id: GOOGLE_ADS_CLIENT_ID!,
-    client_secret: GOOGLE_ADS_CLIENT_SECRET!,
-    developer_token: GOOGLE_ADS_DEVELOPER_TOKEN!,
-  });
+  // Read environment variables at call time (lazy evaluation)
+  // This ensures they're available whether loaded by Vercel or dotenv
+  const GOOGLE_ADS_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
+  const GOOGLE_ADS_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET!;
+  const GOOGLE_ADS_REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN!;
+  const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!;
+  // Normalize IDs: remove dashes/spaces to match Google Ads expected format
+  const GOOGLE_ADS_CUSTOMER_ID = (process.env.GOOGLE_ADS_CUSTOMER_ID || '').replace(/[-\s]/g, '');
+  const GOOGLE_ADS_LOGIN_CUSTOMER_ID = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID; // optional (MCC)
 
-  // Create customer instance
+  // Initialize the Google Ads API client
+  const baseConfig: any = {
+    client_id: GOOGLE_ADS_CLIENT_ID,
+    client_secret: GOOGLE_ADS_CLIENT_SECRET,
+    developer_token: GOOGLE_ADS_DEVELOPER_TOKEN,
+  };
+
+  // If using a Manager (MCC) to access a child account, set login_customer_id
+  if (GOOGLE_ADS_LOGIN_CUSTOMER_ID && GOOGLE_ADS_LOGIN_CUSTOMER_ID.trim() !== '') {
+    baseConfig.login_customer_id = GOOGLE_ADS_LOGIN_CUSTOMER_ID.replace(/[-\s]/g, '');
+  }
+
+  const client = new GoogleAdsApi(baseConfig);
+
+  // Create customer instance with refresh token
   const customer = client.Customer({
-    customer_id: GOOGLE_ADS_CUSTOMER_ID!,
-    refresh_token: GOOGLE_ADS_REFRESH_TOKEN!,
+    customer_id: GOOGLE_ADS_CUSTOMER_ID,
+    refresh_token: GOOGLE_ADS_REFRESH_TOKEN,
   });
 
   return { client, customer };
