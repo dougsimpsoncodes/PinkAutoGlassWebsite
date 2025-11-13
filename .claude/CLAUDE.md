@@ -236,6 +236,49 @@ Success or iterate with new information
 
 **Time saved:** Would have solved in 1 iteration instead of 3-4
 
+## Real Example: Google Ads OAuth Refresh Token (November 2025)
+
+**Error:** `unauthorized_client` / `invalid_client` during OAuth token exchange
+
+**Wrong approach (initial instinct):**
+1. Check if credentials have whitespace
+2. Try updating environment variables one at a time
+3. Guess that maybe the token expired
+4. Try random fixes hoping one works
+5. Multiple failed iterations
+
+**Right approach (what actually worked):**
+1. User said: "do a thorough web search to troubleshoot this issue, stop guessing"
+2. Searched: "unauthorized_client google ads oauth"
+3. Found from Stack Overflow + Google Groups: **#1 cause is refresh token generated using OAuth Playground's built-in credentials instead of your own Client ID/Secret**
+4. Solution documented in multiple sources:
+   - Must use "Use your own OAuth credentials" in OAuth Playground
+   - Must add redirect URI to Google Cloud Console
+   - Must set "Access type: Offline"
+   - Must use correct scope: `https://www.googleapis.com/auth/adwords`
+5. Generated new refresh token with correct configuration
+6. Updated all credentials in Vercel production
+7. Deployed and verified → Success on first try
+
+**Time saved:** 1 clean iteration instead of 3-4 wasted attempts
+
+**Key insight:** Research revealed the EXACT root cause and solution in minutes. Guessing would have taken hours and multiple failed deployments.
+
+**Enforcement:** When you see an unfamiliar error:
+1. **STOP** - Don't guess
+2. **SEARCH** - Web search: `"[exact error]" + [service name]`
+3. **READ** - Check Stack Overflow, official docs, GitHub issues
+4. **UNDERSTAND** - Identify the root cause from research
+5. **FIX** - Apply the researched solution
+6. **VERIFY** - Test to confirm it worked
+
+**This approach works for ALL third-party API errors:**
+- OAuth authentication failures
+- API key rejections
+- Token expiration issues
+- Permission/scope errors
+- SDK integration problems
+
 ## Apply This to All Third-Party Integrations
 
 - Google Ads API
@@ -243,6 +286,9 @@ Success or iterate with new information
 - Email services
 - Payment processors
 - Any OAuth/API authentication
+- RingCentral
+- Resend
+- Any third-party SDK or API
 
 ---
 
