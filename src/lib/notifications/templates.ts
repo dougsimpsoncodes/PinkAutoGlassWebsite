@@ -283,7 +283,6 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
 
   const timestamp = new Date().toLocaleString('en-US', {
     timeZone: 'America/Denver',
-    weekday: 'short',
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -291,6 +290,10 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
     minute: '2-digit',
     hour12: true
   });
+
+  // Service badge styling
+  const serviceBadgeColor = data.serviceType === 'repair' ? '#f97316' : '#3b82f6';
+  const serviceBadgeText = data.serviceType === 'repair' ? 'REPAIR' : 'REPLACEMENT';
 
   return `
 <!DOCTYPE html>
@@ -302,31 +305,48 @@ export function getAdminQuickQuoteEmail(data: Partial<BookingData>): string {
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
     <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; text-align: center;">
       <h1 style="color: #ffffff; margin: 0; font-size: 20px;">💬 New Quick Quote Request</h1>
-      <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 12px;">⏰ ${timestamp} MT</p>
+      <span style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-top: 8px; text-transform: uppercase;">NEW</span>
     </div>
 
     <div style="padding: 20px;">
-      <table style="width: 100%; border-collapse: collapse;">
+      <table style="width: 100%; border-collapse: collapse; background-color: #f9fafb; border-radius: 8px; overflow: hidden;">
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">Name:</td>
-          <td style="padding: 8px 0; color: #1f2937; font-weight: 600;">${data.firstName} ${data.lastName}</td>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px; width: 35%; border-bottom: 1px solid #e5e7eb;">Customer Name</td>
+          <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb;">${data.firstName} ${data.lastName}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">Phone:</td>
-          <td style="padding: 8px 0;"><a href="tel:${data.phone}" style="color: #10b981; text-decoration: none; font-weight: 600;">${data.phone}</a></td>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Contact Information</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+            <div style="margin-bottom: 4px;">
+              <a href="mailto:${data.email}" style="color: #10b981; text-decoration: none; font-weight: 600; font-size: 14px;">${data.email}</a>
+            </div>
+            <div>
+              <a href="tel:${data.phone}" style="color: #10b981; text-decoration: none; font-weight: 600; font-size: 14px;">${data.phone}</a>
+            </div>
+          </td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">Vehicle:</td>
-          <td style="padding: 8px 0; color: #1f2937; font-weight: 600;">${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel}</td>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Vehicle</td>
+          <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb;">${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">Service:</td>
-          <td style="padding: 8px 0; color: #1f2937; font-weight: 600;">${data.serviceType === 'repair' ? 'Repair' : 'Replacement'}</td>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Location</td>
+          <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb;">${data.zipCode || 'Not provided'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px; border-bottom: 1px solid #e5e7eb;">Service</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+            <span style="display: inline-block; background-color: ${serviceBadgeColor}; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${serviceBadgeText}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; color: #6b7280; font-size: 14px;">Date Submitted</td>
+          <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 14px;">${timestamp} MT</td>
         </tr>
       </table>
 
-      <div style="text-align: center; margin: 20px 0;">
-        <a href="${adminDashboardUrl}" style="display: inline-block; background: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600;">View Lead</a>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${adminDashboardUrl}" style="display: inline-block; background: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px;">View Lead in Dashboard</a>
       </div>
     </div>
   </div>
