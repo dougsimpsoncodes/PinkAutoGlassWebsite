@@ -316,7 +316,7 @@ export default function BookingPage() {
         state: formData.state,
         zipCode: formData.zipCode,
         preferredDate: convertDateToISO(formData.preferredDate),
-        timeWindow: formData.timeWindow || 'flexible',
+        timeWindow: formData.timeWindow || 'anytime',
         damageDescription: formData.damageDescription || undefined,
         smsConsent: true, // Must be literal true (user checked the box)
         privacyAcknowledgment: true, // Must be literal true

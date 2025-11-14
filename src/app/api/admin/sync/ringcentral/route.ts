@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { SDK } from '@ringcentral/sdk';
+import { validateAdminApiKey } from '@/lib/api-auth';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -37,6 +38,10 @@ function createRingCentralSDK() {
 }
 
 export async function POST(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   const supabase = getSupabaseClient();
 
   try {
@@ -235,8 +240,11 @@ export async function POST(req: NextRequest) {
 
 // GET endpoint to check sync status
 export async function GET(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   const supabase = getSupabaseClient();
-  // Auth handled by middleware
 
   try {
     // Get last sync time

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminApiKey } from '@/lib/api-auth';
 import {
   validateMicrosoftAdsConfig,
   fetchCampaignPerformance,
@@ -26,6 +27,10 @@ function getSupabaseClient() {
  * Sync Microsoft Advertising (Bing Ads) campaign performance data to database
  */
 export async function POST(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   const supabase = getSupabaseClient();
 
   try {
@@ -253,7 +258,11 @@ export async function POST(req: NextRequest) {
  * GET /api/admin/sync/microsoft-ads
  * Check Microsoft Ads configuration status
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   try {
     const config = validateMicrosoftAdsConfig();
     const accountSummary = await getAccountSummary();

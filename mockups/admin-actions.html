@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Actions - Pink Auto Glass Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+                        Pink Auto Glass
+                    </h1>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600 font-medium">Admin Dashboard</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <i class="far fa-clock mr-2"></i>Last updated: 2 minutes ago
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <nav class="flex gap-8">
+                <button class="px-4 py-4 text-pink-600 border-b-2 border-pink-600 font-medium">
+                    <i class="fas fa-tasks mr-2"></i>Today's Actions
+                </button>
+                <button class="px-4 py-4 text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-chart-line mr-2"></i>Business Performance
+                </button>
+                <button class="px-4 py-4 text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-history mr-2"></i>History
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Today's Stats Card -->
+        <div class="bg-gradient-to-r from-pink-600 to-blue-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+            <h2 class="text-lg font-semibold mb-4">📊 Today's Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="text-3xl font-bold">12</div>
+                    <div class="text-sm opacity-90">Inbound Calls</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="text-3xl font-bold text-yellow-300">3</div>
+                    <div class="text-sm opacity-90">Missed Calls</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="text-3xl font-bold">5</div>
+                    <div class="text-sm opacity-90">New Leads</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                    <div class="text-3xl font-bold">$2,450</div>
+                    <div class="text-sm opacity-90">Estimated Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Missed Calls Section -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200 bg-red-50">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-900 flex items-center">
+                            <i class="fas fa-phone-slash mr-2"></i>
+                            Missed Calls (Last 24 Hours)
+                        </h3>
+                        <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            3 Pending
+                        </span>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    <!-- Missed Call 1 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">Sarah Martinez</div>
+                                <div class="text-sm text-gray-600">+1 (720) 555-0198</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-red-600">11:23 AM</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Back
+                            </button>
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-play text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>Duration: 0:28 (hung up after voicemail)
+                        </div>
+                    </div>
+
+                    <!-- Missed Call 2 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">James Wilson</div>
+                                <div class="text-sm text-gray-600">+1 (303) 555-0142</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-red-600">9:47 AM</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Back
+                            </button>
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-play text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>Duration: 0:15 (no voicemail)
+                        </div>
+                    </div>
+
+                    <!-- Missed Call 3 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">Denver CO</div>
+                                <div class="text-sm text-gray-600">+1 (720) 555-0223</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-red-600">8:12 AM</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Back
+                            </button>
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-play text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>Duration: 0:08 (hung up quickly)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Leads Section -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200 bg-blue-50">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-blue-900 flex items-center">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            New Leads (Last 24 Hours)
+                        </h3>
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            5 New
+                        </span>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    <!-- Lead 1 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">Michael Chen</div>
+                                <div class="text-sm text-gray-600">michael.chen@email.com</div>
+                                <div class="text-sm text-gray-600">+1 (303) 555-0187</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-blue-600">2:15 PM</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div class="text-sm text-gray-700">
+                                <span class="font-medium">Vehicle:</span> 2021 Honda CR-V<br>
+                                <span class="font-medium">Service:</span> Windshield Replacement<br>
+                                <span class="font-medium">Location:</span> Denver, CO 80202
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Now
+                            </button>
+                            <button class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                                <i class="fas fa-envelope mr-2"></i>Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lead 2 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">Emily Rodriguez</div>
+                                <div class="text-sm text-gray-600">emily.r@email.com</div>
+                                <div class="text-sm text-gray-600">+1 (720) 555-0156</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-blue-600">1:45 PM</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div class="text-sm text-gray-700">
+                                <span class="font-medium">Vehicle:</span> 2019 Toyota Camry<br>
+                                <span class="font-medium">Service:</span> Rock Chip Repair<br>
+                                <span class="font-medium">Location:</span> Aurora, CO 80012
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Now
+                            </button>
+                            <button class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                                <i class="fas fa-envelope mr-2"></i>Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lead 3 -->
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="font-semibold text-gray-900">Robert Thompson</div>
+                                <div class="text-sm text-gray-600">rob.thompson@email.com</div>
+                                <div class="text-sm text-gray-600">+1 (303) 555-0192</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Today</div>
+                                <div class="text-sm font-medium text-blue-600">11:30 AM</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div class="text-sm text-gray-700">
+                                <span class="font-medium">Vehicle:</span> 2022 Ford F-150<br>
+                                <span class="font-medium">Service:</span> Windshield Replacement<br>
+                                <span class="font-medium">Location:</span> Lakewood, CO 80226
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">
+                                <i class="fas fa-phone mr-2"></i>Call Now
+                            </button>
+                            <button class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                                <i class="fas fa-envelope mr-2"></i>Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

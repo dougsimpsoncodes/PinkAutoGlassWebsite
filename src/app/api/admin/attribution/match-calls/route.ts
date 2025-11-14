@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateAdminApiKey } from '@/lib/api-auth';
 import {
   attributeAllCalls,
   saveAttributionResults,
@@ -42,6 +43,10 @@ export const runtime = 'nodejs';
  * }
  */
 export async function POST(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   try {
     // Parse body, handle empty body gracefully
     let body: any = {};
@@ -129,6 +134,10 @@ export async function POST(req: NextRequest) {
  * Get attribution status for a date range (without re-running)
  */
 export async function GET(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get('startDate');

@@ -64,7 +64,7 @@ export const bookingFormSchema = z.object({
   state: stateSchema,
   zipCode: zipCodeSchema,
   preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  timeWindow: z.enum(['morning', 'afternoon', 'flexible']).optional().default('flexible'),
+  timeWindow: z.enum(['morning', 'afternoon', 'anytime']).optional().default('anytime'),
   damageDescription: notesSchema,
   utmSource: z.string().trim().max(100).optional(),
   utmMedium: z.string().trim().max(100).optional(),

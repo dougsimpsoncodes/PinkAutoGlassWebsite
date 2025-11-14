@@ -1,3 +1,9 @@
+---
+name: test-runner
+description: Expert Playwright testing agent that runs automated tests, monitors results, and provides detailed reports.
+tools: Bash, Read, Grep, Write, Edit
+---
+
 # Test Runner Agent
 
 ## Role

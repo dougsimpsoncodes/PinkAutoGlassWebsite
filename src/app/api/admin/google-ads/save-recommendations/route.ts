@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminApiKey } from '@/lib/api-auth';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -16,6 +17,10 @@ function getSupabaseClient() {
 
 // POST - Save analysis results as actionable recommendations
 export async function POST(request: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(request);
+  if (authError) return authError;
+
   const supabase = getSupabaseClient();
   try {
     const { analysis } = await request.json();

@@ -437,14 +437,13 @@ export function ContactLocation({ formData, updateFormData, errors, onNext, onPr
             </label>
             <select
               id="timeWindow"
-              value={formData.timeWindow || 'flexible'}
+              value={formData.timeWindow || 'anytime'}
               onChange={(e) => updateFormData({ timeWindow: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             >
-              <option value="flexible">Flexible</option>
+              <option value="anytime">Anytime</option>
               <option value="morning">Morning (8am - 12pm)</option>
               <option value="afternoon">Afternoon (12pm - 5pm)</option>
-              <option value="evening">Evening (5pm - 8pm)</option>
             </select>
           </div>
         </div>

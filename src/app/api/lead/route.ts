@@ -162,42 +162,44 @@ export async function POST(request: NextRequest) {
       serviceType: validatedData.serviceType,
     };
 
-    // Send admin notifications asynchronously (don't block response)
+    // Send admin notifications (MUST await to prevent Vercel from killing the async operation)
     console.log('📧 Attempting to send admin notifications for lead:', leadId);
-    Promise.all([
-      sendAdminEmail(
-        `💬 Quick Quote: ${validatedData.firstName} ${validatedData.lastName}`,
-        getAdminQuickQuoteEmail(quoteData)
-      ).then(success => {
-        if (success) {
-          console.log('✅ Admin email sent successfully for lead:', leadId);
-        } else {
-          console.error('❌ Admin email failed to send for lead:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Admin quote email exception for lead:', leadId, err);
-        return false;
-      }),
+    try {
+      const results = await Promise.all([
+        sendAdminEmail(
+          `💬 Quick Quote: ${validatedData.firstName} ${validatedData.lastName}`,
+          getAdminQuickQuoteEmail(quoteData)
+        ).then(success => {
+          if (success) {
+            console.log('✅ Admin email sent successfully for lead:', leadId);
+          } else {
+            console.error('❌ Admin email failed to send for lead:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Admin quote email exception for lead:', leadId, err);
+          return false;
+        }),
 
-      sendAdminSMS(
-        getAdminQuickQuoteSMS(quoteData)
-      ).then(success => {
-        if (success) {
-          console.log('✅ Admin SMS sent successfully for lead:', leadId);
-        } else {
-          console.error('❌ Admin SMS failed to send for lead:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Admin quote SMS exception for lead:', leadId, err);
-        return false;
-      }),
-    ]).then(results => {
+        sendAdminSMS(
+          getAdminQuickQuoteSMS(quoteData)
+        ).then(success => {
+          if (success) {
+            console.log('✅ Admin SMS sent successfully for lead:', leadId);
+          } else {
+            console.error('❌ Admin SMS failed to send for lead:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Admin quote SMS exception for lead:', leadId, err);
+          return false;
+        }),
+      ]);
+
       console.log(`📊 Notification results for lead ${leadId}: Email=${results[0]}, SMS=${results[1]}`);
-    }).catch(err => {
+    } catch (err) {
       console.error('❌ Quote notification batch failed for lead:', leadId, err);
-    });
+    }
 
     return NextResponse.json(
       {

@@ -378,75 +378,77 @@ export async function POST(req: NextRequest) {
       fileCount: uploadedFiles.length,
     };
 
-    // Send notifications asynchronously (don't block response)
+    // Send notifications (MUST await to prevent Vercel from killing the async operation)
     console.log('📧 Attempting to send notifications for booking:', leadId);
-    Promise.all([
-      // Customer notifications
-      sendEmail({
-        to: validatedData.email,
-        subject: `Booking Confirmed - ${finalReferenceNumber}`,
-        html: getCustomerConfirmationEmail(bookingData),
-      }).then(success => {
-        if (success) {
-          console.log('✅ Customer email sent successfully for booking:', leadId);
-        } else {
-          console.error('❌ Customer email failed to send for booking:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Customer email exception for booking:', leadId, err);
-        return false;
-      }),
+    try {
+      const results = await Promise.all([
+        // Customer notifications
+        sendEmail({
+          to: validatedData.email,
+          subject: `Booking Confirmed - ${finalReferenceNumber}`,
+          html: getCustomerConfirmationEmail(bookingData),
+        }).then(success => {
+          if (success) {
+            console.log('✅ Customer email sent successfully for booking:', leadId);
+          } else {
+            console.error('❌ Customer email failed to send for booking:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Customer email exception for booking:', leadId, err);
+          return false;
+        }),
 
-      validatedData.smsConsent ? sendSMS({
-        to: validatedData.phone,
-        message: getCustomerConfirmationSMS(bookingData),
-      }).then(success => {
-        if (success) {
-          console.log('✅ Customer SMS sent successfully for booking:', leadId);
-        } else {
-          console.error('❌ Customer SMS failed to send for booking:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Customer SMS exception for booking:', leadId, err);
-        return false;
-      }) : Promise.resolve(true),
+        validatedData.smsConsent ? sendSMS({
+          to: validatedData.phone,
+          message: getCustomerConfirmationSMS(bookingData),
+        }).then(success => {
+          if (success) {
+            console.log('✅ Customer SMS sent successfully for booking:', leadId);
+          } else {
+            console.error('❌ Customer SMS failed to send for booking:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Customer SMS exception for booking:', leadId, err);
+          return false;
+        }) : Promise.resolve(true),
 
-      // Admin notifications
-      sendAdminEmail(
-        `🚨 New Booking: ${validatedData.firstName} ${validatedData.lastName} - ${finalReferenceNumber}`,
-        getAdminBookingNotificationEmail(bookingData)
-      ).then(success => {
-        if (success) {
-          console.log('✅ Admin email sent successfully for booking:', leadId);
-        } else {
-          console.error('❌ Admin email failed to send for booking:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Admin booking email exception for booking:', leadId, err);
-        return false;
-      }),
+        // Admin notifications
+        sendAdminEmail(
+          `🚨 New Booking: ${validatedData.firstName} ${validatedData.lastName} - ${finalReferenceNumber}`,
+          getAdminBookingNotificationEmail(bookingData)
+        ).then(success => {
+          if (success) {
+            console.log('✅ Admin email sent successfully for booking:', leadId);
+          } else {
+            console.error('❌ Admin email failed to send for booking:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Admin booking email exception for booking:', leadId, err);
+          return false;
+        }),
 
-      sendAdminSMS(
-        getAdminBookingNotificationSMS(bookingData)
-      ).then(success => {
-        if (success) {
-          console.log('✅ Admin SMS sent successfully for booking:', leadId);
-        } else {
-          console.error('❌ Admin SMS failed to send for booking:', leadId);
-        }
-        return success;
-      }).catch(err => {
-        console.error('❌ Admin booking SMS exception for booking:', leadId, err);
-        return false;
-      }),
-    ]).then(results => {
+        sendAdminSMS(
+          getAdminBookingNotificationSMS(bookingData)
+        ).then(success => {
+          if (success) {
+            console.log('✅ Admin SMS sent successfully for booking:', leadId);
+          } else {
+            console.error('❌ Admin SMS failed to send for booking:', leadId);
+          }
+          return success;
+        }).catch(err => {
+          console.error('❌ Admin booking SMS exception for booking:', leadId, err);
+          return false;
+        }),
+      ]);
+
       console.log(`📊 Notification results for booking ${leadId}: CustomerEmail=${results[0]}, CustomerSMS=${results[1]}, AdminEmail=${results[2]}, AdminSMS=${results[3]}`);
-    }).catch(err => {
+    } catch (err) {
       console.error('❌ Booking notification batch failed for booking:', leadId, err);
-    });
+    }
 
     // Return success response
     return NextResponse.json({

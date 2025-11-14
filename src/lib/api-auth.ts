@@ -1,19 +1,74 @@
 /**
  * API Authentication Middleware
  * Provides API key authentication for sensitive endpoints
+ *
+ * Usage in API routes for defense-in-depth:
+ *
+ * import { validateAdminApiKey } from '@/lib/api-auth'
+ *
+ * export async function GET(req: NextRequest) {
+ *   const authError = validateAdminApiKey(req);
+ *   if (authError) return authError;
+ *   // ... rest of handler
+ * }
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
-// Environment-based API keys (in production, use proper key management)
-const API_KEYS = {
-  // Public API key for booking submissions (can be in frontend)
-  public: process.env.NEXT_PUBLIC_API_KEY || 'pag_public_dev_2025',
-  
-  // Private API keys for admin operations (server-side only)
-  admin: process.env.API_KEY_ADMIN || 'pag_admin_dev_2025_secure',
-  internal: process.env.API_KEY_INTERNAL || 'pag_internal_dev_2025'
+// Lazy-loaded API keys cache (initialized at first request, not build time)
+let API_KEYS: { public: string; admin: string; internal: string } | null = null;
+
+function getApiKeys() {
+  // Return cached keys if already initialized
+  if (API_KEYS) return API_KEYS;
+
+  const isDev = process.env.NODE_ENV !== 'production';
+  const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
+
+  const keys = {
+    public: process.env.NEXT_PUBLIC_API_KEY,
+    admin: process.env.API_KEY_ADMIN,
+    internal: process.env.API_KEY_INTERNAL
+  };
+
+  // Skip validation during build phase
+  if (isBuild) {
+    console.log('⏭️  Skipping API key validation during build phase');
+    keys.public = keys.public || 'build_placeholder';
+    keys.admin = keys.admin || 'build_placeholder';
+    keys.internal = keys.internal || 'build_placeholder';
+    API_KEYS = keys as { public: string; admin: string; internal: string };
+    return API_KEYS;
+  }
+
+  // In production runtime, ALL keys must be set
+  if (!isDev) {
+    const missing = Object.entries(keys)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missing.length > 0) {
+      throw new Error(`FATAL: Missing required API keys in production: ${missing.join(', ')}`);
+    }
+  } else {
+    // In development, warn about missing keys and use fallbacks
+    if (!keys.public) {
+      console.warn('⚠️  WARNING: NEXT_PUBLIC_API_KEY not set, using dev fallback');
+      keys.public = 'pag_public_dev_2025';
+    }
+    if (!keys.admin) {
+      console.warn('⚠️  WARNING: API_KEY_ADMIN not set, using dev fallback');
+      keys.admin = 'pag_admin_dev_2025_secure';
+    }
+    if (!keys.internal) {
+      console.warn('⚠️  WARNING: API_KEY_INTERNAL not set, using dev fallback');
+      keys.internal = 'pag_internal_dev_2025';
+    }
+  }
+
+  API_KEYS = keys as { public: string; admin: string; internal: string };
+  return API_KEYS;
 }
 
 export type ApiKeyType = 'public' | 'admin' | 'internal' | 'none'
@@ -21,19 +76,22 @@ export type ApiKeyType = 'public' | 'admin' | 'internal' | 'none'
 /**
  * Validate API key from request headers
  */
-export function validateApiKey(request: NextRequest): { 
+export function validateApiKey(request: NextRequest): {
   valid: boolean
   keyType: ApiKeyType
-  error?: string 
+  error?: string
 } {
   const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
-  
+
   if (!apiKey) {
     return { valid: false, keyType: 'none', error: 'Missing API key' }
   }
 
+  // Get keys (lazy-loaded at runtime)
+  const keys = getApiKeys();
+
   // Check against known keys
-  for (const [type, key] of Object.entries(API_KEYS)) {
+  for (const [type, key] of Object.entries(keys)) {
     if (apiKey === key) {
       return { valid: true, keyType: type as ApiKeyType }
     }
@@ -180,7 +238,80 @@ export const requireInternalKey = createAuthMiddleware('internal')
 // Rate limiting bypass for authenticated requests
 export function shouldBypassRateLimit(request: NextRequest): boolean {
   const authResult = validateApiKey(request)
-  
+
   // Admin and internal keys bypass rate limiting
   return authResult.valid && ['admin', 'internal'].includes(authResult.keyType)
+}
+
+/**
+ * Simple API key validation for admin routes (defense-in-depth)
+ * Returns error response if invalid, null if valid
+ *
+ * @example
+ * export async function GET(req: NextRequest) {
+ *   const authError = validateAdminApiKey(req);
+ *   if (authError) return authError;
+ *   // ... rest of handler
+ * }
+ */
+export function validateAdminApiKey(request: NextRequest): NextResponse | null {
+  const authResult = validateApiKey(request)
+
+  if (!authResult.valid) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Missing or invalid API key',
+        code: 'INVALID_API_KEY',
+        hint: 'Include x-api-key header with admin API key'
+      },
+      { status: 401 }
+    )
+  }
+
+  if (!checkPermission(authResult.keyType, 'admin')) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Insufficient permissions - admin key required',
+        code: 'INSUFFICIENT_PERMISSIONS',
+        keyType: authResult.keyType
+      },
+      { status: 403 }
+    )
+  }
+
+  return null // Valid
+}
+
+/**
+ * Simple API key validation for internal routes
+ * Returns error response if invalid, null if valid
+ */
+export function validateInternalApiKey(request: NextRequest): NextResponse | null {
+  const authResult = validateApiKey(request)
+
+  if (!authResult.valid) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Missing or invalid API key',
+        code: 'INVALID_API_KEY'
+      },
+      { status: 401 }
+    )
+  }
+
+  if (!checkPermission(authResult.keyType, 'internal')) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Insufficient permissions - internal key required',
+        code: 'INSUFFICIENT_PERMISSIONS'
+      },
+      { status: 403 }
+    )
+  }
+
+  return null // Valid
 }

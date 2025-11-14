@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Pink Auto Glass Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+                        Pink Auto Glass
+                    </h1>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-gray-600 font-medium">Admin Dashboard</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <nav class="flex gap-8">
+                <button class="px-4 py-4 text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-tasks mr-2"></i>Today's Actions
+                </button>
+                <button class="px-4 py-4 text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-chart-line mr-2"></i>Business Performance
+                </button>
+                <button class="px-4 py-4 text-pink-600 border-b-2 border-pink-600 font-medium">
+                    <i class="fas fa-history mr-2"></i>History
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search Box -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            placeholder="Search by name, phone, or email..."
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10"
+                        >
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Type Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option value="all">All</option>
+                        <option value="call">Calls Only</option>
+                        <option value="lead">Leads Only</option>
+                    </select>
+                </div>
+
+                <!-- Date Range -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                    <select class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 90 Days</option>
+                        <option>All Time</option>
+                        <option>Custom...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-900">247</div>
+                    <div class="text-sm text-gray-600">Total Results</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">142</div>
+                    <div class="text-sm text-gray-600">Calls</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">105</div>
+                    <div class="text-sm text-gray-600">Leads</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">72%</div>
+                    <div class="text-sm text-gray-600">Conversion</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date & Time
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Contact
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Details
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Row 1: Recent Lead -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 12, 2025</div>
+                                <div class="text-sm text-gray-500">2:15 PM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">Michael Chen</div>
+                                <div class="text-sm text-gray-500">+1 (303) 555-0187</div>
+                                <div class="text-sm text-gray-500">michael.chen@email.com</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-user-plus mr-1"></i> Lead
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">2021 Honda CR-V</div>
+                                <div class="text-sm text-gray-500">Windshield Replacement</div>
+                                <div class="text-sm text-gray-500">Denver, CO 80202</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    New
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Accepted Call -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 12, 2025</div>
+                                <div class="text-sm text-gray-500">11:23 AM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">Sarah Martinez</div>
+                                <div class="text-sm text-gray-500">+1 (720) 555-0198</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-phone mr-1"></i> Call
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Inbound call</div>
+                                <div class="text-sm text-gray-500">Duration: 6:04</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Answered
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-green-600 hover:text-green-900 mr-3">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Missed Call -->
+                        <tr class="hover:bg-gray-50 bg-red-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 12, 2025</div>
+                                <div class="text-sm text-gray-500">9:47 AM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">James Wilson</div>
+                                <div class="text-sm text-gray-500">+1 (303) 555-0142</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-phone mr-1"></i> Call
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Inbound call</div>
+                                <div class="text-sm text-gray-500">Duration: 0:15</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Missed
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-green-600 hover:text-green-900 mr-3">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Completed Lead -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 11, 2025</div>
+                                <div class="text-sm text-gray-500">4:32 PM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">Lisa Anderson</div>
+                                <div class="text-sm text-gray-500">+1 (720) 555-0176</div>
+                                <div class="text-sm text-gray-500">lisa.a@email.com</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-user-plus mr-1"></i> Lead
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">2020 Subaru Outback</div>
+                                <div class="text-sm text-gray-500">Rock Chip Repair</div>
+                                <div class="text-sm text-gray-500">Boulder, CO 80301</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Completed
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Outbound Call -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 11, 2025</div>
+                                <div class="text-sm text-gray-500">2:10 PM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">Robert Taylor</div>
+                                <div class="text-sm text-gray-500">+1 (303) 555-0165</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    <i class="fas fa-phone-volume mr-1"></i> Outbound
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">Follow-up call</div>
+                                <div class="text-sm text-gray-500">Duration: 3:42</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Connected
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-green-600 hover:text-green-900 mr-3">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 6: Lead in Progress -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Nov 10, 2025</div>
+                                <div class="text-sm text-gray-500">5:20 PM</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">Jennifer White</div>
+                                <div class="text-sm text-gray-500">+1 (720) 555-0189</div>
+                                <div class="text-sm text-gray-500">jen.white@email.com</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-user-plus mr-1"></i> Lead
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">2018 Ford Escape</div>
+                                <div class="text-sm text-gray-500">Windshield Replacement</div>
+                                <div class="text-sm text-gray-500">Arvada, CO 80002</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    In Progress
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-pink-600 hover:text-pink-900 mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                <div class="text-sm text-gray-700">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">20</span> of{' '}
+                    <span class="font-medium">247</span> results
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="px-3 py-1 bg-pink-600 text-white rounded-lg">1</button>
+                    <button class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100">2</button>
+                    <button class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100">3</button>
+                    <span class="px-3 py-1">...</span>
+                    <button class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100">13</button>
+                    <button class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
