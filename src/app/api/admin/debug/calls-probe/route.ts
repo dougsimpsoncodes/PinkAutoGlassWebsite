@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { validateAdminApiKey } from '@/lib/api-auth';
 
 /**
  * Direct PostgREST probe - bypasses Supabase JS client entirely
@@ -7,7 +8,10 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
   try {
     const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;

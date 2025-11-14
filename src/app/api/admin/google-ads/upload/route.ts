@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminApiKey } from '@/lib/api-auth';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -7,6 +8,10 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(request);
+  if (authError) return authError;
+
   try {
     // Initialize Supabase client at runtime, not at module load time
     const supabase = createClient(

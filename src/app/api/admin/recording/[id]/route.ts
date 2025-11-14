@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SDK } from '@ringcentral/sdk';
+import { validateAdminApiKey } from '@/lib/api-auth';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -30,6 +31,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   try {
     const recordingId = params.id;
     console.log('Fetching recording:', recordingId);

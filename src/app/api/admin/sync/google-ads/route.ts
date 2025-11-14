@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminApiKey } from '@/lib/api-auth';
 import {
   validateGoogleAdsConfig,
   testConnection,
@@ -24,6 +25,10 @@ function getSupabaseClient() {
  * Sync Google Ads campaign performance data to database
  */
 export async function POST(req: NextRequest) {
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
+
   const supabase = getSupabaseClient();
 
   try {
@@ -205,7 +210,9 @@ export async function POST(req: NextRequest) {
  * Check Google Ads sync status and configuration
  */
 export async function GET(req: NextRequest) {
-  // Auth handled by middleware
+  // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
+  const authError = validateAdminApiKey(req);
+  if (authError) return authError;
 
   try {
     // Check configuration

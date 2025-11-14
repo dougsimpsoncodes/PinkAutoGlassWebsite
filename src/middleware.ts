@@ -1,3 +1,14 @@
+/**
+ * Next.js Middleware - Runs on Edge Runtime
+ *
+ * Security Features:
+ * - HTTP Basic Auth for /admin routes
+ * - Security headers (CSP, HSTS, etc.)
+ * - CORS configuration (public APIs only)
+ *
+ * Note: Uses globalThis.atob() for Edge runtime compatibility.
+ * For Node.js unit tests, atob is available globally via test environment.
+ */
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -19,16 +30,42 @@ export async function middleware(request: NextRequest) {
       });
     }
 
-    // Decode credentials
+    // Decode credentials (Edge-safe - use Web APIs instead of Node.js Buffer)
     const base64Credentials = authHeader.split(' ')[1];
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+
+    let credentials: string;
+    try {
+      credentials = globalThis.atob(base64Credentials);
+    } catch (e) {
+      // Malformed Base64 - reject immediately
+      return new NextResponse('Invalid authentication header', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Admin Area"',
+        },
+      });
+    }
+
     const [username, password] = credentials.split(':');
 
     // Verify credentials
-    const validUsername = process.env.ADMIN_USERNAME || 'admin';
-    const validPassword = process.env.ADMIN_PASSWORD || 'changeme';
+    const validUsername = process.env.ADMIN_USERNAME;
+    const validPassword = process.env.ADMIN_PASSWORD;
 
-    if (username !== validUsername || password !== validPassword) {
+    // In production, credentials MUST be set
+    if (!validUsername || !validPassword) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: ADMIN_USERNAME and ADMIN_PASSWORD must be set in production');
+        return new NextResponse('Server configuration error', { status: 500 });
+      }
+      // In development, use fallbacks with warning
+      console.warn('⚠️  WARNING: Using default admin credentials. Set ADMIN_USERNAME and ADMIN_PASSWORD in .env.local');
+    }
+
+    const effectiveUsername = validUsername || 'admin';
+    const effectivePassword = validPassword || 'changeme';
+
+    if (username !== effectiveUsername || password !== effectivePassword) {
       return new NextResponse('Invalid credentials', {
         status: 401,
         headers: {
@@ -95,8 +132,8 @@ export async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
-  // CORS headers for API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  // CORS headers for public API routes only (exclude admin routes - same-origin only)
+  if (request.nextUrl.pathname.startsWith('/api/') && !isAdminApi) {
     // Allow specific origins (customize as needed)
     const allowedOrigins = [
       'http://localhost:3000',

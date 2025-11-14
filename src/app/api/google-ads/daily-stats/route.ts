@@ -71,11 +71,16 @@ export async function GET(request: NextRequest) {
       data: dailyData,
     });
   } catch (error: any) {
-    console.error('Error fetching Google Ads daily stats:', error);
+    // Try to surface a concise, non-sensitive message for easier debugging
+    let message = error?.message || 'Unknown error';
+    const code = error?.code || error?.status;
+    const cause = error?.response?.data?.error || error?.errors?.[0]?.message;
+    if (cause) message = `${message} (${cause})`;
+    console.error('Error fetching Google Ads daily stats:', { message, code });
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 500 }

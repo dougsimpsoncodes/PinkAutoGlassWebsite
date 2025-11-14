@@ -1,0 +1,138 @@
+==============================================
+DATABASE MIGRATION PREVIEW
+==============================================
+Date: $(date)
+From: OLD/STAGING DB (ihbhwusdqdcdpvgucvsr)
+To: PRODUCTION DB (fypzafbsfrrlrrufzkol)
+==============================================
+
+
+📊 MIGRATION SUMMARY
+====================
+   table_name   | records_to_migrate 
+----------------+--------------------
+ Vehicle Makes  |                 40
+ Vehicle Models |                594
+(2 rows)
+
+
+🚗 VEHICLE MAKES (All 40)
+=========================
+ id |     make      
+----+---------------
+ 20 | Acura
+ 31 | Alfa Romeo
+ 36 | Aston Martin
+ 18 | Audi
+ 37 | Bentley
+ 16 | BMW
+ 27 | Buick
+ 22 | Cadillac
+  4 | Chevrolet
+ 15 | Chrysler
+ 14 | Dodge
+ 40 | Ferrari
+ 30 | Fiat
+  3 | Ford
+ 32 | Genesis
+ 10 | GMC
+  2 | Honda
+  6 | Hyundai
+ 21 | Infiniti
+ 34 | Jaguar
+  8 | Jeep
+  7 | Kia
+ 39 | Lamborghini
+ 25 | Land Rover
+ 19 | Lexus
+ 28 | Lincoln
+ 35 | Maserati
+ 13 | Mazda
+ 17 | Mercedes-Benz
+ 29 | Mini
+ 26 | Mitsubishi
+  5 | Nissan
+ 33 | Porsche
+  9 | Ram
+ 38 | Rolls-Royce
+ 11 | Subaru
+ 23 | Tesla
+  1 | Toyota
+ 12 | Volkswagen
+ 24 | Volvo
+(40 rows)
+
+
+🚙 VEHICLE MODELS (Sample: First 20 of 594)
+===========================================
+ id  | make_id |     make     |  model  
+-----+---------+--------------+---------
+ 386 |      20 | Acura        | ILX
+ 387 |      20 | Acura        | Integra
+ 388 |      20 | Acura        | MDX
+ 389 |      20 | Acura        | NSX
+ 390 |      20 | Acura        | RDX
+ 391 |      20 | Acura        | RL
+ 392 |      20 | Acura        | RLX
+ 393 |      20 | Acura        | RSX
+ 394 |      20 | Acura        | TL
+ 395 |      20 | Acura        | TLX
+ 396 |      20 | Acura        | TSX
+ 397 |      20 | Acura        | ZDX
+ 517 |      31 | Alfa Romeo   | 4C
+ 518 |      31 | Alfa Romeo   | Giulia
+ 519 |      31 | Alfa Romeo   | Stelvio
+ 520 |      31 | Alfa Romeo   | Tonale
+ 555 |      36 | Aston Martin | DB11
+ 554 |      36 | Aston Martin | DB9
+ 556 |      36 | Aston Martin | DBS
+ 557 |      36 | Aston Martin | DBX
+(20 rows)
+
+
+📋 MODELS BY MAKE (Summary)
+============================
+     make      | model_count 
+---------------+-------------
+ Acura         |          12
+ Alfa Romeo    |           4
+ Aston Martin  |           8
+ Audi          |          28
+ Bentley       |           6
+ BMW           |          29
+ Buick         |          15
+ Cadillac      |          17
+ Chevrolet     |          33
+ Chrysler      |           9
+ Dodge         |          17
+ Ferrari       |          15
+ Fiat          |           5
+ Ford          |          30
+ Genesis       |           8
+ GMC           |          13
+ Honda         |          17
+ Hyundai       |          21
+ Infiniti      |          16
+ Jaguar        |          10
+ Jeep          |          11
+ Kia           |          23
+ Lamborghini   |           6
+ Land Rover    |          11
+ Lexus         |          17
+ Lincoln       |          14
+ Maserati      |           6
+ Mazda         |          14
+ Mercedes-Benz |          28
+ Mini          |           7
+ Mitsubishi    |          12
+ Nissan        |          23
+ Porsche       |           9
+ Ram           |           8
+ Rolls-Royce   |           6
+ Subaru        |          13
+ Tesla         |           6
+ Toyota        |          30
+ Volkswagen    |          21
+ Volvo         |          16
+(40 rows)
+

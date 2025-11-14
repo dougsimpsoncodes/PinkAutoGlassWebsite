@@ -58,3 +58,4 @@ test-build.js
 !assets/
 assets/**/client_secret*.json
 assets/**/credentials*.json
+.env*.local

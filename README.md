@@ -157,25 +157,58 @@ npm run build
 
 ## Environment Variables
 
-See `.env.example` for all available environment variables.
+### Environment File Structure
 
-**Required for basic functionality:**
+This project uses a **simplified two-file approach** for environment management:
+
+1. **`.env.example`** - Template with all available variables (committed to git)
+2. **`.env.local`** - Your local development values (NEVER commit)
+
+**For production:** All environment variables are configured in the Vercel dashboard. No `.env.production` files should exist in the repository.
+
+### Setup
+
+```bash
+# Copy the template
+cp .env.example .env.local
+
+# Edit with your values
+nano .env.local
+```
+
+### Required Variables (Production)
+
+These **must** be set in production or the app will fail to start:
+
+**Authentication:**
+- `ADMIN_USERNAME` - Admin dashboard username (fails with 500 if missing)
+- `ADMIN_PASSWORD` - Admin dashboard password (fails with 500 if missing)
+- `NEXT_PUBLIC_API_KEY` - Public API key for booking forms
+- `API_KEY_ADMIN` - Admin API key (server-side only)
+- `API_KEY_INTERNAL` - Internal API key for webhooks
+
+**Database:**
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key (public)
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (SECRET, server-only)
 
-**Optional for enhanced features:**
-- `RECAPTCHA_SECRET_KEY` - reCAPTCHA for spam prevention
-- `UPSTASH_REDIS_REST_URL` - Redis for rate limiting
-- `UPSTASH_REDIS_REST_TOKEN` - Redis authentication
-- `TWILIO_AUTH_TOKEN` - SMS notifications (future)
-- `STRIPE_SECRET_KEY` - Payment processing (future)
+**Integrations:**
+- `RESEND_API_KEY` - Email service
+- `RINGCENTRAL_CLIENT_ID` - Phone/SMS service
+- `RINGCENTRAL_CLIENT_SECRET` - RingCentral auth
+- `RINGCENTRAL_JWT_TOKEN` - RingCentral JWT
 
-**SECURITY RULES:**
+See `.env.example` for complete list of optional variables for enhanced features.
+
+### Security Rules
+
 - ✅ Use `NEXT_PUBLIC_` prefix for client-safe variables only
-- ❌ NEVER commit `.env.local` or `.env.production` to git
-- ❌ NEVER use service role key in client-side code
+- ✅ Required production variables fail loudly if missing (fail-closed security)
 - ✅ Store production secrets in Vercel environment variables ONLY
+- ❌ NEVER commit `.env.local`, `.env.production`, or any file with real credentials
+- ❌ NEVER hardcode secrets in code - always use `process.env.VARIABLE_NAME`
+- ❌ NEVER use service role key in client-side code
+- ❌ NEVER create multiple `.env.*` variant files - leads to configuration drift
 
 ## Architecture
 

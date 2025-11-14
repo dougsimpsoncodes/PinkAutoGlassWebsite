@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option 3: Ultra-Minimal Dashboard - Pink Auto Glass Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-pink-600 to-blue-600 text-white shadow-lg">
+        <div class="max-w-5xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-bold">
+                    Pink Auto Glass Admin
+                </h1>
+                <button class="bg-white text-pink-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium">
+                    <i class="fas fa-sync mr-2"></i>Refresh
+                </button>
+            </div>
+            <!-- Inline Stats -->
+            <div class="grid grid-cols-5 gap-4">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <div class="text-2xl font-bold">12</div>
+                    <div class="text-xs opacity-90">Calls Today</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <div class="text-2xl font-bold">5</div>
+                    <div class="text-xs opacity-90">Leads Today</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <div class="text-2xl font-bold">247</div>
+                    <div class="text-xs opacity-90">Calls/Month</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <div class="text-2xl font-bold">105</div>
+                    <div class="text-xs opacity-90">Leads/Month</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                    <div class="text-2xl font-bold">$3.4k</div>
+                    <div class="text-xs opacity-90">Ads/Month</div>
+                    <div class="text-xs opacity-75">$32/lead</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-6 py-6">
+
+        <!-- Action List -->
+        <div class="bg-white rounded-lg shadow-lg border border-gray-200">
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    ⚠️ Action Required (8 items)
+                </h2>
+            </div>
+
+            <div class="divide-y divide-gray-200">
+                <!-- Missed Call 1 -->
+                <div class="p-4 hover:bg-red-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-phone-slash text-red-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">Missed Call: Sarah Martinez</div>
+                        <div class="text-sm text-gray-600">+1 (720) 555-0198 • Today at 11:23 AM</div>
+                    </div>
+                    <button class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">
+                        Call Back
+                    </button>
+                </div>
+
+                <!-- Missed Call 2 -->
+                <div class="p-4 hover:bg-red-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-phone-slash text-red-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">Missed Call: James Wilson</div>
+                        <div class="text-sm text-gray-600">+1 (303) 555-0142 • Today at 9:47 AM</div>
+                    </div>
+                    <button class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">
+                        Call Back
+                    </button>
+                </div>
+
+                <!-- Missed Call 3 -->
+                <div class="p-4 hover:bg-red-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-phone-slash text-red-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">Missed Call: Denver CO</div>
+                        <div class="text-sm text-gray-600">+1 (720) 555-0223 • Today at 8:12 AM</div>
+                    </div>
+                    <button class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">
+                        Call Back
+                    </button>
+                </div>
+
+                <!-- New Lead 1 -->
+                <div class="p-4 hover:bg-blue-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">New Lead: Michael Chen</div>
+                        <div class="text-sm text-gray-600">2021 Honda CR-V • Windshield • +1 (303) 555-0187</div>
+                        <div class="text-xs text-gray-500">Today at 2:15 PM</div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                        Call Now
+                    </button>
+                </div>
+
+                <!-- New Lead 2 -->
+                <div class="p-4 hover:bg-blue-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">New Lead: Emily Rodriguez</div>
+                        <div class="text-sm text-gray-600">2019 Toyota Camry • Rock Chip • +1 (720) 555-0156</div>
+                        <div class="text-xs text-gray-500">Today at 1:45 PM</div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                        Call Now
+                    </button>
+                </div>
+
+                <!-- New Lead 3 -->
+                <div class="p-4 hover:bg-blue-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">New Lead: Robert Thompson</div>
+                        <div class="text-sm text-gray-600">2022 Ford F-150 • Windshield • +1 (303) 555-0192</div>
+                        <div class="text-xs text-gray-500">Today at 11:30 AM</div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                        Call Now
+                    </button>
+                </div>
+
+                <!-- New Lead 4 -->
+                <div class="p-4 hover:bg-blue-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">New Lead: Lisa Anderson</div>
+                        <div class="text-sm text-gray-600">2020 Subaru Outback • Rock Chip • +1 (720) 555-0176</div>
+                        <div class="text-xs text-gray-500">Today at 10:15 AM</div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                        Call Now
+                    </button>
+                </div>
+
+                <!-- New Lead 5 -->
+                <div class="p-4 hover:bg-blue-50 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">New Lead: David Kim</div>
+                        <div class="text-sm text-gray-600">2018 Nissan Rogue • Windshield • +1 (303) 555-0134</div>
+                        <div class="text-xs text-gray-500">Today at 9:20 AM</div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                        Call Now
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search History Button -->
+        <div class="mt-6 text-center">
+            <button class="text-gray-600 hover:text-gray-900 font-medium text-lg">
+                <i class="fas fa-search mr-2"></i>Search Past Calls & Leads →
+            </button>
+        </div>
+
+    </main>
+</body>
+</html>
