@@ -78,6 +78,11 @@ export async function middleware(request: NextRequest) {
   // Create response
   const response = NextResponse.next();
 
+  // Block search engines from indexing admin pages
+  if (isAdminRoute || isAdminApi) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
   // Skip security headers in development for mobile testing
   if (process.env.NODE_ENV === 'development') {
     return response;
