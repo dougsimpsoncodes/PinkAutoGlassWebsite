@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Progressive Windshield Replacement | $0 Deductible Often | (720) 918-7465',
-  description: '✓ We handle all insurance paperwork ✓ Often $0 deductible in Colorado ✓ Direct billing ✓ Progressive, Geico, State Farm, AAA, Allstate ✓ Won\'t raise rates. Call (720) 918-7465 now.',
+  title: 'Insurance Windshield Claims Denver | Progressive, Geico, AAA | $0 Cost Often',
+  description: '★★★★★ We handle 100% of insurance paperwork. Progressive, Geico, State Farm, AAA, Allstate accepted. Often $0 out-of-pocket in Colorado. Direct billing. Won\'t raise your rates. Same-day service. Call (720) 918-7465!',
   keywords: 'auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, zero deductible windshield, insurance glass replacement, aaa windshield claim',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims',

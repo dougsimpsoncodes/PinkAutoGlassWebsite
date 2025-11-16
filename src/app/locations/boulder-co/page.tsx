@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
-  description: 'Boulder windshield replacement & repair - same-day mobile service to CU Boulder, Pearl Street, Table Mesa, Gunbarrel & all Boulder neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Boulder Chip Repair | Windshield Replacement | Same-Day Service | (720) 918-7465',
+  description: '★★★★★ Boulder\'s #1 rock chip repair & windshield replacement. Mobile service to CU Boulder, Pearl Street, Table Mesa, Gunbarrel. Often $0 with insurance. Mountain driving specialists. Call (720) 918-7465!',
   keywords: 'windshield repair boulder, windshield replacement boulder, auto glass boulder co, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement, windshield replacement near me boulder',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/boulder-co',
@@ -134,6 +134,52 @@ export default function BoulderLocationPage() {
                 <p className="text-lg text-gray-700">
                   We know Boulder. Our technicians understand the specific challenges Boulder drivers face on Highway 36, canyon roads, and mountain access routes. Don't let a small chip from your ski trip turn into a full windshield replacement - we offer same-day mobile service throughout all Boulder neighborhoods, including CU campus areas.
                 </p>
+              </section>
+
+              {/* Boulder Chip Repair Section */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Boulder's Rock Chip Repair Specialists</h2>
+                <p className="text-lg text-gray-700 mb-4">
+                  Rock chips are especially common in Boulder due to mountain driving, gravel from canyon roads, and construction traffic on Highway 36. If you've picked up a chip from your commute or weekend mountain trip, we can repair it before it spreads into a costly crack.
+                </p>
+                <div className="bg-green-50 border-l-4 border-green-600 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">✓ Why Boulder Drivers Get More Rock Chips</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-green-600 font-bold mr-2">•</span>
+                      <span><strong>Mountain Gravel:</strong> Boulder Canyon, Flagstaff Road, and mountain access routes have loose rocks and debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-600 font-bold mr-2">•</span>
+                      <span><strong>Highway 36 Construction:</strong> Frequent roadwork and heavy truck traffic kick up rocks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-600 font-bold mr-2">•</span>
+                      <span><strong>Temperature Extremes:</strong> Boulder's elevation causes rapid temperature swings that make chips spread faster</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-600 font-bold mr-2">•</span>
+                      <span><strong>Unpaved Roads:</strong> Popular hiking and mountain biking trailheads have gravel parking areas</span>
+                    </li>
+                  </ul>
+                </div>
+                <p className="text-lg text-gray-700 mb-4">
+                  <strong>30-Minute Mobile Chip Repair:</strong> We come to you anywhere in Boulder - University Hill, Table Mesa, Gunbarrel, or Pearl Street. Most insurance policies cover chip repair with $0 deductible. Don't wait for that chip to crack - call us today at <a href="tel:+17209187465" className="text-pink-600 hover:underline font-semibold">(720) 918-7465</a>.
+                </p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
+                    <div className="text-3xl font-bold text-pink-600 mb-2">30 min</div>
+                    <div className="text-gray-700 font-medium">Repair Time</div>
+                  </div>
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
+                    <div className="text-3xl font-bold text-pink-600 mb-2">$0</div>
+                    <div className="text-gray-700 font-medium">Often with Insurance</div>
+                  </div>
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
+                    <div className="text-3xl font-bold text-pink-600 mb-2">Same Day</div>
+                    <div className="text-gray-700 font-medium">Mobile Service</div>
+                  </div>
+                </div>
               </section>
 
               <section>

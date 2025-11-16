@@ -8,9 +8,9 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Progressive Windshield Replacement | $0 Deductible CO | (720) 918-7465',
-  description: '✓ Progressive approved shop ✓ Often $0 deductible for glass in Colorado ✓ We file your claim ✓ Direct billing ✓ Same-day mobile service ✓ Won\'t raise rates. Call (720) 918-7465.',
-  keywords: 'progressive windshield replacement, progressive glass claim, progressive auto glass, progressive windshield claim, progressive 0 deductible glass',
+  title: 'Progressive Windshield Replacement Denver | $0 Deductible CO | (720) 918-7465',
+  description: '★★★★★ Progressive windshield claims made easy. Serving Denver, Aurora, Boulder, Colorado Springs. Often $0 deductible. We file your claim & handle all paperwork. Direct billing. Won\'t raise rates. Same-day mobile service. Call now!',
+  keywords: 'progressive windshield replacement, progressive glass claim, progressive auto glass, progressive windshield claim denver, progressive 0 deductible glass colorado, progressive windshield replacement colorado springs',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/progressive',
   },

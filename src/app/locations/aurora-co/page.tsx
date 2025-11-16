@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Aurora, CO | Pink Auto Glass',
-  description: 'Aurora windshield replacement & repair - same-day mobile service to Stapleton, Green Valley Ranch, Southlands & all Aurora neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Aurora Auto Glass Repair | Same-Day Service | $0 Deductible | (720) 918-7465',
+  description: '★★★★★ Aurora\'s #1 Mobile Windshield Repair. Same-day service to Stapleton, Green Valley Ranch & all Aurora. Often $0 out-of-pocket with insurance. Lifetime warranty. 500+ happy customers. Call (720) 918-7465 now!',
   keywords: 'windshield repair aurora, windshield replacement aurora, auto glass aurora co, mobile windshield service aurora, windshield replacement near me aurora, stapleton windshield repair, green valley ranch auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/aurora-co',
