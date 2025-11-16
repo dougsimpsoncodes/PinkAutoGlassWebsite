@@ -102,7 +102,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  // Location pages - All 24 cities in service area
+  // Location pages - All 44 cities in service area
   const locations = [
     // Denver Metro - Core Cities
     'denver-co',
@@ -119,17 +119,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'englewood-co',
     'broomfield-co',
     'brighton-co',
+    // Denver Metro - Additional Cities (30 mile radius)
+    'erie-co',
+    'northglenn-co',
+    'wheat-ridge-co',
+    'lafayette-co',
+    'louisville-co',
+    'superior-co',
+    'federal-heights-co',
+    'sheridan-co',
+    'greenwood-village-co',
+    'lone-tree-co',
+    'cherry-hills-village-co',
+    'firestone-co',
+    'frederick-co',
     // Boulder County
     'boulder-co',
     'longmont-co',
-    // Northern Front Range
+    // Northern Front Range - Core Cities
     'fort-collins-co',
     'loveland-co',
     'greeley-co',
     'windsor-co',
-    // Southern Colorado
+    // Northern Front Range - Additional Cities (10 mile radius from Fort Collins)
+    'johnstown-co',
+    'timnath-co',
+    'wellington-co',
+    // Southern Colorado - Core Cities
     'colorado-springs-co',
     'castle-rock-co',
+    // Southern Colorado - Additional Cities (10 mile radius from Colorado Springs)
+    'security-widefield-co',
+    'fountain-co',
+    'manitou-springs-co',
+    'black-forest-co',
     // Mountain Communities
     'evergreen-co',
     'golden-co',
