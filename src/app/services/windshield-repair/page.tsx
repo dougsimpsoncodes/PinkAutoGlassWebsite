@@ -8,9 +8,9 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair Denver | Rock Chip Repair',
-  description: 'Professional windshield chip and crack repair in Denver. Often covered by insurance. Same-day service, 30-minute repair, lifetime warranty. Stop chips from spreading. Call (720) 918-7465.',
-  keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost',
+  title: 'Windshield Chip Repair Denver | Lifetime Warranty | Insurance Accepted | (720) 918-7465',
+  description: '★★★★★ Denver\'s fastest windshield chip repair. 30-min service. Often $0 with insurance. Serving Denver, Aurora, Boulder, Colorado Springs. Prevents cracks from spreading. Same-day mobile service. Lifetime warranty. Call now!',
+  keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost, windshield repair near me, mobile windshield repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/windshield-repair',
   },
@@ -141,6 +141,39 @@ export default function WindshieldRepairPage() {
                     <p>Often 100% in Colorado under comprehensive coverage. We’ll help you confirm.</p>
                   </div>
                 </div>
+              </section>
+
+              {/* Service Area Section */}
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Serving Denver, Aurora, Boulder & Colorado Springs
+                </h2>
+                <p className="text-lg text-gray-700 mb-4">
+                  We bring our mobile windshield chip repair service directly to you across the entire Front Range. Whether you're at home, work, or anywhere in between, we'll come to you with our fully equipped mobile units.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {[
+                    { city: 'Denver', path: '/locations/denver-co' },
+                    { city: 'Aurora', path: '/locations/aurora-co' },
+                    { city: 'Boulder', path: '/locations/boulder-co' },
+                    { city: 'Colorado Springs', path: '/locations/colorado-springs-co' },
+                    { city: 'Lakewood', path: '/locations/lakewood-co' },
+                    { city: 'Fort Collins', path: '/locations/fort-collins-co' },
+                    { city: 'Thornton', path: '/locations/thornton-co' },
+                    { city: 'Arvada', path: '/locations/arvada-co' },
+                  ].map((location) => (
+                    <Link
+                      key={location.city}
+                      href={location.path}
+                      className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors"
+                    >
+                      <span className="text-gray-700 font-medium">{location.city}</span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm">
+                  <strong>Same-day mobile service available</strong> across all Colorado Front Range communities. Call <a href="tel:+17209187465" className="text-pink-600 hover:underline font-semibold">(720) 918-7465</a> to schedule.
+                </p>
               </section>
 
               <section>
