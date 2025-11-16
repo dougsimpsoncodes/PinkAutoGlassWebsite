@@ -75,12 +75,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/thank-you`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.1,
-    },
-    {
       url: `${baseUrl}/track`,
       lastModified: now,
       changeFrequency: 'monthly',
