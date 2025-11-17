@@ -346,32 +346,10 @@ export default function SearchPerformancePage() {
                   <th className="text-right p-2 font-semibold text-gray-700">Cost</th>
                   <th className="text-right p-2 font-semibold text-gray-700">Avg CPC</th>
                   <th className="text-right p-2 font-semibold text-gray-700">Position</th>
-                  <th className="text-left p-2 font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.data.slice(0, 50).map((term, idx) => {
-                  let statusBadge = '';
-                  let statusColor = '';
-
-                  if (term.paid_cpc > 15 && term.paid_clicks > 5) {
-                    statusBadge = 'HIGH COST';
-                    statusColor = 'bg-red-100 text-red-800';
-                  } else if (term.search_term.includes('pink')) {
-                    statusBadge = '✅ BRAND';
-                    statusColor = 'bg-green-100 text-green-800';
-                  } else if (term.source === 'ORG' && term.organic_position < 10) {
-                    statusBadge = '⚡ ADD PAID';
-                    statusColor = 'bg-yellow-100 text-yellow-800';
-                  } else if (term.source === 'PAID') {
-                    statusBadge = 'PAID';
-                    statusColor = 'bg-blue-100 text-blue-800';
-                  } else {
-                    statusBadge = 'ORGANIC';
-                    statusColor = 'bg-green-50 text-green-800';
-                  }
-
-                  return (
+                {data.data.slice(0, 50).map((term, idx) => (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="p-2">
                         <div className="font-medium text-gray-900 max-w-xs truncate">
@@ -425,14 +403,8 @@ export default function SearchPerformancePage() {
                       <td className="p-2 text-right text-gray-900">
                         {term.organic_position > 0 ? term.organic_position.toFixed(1) : '-'}
                       </td>
-                      <td className="p-2">
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
-                          {statusBadge}
-                        </span>
-                      </td>
                     </tr>
-                  );
-                })}
+                ))}
               </tbody>
             </table>
           </div>
