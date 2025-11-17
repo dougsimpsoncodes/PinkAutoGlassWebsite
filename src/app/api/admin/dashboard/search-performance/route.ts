@@ -245,9 +245,9 @@ export async function GET(req: NextRequest) {
     const organicRows = combinedData.filter(t => t.source === 'ORG');
 
     // Find terms that appear in both paid and organic
-    const paidTerms = new Set(paidRows.map(r => r.search_term));
-    const organicTerms = new Set(organicRows.map(r => r.search_term));
-    const termsInBoth = [...paidTerms].filter(term => organicTerms.has(term));
+    const paidTermSet = new Set(paidRows.map(r => r.search_term));
+    const organicTermSet = new Set(organicRows.map(r => r.search_term));
+    const termsInBoth = [...paidTermSet].filter(term => organicTermSet.has(term));
 
     const summary = {
       totalRows: combinedData.length,
