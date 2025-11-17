@@ -299,6 +299,64 @@ export async function fetchKeywordPerformance(
 }
 
 /**
+ * Fetch search query report - actual search terms that triggered ads
+ * This shows what users searched for (not just keywords you bid on)
+ */
+export async function fetchSearchQueryReport(
+  startDate: string,
+  endDate: string
+): Promise<any[]> {
+  const { customer } = getGoogleAdsClient();
+
+  const query = `
+    SELECT
+      campaign.id,
+      campaign.name,
+      ad_group.id,
+      ad_group.name,
+      segments.search_term_match_type,
+      segments.date,
+      search_term_view.search_term,
+      search_term_view.status,
+      metrics.impressions,
+      metrics.clicks,
+      metrics.cost_micros,
+      metrics.conversions,
+      metrics.conversions_value,
+      metrics.all_conversions,
+      metrics.all_conversions_value
+    FROM search_term_view
+    WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+    ORDER BY metrics.impressions DESC
+  `;
+
+  try {
+    const results = await customer.query(query);
+
+    return results.map((row: any) => ({
+      campaign_id: row.campaign.id,
+      campaign_name: row.campaign.name,
+      ad_group_id: row.ad_group.id,
+      ad_group_name: row.ad_group.name,
+      search_term: row.search_term_view.search_term,
+      match_type: row.segments.search_term_match_type,
+      status: row.search_term_view.status,
+      date: row.segments.date,
+      impressions: parseInt(row.metrics.impressions || '0'),
+      clicks: parseInt(row.metrics.clicks || '0'),
+      cost: parseFloat((row.metrics.cost_micros / 1000000).toFixed(2)),
+      conversions: parseFloat(row.metrics.conversions || '0'),
+      conversions_value: parseFloat(row.metrics.conversions_value || '0'),
+      all_conversions: parseFloat(row.metrics.all_conversions || '0'),
+      all_conversions_value: parseFloat(row.metrics.all_conversions_value || '0'),
+    }));
+  } catch (error: any) {
+    console.error('Error fetching search query report:', error);
+    throw new Error(`Failed to fetch search query report: ${error.message}`);
+  }
+}
+
+/**
  * Test Google Ads API connection
  */
 export async function testConnection(): Promise<{
