@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads Performance Dashboard - v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #f9fafb;
+        }
+        .stat-card {
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Google Ads Performance</h1>
+                    <p class="text-gray-600 mt-1">Auto-synced from Google Ads API • Last updated: 2 minutes ago</p>
+                </div>
+                <div class="flex gap-3">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>This Month</option>
+                    </select>
+                    <button class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+                        Sync Now
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: GOOGLE ADS OVERVIEW METRICS -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <!-- Impressions -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 stat-card">
+                <p class="text-sm font-medium text-gray-600 mb-2">Impressions</p>
+                <p class="text-3xl font-bold text-blue-600">117,040</p>
+                <p class="text-xs text-green-600 mt-1 font-semibold">↑ 12% vs last week</p>
+            </div>
+
+            <!-- Clicks -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 stat-card">
+                <p class="text-sm font-medium text-gray-600 mb-2">Clicks</p>
+                <p class="text-3xl font-bold text-green-600">1,627</p>
+                <p class="text-xs text-green-600 mt-1 font-semibold">↑ 8% vs last week</p>
+            </div>
+
+            <!-- Spend -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 stat-card">
+                <p class="text-sm font-medium text-gray-600 mb-2">Total Spend</p>
+                <p class="text-3xl font-bold text-gray-900">$1,741</p>
+                <p class="text-xs text-gray-500 mt-1">$248.71/day avg</p>
+            </div>
+
+            <!-- CTR -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 stat-card">
+                <p class="text-sm font-medium text-gray-600 mb-2">CTR</p>
+                <p class="text-3xl font-bold text-purple-600">1.39%</p>
+                <p class="text-xs text-gray-500 mt-1">Click-through rate</p>
+            </div>
+
+            <!-- CPC -->
+            <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 stat-card">
+                <p class="text-sm font-medium text-gray-600 mb-2">Avg CPC</p>
+                <p class="text-3xl font-bold text-orange-600">$1.07</p>
+                <p class="text-xs text-red-600 mt-1 font-semibold">↑ $0.12 vs last week</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: CAMPAIGN PERFORMANCE TABLE -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Campaign Performance (Last 7 Days)</h2>
+                    <p class="text-sm text-gray-600 mt-1">Sorted by impression volume • Calls are estimated based on campaign attribution</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Campaign</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Impressions</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Clicks</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">CTR</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Spend</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">CPC</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Est. Calls</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">$/Call</th>
+                            <th class="text-center py-3 px-4 font-semibold text-gray-700">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Highest volume -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Windshield Repair - General</td>
+                            <td class="py-4 px-4 text-right text-gray-700">45,230</td>
+                            <td class="py-4 px-4 text-right text-gray-700">678</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.50%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$678</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-700 font-semibold">~38</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-600">$17.84</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">HIGH VOL</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Second highest -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Auto Glass Near Me</td>
+                            <td class="py-4 px-4 text-right text-gray-700">32,140</td>
+                            <td class="py-4 px-4 text-right text-gray-700">523</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.63%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$523</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-700 font-semibold">~31</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-600">$16.87</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">HIGH VOL</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Good performer -->
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Mobile Service Colorado</td>
+                            <td class="py-4 px-4 text-right text-gray-700">18,900</td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.81%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-700 font-semibold">~24</td>
+                            <td class="py-4 px-4 text-right font-bold text-yellow-600">$14.25</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">GOOD CTR</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Best CPA -->
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Aurora Local Targeting</td>
+                            <td class="py-4 px-4 text-right text-gray-700">12,450</td>
+                            <td class="py-4 px-4 text-right text-gray-700">198</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.59%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$198</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-700 font-semibold">~21</td>
+                            <td class="py-4 px-4 text-right font-bold text-green-700">$9.43</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">✅ WINNER</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Poor performer -->
+                        <tr class="border-b border-gray-100 hover:bg-red-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Competitor Brand Searches</td>
+                            <td class="py-4 px-4 text-right text-gray-700">8,320</td>
+                            <td class="py-4 px-4 text-right text-gray-700">287</td>
+                            <td class="py-4 px-4 text-right text-gray-700">3.45%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$287</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-700 font-semibold">~3</td>
+                            <td class="py-4 px-4 text-right font-bold text-red-700">$95.67</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">⚠️ REVIEW</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-300 bg-gray-50">
+                            <td class="py-4 px-4 font-bold text-gray-900">TOTAL</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">117,040</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">2,028</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">1.73%</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">$2,028</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">$1.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-blue-700">~117</td>
+                            <td class="py-4 px-4 text-right font-bold text-gray-900">$17.33</td>
+                            <td class="py-4 px-4 text-center"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm font-semibold text-blue-900 mb-2">💡 Campaign Insights:</p>
+                <ul class="text-sm text-blue-800 space-y-1">
+                    <li>• <strong>Top 2 campaigns</strong> drive 66% of impressions (77,370) - high visibility</li>
+                    <li>• <strong>Aurora Local:</strong> Best cost per call at $9.43 - increase budget</li>
+                    <li>• <strong>Competitor Brands:</strong> High CTR (3.45%) but poor conversion - review search terms</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECTION 3: SEARCH TERMS BY IMPRESSION VOLUME -->
+        <div class="bg-white shadow-sm border border-blue-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="text-2xl">🔍</span> Top Search Terms by Impression Volume
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">What people are searching for most + Google Ads performance</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Search Term</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Impressions</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Clicks</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">CTR</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Spend</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">CPC</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Est. Calls</th>
+                            <th class="text-center py-3 px-4 font-semibold text-gray-700">Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Highest volume -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-red-500 text-lg">🔥</span>
+                                    <span class="font-medium text-gray-900">windshield replacement near me</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-bold text-blue-700">45,230</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">0.76%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$678</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.98</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~38</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded">AVG</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Second highest -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-red-500 text-lg">🔥</span>
+                                    <span class="font-medium text-gray-900">auto glass repair aurora</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-bold text-blue-700">32,140</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">523</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-semibold">1.63%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$523</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~31</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded">GOOD</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Medium volume, good CTR -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">mobile windshield service</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">18,900</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-semibold">1.81%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~24</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">✅ GOOD</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Winner -->
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">cracked windshield fix aurora</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">12,450</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">198</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-semibold">1.59%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$198</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-semibold">$1.00</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-bold">~21</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">✅ WINNER</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5 -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">auto glass replacement cost</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">9,870</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">147</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.49%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$147</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~11</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded">GOOD</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 6 -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">chip repair near me</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">8,320</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">134</td>
+                            <td class="py-4 px-4 text-right text-green-700 font-semibold">1.61%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$134</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~12</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">✅ GOOD</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 7: Low CTR -->
+                        <tr class="border-b border-gray-100 hover:bg-yellow-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">windshield repair colorado springs</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">6,540</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">52</td>
+                            <td class="py-4 px-4 text-right text-red-700 font-semibold">0.80%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$52</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$1.00</td>
+                            <td class="py-4 px-4 text-right text-blue-600 font-semibold">~4</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded">⚠️ LOW CTR</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 8: Competitor term -->
+                        <tr class="border-b border-gray-100 hover:bg-red-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">safelite alternative aurora</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">3,240</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">28</td>
+                            <td class="py-4 px-4 text-right text-gray-700">0.86%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$191</td>
+                            <td class="py-4 px-4 text-right text-red-700 font-semibold">$6.82</td>
+                            <td class="py-4 px-4 text-right text-red-700 font-bold">~2</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">❌ HIGH CPC</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm font-semibold text-blue-900 mb-2">🔥 High Volume Insights:</p>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Top 2 terms: <strong>77,370 impressions</strong> (66% of total volume)</li>
+                        <li>• "windshield replacement near me" - highest volume but low 0.76% CTR</li>
+                        <li>• <strong>Opportunity:</strong> Improve ad copy for top term to increase CTR</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm font-semibold text-green-900 mb-2">✅ Winners to Scale:</p>
+                    <ul class="text-sm text-green-800 space-y-1">
+                        <li>• <strong>"cracked windshield fix aurora":</strong> $1.00 CPC, 1.59% CTR</li>
+                        <li>• <strong>"mobile windshield service":</strong> Best CTR at 1.81%</li>
+                        <li>• Both have strong performance - increase bids by 20-30%</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: ACTIONABLE INSIGHTS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Top Performers -->
+            <div class="bg-white shadow-sm border border-green-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">⚡</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Top Performers</h3>
+                        <p class="text-sm text-gray-600">Increase bids</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="p-3 bg-green-50 rounded border border-green-100">
+                        <p class="font-medium text-gray-900 text-sm">cracked windshield fix aurora</p>
+                        <p class="text-xs text-gray-600">12,450 impr • 1.59% CTR • $1.00 CPC</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded border border-green-100">
+                        <p class="font-medium text-gray-900 text-sm">mobile windshield service</p>
+                        <p class="text-xs text-gray-600">18,900 impr • 1.81% CTR • $1.00 CPC</p>
+                    </div>
+                </div>
+                <button class="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                    Download Bid Adjustments
+                </button>
+            </div>
+
+            <!-- Low CTR Terms -->
+            <div class="bg-white shadow-sm border border-yellow-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Low CTR</h3>
+                        <p class="text-sm text-gray-600">Improve ad copy</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="p-3 bg-yellow-50 rounded border border-yellow-100">
+                        <p class="font-medium text-gray-900 text-sm">windshield replacement near me</p>
+                        <p class="text-xs text-gray-600">45,230 impr • 0.76% CTR • High volume!</p>
+                    </div>
+                    <div class="p-3 bg-yellow-50 rounded border border-yellow-100">
+                        <p class="font-medium text-gray-900 text-sm">windshield repair colorado springs</p>
+                        <p class="text-xs text-gray-600">6,540 impr • 0.80% CTR</p>
+                    </div>
+                </div>
+                <button class="mt-4 w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm">
+                    View Ad Copy Tips
+                </button>
+            </div>
+
+            <!-- High CPC Terms -->
+            <div class="bg-white shadow-sm border border-red-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">❌</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">High CPC</h3>
+                        <p class="text-sm text-gray-600">Consider pausing</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="p-3 bg-red-50 rounded border border-red-100">
+                        <p class="font-medium text-gray-900 text-sm">safelite alternative aurora</p>
+                        <p class="text-xs text-gray-600">$6.82 CPC • 3,240 impr • Competitor term</p>
+                    </div>
+                    <div class="p-3 bg-red-50 rounded border border-red-100">
+                        <p class="font-medium text-gray-900 text-sm">auto glass america</p>
+                        <p class="text-xs text-gray-600">$5.20 CPC • Competitor term</p>
+                    </div>
+                </div>
+                <button class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                    Add Negative Keywords
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-sm text-gray-500 mt-8 pb-8">
+            <p>💡 Redesigned Mockup v2 - Focus on Google Ads metrics with calls as context</p>
+            <p class="mt-1">All data is representative • Real data will sync automatically from Google Ads API</p>
+        </div>
+    </div>
+</body>
+</html>
