@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads Performance Dashboard - Redesign Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #f9fafb;
+        }
+        .stat-card {
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Google Ads Performance Dashboard</h1>
+                    <p class="text-gray-600 mt-1">Real-time data synced from Google Ads API • Last updated: 2 minutes ago</p>
+                </div>
+                <div class="flex gap-3">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>This Month</option>
+                    </select>
+                    <button class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+                        Sync Now
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SECTION 1: DAILY TARGET TRACKER -->
+        <div class="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 shadow-lg">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="text-2xl">🎯</span> Today's Performance vs Target
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Target -->
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <p class="text-sm font-medium text-gray-600 mb-3">Your Daily Target</p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Calls:</span>
+                            <span class="font-bold text-gray-900">15 calls</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Cost/Call:</span>
+                            <span class="font-bold text-gray-900">$10.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Budget:</span>
+                            <span class="font-bold text-gray-900">$150.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actual -->
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <p class="text-sm font-medium text-gray-600 mb-3">Today's Actual</p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Calls:</span>
+                            <span class="font-bold text-red-600">8 calls</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Cost/Call:</span>
+                            <span class="font-bold text-red-600">$18.75</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Spend:</span>
+                            <span class="font-bold text-gray-900">$150.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="bg-red-50 rounded-lg p-6 border-2 border-red-200">
+                    <p class="text-sm font-medium text-red-800 mb-3">⚠️ Action Required</p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded p-3">
+                            <p class="text-sm font-semibold text-red-700">❌ Missing 7 calls (-47%)</p>
+                            <p class="text-xs text-gray-600 mt-1">Need 7 more to hit target</p>
+                        </div>
+                        <div class="bg-white rounded p-3">
+                            <p class="text-sm font-semibold text-red-700">❌ Cost 88% over target</p>
+                            <p class="text-xs text-gray-600 mt-1">$18.75 vs $10.00 target</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7 Day Trend -->
+            <div class="mt-6 bg-white rounded-lg p-4">
+                <p class="text-sm font-semibold text-gray-900 mb-3">7-Day Trend: Cost Per Call</p>
+                <div class="flex items-end justify-between gap-2 h-32">
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-green-500 rounded-t" style="height: 60%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 10</p>
+                        <p class="text-xs font-bold text-green-600">$9.43</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-yellow-500 rounded-t" style="height: 70%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 11</p>
+                        <p class="text-xs font-bold text-yellow-600">$11.20</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-yellow-500 rounded-t" style="height: 75%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 12</p>
+                        <p class="text-xs font-bold text-yellow-600">$12.30</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-orange-500 rounded-t" style="height: 80%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 13</p>
+                        <p class="text-xs font-bold text-orange-600">$14.25</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-red-500 rounded-t" style="height: 90%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 14</p>
+                        <p class="text-xs font-bold text-red-600">$16.87</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-red-500 rounded-t" style="height: 95%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 15</p>
+                        <p class="text-xs font-bold text-red-600">$17.84</p>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-red-600 rounded-t" style="height: 100%"></div>
+                        <p class="text-xs text-gray-600 mt-2">Nov 16</p>
+                        <p class="text-xs font-bold text-red-700">$18.75</p>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center gap-2 text-sm">
+                    <span class="inline-block w-3 h-3 bg-green-500 rounded"></span>
+                    <span class="text-gray-600">≤ $10 (Target)</span>
+                    <span class="inline-block w-3 h-3 bg-yellow-500 rounded ml-3"></span>
+                    <span class="text-gray-600">$10-$15</span>
+                    <span class="inline-block w-3 h-3 bg-red-500 rounded ml-3"></span>
+                    <span class="text-gray-600">> $15</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SECTION 2: CAMPAIGN PERFORMANCE -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Campaign Performance (Last 7 Days)</h2>
+                    <p class="text-sm text-gray-600 mt-1">Identify which campaigns to increase vs pause</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Sort by Volume</button>
+                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Sort by Cost/Call</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Campaign</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Impressions</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Clicks</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Spend</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Calls</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">$/Call</th>
+                            <th class="text-center py-3 px-4 font-semibold text-gray-700">Status</th>
+                            <th class="text-center py-3 px-4 font-semibold text-gray-700">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Good -->
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Aurora Local Targeting</td>
+                            <td class="py-4 px-4 text-right text-gray-700">12,450</td>
+                            <td class="py-4 px-4 text-right text-gray-700">198</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$198.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-green-700">21</td>
+                            <td class="py-4 px-4 text-right font-bold text-green-700">$9.43</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">✅ PROFITABLE</span>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">Increase Budget</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Warning -->
+                        <tr class="border-b border-gray-100 hover:bg-yellow-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Mobile Service Colorado</td>
+                            <td class="py-4 px-4 text-right text-gray-700">18,900</td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$342.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-yellow-700">24</td>
+                            <td class="py-4 px-4 text-right font-bold text-yellow-700">$14.25</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">⚠️ HIGH COST</span>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button class="px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700">Optimize</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Warning -->
+                        <tr class="border-b border-gray-100 hover:bg-orange-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Windshield Repair - General</td>
+                            <td class="py-4 px-4 text-right text-gray-700">45,230</td>
+                            <td class="py-4 px-4 text-right text-gray-700">678</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$678.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-700">38</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-700">$17.84</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">⚠️ OVER TARGET</span>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button class="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700">Review Terms</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Warning -->
+                        <tr class="border-b border-gray-100 hover:bg-orange-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Auto Glass Near Me</td>
+                            <td class="py-4 px-4 text-right text-gray-700">32,140</td>
+                            <td class="py-4 px-4 text-right text-gray-700">523</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$523.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-700">31</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-700">$16.87</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">⚠️ OVER TARGET</span>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button class="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700">Review Terms</button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Bad -->
+                        <tr class="border-b border-gray-100 hover:bg-red-50">
+                            <td class="py-4 px-4 font-medium text-gray-900">Competitor Brand Searches</td>
+                            <td class="py-4 px-4 text-right text-gray-700">8,320</td>
+                            <td class="py-4 px-4 text-right text-gray-700">287</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$287.00</td>
+                            <td class="py-4 px-4 text-right font-bold text-red-700">3</td>
+                            <td class="py-4 px-4 text-right font-bold text-red-700">$95.67</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">❌ UNPROFITABLE</span>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Pause Now</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm font-semibold text-blue-900 mb-2">💡 Quick Actions:</p>
+                <ul class="text-sm text-blue-800 space-y-1">
+                    <li>✅ <strong>Aurora Local:</strong> Increase daily budget from $30 → $45 (50% increase)</li>
+                    <li>⚠️ <strong>Top 3 campaigns:</strong> Review search terms to find low performers to pause</li>
+                    <li>❌ <strong>Competitor Brands:</strong> Pause immediately - 10x over cost/call target</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- NEW SECTION 3: SEARCH TERMS BY IMPRESSION VOLUME -->
+        <div class="bg-white shadow-sm border border-blue-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="text-2xl">🔍</span> Top Search Terms by Impression Volume
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">What people are searching for most + your cost efficiency</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Search Term</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Impressions</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Clicks</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">CTR</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Cost</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">Est. Calls</th>
+                            <th class="text-right py-3 px-4 font-semibold text-gray-700">$/Call</th>
+                            <th class="text-center py-3 px-4 font-semibold text-gray-700">Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: High volume, over target -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-red-500 text-lg">🔥</span>
+                                    <span class="font-medium text-gray-900">windshield replacement near me</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-bold text-blue-700">45,230</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">0.76%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$678.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-gray-900">38</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-600">$17.84</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded">OPTIMIZE</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: High volume, over target -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-red-500 text-lg">🔥</span>
+                                    <span class="font-medium text-gray-900">auto glass repair aurora</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-bold text-blue-700">32,140</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">523</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.63%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$523.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-gray-900">31</td>
+                            <td class="py-4 px-4 text-right font-bold text-orange-600">$16.87</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-800 rounded">OPTIMIZE</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Medium volume, acceptable -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">mobile windshield service</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">18,900</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">342</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.81%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$342.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-gray-900">24</td>
+                            <td class="py-4 px-4 text-right font-bold text-yellow-600">$14.25</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded">WATCH</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: Medium volume, GOOD -->
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">cracked windshield fix aurora</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">12,450</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">198</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.59%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$198.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-green-700">21</td>
+                            <td class="py-4 px-4 text-right font-bold text-green-700">$9.43</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">✅ WINNER</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Medium volume, acceptable -->
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">chip repair near me</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">8,320</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">134</td>
+                            <td class="py-4 px-4 text-right text-gray-700">1.61%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$134.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-gray-900">12</td>
+                            <td class="py-4 px-4 text-right font-bold text-yellow-600">$11.17</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded">WATCH</span>
+                            </td>
+                        </tr>
+
+                        <!-- Row 6: Bad performer -->
+                        <tr class="border-b border-gray-100 hover:bg-red-50">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">safelite alternative aurora</span>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="font-semibold text-gray-700">3,240</span>
+                            </td>
+                            <td class="py-4 px-4 text-right text-gray-700">28</td>
+                            <td class="py-4 px-4 text-right text-gray-700">0.86%</td>
+                            <td class="py-4 px-4 text-right text-gray-700">$191.00</td>
+                            <td class="py-4 px-4 text-right font-semibold text-red-700">2</td>
+                            <td class="py-4 px-4 text-right font-bold text-red-700">$95.50</td>
+                            <td class="py-4 px-4 text-center">
+                                <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">❌ PAUSE</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm font-semibold text-blue-900 mb-2">🔥 High Volume Terms (10,000+ impressions):</p>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Top 2 terms drive <strong>77,370 impressions</strong> (52% of total volume)</li>
+                        <li>• Both are 70-80% over cost/call target</li>
+                        <li>• <strong>Action:</strong> Optimize landing pages or pause low-converting keywords in these campaigns</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm font-semibold text-green-900 mb-2">✅ Winner Identified:</p>
+                    <ul class="text-sm text-green-800 space-y-1">
+                        <li>• <strong>"cracked windshield fix aurora":</strong> $9.43/call (UNDER target)</li>
+                        <li>• 12,450 impressions - solid volume</li>
+                        <li>• <strong>Action:</strong> Increase budget by 50% to capture more of this profitable traffic</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXISTING: Cost Per Caller Box (Keep this) -->
+        <div class="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 shadow-lg">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="text-2xl">📞</span> Call Performance Metrics
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-6 shadow-sm stat-card">
+                    <p class="text-sm font-medium text-gray-600 mb-2">Total Ad Spend</p>
+                    <p class="text-3xl font-bold text-gray-900">$1,741.00</p>
+                    <p class="text-xs text-gray-500 mt-1">Last 7 days</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm stat-card">
+                    <p class="text-sm font-medium text-gray-600 mb-2">Unique Callers</p>
+                    <p class="text-3xl font-bold text-green-600">114</p>
+                    <p class="text-xs text-gray-500 mt-1">98 answered • 16 missed</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm border-2 border-pink-300 stat-card">
+                    <p class="text-sm font-medium text-pink-600 mb-2">Average Cost Per Caller</p>
+                    <p class="text-3xl font-bold text-pink-600">$15.27</p>
+                    <p class="text-xs text-red-600 mt-1 font-semibold">⚠️ 53% over $10 target</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXISTING: Actionable Sections (Keep these) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white shadow-sm border border-green-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">⚡</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Top Converters</h3>
+                        <p class="text-sm text-gray-600">Increase bids on these winners</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="p-3 bg-green-50 rounded border border-green-100">
+                        <p class="font-medium text-gray-900">cracked windshield fix aurora</p>
+                        <p class="text-sm text-gray-600">21 conversions @ $9.43 CPA</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded border border-green-100">
+                        <p class="font-medium text-gray-900">chip repair colorado springs</p>
+                        <p class="text-sm text-gray-600">12 conversions @ $11.17 CPA</p>
+                    </div>
+                </div>
+                <button class="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    Download Bid Adjustments CSV
+                </button>
+            </div>
+
+            <div class="bg-white shadow-sm border border-red-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Wasted Spend</h3>
+                        <p class="text-sm text-gray-600">Competitor brands to block</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="p-3 bg-red-50 rounded border border-red-100">
+                        <p class="font-medium text-gray-900">safelite alternative</p>
+                        <p class="text-sm text-gray-600">$191 spent • 2 conversions • $95.50 CPA</p>
+                    </div>
+                    <div class="p-3 bg-red-50 rounded border border-red-100">
+                        <p class="font-medium text-gray-900">auto glass america aurora</p>
+                        <p class="text-sm text-gray-600">$78 spent • 0 conversions</p>
+                    </div>
+                </div>
+                <button class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Copy Negative Keywords
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-sm text-gray-500 mt-8 pb-8">
+            <p>💡 This is a mockup of the redesigned dashboard</p>
+            <p class="mt-1">All data is representative • Real data will sync automatically from Google Ads API</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -56,6 +56,8 @@ export default function SearchPerformancePage() {
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState(30);
   const [sourceFilter, setSourceFilter] = useState<'all' | 'paid' | 'organic'>('all');
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<{ message: string; success: boolean } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -78,6 +80,48 @@ export default function SearchPerformancePage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function syncData() {
+    try {
+      setSyncing(true);
+      setSyncStatus(null);
+
+      // Trigger both Google Ads and GSC sync
+      const responses = await Promise.all([
+        fetch(`/api/admin/sync/google-ads-search-terms?days=${dateRange}`, { method: 'POST' }),
+        fetch(`/api/admin/sync/google-search-console?days=${dateRange}`, { method: 'POST' }),
+      ]);
+
+      const results = await Promise.all(responses.map(r => r.json()));
+
+      const allSuccess = results.every(r => r.ok);
+
+      if (allSuccess) {
+        const totalRecords = results.reduce((sum, r) => sum + (r.summary?.recordsFetched || 0), 0);
+        setSyncStatus({
+          message: `Successfully synced ${totalRecords} records from Google Ads & Search Console`,
+          success: true,
+        });
+        // Auto-refresh data after successful sync
+        await fetchData();
+      } else {
+        const errors = results.filter(r => !r.ok).map(r => r.error).join(', ');
+        setSyncStatus({
+          message: `Sync failed: ${errors}`,
+          success: false,
+        });
+      }
+    } catch (err: any) {
+      setSyncStatus({
+        message: `Sync error: ${err.message}`,
+        success: false,
+      });
+    } finally {
+      setSyncing(false);
+      // Clear status after 5 seconds
+      setTimeout(() => setSyncStatus(null), 5000);
     }
   }
 
@@ -157,13 +201,38 @@ export default function SearchPerformancePage() {
               <option value={90}>Last 90 days</option>
             </select>
             <button
+              onClick={syncData}
+              disabled={syncing}
+              className={`text-sm px-3 py-1.5 rounded font-medium ${
+                syncing
+                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
+              {syncing ? 'Syncing...' : 'Sync Data'}
+            </button>
+            <button
               onClick={fetchData}
-              className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+              disabled={syncing}
+              className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               Refresh
             </button>
           </div>
         </div>
+
+        {/* Sync Status Message */}
+        {syncStatus && (
+          <div
+            className={`p-3 rounded text-sm ${
+              syncStatus.success
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}
+          >
+            {syncStatus.success ? '✅' : '❌'} {syncStatus.message}
+          </div>
+        )}
 
         {/* Overview Metrics - Side by Side */}
         <div className="grid grid-cols-2 gap-3">
