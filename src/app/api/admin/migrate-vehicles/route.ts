@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminApiKey } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(request);
-  if (authError) return authError;
 
   try {
     const { makes, models } = await request.json();

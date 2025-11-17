@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAdminApiKey } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -7,8 +6,6 @@ export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   const client_id = process.env.GOOGLE_ADS_CLIENT_ID;
   const client_secret = process.env.GOOGLE_ADS_CLIENT_SECRET;

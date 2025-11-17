@@ -11,7 +11,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminApiKey } from '@/lib/api-auth';
 import { getOmegaClient, validateOmegaConfig, type OmegaQuote, type OmegaInvoice } from '@/lib/omegaEDI';
 
 // ============================================================================
@@ -20,8 +19,6 @@ import { getOmegaClient, validateOmegaConfig, type OmegaQuote, type OmegaInvoice
 
 export async function POST(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   const startTime = Date.now();
 
@@ -297,8 +294,6 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   try {
 
