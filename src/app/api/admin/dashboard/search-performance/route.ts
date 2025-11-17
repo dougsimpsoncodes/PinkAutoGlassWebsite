@@ -1,0 +1,291 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      }
+    }
+  );
+}
+
+interface SearchTermPerformance {
+  search_term: string;
+  source: 'PAID' | 'ORG' | 'BOTH';
+
+  // Paid metrics (Google Ads)
+  paid_impressions: number;
+  paid_clicks: number;
+  paid_cost: number;
+  paid_ctr: number;
+  paid_cpc: number;
+  paid_conversions: number;
+  paid_campaigns: string[];
+
+  // Organic metrics (Google Search Console)
+  organic_impressions: number;
+  organic_clicks: number;
+  organic_ctr: number;
+  organic_position: number;
+  organic_pages: string[];
+
+  // Combined metrics
+  total_impressions: number;
+  total_clicks: number;
+  combined_ctr: number;
+}
+
+/**
+ * GET /api/admin/dashboard/search-performance
+ * Returns combined paid + organic search performance
+ */
+export async function GET(req: NextRequest) {
+  const supabase = getSupabaseClient();
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const daysBack = parseInt(searchParams.get('days') || '30');
+    const source = searchParams.get('source') || 'all'; // 'paid', 'organic', or 'all'
+    const minImpressions = parseInt(searchParams.get('minImpressions') || '10');
+
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
+
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+
+    // Fetch Google Ads search terms (paid)
+    const { data: paidData, error: paidError } = await supabase
+      .from('google_ads_search_terms')
+      .select('search_term, campaign_name, impressions, clicks, cost, conversions, ctr')
+      .gte('report_date', startDateStr)
+      .lte('report_date', endDateStr);
+
+    if (paidError) {
+      console.error('Error fetching paid data:', paidError);
+    }
+
+    // Fetch Google Search Console queries (organic)
+    const { data: organicData, error: organicError } = await supabase
+      .from('google_search_console_queries')
+      .select('query, page_url, impressions, clicks, ctr, position')
+      .gte('date', startDateStr)
+      .lte('date', endDateStr);
+
+    if (organicError) {
+      console.error('Error fetching organic data:', organicError);
+    }
+
+    // Aggregate paid data by search term
+    const paidTerms = new Map<string, {
+      impressions: number;
+      clicks: number;
+      cost: number;
+      conversions: number;
+      campaigns: Set<string>;
+    }>();
+
+    paidData?.forEach(row => {
+      const term = row.search_term.toLowerCase().trim();
+      if (!paidTerms.has(term)) {
+        paidTerms.set(term, {
+          impressions: 0,
+          clicks: 0,
+          cost: 0,
+          conversions: 0,
+          campaigns: new Set(),
+        });
+      }
+      const existing = paidTerms.get(term)!;
+      existing.impressions += row.impressions || 0;
+      existing.clicks += row.clicks || 0;
+      existing.cost += row.cost || 0;
+      existing.conversions += row.conversions || 0;
+      if (row.campaign_name) {
+        existing.campaigns.add(row.campaign_name);
+      }
+    });
+
+    // Aggregate organic data by query
+    const organicTerms = new Map<string, {
+      impressions: number;
+      clicks: number;
+      position_sum: number;
+      position_count: number;
+      pages: Set<string>;
+    }>();
+
+    organicData?.forEach(row => {
+      const term = row.query.toLowerCase().trim();
+      if (!organicTerms.has(term)) {
+        organicTerms.set(term, {
+          impressions: 0,
+          clicks: 0,
+          position_sum: 0,
+          position_count: 0,
+          pages: new Set(),
+        });
+      }
+      const existing = organicTerms.get(term)!;
+      existing.impressions += parseInt(row.impressions?.toString() || '0');
+      existing.clicks += parseInt(row.clicks?.toString() || '0');
+      if (row.position) {
+        existing.position_sum += row.position;
+        existing.position_count += 1;
+      }
+      if (row.page_url) {
+        existing.pages.add(row.page_url);
+      }
+    });
+
+    // Combine paid and organic data
+    const allTerms = new Set([...paidTerms.keys(), ...organicTerms.keys()]);
+    const combinedData: SearchTermPerformance[] = [];
+
+    allTerms.forEach(term => {
+      const paid = paidTerms.get(term);
+      const organic = organicTerms.get(term);
+
+      // Determine source
+      let source: 'PAID' | 'ORG' | 'BOTH';
+      if (paid && organic) {
+        source = 'BOTH';
+      } else if (paid) {
+        source = 'PAID';
+      } else {
+        source = 'ORG';
+      }
+
+      // Skip if doesn't match source filter
+      if (source !== 'all') {
+        if (source === 'paid' && source !== 'PAID' && source !== 'BOTH') return;
+        if (source === 'organic' && source !== 'ORG' && source !== 'BOTH') return;
+      }
+
+      const paidImpressions = paid?.impressions || 0;
+      const paidClicks = paid?.clicks || 0;
+      const paidCost = paid?.cost || 0;
+      const paidConversions = paid?.conversions || 0;
+
+      const organicImpressions = organic?.impressions || 0;
+      const organicClicks = organic?.clicks || 0;
+      const avgPosition = organic?.position_count
+        ? organic.position_sum / organic.position_count
+        : 0;
+
+      const totalImpressions = paidImpressions + organicImpressions;
+      const totalClicks = paidClicks + organicClicks;
+
+      // Skip if below minimum impressions threshold
+      if (totalImpressions < minImpressions) return;
+
+      const paidCTR = paidImpressions > 0 ? (paidClicks / paidImpressions) * 100 : 0;
+      const paidCPC = paidClicks > 0 ? paidCost / paidClicks : 0;
+      const organicCTR = organicImpressions > 0 ? (organicClicks / organicImpressions) * 100 : 0;
+      const combinedCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+
+      combinedData.push({
+        search_term: term,
+        source,
+        paid_impressions: paidImpressions,
+        paid_clicks: paidClicks,
+        paid_cost: parseFloat(paidCost.toFixed(2)),
+        paid_ctr: parseFloat(paidCTR.toFixed(2)),
+        paid_cpc: parseFloat(paidCPC.toFixed(2)),
+        paid_conversions: parseFloat(paidConversions.toFixed(2)),
+        paid_campaigns: Array.from(paid?.campaigns || []),
+        organic_impressions: organicImpressions,
+        organic_clicks: organicClicks,
+        organic_ctr: parseFloat(organicCTR.toFixed(2)),
+        organic_position: parseFloat(avgPosition.toFixed(1)),
+        organic_pages: Array.from(organic?.pages || []).map(url => {
+          // Shorten URLs for display
+          try {
+            const parsed = new URL(url);
+            return parsed.pathname;
+          } catch {
+            return url;
+          }
+        }),
+        total_impressions: totalImpressions,
+        total_clicks: totalClicks,
+        combined_ctr: parseFloat(combinedCTR.toFixed(2)),
+      });
+    });
+
+    // Sort by total impressions (most impressions first)
+    combinedData.sort((a, b) => b.total_impressions - a.total_impressions);
+
+    // Calculate summary statistics
+    const summary = {
+      totalSearchTerms: combinedData.length,
+      paidOnly: combinedData.filter(t => t.source === 'PAID').length,
+      organicOnly: combinedData.filter(t => t.source === 'ORG').length,
+      both: combinedData.filter(t => t.source === 'BOTH').length,
+      totalPaidImpressions: combinedData.reduce((sum, t) => sum + t.paid_impressions, 0),
+      totalPaidClicks: combinedData.reduce((sum, t) => sum + t.paid_clicks, 0),
+      totalPaidCost: parseFloat(
+        combinedData.reduce((sum, t) => sum + t.paid_cost, 0).toFixed(2)
+      ),
+      totalPaidConversions: parseFloat(
+        combinedData.reduce((sum, t) => sum + t.paid_conversions, 0).toFixed(2)
+      ),
+      totalOrganicImpressions: combinedData.reduce((sum, t) => sum + t.organic_impressions, 0),
+      totalOrganicClicks: combinedData.reduce((sum, t) => sum + t.organic_clicks, 0),
+      totalImpressions: combinedData.reduce((sum, t) => sum + t.total_impressions, 0),
+      totalClicks: combinedData.reduce((sum, t) => sum + t.total_clicks, 0),
+    };
+
+    // Add calculated averages
+    const avgPaidCTR =
+      summary.totalPaidImpressions > 0
+        ? (summary.totalPaidClicks / summary.totalPaidImpressions) * 100
+        : 0;
+    const avgPaidCPC =
+      summary.totalPaidClicks > 0 ? summary.totalPaidCost / summary.totalPaidClicks : 0;
+    const avgOrganicCTR =
+      summary.totalOrganicImpressions > 0
+        ? (summary.totalOrganicClicks / summary.totalOrganicImpressions) * 100
+        : 0;
+    const avgCombinedCTR =
+      summary.totalImpressions > 0
+        ? (summary.totalClicks / summary.totalImpressions) * 100
+        : 0;
+
+    return NextResponse.json({
+      ok: true,
+      dateRange: {
+        from: startDateStr,
+        to: endDateStr,
+        days: daysBack,
+      },
+      summary: {
+        ...summary,
+        avgPaidCTR: parseFloat(avgPaidCTR.toFixed(2)),
+        avgPaidCPC: parseFloat(avgPaidCPC.toFixed(2)),
+        avgOrganicCTR: parseFloat(avgOrganicCTR.toFixed(2)),
+        avgCombinedCTR: parseFloat(avgCombinedCTR.toFixed(2)),
+      },
+      data: combinedData,
+    });
+  } catch (error: any) {
+    console.error('Search performance API error:', error);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
+}
