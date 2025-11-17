@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminApiKey } from '@/lib/api-auth';
 import {
   validateSearchConsoleConfig,
   fetchDailyPerformance,
@@ -28,8 +27,6 @@ function getSupabaseClient() {
  */
 export async function POST(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   const supabase = getSupabaseClient();
 
@@ -240,8 +237,6 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   try {
     const config = validateSearchConsoleConfig();

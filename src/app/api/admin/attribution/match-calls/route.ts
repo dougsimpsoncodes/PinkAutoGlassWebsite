@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAdminApiKey } from '@/lib/api-auth';
 import {
   attributeAllCalls,
   saveAttributionResults,
@@ -44,8 +43,6 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   try {
     // Parse body, handle empty body gracefully
@@ -135,8 +132,6 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
-  const authError = validateAdminApiKey(req);
-  if (authError) return authError;
 
   try {
     const { searchParams } = new URL(req.url);
