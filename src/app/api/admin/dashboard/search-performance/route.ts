@@ -19,7 +19,7 @@ function getSupabaseClient() {
 
 interface SearchTermPerformance {
   search_term: string;
-  source: 'PAID' | 'ORG' | 'BOTH';
+  source: 'PAID' | 'ORG';
 
   // Paid metrics (Google Ads)
   paid_impressions: number;
@@ -37,10 +37,10 @@ interface SearchTermPerformance {
   organic_position: number;
   organic_pages: string[];
 
-  // Combined metrics
+  // Total for this row (either paid or organic)
   total_impressions: number;
   total_clicks: number;
-  combined_ctr: number;
+  ctr: number;
 }
 
 /**
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Combine paid and organic data
+    // Create separate rows for paid and organic data
     const allTerms = new Set([...paidTerms.keys(), ...organicTerms.keys()]);
     const combinedData: SearchTermPerformance[] = [];
 
@@ -156,82 +156,105 @@ export async function GET(req: NextRequest) {
       const paid = paidTerms.get(term);
       const organic = organicTerms.get(term);
 
-      // Determine source
-      let source: 'PAID' | 'ORG' | 'BOTH';
-      if (paid && organic) {
-        source = 'BOTH';
-      } else if (paid) {
-        source = 'PAID';
-      } else {
-        source = 'ORG';
+      // Create PAID row if paid data exists
+      if (paid) {
+        const paidImpressions = paid.impressions || 0;
+        const paidClicks = paid.clicks || 0;
+        const paidCost = paid.cost || 0;
+        const paidConversions = paid.conversions || 0;
+
+        // Skip if below minimum impressions threshold
+        if (paidImpressions < minImpressions) {
+          // Don't create paid row
+        } else {
+          const paidCTR = paidImpressions > 0 ? (paidClicks / paidImpressions) * 100 : 0;
+          const paidCPC = paidClicks > 0 ? paidCost / paidClicks : 0;
+
+          combinedData.push({
+            search_term: term,
+            source: 'PAID',
+            paid_impressions: paidImpressions,
+            paid_clicks: paidClicks,
+            paid_cost: parseFloat(paidCost.toFixed(2)),
+            paid_ctr: parseFloat(paidCTR.toFixed(2)),
+            paid_cpc: parseFloat(paidCPC.toFixed(2)),
+            paid_conversions: parseFloat(paidConversions.toFixed(2)),
+            paid_campaigns: Array.from(paid.campaigns || []),
+            organic_impressions: 0,
+            organic_clicks: 0,
+            organic_ctr: 0,
+            organic_position: 0,
+            organic_pages: [],
+            total_impressions: paidImpressions,
+            total_clicks: paidClicks,
+            ctr: parseFloat(paidCTR.toFixed(2)),
+          });
+        }
       }
 
-      // Skip if doesn't match source filter
-      if (source !== 'all') {
-        if (source === 'paid' && source !== 'PAID' && source !== 'BOTH') return;
-        if (source === 'organic' && source !== 'ORG' && source !== 'BOTH') return;
+      // Create ORG row if organic data exists
+      if (organic) {
+        const organicImpressions = organic.impressions || 0;
+        const organicClicks = organic.clicks || 0;
+        const avgPosition = organic.position_count
+          ? organic.position_sum / organic.position_count
+          : 0;
+
+        // Skip if below minimum impressions threshold
+        if (organicImpressions < minImpressions) {
+          // Don't create organic row
+        } else {
+          const organicCTR = organicImpressions > 0 ? (organicClicks / organicImpressions) * 100 : 0;
+
+          combinedData.push({
+            search_term: term,
+            source: 'ORG',
+            paid_impressions: 0,
+            paid_clicks: 0,
+            paid_cost: 0,
+            paid_ctr: 0,
+            paid_cpc: 0,
+            paid_conversions: 0,
+            paid_campaigns: [],
+            organic_impressions: organicImpressions,
+            organic_clicks: organicClicks,
+            organic_ctr: parseFloat(organicCTR.toFixed(2)),
+            organic_position: parseFloat(avgPosition.toFixed(1)),
+            organic_pages: Array.from(organic.pages || []).map(url => {
+              // Shorten URLs for display
+              try {
+                const parsed = new URL(url);
+                return parsed.pathname;
+              } catch {
+                return url;
+              }
+            }),
+            total_impressions: organicImpressions,
+            total_clicks: organicClicks,
+            ctr: parseFloat(organicCTR.toFixed(2)),
+          });
+        }
       }
-
-      const paidImpressions = paid?.impressions || 0;
-      const paidClicks = paid?.clicks || 0;
-      const paidCost = paid?.cost || 0;
-      const paidConversions = paid?.conversions || 0;
-
-      const organicImpressions = organic?.impressions || 0;
-      const organicClicks = organic?.clicks || 0;
-      const avgPosition = organic?.position_count
-        ? organic.position_sum / organic.position_count
-        : 0;
-
-      const totalImpressions = paidImpressions + organicImpressions;
-      const totalClicks = paidClicks + organicClicks;
-
-      // Skip if below minimum impressions threshold
-      if (totalImpressions < minImpressions) return;
-
-      const paidCTR = paidImpressions > 0 ? (paidClicks / paidImpressions) * 100 : 0;
-      const paidCPC = paidClicks > 0 ? paidCost / paidClicks : 0;
-      const organicCTR = organicImpressions > 0 ? (organicClicks / organicImpressions) * 100 : 0;
-      const combinedCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-
-      combinedData.push({
-        search_term: term,
-        source,
-        paid_impressions: paidImpressions,
-        paid_clicks: paidClicks,
-        paid_cost: parseFloat(paidCost.toFixed(2)),
-        paid_ctr: parseFloat(paidCTR.toFixed(2)),
-        paid_cpc: parseFloat(paidCPC.toFixed(2)),
-        paid_conversions: parseFloat(paidConversions.toFixed(2)),
-        paid_campaigns: Array.from(paid?.campaigns || []),
-        organic_impressions: organicImpressions,
-        organic_clicks: organicClicks,
-        organic_ctr: parseFloat(organicCTR.toFixed(2)),
-        organic_position: parseFloat(avgPosition.toFixed(1)),
-        organic_pages: Array.from(organic?.pages || []).map(url => {
-          // Shorten URLs for display
-          try {
-            const parsed = new URL(url);
-            return parsed.pathname;
-          } catch {
-            return url;
-          }
-        }),
-        total_impressions: totalImpressions,
-        total_clicks: totalClicks,
-        combined_ctr: parseFloat(combinedCTR.toFixed(2)),
-      });
     });
 
     // Sort by total impressions (most impressions first)
     combinedData.sort((a, b) => b.total_impressions - a.total_impressions);
 
     // Calculate summary statistics
+    const paidRows = combinedData.filter(t => t.source === 'PAID');
+    const organicRows = combinedData.filter(t => t.source === 'ORG');
+
+    // Find terms that appear in both paid and organic
+    const paidTerms = new Set(paidRows.map(r => r.search_term));
+    const organicTerms = new Set(organicRows.map(r => r.search_term));
+    const termsInBoth = [...paidTerms].filter(term => organicTerms.has(term));
+
     const summary = {
-      totalSearchTerms: combinedData.length,
-      paidOnly: combinedData.filter(t => t.source === 'PAID').length,
-      organicOnly: combinedData.filter(t => t.source === 'ORG').length,
-      both: combinedData.filter(t => t.source === 'BOTH').length,
+      totalRows: combinedData.length,
+      totalUniqueTerms: new Set(combinedData.map(r => r.search_term)).size,
+      paidRows: paidRows.length,
+      organicRows: organicRows.length,
+      termsInBoth: termsInBoth.length,
       totalPaidImpressions: combinedData.reduce((sum, t) => sum + t.paid_impressions, 0),
       totalPaidClicks: combinedData.reduce((sum, t) => sum + t.paid_clicks, 0),
       totalPaidCost: parseFloat(

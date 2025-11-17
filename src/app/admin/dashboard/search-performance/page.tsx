@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 interface SearchTerm {
   search_term: string;
-  source: 'PAID' | 'ORG' | 'BOTH';
+  source: 'PAID' | 'ORG';
   paid_impressions: number;
   paid_clicks: number;
   paid_cost: number;
@@ -20,7 +20,7 @@ interface SearchTerm {
   organic_pages: string[];
   total_impressions: number;
   total_clicks: number;
-  combined_ctr: number;
+  ctr: number;
 }
 
 interface SearchPerformanceData {
@@ -30,10 +30,11 @@ interface SearchPerformanceData {
     days: number;
   };
   summary: {
-    totalSearchTerms: number;
-    paidOnly: number;
-    organicOnly: number;
-    both: number;
+    totalRows: number;
+    totalUniqueTerms: number;
+    paidRows: number;
+    organicRows: number;
+    termsInBoth: number;
     totalPaidImpressions: number;
     totalPaidClicks: number;
     totalPaidCost: number;
@@ -163,10 +164,15 @@ export default function SearchPerformancePage() {
     .slice(0, 5);
 
   // Get opportunities (high organic, low/no paid)
+  // Find organic terms that don't have a corresponding paid term
+  const organicTermsSet = new Set(data.data.filter(t => t.source === 'ORG').map(t => t.search_term));
+  const paidTermsSet = new Set(data.data.filter(t => t.source === 'PAID').map(t => t.search_term));
+
   const paidOpportunities = data.data
     .filter(
       t =>
-        (t.source === 'ORG' || (t.source === 'BOTH' && t.paid_impressions < t.organic_impressions / 2)) &&
+        t.source === 'ORG' &&
+        !paidTermsSet.has(t.search_term) &&
         t.organic_impressions > 200 &&
         t.organic_position < 10
     )
@@ -302,16 +308,16 @@ export default function SearchPerformancePage() {
                 <div className="text-lg font-bold text-gray-900">{summary.avgOrganicCTR}%</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Paid Only</div>
-                <div className="text-lg font-bold text-gray-900">{summary.paidOnly}</div>
+                <div className="text-xs text-gray-600">Paid Rows</div>
+                <div className="text-lg font-bold text-gray-900">{summary.paidRows}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Organic Only</div>
-                <div className="text-lg font-bold text-gray-900">{summary.organicOnly}</div>
+                <div className="text-xs text-gray-600">Organic Rows</div>
+                <div className="text-lg font-bold text-gray-900">{summary.organicRows}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Both</div>
-                <div className="text-lg font-bold text-gray-900">{summary.both}</div>
+                <div className="text-xs text-gray-600">In Both</div>
+                <div className="text-lg font-bold text-gray-900">{summary.termsInBoth}</div>
               </div>
             </div>
           </div>
@@ -348,10 +354,7 @@ export default function SearchPerformancePage() {
                   let statusBadge = '';
                   let statusColor = '';
 
-                  if (term.source === 'BOTH') {
-                    statusBadge = 'BOTH';
-                    statusColor = 'bg-purple-100 text-purple-800';
-                  } else if (term.paid_cpc > 15 && term.paid_clicks > 5) {
+                  if (term.paid_cpc > 15 && term.paid_clicks > 5) {
                     statusBadge = 'HIGH COST';
                     statusColor = 'bg-red-100 text-red-800';
                   } else if (term.search_term.includes('pink')) {
@@ -361,11 +364,11 @@ export default function SearchPerformancePage() {
                     statusBadge = '⚡ ADD PAID';
                     statusColor = 'bg-yellow-100 text-yellow-800';
                   } else if (term.source === 'PAID') {
-                    statusBadge = 'PAID ONLY';
+                    statusBadge = 'PAID';
                     statusColor = 'bg-blue-100 text-blue-800';
                   } else {
-                    statusBadge = 'ORG ONLY';
-                    statusColor = 'bg-gray-100 text-gray-800';
+                    statusBadge = 'ORGANIC';
+                    statusColor = 'bg-green-50 text-green-800';
                   }
 
                   return (
