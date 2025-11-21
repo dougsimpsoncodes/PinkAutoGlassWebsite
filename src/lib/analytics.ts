@@ -6,6 +6,7 @@ export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''
 export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
 export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
 export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
+export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
 
 declare global {
   interface Window {
@@ -227,4 +228,10 @@ export const trackLeadFormConversion = (leadId: string) => {
 // Uses session-based transaction_id to prevent duplicate conversions from same session
 export const trackTextClickConversion = (sessionId: string) => {
   trackGoogleAdsConversion(`text_${sessionId}`, GOOGLE_ADS_TEXT_LABEL);
+};
+
+// Track phone call click conversion
+// Uses session-based transaction_id to prevent duplicate conversions from same session
+export const trackCallClickConversion = (sessionId: string) => {
+  trackGoogleAdsConversion(`call_${sessionId}`, GOOGLE_ADS_CALL_LABEL);
 };

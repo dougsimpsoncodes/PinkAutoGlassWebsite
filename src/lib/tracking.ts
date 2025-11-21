@@ -466,9 +466,17 @@ export function trackPhoneClick(source: string, buttonText?: string, phoneNumber
     eventType: 'phone_click',
     buttonText,
     buttonLocation: source,
-    phoneNumber, // ← NEW: Pass phone number for attribution
+    phoneNumber,
   });
-  analytics.trackPhoneClick(source);
+  // Note: trackConversion already fires analytics.event() via gaEventMap
+  // so we don't call analytics.trackPhoneClick() to avoid duplicate GA events
+
+  // Fire Google Ads call conversion with session_id as transaction_id
+  // This prevents duplicate conversions from the same session
+  const sessionId = getSessionId();
+  if (sessionId) {
+    analytics.trackCallClickConversion(sessionId);
+  }
 }
 
 /**
@@ -480,7 +488,8 @@ export function trackTextClick(source: string, buttonText?: string) {
     buttonText,
     buttonLocation: source,
   });
-  analytics.trackTextClick(source);
+  // Note: trackConversion already fires analytics.event() via gaEventMap
+  // so we don't call analytics.trackTextClick() to avoid duplicate GA events
 
   // Fire Google Ads text conversion with session_id as transaction_id
   // This prevents duplicate conversions from the same session
