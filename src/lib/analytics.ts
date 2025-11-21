@@ -1,6 +1,11 @@
-// Google Analytics event tracking helper
+// Google Analytics and Google Ads event tracking helper
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+
+// Google Ads Conversion IDs
+export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
+export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
+export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
 
 declare global {
   interface Window {
@@ -197,4 +202,29 @@ export const trackQuoteValue = (
       location: location,
     });
   }
+};
+
+// Google Ads Conversion Tracking with Transaction ID
+// Transaction ID prevents duplicate conversions when the same form is submitted multiple times
+export const trackGoogleAdsConversion = (
+  transactionId: string,
+  conversionLabel: string = GOOGLE_ADS_LEAD_FORM_LABEL
+) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'conversion', {
+      'send_to': `${GOOGLE_ADS_CONVERSION_ID}/${conversionLabel}`,
+      'transaction_id': transactionId,
+    });
+  }
+};
+
+// Track lead form submission conversion (booking form, quote form)
+export const trackLeadFormConversion = (leadId: string) => {
+  trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL);
+};
+
+// Track text/SMS click conversion
+// Uses session-based transaction_id to prevent duplicate conversions from same session
+export const trackTextClickConversion = (sessionId: string) => {
+  trackGoogleAdsConversion(`text_${sessionId}`, GOOGLE_ADS_TEXT_LABEL);
 };

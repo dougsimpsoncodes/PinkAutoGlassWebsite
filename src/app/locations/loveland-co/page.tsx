@@ -117,30 +117,68 @@ export default function LovelandLocationPage() {
                   Why Loveland Residents Choose Pink Auto Glass
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Loveland's location along I-25 and US-34, combined with access to mountain roads and frequent severe weather, means your windshield faces constant challenges. From rock chips on the way to Estes Park to hail damage from summer storms, Pink Auto Glass is Loveland's trusted solution for fast, professional auto glass repair and replacement.
+                  Home to 78,000 residents and known worldwide for the Valentine Re-mailing Program (processing over 160,000 valentines annually!), Loveland combines small-town charm with big windshield challenges. Your location along I-25 and US-34—the main route to Rocky Mountain National Park—means constant exposure to mountain traffic carrying gravel and debris from Estes Park and Big Thompson Canyon.
                 </p>
 
                 <AboveFoldCTA location="location-loveland" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  We understand Loveland life. Whether you're commuting to Fort Collins, enjoying the Sculpture Garden, or heading to the mountains, we bring our services to you. Our mobile units serve all of Loveland, Centerra, and surrounding Larimer County areas.
+                  Whether you're at the Chapungu Sculpture Park at Centerra (featuring 82 monumental stone sculptures across 26 acres), enjoying Boyd Lake State Park, shopping in downtown Loveland's art galleries, or commuting to CSU in Fort Collins, we bring professional windshield service directly to you. We serve all Loveland neighborhoods including Centerra, Campion, Little Dam, and downtown—often same-day.
                 </p>
+
+                <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Why Loveland Windshields Face Unique Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Highway 34 to Estes Park:</strong> This scenic route through Big Thompson Canyon brings heavy tourist and mountain traffic, especially weekends and summer months, causing frequent rock chips from gravel trucks and mountain debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-25 Construction:</strong> Ongoing expansion projects between Loveland and Fort Collins create construction zones with loose gravel and debris</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Hail Season:</strong> Loveland sits in Colorado's "Hail Alley"—summer thunderstorms rolling off the Rockies frequently produce golf ball-sized hail that cracks windshields</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Temperature Swings:</strong> Dramatic temperature changes between morning and afternoon (often 40-50°F) cause small chips to rapidly spread into full cracks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Winter Snow Plows:</strong> Larimer County snowplows kick up road sand, salt, and debris that pepper windshields during winter commutes</span>
+                    </li>
+                  </ul>
+                </div>
               </section>
 
               {/* Local Tips & FAQs */}
               <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Loveland Driving Tips & Local FAQs</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Loveland Driving & Windshield Care Tips</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Highway 34 toward Estes Park and Big Thompson Canyon can be especially hard on windshields with mountain debris. I-25 construction and Loveland's hail season also create windshield hazards. We provide convenient mobile service throughout the city.
+                  Living in "The Sweetheart City" means understanding your unique windshield risks. Here's what 78,000+ Loveland residents need to know:
                 </p>
-                <div className="space-y-4 text-gray-700">
-                  <div>
-                    <h3 className="font-semibold">Can you service vehicles at Centerra?</h3>
-                    <p>Yes. We provide mobile service to Centerra, Johnstown, and all areas of Loveland including shopping centers and office parks.</p>
+                <div className="space-y-4">
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">🏔️ Before Driving Highway 34 to Estes Park</h3>
+                    <p className="text-gray-700">Increase your following distance to 4-5 seconds behind trucks. Big Thompson Canyon sees heavy gravel truck traffic, especially during construction season (May-October). Rock chips are most common on weekend mornings when mountain traffic peaks.</p>
                   </div>
-                  <div>
-                    <h3 className="font-semibold">How fast can you respond in Loveland?</h3>
-                    <p>Same-day service is typically available. We can usually arrive within a few hours depending on your location and our schedule.</p>
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">🌩️ Hail Season Parking (May-August)</h3>
+                    <p className="text-gray-700">When at Centerra, Promenade Shops at Centerra, or Boyd Lake, park in covered areas if possible. Loveland averages 3-5 damaging hailstorms per summer. If caught in hail, pull under an overpass—NOT under trees.</p>
+                  </div>
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-semibold text-gray-900 mb-2">Can you service vehicles at Centerra or downtown Loveland businesses?</h3>
+                    <p className="text-gray-700">Absolutely! We regularly service vehicles at Centerra (Promenade Shops, medical offices), downtown Loveland businesses near 4th Street and Lincoln, The Foundry, and Loveland office parks. You work, we work—your windshield is ready when you are.</p>
+                  </div>
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-semibold text-gray-900 mb-2">Do you serve residential areas like Centerra, Campion, and Little Dam?</h3>
+                    <p className="text-gray-700">Yes—we bring mobile service to all Loveland neighborhoods. From new homes in Centerra to established neighborhoods in Campion, downtown historic areas, and even rural Little Dam on the west side with foothill views, we come to your driveway.</p>
+                  </div>
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-semibold text-gray-900 mb-2">How fast can you respond in Loveland?</h3>
+                    <p className="text-gray-700">Same-day service is our standard—most Loveland appointments are completed within 2-4 hours of your call. Morning rock chip? Fixed by lunch. We understand you're busy (whether commuting to Fort Collins, working at The Medical Center of the Rockies, or enjoying the Sculpture Gardens).</p>
                   </div>
                 </div>
               </section>

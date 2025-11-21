@@ -481,6 +481,13 @@ export function trackTextClick(source: string, buttonText?: string) {
     buttonLocation: source,
   });
   analytics.trackTextClick(source);
+
+  // Fire Google Ads text conversion with session_id as transaction_id
+  // This prevents duplicate conversions from the same session
+  const sessionId = getSessionId();
+  if (sessionId) {
+    analytics.trackTextClickConversion(sessionId);
+  }
 }
 
 /**

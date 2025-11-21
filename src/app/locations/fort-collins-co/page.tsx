@@ -117,13 +117,47 @@ export default function FortCollinsLocationPage() {
                   Why Fort Collins Residents Choose Pink Auto Glass
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Fort Collins' Front Range location means exposure to sudden weather changes, hailstorms, and road debris. Whether you're dealing with a rock chip from I-25 or windshield damage from a spring hailstorm, Pink Auto Glass is Fort Collins' trusted solution for fast, professional auto glass repair and replacement.
+                  Welcome to "Choice City"—home to 170,000+ residents, Colorado State University's 30,000+ students, and the walkable charm of Old Town's Victorian-era streets. Fort Collins' Front Range location at 5,003 feet elevation means dramatic weather changes, frequent hailstorms from March-August, and constant I-25 construction bringing rock chips and road debris. Whether you're dealing with a chip from I-25 traffic, hail damage in the Harmony Corridor, or windshield cracks from temperature swings near Horsetooth Reservoir, Pink Auto Glass is Fort Collins' trusted solution.
                 </p>
 
                 <AboveFoldCTA location="location-fort-collins" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  We understand Fort Collins life. You're busy with work, enjoying CSU events, or exploring nearby Horsetooth Reservoir. That's why we bring our services to you - whether you're at home near Old Town, at your office in the Harmony Corridor, or anywhere else in Choice City.
+                  We understand Fort Collins life. You're commuting on College Avenue, catching a CSU Rams game at Canvas Stadium, grabbing coffee in Old Town Square (near Library Park and the Historic Mosman House), exploring the shops and art galleries on Pearl Street, working in the Harmony Corridor tech offices, or hiking at Horsetooth Reservoir. That's why we bring our mobile service directly to you—whether you're in University Acres near CSU, family-friendly Rigden Farm, downtown Old Town, the Harmony Club master-planned community, or anywhere else in Northern Colorado's largest city.
+                </p>
+
+                <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Why Fort Collins Windshields Face Unique Challenges</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>CSU Campus Traffic:</strong> 30,000+ students create heavy congestion on College Avenue, Prospect Road, and around Canvas Stadium/Moby Arena. More traffic = more rock chips from construction vehicles, delivery trucks, and parking lot fender-benders.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>I-25 Expansion Construction:</strong> The ongoing I-25 widening project between Fort Collins and Loveland creates miles of construction zones with loose gravel, uneven pavement, and debris from construction vehicles. This is the #1 cause of windshield chips for Fort Collins commuters.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Old Town Parking Challenges:</strong> Narrow streets, parallel parking, and historic buildings mean tight quarters. Windshield damage from parking mishaps is common in the Old Town district, especially near the Aggie Theatre and Downtown Artery.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Horsetooth Reservoir Gravel Roads:</strong> Popular recreation areas like Horsetooth, Lory State Park, and foothills trails have gravel access roads. Trucks and SUVs kick up rocks that damage windshields, especially on summer weekends.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Front Range Hail Corridor:</strong> Fort Collins sits directly in the path of severe thunderstorms that develop over the foothills. Hail season (March-August) brings frequent storms with golf ball to baseball-sized hail, especially in South Fort Collins and the Harmony Corridor.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Temperature Extremes:</strong> At 5,003 feet elevation, Fort Collins experiences wild temperature swings—32°F mornings and 75°F afternoons are common in spring/fall. These rapid changes cause small chips to propagate into full cracks within hours.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Fort Collins intimately. Our technicians understand the specific challenges you face—whether it's I-25 construction debris, CSU campus parking lot mishaps, Old Town's tight streets, or hail damage in South Fort Collins. Don't let a small chip from College Avenue traffic turn into a costly windshield replacement—we offer same-day mobile service throughout all Fort Collins neighborhoods, from CSU's Oval to the Harmony Corridor.
                 </p>
               </section>
 

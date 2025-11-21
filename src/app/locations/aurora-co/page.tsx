@@ -98,35 +98,39 @@ export default function AuroraLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Aurora Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Aurora's growing community needs reliable auto glass service. From Stapleton to Green Valley Ranch, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Aurora. As Colorado's third-largest city with over 390,000 residents, Aurora's unique driving conditions demand expert windshield care.
+                  Welcome to Colorado's third-largest city with 390,000+ residents! Aurora stretches from Denver's eastern border all the way to Denver International Airport (DIA), encompassing vibrant communities like Stapleton (now Central Park), Green Valley Ranch, the massive Southlands Town Center (Colorado's largest Lifestyle District with 150+ shops), and the Fitzsimons Innovation District. With 8,000 acres of parks and open space, Aurora combines urban convenience with outdoor recreation—but that means unique windshield challenges too.
                 </p>
                 <AboveFoldCTA location="location-aurora" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Whether you're commuting on E-470, traveling to DIA Airport, driving near Buckley Space Force Base, or navigating I-225 and I-70, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Aurora.
+                  Whether you're commuting on E-470 (the 75mph toll road), traveling to DIA (just 15 minutes from southeast Aurora), shopping at Southlands' 150+ retailers, working in the Fitzsimons medical/tech corridor, driving near Buckley Space Force Base, or navigating I-225 and I-70 through Aurora's 154 square miles, we bring mobile service directly to you. From historic Aurora neighborhoods to brand-new developments, we serve every corner of Colorado's most diverse city.
                 </p>
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Aurora's Unique Windshield Challenges</h3>
+                <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Why Aurora Windshields Face Unique Challenges</h3>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>E-470 Toll Road:</strong> High-speed highway traffic increases rock chip risks from gravel trucks and construction vehicles</span>
+                      <span><strong>E-470 High-Speed Corridor:</strong> This 75mph toll road sees constant commercial truck traffic hauling cargo to/from DIA. High speeds mean rocks and debris hit windshields with tremendous force. Chips from E-470 often require full replacement rather than repair due to impact severity.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>DIA Airport Proximity:</strong> Heavy commercial and airport traffic on Peña Boulevard means more road debris</span>
+                      <span><strong>DIA Airport Traffic (Peña Boulevard):</strong> Just 15 minutes from southeast Aurora neighborhoods, Peña Boulevard sees 75,000+ daily trips to Denver International Airport. Commercial shuttles, Uber/Lyft fleets, and rental cars create heavy traffic that kicks up road debris, especially during winter when road sand accumulates.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-70 & I-225 Corridors:</strong> Major interstate traffic brings increased windshield damage from highway debris</span>
+                      <span><strong>I-70 & I-225 Interstate Convergence:</strong> Aurora sits at the junction of multiple major highways—I-70 (Denver to the mountains), I-225 (north-south corridor), and E-470 (bypass). This creates some of Colorado's highest-traffic areas with constant construction, lane shifts, and road debris from thousands of daily trucks.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Rapid Development:</strong> Ongoing construction in neighborhoods like Stapleton creates more opportunities for rock chips</span>
+                      <span><strong>Southlands & New Development Construction:</strong> Massive ongoing development at Southlands Town Center, new subdivisions in southeast Aurora, and Fitzsimons Innovation District expansion mean construction vehicles, gravel trucks, and unfinished roads. This is the #1 cause of windshield damage for residents in Green Valley Ranch, Murphy Creek, and Aurora Highlands.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Colorado Weather:</strong> Temperature swings from 90°F summers to below-zero winters cause small chips to spread quickly</span>
+                      <span><strong>Front Range Extreme Weather:</strong> At 5,471 feet elevation, Aurora experiences brutal temperature swings—single-digit mornings and 60°F afternoons in winter, or 95°F+ summer heat followed by sudden hailstorms. Aurora sits directly in the path of severe weather moving east from the foothills. Hail season (April-August) is especially brutal in Aurora.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Buckley Space Force Base Traffic:</strong> The base entrance on East 6th Avenue creates heavy military and contractor traffic. Large military vehicles and equipment transport trucks can kick up significant road debris.</span>
                     </li>
                   </ul>
                 </div>
