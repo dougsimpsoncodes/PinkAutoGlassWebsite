@@ -127,7 +127,7 @@ export default function RootLayout({
           {/* Google Ads Conversion Tracking */}
           <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=AW-1746760782B"
+            src="https://www.googletagmanager.com/gtag/js?id=AW-17667607828"
           />
           <script
             dangerouslySetInnerHTML={{
@@ -135,7 +135,7 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', 'AW-1746760782B');
+                gtag('config', 'AW-17667607828');
               `,
             }}
           />

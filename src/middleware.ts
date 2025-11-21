@@ -88,17 +88,17 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Security Headers (updated to include Clerk domains)
+  // Security Headers (updated to include Google Ads domains)
   const securityHeaders = {
     // Content Security Policy - Prevent XSS attacks
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://*.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io https://www.google-analytics.com",
-      "frame-src 'self'",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://*.google.com",
+      "frame-src 'self' https://googleads.g.doubleclick.net https://www.googleadservices.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

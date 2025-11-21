@@ -8,6 +8,7 @@ import { ContactLocation } from '@/components/book/contact-location';
 import { ReviewSubmit } from '@/components/book/review-submit';
 import { SuccessConfirmation } from '@/components/book/success-confirmation';
 import TrustBadges from '@/components/TrustBadges';
+import { trackLeadFormConversion } from '@/lib/analytics';
 
 // Types for form data
 const TOTAL_STEPS = 3;
@@ -363,12 +364,13 @@ export default function BookingPage() {
 
       setReferenceNumber(referenceNumber);
       setIsSubmitted(true);
-      
+
       // Clear session storage on successful submission
       sessionStorage.removeItem('booking_form_data');
-      
-      // Track conversion
-      // No analytics events in MVP
+
+      // Track Google Ads conversion with lead ID as transaction_id
+      // Transaction ID prevents duplicate conversions
+      trackLeadFormConversion(leadId);
 
     } catch (error) {
       console.error('Submission error:', error);

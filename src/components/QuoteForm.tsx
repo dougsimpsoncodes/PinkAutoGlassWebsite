@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { trackFormStart, trackFormSubmit } from '@/lib/analytics';
+import { trackFormStart, trackFormSubmit, trackLeadFormConversion } from '@/lib/analytics';
 
 export default function QuoteForm() {
   const router = useRouter();
@@ -152,7 +152,12 @@ export default function QuoteForm() {
       });
 
       if (response.ok) {
+        const data = await response.json();
         trackFormSubmit('homepage_quote_form');
+        // Track Google Ads conversion with lead ID as transaction_id
+        if (data.leadId) {
+          trackLeadFormConversion(data.leadId);
+        }
         router.push('/thank-you');
       } else {
         alert('Something went wrong. Please call us at (720) 918-7465');

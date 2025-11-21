@@ -98,36 +98,47 @@ export default function BoulderLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Boulder Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  With over 105,000 residents and home to CU Boulder, Boulder drivers deserve reliable auto glass service. From Pearl Street Mall to the Flatirons, University Hill to Gunbarrel, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Boulder. We bring our mobile service directly to you - whether you're on campus, at work in the Tech Center, or at home in Table Mesa.
+                  Welcome to Boulder—105,000+ residents, home of the University of Colorado Boulder, and the iconic Pearl Street Mall (a 4-block pedestrian mall featuring 300+ businesses, 85% locally owned, including beloved Boulder Book Store since 1973 and Black Diamond climbing gear). Nestled at 5,430 feet elevation against the stunning Flatirons, Boulder combines college town energy with outdoor adventure—but that means unique windshield challenges. From University Hill ("The Hill" on 13th Street near CU campus) to the Chautauqua neighborhood at the base of the Flatirons, from Gunbarrel's tech corridor to Table Mesa's family neighborhoods, Pink Auto Glass serves every corner of Boulder.
                 </p>
                 <AboveFoldCTA location="location-boulder-co" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Whether you're commuting on Highway 36, driving through Boulder Canyon, or navigating Baseline Road, our fully equipped mobile units serve all Boulder neighborhoods. We understand the unique challenges Boulder drivers face and provide expert windshield care tailored to your needs.
+                  Whether you're commuting on Highway 36 (Boulder Turnpike) to Denver, exploring Boulder Canyon's scenic mountain route, navigating Baseline Road to Chautauqua's hiking trails, shopping on Pearl Street Mall, grabbing food on The Hill near CU, working in the Gunbarrel tech offices, or hiking in the Flatirons, we bring fully equipped mobile service directly to you. Our technicians understand Boulder's unique blend of urban living and mountain proximity.
                 </p>
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6 rounded-r-lg">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Boulder's Unique Windshield Challenges</h3>
+                <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Why Boulder Windshields Face Unique Challenges</h3>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Highway 36 (Boulder Turnpike):</strong> Main commuter route to Denver with heavy traffic and frequent rock chips from construction and gravel trucks</span>
+                      <span><strong>Highway 36 (Boulder Turnpike) Commuter Traffic:</strong> This 35-minute route to Denver sees 75,000+ daily vehicles. The highway's constant construction (ongoing expansion projects) and heavy commercial truck traffic create rock chip hazards, especially between Boulder and Broomfield. This is Boulder residents' #1 source of windshield damage.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Mountain Canyon Roads:</strong> Boulder Canyon and Flagstaff Road bring mountain debris, gravel, and loose rocks from mountain driving</span>
+                      <span><strong>Boulder Canyon & Mountain Access Roads:</strong> Routes to Nederland, Eldora Ski Resort, and mountain recreation areas (Boulder Canyon, Flagstaff Road, Sunshine Canyon) are unpaved or partially paved. Loose gravel, falling rocks, and debris from mountain weather damage windshields. Summer thunderstorms wash rocks onto canyon roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Extreme Weather:</strong> Boulder's location at 5,430 ft elevation means severe temperature swings causing chips to crack quickly</span>
+                      <span><strong>CU Boulder Campus Parking & Traffic:</strong> 35,000+ students create chaotic parking situations on The Hill, near the Broadway/Baseline intersection, and around campus. Tight parking spots, distracted student drivers, and bike traffic lead to parking lot mishaps and windshield damage.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Outdoor Activities:</strong> Ski trips, hiking, and mountain biking mean frequent exposure to unpaved roads and loose gravel</span>
+                      <span><strong>Chautauqua & Flatirons Gravel Parking:</strong> Boulder's most popular hiking areas (Chautauqua, NCAR, Flatirons trailheads) have gravel parking lots. Cars constantly kick up rocks, and overflow parking on Baseline Road means dust and debris coating vehicles.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Tech Corridor Traffic:</strong> Growing tech industry in Gunbarrel and East Boulder increases commuter traffic and road wear</span>
+                      <span><strong>Extreme Elevation & Weather Swings:</strong> At 5,430 feet elevation with dramatic Flatirons uplift, Boulder experiences wild temperature swings—40°F mornings and 80°F afternoons are common. These rapid changes cause small chips to propagate into full cracks within hours. Boulder also gets surprise late-spring/early-fall snowstorms that stress windshields.</span>
                     </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-600 font-bold mr-2">•</span>
+                      <span><strong>Active Outdoor Lifestyle Traffic:</strong> Boulderites' love of outdoor recreation means frequent trips on gravel roads, unpaved trailhead access routes, and mountain passes. Ski racks, bike racks, and roof cargo carriers can loosen and vibrate, stressing windshields and causing existing chips to crack.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="text-lg text-gray-700">
+                  We know Boulder intimately. Our technicians understand the specific challenges you face—whether it's Highway 36 commuter debris, Boulder Canyon rock chips, CU campus parking mishaps, or Chautauqua gravel lot damage. Don't let a small chip from your morning commute down Baseline turn into a costly full replacement—we offer same-day mobile service throughout all Boulder neighborhoods, from Pearl Street Mall to Gunbarrel's tech campus.
+                </p>
+              </section>
                   </ul>
                 </div>
 
