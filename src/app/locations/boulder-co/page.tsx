@@ -139,13 +139,6 @@ export default function BoulderLocationPage() {
                   We know Boulder intimately. Our technicians understand the specific challenges you face—whether it's Highway 36 commuter debris, Boulder Canyon rock chips, CU campus parking mishaps, or Chautauqua gravel lot damage. Don't let a small chip from your morning commute down Baseline turn into a costly full replacement—we offer same-day mobile service throughout all Boulder neighborhoods, from Pearl Street Mall to Gunbarrel's tech campus.
                 </p>
               </section>
-                  </ul>
-                </div>
-
-                <p className="text-lg text-gray-700">
-                  We know Boulder. Our technicians understand the specific challenges Boulder drivers face on Highway 36, canyon roads, and mountain access routes. Don't let a small chip from your ski trip turn into a full windshield replacement - we offer same-day mobile service throughout all Boulder neighborhoods, including CU campus areas.
-                </p>
-              </section>
 
               {/* Boulder Chip Repair Section */}
               <section>
