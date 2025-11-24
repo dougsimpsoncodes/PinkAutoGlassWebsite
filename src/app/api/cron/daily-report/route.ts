@@ -388,7 +388,7 @@ function generateEmailHTML(metrics: any, contacts: Contact[], actualPhoneLeads: 
       ${contacts.slice(0, 5).map(contact => `
         <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
           <div style="display: flex; align-items: center; margin-bottom: 4px;">
-            <span style="background: ${contact.source === 'phone' ? '#3b82f6' : '#10b981'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; margin-right: 8px;">${contact.source}</span>
+            <span style="background: ${contact.source === 'phone' ? '#3b82f6' : '#10b981'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px;">${contact.source === 'phone' ? 'Phone Lead' : 'Web Lead'}</span>
             <strong style="color: #333;">${contact.name}</strong>
             <span style="margin-left: auto; color: #666; font-size: 13px;">${contact.time}</span>
           </div>
