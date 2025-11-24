@@ -7,10 +7,6 @@
     {
       "path": "/api/cron/sync-search-data",
       "schedule": "0 13 * * *"
-    },
-    {
-      "path": "/api/cron/sync-ringcentral",
-      "schedule": "0 12 * * *"
     }
   ],
   "headers": [
