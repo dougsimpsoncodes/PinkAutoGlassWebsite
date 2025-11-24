@@ -1,11 +1,15 @@
 /**
- * Daily Search Data Sync Cron Job
- * Syncs Google Ads search terms and Google Search Console organic queries
+ * Daily Data Sync Cron Job
+ * Syncs:
+ * - RingCentral call logs
+ * - Google Ads search terms and campaign performance
+ * - Google Search Console organic queries
  * Triggered by Vercel Cron at 6am MT (1pm UTC)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { SDK } from '@ringcentral/sdk';
 import {
   validateGoogleAdsConfig,
   fetchSearchQueryReport,
@@ -44,10 +48,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('🔄 Starting search data sync...');
+    console.log('🔄 Starting data sync...');
 
     const supabase = getSupabaseClient();
     const results = {
+      ringcentral: {
+        calls: { success: false, records: 0, error: null as string | null },
+      },
       googleAds: {
         campaigns: { success: false, records: 0, error: null as string | null },
         searchTerms: { success: false, records: 0, error: null as string | null },
@@ -70,7 +77,100 @@ export async function GET(request: NextRequest) {
     console.log(`📅 Syncing data from ${startDateStr} to ${endDateStr}`);
 
     // ========================================
-    // 1. Sync Google Ads Campaign Performance
+    // 1. Sync RingCentral Call Logs
+    // ========================================
+    try {
+      const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
+      const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
+      const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
+      const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';
+
+      if (RC_JWT_TOKEN && RC_CLIENT_ID && RC_CLIENT_SECRET) {
+        console.log('📞 Syncing RingCentral calls...');
+
+        const rcsdk = new SDK({
+          server: RC_SERVER_URL,
+          clientId: RC_CLIENT_ID.trim(),
+          clientSecret: RC_CLIENT_SECRET.trim(),
+        });
+
+        const platform = rcsdk.platform();
+        await platform.login({ jwt: RC_JWT_TOKEN.trim() });
+
+        const authData = await platform.auth().data();
+        const accessToken = authData.access_token;
+
+        // Fetch last 30 days of call logs
+        const callDateFrom = new Date();
+        callDateFrom.setDate(callDateFrom.getDate() - 30);
+
+        const callLogResponse = await fetch(
+          `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
+            new URLSearchParams({
+              dateFrom: callDateFrom.toISOString(),
+              perPage: '1000',
+              view: 'Detailed',
+            }),
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (callLogResponse.ok) {
+          const callLogData = await callLogResponse.json();
+          const records = callLogData.records || [];
+
+          let inserted = 0;
+          for (const call of records) {
+            const callData = {
+              call_id: call.id,
+              session_id: call.sessionId,
+              start_time: call.startTime,
+              duration: call.duration,
+              direction: call.direction,
+              from_number: call.from?.phoneNumber || '',
+              from_name: call.from?.name || null,
+              to_number: call.to?.phoneNumber || '',
+              to_name: call.to?.name || null,
+              result: call.result,
+              action: call.action || '',
+              recording_id: call.recording?.id || null,
+              recording_uri: call.recording?.contentUri || null,
+              transport: call.transport || '',
+              raw_data: call,
+              last_modified: call.lastModifiedTime || call.startTime,
+            };
+
+            const { error } = await supabase
+              .from('ringcentral_calls')
+              .upsert(callData, { onConflict: 'call_id' });
+
+            if (!error) inserted++;
+          }
+
+          results.ringcentral.calls = {
+            success: true,
+            records: inserted,
+            error: null,
+          };
+          console.log(`✅ Synced ${inserted} RingCentral calls`);
+        } else {
+          const errorText = await callLogResponse.text();
+          throw new Error(`RingCentral API error: ${errorText}`);
+        }
+      } else {
+        results.ringcentral.calls.error = 'RingCentral not configured';
+        console.warn('⚠️ RingCentral not configured');
+      }
+    } catch (error: any) {
+      results.ringcentral.calls.error = error.message;
+      console.error('❌ RingCentral sync failed:', error.message);
+    }
+
+    // ========================================
+    // 2. Sync Google Ads Campaign Performance
     // ========================================
     try {
       const configValid = validateGoogleAdsConfig();
@@ -123,7 +223,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 2. Sync Google Ads Search Terms
+    // 3. Sync Google Ads Search Terms
     // ========================================
     try {
       const configValid = validateGoogleAdsConfig();
@@ -172,7 +272,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 3. Sync Google Search Console Queries
+    // 4. Sync Google Search Console Queries
     // ========================================
     try {
       const configValid = validateSearchConsoleConfig();
@@ -219,7 +319,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 4. Sync Google Search Console Daily Totals
+    // 5. Sync Google Search Console Daily Totals
     // ========================================
     try {
       const configValid = validateSearchConsoleConfig();
