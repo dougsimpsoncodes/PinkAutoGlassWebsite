@@ -5,16 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
-  TrendingUp,
-  MousePointerClick,
-  FileText,
   LogOut,
   Menu,
   X,
   Zap,
-  Phone,
-  BarChart3,
-  Users
+  Users,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -33,14 +28,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const navigation = [
-    { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Marketing Funnel', href: '/admin/dashboard/funnel', icon: BarChart3 },
-    { name: 'ROI Analysis', href: '/admin/dashboard/roi', icon: TrendingUp },
-    { name: 'Lead Management', href: '/admin/dashboard/leads', icon: Users },
-    { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
-    { name: 'Traffic Sources', href: '/admin/dashboard/traffic', icon: TrendingUp },
-    { name: 'Conversions', href: '/admin/dashboard/conversions', icon: MousePointerClick },
-    { name: 'Page Performance', href: '/admin/dashboard/pages', icon: FileText },
+    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Leads', href: '/admin/dashboard/leads', icon: Users },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
   ];
 

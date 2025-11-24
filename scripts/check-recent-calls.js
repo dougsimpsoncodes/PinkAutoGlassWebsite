@@ -1,66 +1,50 @@
-#!/usr/bin/env node
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const { createClient } = require('@supabase/supabase-js');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '../.env.local') });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase credentials');
-  process.exit(1);
-}
+console.log('\n=== RingCentral Call Sync Status ===\n');
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const { data: recentCalls } = await supabase
+  .from('ringcentral_calls')
+  .select('*')
+  .order('start_time', { ascending: false })
+  .limit(10);
 
-async function checkRecentCalls() {
-  console.log('Checking recent RingCentral calls...\n');
+if (recentCalls && recentCalls.length > 0) {
+  console.log('Most recent call in database:');
+  console.log('  Time:', new Date(recentCalls[0].start_time).toString());
+  console.log('  Direction:', recentCalls[0].direction);
+  console.log('  From:', recentCalls[0].from_number);
 
-  // Get the most recent 10 calls
-  const { data: calls, error } = await supabase
-    .from('ringcentral_calls')
-    .select('call_id, direction, from_number, to_number, duration, start_time, result')
-    .order('start_time', { ascending: false })
-    .limit(10);
+  const hoursSince = (Date.now() - new Date(recentCalls[0].start_time).getTime()) / 1000 / 60 / 60;
+  console.log('  Hours ago:', hoursSince.toFixed(1));
 
-  if (error) {
-    console.error('Error querying calls:', error);
-    return;
-  }
-
-  if (!calls || calls.length === 0) {
-    console.log('No calls found in database');
-    return;
-  }
-
-  console.log(`Found ${calls.length} recent calls:\n`);
-  calls.forEach((call, index) => {
-    console.log(`${index + 1}. ${call.direction} call`);
-    console.log(`   ID: ${call.call_id}`);
-    console.log(`   From: ${call.from_number}`);
-    console.log(`   To: ${call.to_number}`);
-    console.log(`   Duration: ${call.duration}s`);
-    console.log(`   Time: ${call.start_time}`);
-    console.log(`   Result: ${call.result}`);
-    console.log('');
+  console.log('\nLast 10 calls:');
+  recentCalls.forEach((c, i) => {
+    const time = new Date(c.start_time);
+    console.log('  ' + (i+1) + '.', time.toLocaleDateString(), time.toLocaleTimeString(), '-', c.direction);
   });
-
-  // Get call statistics
-  const { data: stats, error: statsError } = await supabase
-    .from('ringcentral_calls')
-    .select('start_time')
-    .order('start_time', { ascending: false });
-
-  if (!statsError && stats) {
-    const lastCallDate = new Date(stats[0].start_time);
-    const now = new Date();
-    const hoursSinceLastCall = (now - lastCallDate) / (1000 * 60 * 60);
-
-    console.log(`\n📊 Statistics:`);
-    console.log(`   Total calls in DB: ${stats.length}`);
-    console.log(`   Last call: ${lastCallDate.toLocaleString()}`);
-    console.log(`   Hours since last call: ${hoursSinceLastCall.toFixed(1)}`);
-    console.log(`   Days since last call: ${(hoursSinceLastCall / 24).toFixed(1)}`);
-  }
 }
 
-checkRecentCalls();
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const { data: todayCalls } = await supabase
+  .from('ringcentral_calls')
+  .select('*')
+  .gte('start_time', today.toISOString())
+  .eq('direction', 'Inbound');
+
+console.log('\nToday (' + today.toLocaleDateString() + '):');
+console.log('  Inbound calls:', todayCalls?.length || 0);
+console.log('');

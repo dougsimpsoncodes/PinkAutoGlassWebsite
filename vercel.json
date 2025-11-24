@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/sync-ringcentral",
-      "schedule": "0 * * * *"
+      "schedule": "0 12 * * *"
     }
   ],
   "headers": [

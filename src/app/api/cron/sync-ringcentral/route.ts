@@ -1,7 +1,7 @@
 /**
  * RingCentral Call Sync Cron Job
  * Syncs call logs from RingCentral API to database
- * Triggered by Vercel Cron every hour
+ * Triggered by Vercel Cron daily at 6am MT (12pm UTC)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -68,9 +68,9 @@ export async function GET(request: NextRequest) {
     const authData = await platform.auth().data();
     const accessToken = authData.access_token;
 
-    // Step 3: Fetch call logs (last 7 days to catch any missed calls)
+    // Step 3: Fetch call logs (last 30 days to catch any missed calls)
     const dateFrom = new Date();
-    dateFrom.setDate(dateFrom.getDate() - 7);
+    dateFrom.setDate(dateFrom.getDate() - 30);
     const dateFromISO = dateFrom.toISOString();
 
     console.log(`Fetching call logs from ${dateFromISO}...`);

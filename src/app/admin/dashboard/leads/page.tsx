@@ -2,16 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Search, Filter, DollarSign, Calendar, User, Phone, Mail, MapPin, Car, FileText, X, Check, Clock } from 'lucide-react';
+import {
+  Search,
+  DollarSign,
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Car,
+  FileText,
+  X,
+  Check,
+  Clock,
+  MessageSquare,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
+  RefreshCw,
+  Play,
+  Filter
+} from 'lucide-react';
 
-interface Lead {
+// Unified Lead interface - combines forms, calls, texts
+interface UnifiedLead {
   id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  type: 'form' | 'call' | 'text';
+  name: string;
   phone: string;
-  status: string;
+  email?: string;
   created_at: string;
+  status: string;
+
+  // Form-specific
   vehicle_year?: number;
   vehicle_make?: string;
   vehicle_model?: string;
@@ -23,36 +46,127 @@ interface Lead {
   revenue_amount?: number;
   close_date?: string;
   notes?: string;
+
+  // Call-specific
+  direction?: string;
+  duration?: number;
+  result?: string;
+  recording_id?: string;
+
+  // Attribution
   ad_platform?: string;
   utm_campaign?: string;
-  first_contact_method?: string;
 }
 
 export default function LeadManagementDashboard() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<UnifiedLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filterType, setFilterType] = useState<'all' | 'form' | 'call' | 'text'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState<Partial<Lead>>({});
+  const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
 
   useEffect(() => {
-    fetchLeads();
-  }, [filterStatus]);
+    fetchAllLeads();
+  }, []);
 
-  const fetchLeads = async () => {
+  const fetchAllLeads = async () => {
     try {
       setLoading(true);
-      const url = filterStatus === 'all'
-        ? '/api/admin/leads'
-        : `/api/admin/leads?status=${filterStatus}`;
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch leads');
+      // Fetch all data in parallel
+      const [formRes, callsRes] = await Promise.all([
+        fetch('/api/admin/leads'),
+        fetch('/api/admin/calls?limit=1000'),
+      ]);
 
-      const data = await response.json();
-      setLeads(data.leads || []);
+      const allLeads: UnifiedLead[] = [];
+
+      // Process form leads
+      if (formRes.ok) {
+        const formData = await formRes.json();
+        const formLeads = (formData.leads || []).map((lead: any) => ({
+          id: lead.id,
+          type: 'form' as const,
+          name: `${lead.first_name} ${lead.last_name}`,
+          phone: lead.phone,
+          email: lead.email,
+          created_at: lead.created_at,
+          status: lead.status || 'new',
+          vehicle_year: lead.vehicle_year,
+          vehicle_make: lead.vehicle_make,
+          vehicle_model: lead.vehicle_model,
+          service_type: lead.service_type,
+          city: lead.city,
+          state: lead.state,
+          zip: lead.zip,
+          quote_amount: lead.quote_amount,
+          revenue_amount: lead.revenue_amount,
+          close_date: lead.close_date,
+          notes: lead.notes,
+          ad_platform: lead.ad_platform,
+          utm_campaign: lead.utm_campaign,
+        }));
+        allLeads.push(...formLeads);
+      }
+
+      // Process calls - deduplicate by customer
+      if (callsRes.ok) {
+        const callsData = await callsRes.json();
+        const calls = callsData.calls || [];
+
+        // Group by customer phone number (only inbound callers)
+        const customerMap = new Map<string, any[]>();
+        const businessNumber = '+17209187465';
+
+        calls.forEach((call: any) => {
+          if (call.direction === 'Inbound' && call.from_number !== businessNumber) {
+            const customerNumber = call.from_number;
+            if (!customerMap.has(customerNumber)) {
+              customerMap.set(customerNumber, []);
+            }
+            customerMap.get(customerNumber)!.push(call);
+          }
+        });
+
+        // Create lead for each unique caller
+        customerMap.forEach((customerCalls, phoneNumber) => {
+          // Sort by most recent first
+          customerCalls.sort((a, b) =>
+            new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+          );
+
+          const mostRecent = customerCalls[0];
+          const hasAnswered = customerCalls.some(c =>
+            c.result === 'Accepted' || c.result === 'Call connected'
+          );
+          const hasMissed = customerCalls.some(c => c.result === 'Missed');
+
+          allLeads.push({
+            id: `call-${phoneNumber}`,
+            type: 'call',
+            name: mostRecent.from_name || 'Unknown Caller',
+            phone: phoneNumber,
+            created_at: mostRecent.start_time,
+            status: hasAnswered ? 'contacted' : hasMissed ? 'new' : 'new',
+            direction: mostRecent.direction,
+            duration: customerCalls.reduce((sum: number, c: any) => sum + (c.duration || 0), 0),
+            result: mostRecent.result,
+            recording_id: mostRecent.recording_id,
+            notes: `${customerCalls.length} total call(s)`,
+          });
+        });
+      }
+
+      // Sort all leads by created_at (most recent first)
+      allLeads.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setLeads(allLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
     } finally {
@@ -60,8 +174,22 @@ export default function LeadManagementDashboard() {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    // Sync RingCentral first
+    try {
+      await fetch('/api/admin/sync/ringcentral', { method: 'POST' });
+    } catch (e) {
+      console.error('Sync error:', e);
+    }
+
+    await fetchAllLeads();
+    setRefreshing(false);
+  };
+
   const updateLead = async () => {
-    if (!selectedLead) return;
+    if (!selectedLead || selectedLead.type !== 'form') return;
 
     try {
       const response = await fetch('/api/admin/leads', {
@@ -75,36 +203,40 @@ export default function LeadManagementDashboard() {
 
       if (!response.ok) throw new Error('Failed to update lead');
 
-      // Refresh leads list
-      await fetchLeads();
-
-      // Update selected lead
-      const updatedLead = { ...selectedLead, ...editData };
-      setSelectedLead(updatedLead);
+      await fetchAllLeads();
+      setSelectedLead({ ...selectedLead, ...editData });
       setEditMode(false);
       setEditData({});
-
     } catch (error) {
       console.error('Error updating lead:', error);
       alert('Failed to update lead');
     }
   };
 
+  // Filter leads
   const filteredLeads = leads.filter(lead => {
-    if (!searchTerm) return true;
+    // Type filter
+    if (filterType !== 'all' && lead.type !== filterType) return false;
 
-    const search = searchTerm.toLowerCase();
-    return (
-      lead.first_name?.toLowerCase().includes(search) ||
-      lead.last_name?.toLowerCase().includes(search) ||
-      lead.email?.toLowerCase().includes(search) ||
-      lead.phone?.toLowerCase().includes(search) ||
-      lead.vehicle_make?.toLowerCase().includes(search)
-    );
+    // Status filter
+    if (filterStatus !== 'all' && lead.status !== filterStatus) return false;
+
+    // Search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      return (
+        lead.name?.toLowerCase().includes(search) ||
+        lead.phone?.toLowerCase().includes(search) ||
+        lead.email?.toLowerCase().includes(search) ||
+        lead.vehicle_make?.toLowerCase().includes(search)
+      );
+    }
+
+    return true;
   });
 
   const statusOptions = [
-    { value: 'all', label: 'All Leads', color: 'gray' },
+    { value: 'all', label: 'All', color: 'gray' },
     { value: 'new', label: 'New', color: 'blue' },
     { value: 'contacted', label: 'Contacted', color: 'yellow' },
     { value: 'quoted', label: 'Quoted', color: 'purple' },
@@ -118,28 +250,45 @@ export default function LeadManagementDashboard() {
     return option?.color || 'gray';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'new': return <Clock className="w-4 h-4" />;
-      case 'contacted': return <Phone className="w-4 h-4" />;
-      case 'quoted': return <DollarSign className="w-4 h-4" />;
-      case 'scheduled': return <Calendar className="w-4 h-4" />;
-      case 'completed': return <Check className="w-4 h-4" />;
-      case 'lost': return <X className="w-4 h-4" />;
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'call': return <Phone className="w-4 h-4" />;
+      case 'text': return <MessageSquare className="w-4 h-4" />;
       default: return <FileText className="w-4 h-4" />;
     }
   };
 
-  // Calculate summary stats
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'call': return 'bg-green-100 text-green-700';
+      case 'text': return 'bg-blue-100 text-blue-700';
+      default: return 'bg-purple-100 text-purple-700';
+    }
+  };
+
+  const formatPhoneNumber = (num: string) => {
+    if (!num) return '';
+    const cleaned = num.replace(/\D/g, '');
+    if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+    }
+    return num;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Stats
   const stats = {
     total: leads.length,
+    calls: leads.filter(l => l.type === 'call').length,
+    texts: leads.filter(l => l.type === 'text').length,
+    forms: leads.filter(l => l.type === 'form').length,
     new: leads.filter(l => l.status === 'new').length,
-    quoted: leads.filter(l => l.status === 'quoted').length,
-    completed: leads.filter(l => l.status === 'completed').length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
-    avgDealSize: leads.filter(l => l.revenue_amount).length > 0
-      ? leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0) / leads.filter(l => l.revenue_amount).length
-      : 0,
   };
 
   if (loading) {
@@ -158,41 +307,56 @@ export default function LeadManagementDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Lead Management</h1>
-        <p className="text-gray-600 mt-1">Simple CRM for tracking quotes and revenue</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
+          <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
+        </div>
+
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Sync Calls
+        </button>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
-          <div className="text-sm text-gray-600 mb-2">Total Leads</div>
-          <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-gray-500">
+          <div className="text-sm text-gray-600">Total Leads</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-600 mb-2">New Leads</div>
-          <div className="text-3xl font-bold text-gray-900">{stats.new}</div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+          <div className="text-sm text-gray-600">Phone Calls</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-          <div className="text-sm text-gray-600 mb-2">Total Revenue</div>
-          <div className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+          <div className="text-sm text-gray-600">Form Leads</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
-          <div className="text-sm text-gray-600 mb-2">Avg Deal Size</div>
-          <div className="text-3xl font-bold text-gray-900">${stats.avgDealSize.toFixed(0)}</div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-500">
+          <div className="text-sm text-gray-600">New Leads</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.new}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-600">
+          <div className="text-sm text-gray-600">Revenue</div>
+          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
         </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name, email, phone, or vehicle..."
+                placeholder="Search by name, phone, email, or vehicle..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
@@ -200,117 +364,164 @@ export default function LeadManagementDashboard() {
             </div>
           </div>
 
+          {/* Type Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <div className="flex gap-1">
+              {(['all', 'call', 'form'] as const).map(type => (
+                <button
+                  key={type}
+                  onClick={() => setFilterType(type)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    filterType === type
+                      ? 'bg-pink-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {type === 'all' ? 'All' : type === 'call' ? 'Calls' : 'Forms'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Status Filter */}
-          <div className="flex gap-2 flex-wrap">
-            {statusOptions.map(option => (
+          <div className="flex gap-1 flex-wrap">
+            {statusOptions.slice(0, 4).map(option => (
               <button
                 key={option.value}
                 onClick={() => setFilterStatus(option.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   filterStatus === option.value
-                    ? `bg-${option.color}-600 text-white`
+                    ? 'bg-pink-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {option.label}
-                {option.value !== 'all' && ` (${leads.filter(l => l.status === option.value).length})`}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Leads Table */}
+      {/* Leads List */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Submitted</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / Phone</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     No leads found
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map(lead => {
-                  // Format date like "Nov 12, 2025 5:27 PM"
-                  const formattedDate = new Date(lead.created_at).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  });
+                filteredLeads.map(lead => (
+                  <tr key={lead.id} className="hover:bg-gray-50">
+                    {/* Type */}
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(lead.type)}`}>
+                        {getTypeIcon(lead.type)}
+                        {lead.type === 'call' ? 'Call' : lead.type === 'text' ? 'Text' : 'Form'}
+                      </span>
+                    </td>
 
-                  return (
-                    <tr key={lead.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <User className="w-5 h-5 text-gray-400" />
-                          <div className="font-medium text-gray-900">{lead.first_name} {lead.last_name}</div>
+                    {/* Name / Phone */}
+                    <td className="px-4 py-4">
+                      <div className="font-medium text-gray-900">{lead.name}</div>
+                      <div className="text-sm text-gray-500">{formatPhoneNumber(lead.phone)}</div>
+                      {lead.email && (
+                        <div className="text-sm text-gray-500">{lead.email}</div>
+                      )}
+                    </td>
+
+                    {/* Details */}
+                    <td className="px-4 py-4">
+                      {lead.type === 'form' && (
+                        <div className="text-sm text-gray-600">
+                          {lead.vehicle_year} {lead.vehicle_make} {lead.vehicle_model}
+                          {lead.service_type && (
+                            <span className="ml-2 text-xs text-gray-500">({lead.service_type})</span>
+                          )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm space-y-1">
-                          <div className="flex items-center gap-2 text-gray-900">
-                            <Mail className="w-4 h-4 text-gray-400" />
-                            <a href={`mailto:${lead.email}`} className="hover:text-pink-600">{lead.email}</a>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-900">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            <a href={`tel:${lead.phone}`} className="hover:text-pink-600">{lead.phone}</a>
-                          </div>
+                      )}
+                      {lead.type === 'call' && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          {lead.result === 'Accepted' || lead.result === 'Call connected' ? (
+                            <PhoneIncoming className="w-4 h-4 text-green-500" />
+                          ) : lead.result === 'Missed' ? (
+                            <PhoneMissed className="w-4 h-4 text-red-500" />
+                          ) : (
+                            <PhoneOutgoing className="w-4 h-4 text-blue-500" />
+                          )}
+                          <span>{lead.result}</span>
+                          {lead.duration && lead.duration > 0 && (
+                            <span className="text-gray-400">• {formatDuration(lead.duration)}</span>
+                          )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Car className="w-4 h-4 text-gray-400" />
-                          <div className="text-sm text-gray-900">
-                            {lead.vehicle_year} {lead.vehicle_make} {lead.vehicle_model}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-sm text-gray-900">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          {lead.zip || lead.city || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formattedDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(lead.status || 'new')}-100 text-${getStatusColor(lead.status || 'new')}-800`}>
-                          {getStatusIcon(lead.status || 'new')}
-                          {lead.status || 'NEW'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      )}
+                      {lead.notes && lead.type === 'call' && (
+                        <div className="text-xs text-gray-400 mt-1">{lead.notes}</div>
+                      )}
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {new Date(lead.created_at).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(lead.status)}-100 text-${getStatusColor(lead.status)}-800`}>
+                        {lead.status}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
                         <button
-                          onClick={() => {
-                            setSelectedLead(lead);
-                            setEditMode(false);
-                          }}
+                          onClick={() => setSelectedLead(lead)}
                           className="text-pink-600 hover:text-pink-900 font-medium text-sm"
                         >
                           View
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                        {lead.type === 'call' && lead.recording_id && (
+                          <a
+                            href={`/api/admin/recording/${lead.recording_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                          >
+                            <Play className="w-3 h-3" />
+                            Play
+                          </a>
+                        )}
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <Phone className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -320,12 +531,16 @@ export default function LeadManagementDashboard() {
       {/* Lead Detail Modal */}
       {selectedLead && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {selectedLead.first_name} {selectedLead.last_name}
-              </h2>
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(selectedLead.type)}`}>
+                  {getTypeIcon(selectedLead.type)}
+                  {selectedLead.type === 'call' ? 'Call' : selectedLead.type === 'text' ? 'Text' : 'Form'}
+                </span>
+                <h2 className="text-xl font-bold text-gray-900">{selectedLead.name}</h2>
+              </div>
               <button
                 onClick={() => {
                   setSelectedLead(null);
@@ -340,183 +555,231 @@ export default function LeadManagementDashboard() {
 
             {/* Modal Body */}
             <div className="p-6 space-y-6">
-              {/* CRM Fields (Editable) */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-900">CRM Information</h3>
-                  {!editMode ? (
-                    <button
-                      onClick={() => {
-                        setEditMode(true);
-                        setEditData({
-                          status: selectedLead.status,
-                          quote_amount: selectedLead.quote_amount,
-                          revenue_amount: selectedLead.revenue_amount,
-                          close_date: selectedLead.close_date,
-                          notes: selectedLead.notes,
-                        });
-                      }}
-                      className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 text-sm"
-                    >
-                      Edit
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditMode(false);
-                          setEditData({});
-                        }}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={updateLead}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    {editMode ? (
-                      <select
-                        value={editData.status || selectedLead.status}
-                        onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                      >
-                        {statusOptions.filter(opt => opt.value !== 'all').map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-${getStatusColor(selectedLead.status || 'new')}-100 text-${getStatusColor(selectedLead.status || 'new')}-800`}>
-                        {getStatusIcon(selectedLead.status || 'new')}
-                        {selectedLead.status || 'new'}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quote Amount</label>
-                    {editMode ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editData.quote_amount ?? selectedLead.quote_amount ?? ''}
-                        onChange={(e) => setEditData({ ...editData, quote_amount: parseFloat(e.target.value) || undefined })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                        placeholder="0.00"
-                      />
-                    ) : (
-                      <div className="text-gray-900">${selectedLead.quote_amount?.toLocaleString() || '-'}</div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Revenue Amount</label>
-                    {editMode ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editData.revenue_amount ?? selectedLead.revenue_amount ?? ''}
-                        onChange={(e) => setEditData({ ...editData, revenue_amount: parseFloat(e.target.value) || undefined })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                        placeholder="0.00"
-                      />
-                    ) : (
-                      <div className="text-green-600 font-medium">${selectedLead.revenue_amount?.toLocaleString() || '-'}</div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Close Date</label>
-                    {editMode ? (
-                      <input
-                        type="date"
-                        value={editData.close_date ?? selectedLead.close_date ?? ''}
-                        onChange={(e) => setEditData({ ...editData, close_date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                      />
-                    ) : (
-                      <div className="text-gray-900">{selectedLead.close_date || '-'}</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                  {editMode ? (
-                    <textarea
-                      value={editData.notes ?? selectedLead.notes ?? ''}
-                      onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                      placeholder="Add notes about this lead..."
-                    />
-                  ) : (
-                    <div className="text-gray-900 whitespace-pre-wrap">{selectedLead.notes || 'No notes'}</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Customer Info (Read-only) */}
+              {/* Contact Info */}
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Customer Information</h3>
+                <h3 className="font-bold text-gray-900 mb-3">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600">Email</div>
-                    <div className="text-gray-900">{selectedLead.email}</div>
-                  </div>
                   <div>
                     <div className="text-sm text-gray-600">Phone</div>
-                    <div className="text-gray-900">{selectedLead.phone}</div>
+                    <a href={`tel:${selectedLead.phone}`} className="text-pink-600 hover:text-pink-800 font-medium">
+                      {formatPhoneNumber(selectedLead.phone)}
+                    </a>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Location</div>
-                    <div className="text-gray-900">{selectedLead.city}, {selectedLead.state}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Service Type</div>
-                    <div className="text-gray-900 capitalize">{selectedLead.service_type || '-'}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Vehicle Info */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3">Vehicle Information</h3>
-                <div className="text-gray-900">
-                  {selectedLead.vehicle_year} {selectedLead.vehicle_make} {selectedLead.vehicle_model}
-                </div>
-              </div>
-
-              {/* Attribution */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3">Marketing Attribution</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600">Platform</div>
-                    <div className="text-gray-900 capitalize">{selectedLead.ad_platform || 'direct'}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Campaign</div>
-                    <div className="text-gray-900">{selectedLead.utm_campaign || '-'}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600">First Contact</div>
-                    <div className="text-gray-900 capitalize">{selectedLead.first_contact_method || '-'}</div>
-                  </div>
+                  {selectedLead.email && (
+                    <div>
+                      <div className="text-sm text-gray-600">Email</div>
+                      <a href={`mailto:${selectedLead.email}`} className="text-pink-600 hover:text-pink-800">
+                        {selectedLead.email}
+                      </a>
+                    </div>
+                  )}
                   <div>
                     <div className="text-sm text-gray-600">Created</div>
                     <div className="text-gray-900">{new Date(selectedLead.created_at).toLocaleString()}</div>
                   </div>
                 </div>
+              </div>
+
+              {/* Call-specific info */}
+              {selectedLead.type === 'call' && (
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3">Call Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-600">Result</div>
+                      <div className="text-gray-900">{selectedLead.result}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Duration</div>
+                      <div className="text-gray-900">{formatDuration(selectedLead.duration || 0)}</div>
+                    </div>
+                  </div>
+                  {selectedLead.recording_id && (
+                    <div className="mt-4">
+                      <a
+                        href={`/api/admin/recording/${selectedLead.recording_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        <Play className="w-4 h-4" />
+                        Play Recording
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Form-specific info with editing */}
+              {selectedLead.type === 'form' && (
+                <>
+                  {/* CRM Fields (Editable) */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-gray-900">CRM Information</h3>
+                      {!editMode ? (
+                        <button
+                          onClick={() => {
+                            setEditMode(true);
+                            setEditData({
+                              status: selectedLead.status,
+                              quote_amount: selectedLead.quote_amount,
+                              revenue_amount: selectedLead.revenue_amount,
+                              close_date: selectedLead.close_date,
+                              notes: selectedLead.notes,
+                            });
+                          }}
+                          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 text-sm"
+                        >
+                          Edit
+                        </button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditMode(false);
+                              setEditData({});
+                            }}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={updateLead}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        {editMode ? (
+                          <select
+                            value={editData.status || selectedLead.status}
+                            onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
+                          >
+                            {statusOptions.filter(opt => opt.value !== 'all').map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(selectedLead.status)}-100 text-${getStatusColor(selectedLead.status)}-800`}>
+                            {selectedLead.status}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Quote Amount</label>
+                        {editMode ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editData.quote_amount ?? selectedLead.quote_amount ?? ''}
+                            onChange={(e) => setEditData({ ...editData, quote_amount: parseFloat(e.target.value) || undefined })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
+                            placeholder="0.00"
+                          />
+                        ) : (
+                          <div className="text-gray-900">${selectedLead.quote_amount?.toLocaleString() || '-'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Revenue Amount</label>
+                        {editMode ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editData.revenue_amount ?? selectedLead.revenue_amount ?? ''}
+                            onChange={(e) => setEditData({ ...editData, revenue_amount: parseFloat(e.target.value) || undefined })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
+                            placeholder="0.00"
+                          />
+                        ) : (
+                          <div className="text-green-600 font-medium">${selectedLead.revenue_amount?.toLocaleString() || '-'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Close Date</label>
+                        {editMode ? (
+                          <input
+                            type="date"
+                            value={editData.close_date ?? selectedLead.close_date ?? ''}
+                            onChange={(e) => setEditData({ ...editData, close_date: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
+                          />
+                        ) : (
+                          <div className="text-gray-900">{selectedLead.close_date || '-'}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                      {editMode ? (
+                        <textarea
+                          value={editData.notes ?? selectedLead.notes ?? ''}
+                          onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
+                          placeholder="Add notes..."
+                        />
+                      ) : (
+                        <div className="text-gray-900">{selectedLead.notes || 'No notes'}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Vehicle Info */}
+                  {selectedLead.vehicle_make && (
+                    <div>
+                      <h3 className="font-bold text-gray-900 mb-3">Vehicle Information</h3>
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <Car className="w-5 h-5 text-gray-400" />
+                        {selectedLead.vehicle_year} {selectedLead.vehicle_make} {selectedLead.vehicle_model}
+                      </div>
+                      {selectedLead.service_type && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          Service: <span className="capitalize">{selectedLead.service_type}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Quick Actions */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <a
+                  href={`tel:${selectedLead.phone}`}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  <Phone className="w-5 h-5" />
+                  Call
+                </a>
+                <a
+                  href={`sms:${selectedLead.phone}`}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Text
+                </a>
+                {selectedLead.email && (
+                  <a
+                    href={`mailto:${selectedLead.email}`}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  >
+                    <Mail className="w-5 h-5" />
+                    Email
+                  </a>
+                )}
               </div>
             </div>
           </div>
