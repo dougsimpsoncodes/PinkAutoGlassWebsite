@@ -10,6 +10,7 @@ import {
   X,
   Zap,
   Users,
+  Phone,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -30,6 +31,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Leads', href: '/admin/dashboard/leads', icon: Users },
+    { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
   ];
 
