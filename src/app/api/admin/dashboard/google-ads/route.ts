@@ -22,19 +22,23 @@ function getDateRange(period: string): { start: Date; end: Date; display: string
 
   switch (period) {
     case 'today':
-      // For single day, use same date for start and end (BETWEEN is inclusive)
+      // For today: start at midnight, end at current time
+      // Note: For Google Ads API dates (YYYY-MM-DD), both are the same day
+      // But for database queries we need the full time range
       return {
         start: today,
-        end: today,  // Same day - Google Ads BETWEEN is inclusive
+        end: mtNow,  // Current time for database queries
         display: today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       };
     case 'yesterday':
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
-      // For single day, use same date for start and end (BETWEEN is inclusive)
+      const yesterdayEnd = new Date(yesterday);
+      yesterdayEnd.setHours(23, 59, 59, 999);
+      // For yesterday: start at midnight, end at 23:59:59
       return {
         start: yesterday,
-        end: yesterday,  // Same day - Google Ads BETWEEN is inclusive
+        end: yesterdayEnd,  // End of yesterday for database queries
         display: yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       };
     case '7days':
