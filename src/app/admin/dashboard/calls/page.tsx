@@ -273,8 +273,36 @@ export default function CallAnalyticsPage() {
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
   const uniqueCallerConversionRate = stats.uniqueCallers > 0 ? Math.round((stats.answeredUniqueCallers / stats.uniqueCallers) * 100) : 0;
 
+  // Determine the chart date range - always show minimum 7 days for short timeframes
+  const getChartDateRange = () => {
+    const now = new Date();
+    let chartStartDate = new Date();
+
+    // For 30days and all, use the actual date filter range
+    // For today, yesterday, 7days - always show last 7 days
+    if (dateFilter === '30days') {
+      chartStartDate.setDate(now.getDate() - 30);
+    } else if (dateFilter === 'all') {
+      // For all time, go back to beginning of data
+      chartStartDate = new Date('2024-01-01');
+    } else {
+      // For today, yesterday, 7days - always show last 7 days minimum
+      chartStartDate.setDate(now.getDate() - 6); // 7 days including today
+    }
+
+    return chartStartDate;
+  };
+
+  const chartStartDate = getChartDateRange();
+
+  // Get calls for the chart range (may be different from the stats range)
+  const callsForChart = calls.filter(call => {
+    const callDate = new Date(call.start_time);
+    return callDate >= chartStartDate;
+  });
+
   // Group unique customers by day for line chart
-  const customersByDay = callsInDateRange
+  const customersByDay = callsForChart
     .filter(call => call.direction === 'Inbound') // Only inbound calls
     .reduce((acc: Record<string, Set<string>>, call) => {
       const date = new Date(call.start_time).toLocaleDateString();
@@ -285,12 +313,26 @@ export default function CallAnalyticsPage() {
       return acc;
     }, {});
 
-  const chartData = Object.entries(customersByDay)
-    .map(([date, numbersSet]) => ({
-      date,
-      uniqueCustomers: numbersSet.size
-    }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  // Build chart data with all days in range (including days with 0 customers)
+  const buildChartData = () => {
+    const now = new Date();
+    const result = [];
+    const currentDate = new Date(chartStartDate);
+
+    while (currentDate <= now) {
+      const dateStr = currentDate.toLocaleDateString();
+      const numbersSet = customersByDay[dateStr];
+      result.push({
+        date: dateStr,
+        uniqueCustomers: numbersSet ? numbersSet.size : 0
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return result;
+  };
+
+  const chartData = buildChartData();
 
   const maxCustomersInDay = Math.max(...chartData.map(d => d.uniqueCustomers), 1);
 
