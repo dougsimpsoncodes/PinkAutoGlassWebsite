@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useSync } from '@/contexts/SyncContext';
 import {
   Search,
   DollarSign,
@@ -19,7 +21,6 @@ import {
   PhoneIncoming,
   PhoneOutgoing,
   PhoneMissed,
-  RefreshCw,
   Play,
   Filter
 } from 'lucide-react';
@@ -59,16 +60,85 @@ interface UnifiedLead {
 }
 
 export default function LeadManagementDashboard() {
-  const [leads, setLeads] = useState<UnifiedLead[]>([]);
+  // Get global sync state
+  const { syncVersion } = useSync();
+
+  // Cache all leads - fetch once, filter client-side
+  const [allLeadsCache, setAllLeadsCache] = useState<UnifiedLead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'form' | 'call' | 'text'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
+  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
 
+  // Convert DateFilter to number of days for filtering
+  const getDateRangeDays = (filter: DateFilter): number => {
+    switch (filter) {
+      case 'today': return 0;
+      case 'yesterday': return 1;
+      case '7days': return 7;
+      case '30days': return 30;
+      case 'all': return 9999;
+      default: return 30;
+    }
+  };
+
+  const dateRange = getDateRangeDays(dateFilter);
+
+  // Filter leads by date range (client-side, instant)
+  const getFilteredLeads = useCallback(() => {
+    if (allLeadsCache.length === 0) return [];
+
+    const now = new Date();
+    let startDate = new Date();
+    let endDate: Date | null = null;
+
+    if (dateRange === 0) {
+      // Today - start of today
+      startDate.setHours(0, 0, 0, 0);
+    } else if (dateRange === 1) {
+      // Yesterday
+      startDate.setDate(now.getDate() - 1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setHours(23, 59, 59, 999);
+    } else if (dateRange === 9999) {
+      // All time - return all leads
+      return [...allLeadsCache].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    } else {
+      // Last N days
+      startDate.setDate(now.getDate() - dateRange);
+    }
+
+    const filteredLeads = allLeadsCache.filter(lead => {
+      const leadDate = new Date(lead.created_at);
+      if (endDate) {
+        return leadDate >= startDate && leadDate <= endDate;
+      }
+      return leadDate >= startDate;
+    });
+
+    return filteredLeads.sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [allLeadsCache, dateRange]);
+
+  // Get filtered leads - computed from cache, no loading spinner
+  const leads = getFilteredLeads();
+
+  // Subscribe to global sync events
+  useEffect(() => {
+    if (syncVersion > 0) {
+      fetchAllLeads();
+    }
+  }, [syncVersion]);
+
+  // Initial load only
   useEffect(() => {
     fetchAllLeads();
   }, []);
@@ -79,7 +149,7 @@ export default function LeadManagementDashboard() {
 
       // Fetch all data in parallel
       const [formRes, callsRes] = await Promise.all([
-        fetch('/api/admin/leads'),
+        fetch('/api/admin/leads?limit=10000'),
         fetch('/api/admin/calls?limit=1000'),
       ]);
 
@@ -161,12 +231,8 @@ export default function LeadManagementDashboard() {
         });
       }
 
-      // Sort all leads by created_at (most recent first)
-      allLeads.sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-
-      setLeads(allLeads);
+      // Store all leads in cache - filtering happens client-side
+      setAllLeadsCache(allLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
     } finally {
@@ -174,18 +240,29 @@ export default function LeadManagementDashboard() {
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
 
-    // Sync RingCentral first
-    try {
-      await fetch('/api/admin/sync/ringcentral', { method: 'POST' });
-    } catch (e) {
-      console.error('Sync error:', e);
+  const getDateRangeDisplay = () => {
+    const now = new Date();
+    switch (dateFilter) {
+      case 'today':
+        return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      case 'yesterday':
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      case '7days':
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return `${sevenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      case '30days':
+        const thirtyDaysAgo = new Date(now);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return `${thirtyDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      case 'all':
+        return 'All Time';
+      default:
+        return '';
     }
-
-    await fetchAllLeads();
-    setRefreshing(false);
   };
 
   const updateLead = async () => {
@@ -291,7 +368,8 @@ export default function LeadManagementDashboard() {
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
   };
 
-  if (loading) {
+  // Only show spinner on initial load when we have no cached data
+  if (loading && allLeadsCache.length === 0) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
@@ -307,21 +385,18 @@ export default function LeadManagementDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-          <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
-        </div>
-
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          Sync Calls
-        </button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
+        <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
       </div>
+
+      {/* Date Filter Bar */}
+      <DateFilterBar
+        dateFilter={dateFilter}
+        onFilterChange={setDateFilter}
+        dateDisplay={getDateRangeDisplay()}
+        color="gray"
+      />
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

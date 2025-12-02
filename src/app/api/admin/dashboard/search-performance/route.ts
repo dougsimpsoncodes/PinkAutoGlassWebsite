@@ -17,6 +17,14 @@ function getSupabaseClient() {
   );
 }
 
+// Get current time in Mountain Time (UTC-7) - business is in Denver
+function getMountainTime(): Date {
+  const now = new Date();
+  const mtOffset = -7 * 60; // Mountain Time offset in minutes
+  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
+  return new Date(utcNow + (mtOffset * 60000));
+}
+
 interface SearchTermPerformance {
   search_term: string;
   source: 'PAID' | 'ORG';
@@ -37,6 +45,14 @@ interface SearchTermPerformance {
   organic_position: number;
   organic_pages: string[];
 
+  // Lead attribution (NEW)
+  calls: number;
+  quotes: number;
+  texts: number;
+  total_leads: number;
+  cost_per_lead: number;
+  lead_conversion_rate: number;
+
   // Total for this row (either paid or organic)
   total_impressions: number;
   total_clicks: number;
@@ -56,9 +72,10 @@ export async function GET(req: NextRequest) {
     const source = searchParams.get('source') || 'all'; // 'paid', 'organic', or 'all'
     const minImpressions = parseInt(searchParams.get('minImpressions') || '10');
 
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
+    // Calculate date range using Mountain Time (business is in Denver)
+    const mtNow = getMountainTime();
+    const endDate = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
+    const startDate = new Date(endDate);
     startDate.setDate(startDate.getDate() - daysBack);
 
     const startDateStr = startDate.toISOString().split('T')[0];
@@ -148,6 +165,78 @@ export async function GET(req: NextRequest) {
       }
     });
 
+    // Fetch lead attribution data (calls, quotes, texts)
+    const leadsByTerm = new Map<string, { calls: number; quotes: number; texts: number }>();
+
+    // Get quotes/form submissions
+    const { data: leadData } = await supabase
+      .from('leads')
+      .select('utm_term, first_contact_method')
+      .gte('created_at', startDateStr)
+      .lte('created_at', endDateStr)
+      .not('utm_term', 'is', null);
+
+    leadData?.forEach((lead: any) => {
+      const term = (lead.utm_term || '').toLowerCase().trim();
+      if (!term) return;
+
+      if (!leadsByTerm.has(term)) {
+        leadsByTerm.set(term, { calls: 0, quotes: 0, texts: 0 });
+      }
+      const existing = leadsByTerm.get(term)!;
+      if (lead.first_contact_method === 'form') {
+        existing.quotes++;
+      }
+    });
+
+    // Get phone calls - deduplicate by phone number (unique callers only)
+    const { data: callData } = await supabase
+      .from('ringcentral_calls')
+      .select('utm_term, from_number')
+      .eq('direction', 'Inbound')
+      .gte('start_time', startDateStr)
+      .lte('start_time', endDateStr)
+      .not('utm_term', 'is', null);
+
+    // Group by term, then count unique phone numbers per term
+    const callsByTermAndPhone = new Map<string, Set<string>>();
+    callData?.forEach((call: any) => {
+      const term = (call.utm_term || '').toLowerCase().trim();
+      if (!term) return;
+
+      if (!callsByTermAndPhone.has(term)) {
+        callsByTermAndPhone.set(term, new Set());
+      }
+      callsByTermAndPhone.get(term)!.add(call.from_number);
+    });
+
+    // Now add unique caller counts to leadsByTerm
+    callsByTermAndPhone.forEach((phoneNumbers, term) => {
+      if (!leadsByTerm.has(term)) {
+        leadsByTerm.set(term, { calls: 0, quotes: 0, texts: 0 });
+      }
+      leadsByTerm.get(term)!.calls = phoneNumbers.size; // Count unique phone numbers
+    });
+
+    // Get text clicks
+    const { data: textData } = await supabase
+      .from('conversion_events')
+      .select('utm_term')
+      .eq('event_type', 'text_click')
+      .gte('created_at', startDateStr)
+      .lte('created_at', endDateStr)
+      .not('utm_term', 'is', null);
+
+    textData?.forEach((text: any) => {
+      const term = (text.utm_term || '').toLowerCase().trim();
+      if (!term) return;
+
+      if (!leadsByTerm.has(term)) {
+        leadsByTerm.set(term, { calls: 0, quotes: 0, texts: 0 });
+      }
+      leadsByTerm.get(term)!.texts++;
+    });
+
     // Create separate rows for paid and organic data
     const allTerms = new Set([...paidTerms.keys(), ...organicTerms.keys()]);
     const combinedData: SearchTermPerformance[] = [];
@@ -170,6 +259,12 @@ export async function GET(req: NextRequest) {
           const paidCTR = paidImpressions > 0 ? (paidClicks / paidImpressions) * 100 : 0;
           const paidCPC = paidClicks > 0 ? paidCost / paidClicks : 0;
 
+          // Get lead data for this term
+          const leads = leadsByTerm.get(term) || { calls: 0, quotes: 0, texts: 0 };
+          const totalLeads = leads.calls + leads.quotes + leads.texts;
+          const costPerLead = totalLeads > 0 ? paidCost / totalLeads : 0;
+          const leadConvRate = paidClicks > 0 ? (totalLeads / paidClicks) * 100 : 0;
+
           combinedData.push({
             search_term: term,
             source: 'PAID',
@@ -185,6 +280,12 @@ export async function GET(req: NextRequest) {
             organic_ctr: 0,
             organic_position: 0,
             organic_pages: [],
+            calls: leads.calls,
+            quotes: leads.quotes,
+            texts: leads.texts,
+            total_leads: totalLeads,
+            cost_per_lead: parseFloat(costPerLead.toFixed(2)),
+            lead_conversion_rate: parseFloat(leadConvRate.toFixed(2)),
             total_impressions: paidImpressions,
             total_clicks: paidClicks,
             ctr: parseFloat(paidCTR.toFixed(2)),
@@ -205,6 +306,11 @@ export async function GET(req: NextRequest) {
           // Don't create organic row
         } else {
           const organicCTR = organicImpressions > 0 ? (organicClicks / organicImpressions) * 100 : 0;
+
+          // Get lead data for this term
+          const leads = leadsByTerm.get(term) || { calls: 0, quotes: 0, texts: 0 };
+          const totalLeads = leads.calls + leads.quotes + leads.texts;
+          const leadConvRate = organicClicks > 0 ? (totalLeads / organicClicks) * 100 : 0;
 
           combinedData.push({
             search_term: term,
@@ -229,6 +335,12 @@ export async function GET(req: NextRequest) {
                 return url;
               }
             }),
+            calls: leads.calls,
+            quotes: leads.quotes,
+            texts: leads.texts,
+            total_leads: totalLeads,
+            cost_per_lead: 0, // Free for organic
+            lead_conversion_rate: parseFloat(leadConvRate.toFixed(2)),
             total_impressions: organicImpressions,
             total_clicks: organicClicks,
             ctr: parseFloat(organicCTR.toFixed(2)),
@@ -267,6 +379,18 @@ export async function GET(req: NextRequest) {
       totalOrganicClicks: combinedData.reduce((sum, t) => sum + t.organic_clicks, 0),
       totalImpressions: combinedData.reduce((sum, t) => sum + t.total_impressions, 0),
       totalClicks: combinedData.reduce((sum, t) => sum + t.total_clicks, 0),
+      totalCalls: combinedData.reduce((sum, t) => sum + t.calls, 0),
+      totalQuotes: combinedData.reduce((sum, t) => sum + t.quotes, 0),
+      totalTexts: combinedData.reduce((sum, t) => sum + t.texts, 0),
+      totalLeads: combinedData.reduce((sum, t) => sum + t.total_leads, 0),
+      paidCalls: paidRows.reduce((sum, t) => sum + t.calls, 0),
+      paidQuotes: paidRows.reduce((sum, t) => sum + t.quotes, 0),
+      paidTexts: paidRows.reduce((sum, t) => sum + t.texts, 0),
+      paidLeads: paidRows.reduce((sum, t) => sum + t.total_leads, 0),
+      organicCalls: organicRows.reduce((sum, t) => sum + t.calls, 0),
+      organicQuotes: organicRows.reduce((sum, t) => sum + t.quotes, 0),
+      organicTexts: organicRows.reduce((sum, t) => sum + t.texts, 0),
+      organicLeads: organicRows.reduce((sum, t) => sum + t.total_leads, 0),
     };
 
     // Add calculated averages

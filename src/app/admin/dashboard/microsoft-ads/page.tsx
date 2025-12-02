@@ -15,7 +15,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-interface GoogleAdsData {
+interface MicrosoftAdsData {
   spend: number;
   clicks: number;
   impressions: number;
@@ -27,7 +27,6 @@ interface GoogleAdsData {
     forms: number;
   };
   costPerLead: number;
-  apiConversions: number;
   topConverters: {
     term: string;
     conversions: number;
@@ -52,7 +51,7 @@ function SyncButtonInline() {
     <button
       onClick={triggerGlobalSync}
       disabled={syncing}
-      className="px-4 py-2 rounded-lg text-sm font-medium bg-pink-600 text-white hover:bg-pink-700 disabled:bg-pink-400 ml-2 flex items-center gap-2"
+      className="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-700 disabled:bg-cyan-400 ml-2 flex items-center gap-2"
     >
       <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
       {syncing ? (progress || 'Syncing...') : 'Sync All Data'}
@@ -60,12 +59,12 @@ function SyncButtonInline() {
   );
 }
 
-export default function GoogleAdsPage() {
+export default function MicrosoftAdsPage() {
   // Get global sync state
   const { syncVersion } = useSync();
 
   // Cache data for all time periods
-  const [dataCache, setDataCache] = useState<Record<DateFilter, GoogleAdsData | null>>({
+  const [dataCache, setDataCache] = useState<Record<DateFilter, MicrosoftAdsData | null>>({
     today: null,
     yesterday: null,
     '7days': null,
@@ -84,9 +83,9 @@ export default function GoogleAdsPage() {
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
-      const response = await fetch(`/api/admin/dashboard/google-ads?period=${filter}`);
+      const response = await fetch(`/api/admin/dashboard/microsoft-ads?period=${filter}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch Google Ads data');
+        throw new Error('Failed to fetch Microsoft Ads data');
       }
       const result = await response.json();
       setDataCache(prev => ({ ...prev, [filter]: result }));
@@ -132,7 +131,7 @@ export default function GoogleAdsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
         </div>
       </DashboardLayout>
     );
@@ -155,14 +154,13 @@ export default function GoogleAdsPage() {
   }
 
   // Use placeholder data if API not ready yet
-  const displayData: GoogleAdsData = data || {
+  const displayData: MicrosoftAdsData = data || {
     spend: 0,
     clicks: 0,
     impressions: 0,
     ctr: 0,
     leads: { total: 0, calls: 0, texts: 0, forms: 0 },
     costPerLead: 0,
-    apiConversions: 0,
     topConverters: [],
     dateRange: { start: '', end: '', display: 'No data available' },
   };
@@ -173,8 +171,8 @@ export default function GoogleAdsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Google Ads Performance</h1>
-            <p className="text-gray-600 mt-1">Google Search & Display advertising analytics</p>
+            <h1 className="text-3xl font-bold text-gray-900">Microsoft Ads Performance</h1>
+            <p className="text-gray-600 mt-1">Bing, Yahoo & DuckDuckGo advertising analytics</p>
           </div>
         </div>
       </div>
@@ -209,9 +207,9 @@ export default function GoogleAdsPage() {
       </div>
 
       {/* Primary Metrics - Ad Spend vs Unique Leads */}
-      <div className="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 shadow-lg">
+      <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-300 rounded-xl p-6 mb-6 shadow-lg">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Users className="w-6 h-6 text-pink-600" />
+          <Users className="w-6 h-6 text-cyan-600" />
           Primary Metric: Ad Spend vs Unique Leads
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -241,12 +239,12 @@ export default function GoogleAdsPage() {
           </div>
 
           {/* Cost Per Lead */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-pink-300">
+          <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-cyan-300">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-pink-600">Cost Per Lead</p>
-              <Target className="w-5 h-5 text-pink-600" />
+              <p className="text-sm font-medium text-cyan-600">Cost Per Lead</p>
+              <Target className="w-5 h-5 text-cyan-600" />
             </div>
-            <p className="text-3xl font-bold text-pink-600">
+            <p className="text-3xl font-bold text-cyan-600">
               ${displayData.costPerLead.toFixed(2)}
             </p>
             <p className="text-xs text-gray-600 mt-1">
@@ -260,7 +258,7 @@ export default function GoogleAdsPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-blue-600" />
-          Website Conversions (GCLID Tracking)
+          Website Conversions (UET Tag Tracking)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-blue-50 rounded-lg p-4">
@@ -279,14 +277,14 @@ export default function GoogleAdsPage() {
             <p className="text-xs text-gray-500 mt-1">Quote requests</p>
           </div>
           <div className="bg-orange-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">API Conversions</p>
-            <p className="text-2xl font-bold text-orange-600">{displayData.apiConversions}</p>
-            <p className="text-xs text-gray-500 mt-1">Google Ads tracked</p>
+            <p className="text-sm text-gray-600 mb-1">Offline Calls</p>
+            <p className="text-2xl font-bold text-orange-600">0</p>
+            <p className="text-xs text-gray-500 mt-1">RingCentral matched</p>
           </div>
         </div>
         <div className="mt-3 p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-600">
-            <strong>Note:</strong> Website conversions (GCLID) and API conversions are tracked separately. Our tracking captures all lead events with Google click attribution.
+            <strong>Note:</strong> Website conversions (UET) and phone calls (RingCentral) are tracked separately. Calls matched via MSCLKID are shown in &quot;Offline Calls&quot;.
           </p>
         </div>
       </div>
@@ -301,7 +299,7 @@ export default function GoogleAdsPage() {
                 ${displayData.spend.toFixed(2)}
               </p>
             </div>
-            <DollarSign className="w-8 h-8 text-pink-600" />
+            <DollarSign className="w-8 h-8 text-cyan-600" />
           </div>
         </div>
 
@@ -383,10 +381,10 @@ export default function GoogleAdsPage() {
 
       {/* Quick Links */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Links to Google Ads</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Links to Microsoft Ads</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <a
-            href="https://ads.google.com/aw/campaigns"
+            href="https://ads.microsoft.com"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -395,7 +393,7 @@ export default function GoogleAdsPage() {
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </a>
           <a
-            href="https://ads.google.com/aw/keywords/negatives"
+            href="https://ads.microsoft.com"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -404,16 +402,16 @@ export default function GoogleAdsPage() {
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </a>
           <a
-            href="https://ads.google.com/aw/conversions"
+            href="https://ads.microsoft.com"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <span className="text-sm font-medium text-gray-700">Conversion Settings</span>
+            <span className="text-sm font-medium text-gray-700">UET Tag Settings</span>
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </a>
           <a
-            href="https://ads.google.com/aw/reporting"
+            href="https://ads.microsoft.com"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

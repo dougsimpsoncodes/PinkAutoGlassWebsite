@@ -1,202 +1,174 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import DateFilterBar, { DateFilter, ALL_DATE_FILTERS } from '@/components/admin/DateFilterBar';
+import { useSync } from '@/contexts/SyncContext';
 import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
   Phone,
   MessageSquare,
   FileText,
-  DollarSign,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  PhoneIncoming,
-  PhoneMissed,
-  ArrowRight
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  Target,
+  Users,
 } from 'lucide-react';
-import Link from 'next/link';
 
-interface DashboardMetrics {
-  // Calls
-  totalCalls: number;
-  answeredCalls: number;
-  missedCalls: number;
-  uniqueCallers: number;
+interface UnifiedDashboardData {
+  summary: {
+    totalSpend: number;
+    totalLeads: number;
+    costPerLead: number;
+    totalClicks: number;
+    totalImpressions: number;
+    overallCtr: number;
+    conversionRate: number;
+    totalRevenue: number;
+    roas: number;
+  };
+  platforms: {
+    google: PlatformMetrics;
+    microsoft: PlatformMetrics;
+    other: PlatformMetrics;
+  };
+  calls: {
+    total: number;
+    answered: number;
+    missed: number;
+    answerRate: number;
+    byPlatform: {
+      google: number;
+      microsoft: number;
+      direct: number;
+    };
+  };
+  leads: {
+    total: number;
+    new: number;
+    byPlatform: {
+      google: number;
+      microsoft: number;
+      direct: number;
+    };
+  };
+  comparison: {
+    cplDifference: number;
+    ctrDifference: number;
+    spendShare: { google: number; microsoft: number };
+    leadShare: { google: number; microsoft: number; other: number };
+    winningPlatform: {
+      cpl: string;
+      ctr: string;
+      volume: string;
+    };
+  };
+  dateRange: {
+    start: string;
+    end: string;
+    display: string;
+    period: string;
+  };
+}
 
-  // Texts
-  textClicks: number;
-
-  // Form Leads
-  formLeads: number;
-  newLeads: number;
-
-  // Revenue
-  totalRevenue: number;
-
-  // Google Ads
-  adSpend: number;
+interface PlatformMetrics {
+  spend: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  leads: {
+    total: number;
+    calls: number;
+    texts: number;
+    forms: number;
+  };
   costPerLead: number;
 }
 
-interface RecentLead {
-  id: string;
-  name: string;
-  type: 'call' | 'text' | 'form';
-  time: string;
-  status: string;
-  phone?: string;
-}
-
 export default function AdminDashboard() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [recentLeads, setRecentLeads] = useState<RecentLead[]>([]);
+  // Get global sync state
+  const { syncVersion } = useSync();
+
+  // Cache data for all time periods
+  const [dataCache, setDataCache] = useState<Record<DateFilter, UnifiedDashboardData | null>>({
+    today: null,
+    yesterday: null,
+    '7days': null,
+    '30days': null,
+    all: null,
+  });
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [dateRange, setDateRange] = useState('7days');
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [dateRange]);
+  // Get current data from cache
+  const data = dataCache[dateFilter];
 
-  const fetchDashboardData = async () => {
+  // Check if we have ANY cached data (for showing content while loading new period)
+  const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
+
+  const fetchData = useCallback(async (filter: DateFilter) => {
     try {
-      // Fetch all data in parallel
-      const [callsRes, conversionsRes, leadsRes] = await Promise.all([
-        fetch('/api/admin/calls?limit=1000'),
-        fetch(`/api/admin/analytics?metric=conversions&range=${dateRange}`),
-        fetch('/api/admin/leads'),
-      ]);
-
-      // Process calls data
-      let callMetrics = {
-        totalCalls: 0,
-        answeredCalls: 0,
-        missedCalls: 0,
-        uniqueCallers: 0,
-      };
-
-      if (callsRes.ok) {
-        const callsData = await callsRes.json();
-        const calls = callsData.calls || [];
-
-        // Filter by date range
-        const now = new Date();
-        let startDate = new Date();
-        switch (dateRange) {
-          case 'today':
-            startDate.setHours(0, 0, 0, 0);
-            break;
-          case '7days':
-            startDate.setDate(now.getDate() - 7);
-            break;
-          case '30days':
-            startDate.setDate(now.getDate() - 30);
-            break;
-        }
-
-        const filteredCalls = calls.filter((call: any) =>
-          new Date(call.start_time) >= startDate
-        );
-
-        const inboundCalls = filteredCalls.filter((c: any) => c.direction === 'Inbound');
-        const uniqueNumbers = new Set(inboundCalls.map((c: any) => c.from_number));
-
-        callMetrics = {
-          totalCalls: filteredCalls.length,
-          answeredCalls: filteredCalls.filter((c: any) =>
-            c.result === 'Accepted' || c.result === 'Call connected'
-          ).length,
-          missedCalls: filteredCalls.filter((c: any) => c.result === 'Missed').length,
-          uniqueCallers: uniqueNumbers.size,
-        };
+      const res = await fetch(`/api/admin/dashboard/unified?period=${filter}`);
+      if (res.ok) {
+        const json = await res.json();
+        setDataCache(prev => ({ ...prev, [filter]: json }));
+        return json;
       }
-
-      // Process conversions (texts)
-      let textClicks = 0;
-      if (conversionsRes.ok) {
-        const conversionsData = await conversionsRes.json();
-        textClicks = conversionsData.data?.by_type?.text_click || 0;
-      }
-
-      // Process leads
-      let leadMetrics = {
-        formLeads: 0,
-        newLeads: 0,
-        totalRevenue: 0,
-      };
-      let recent: RecentLead[] = [];
-
-      if (leadsRes.ok) {
-        const leadsData = await leadsRes.json();
-        const leads = leadsData.leads || [];
-
-        leadMetrics = {
-          formLeads: leads.length,
-          newLeads: leads.filter((l: any) => l.status === 'new').length,
-          totalRevenue: leads.reduce((sum: number, l: any) => sum + (l.revenue_amount || 0), 0),
-        };
-
-        // Build recent leads list (combine calls and forms)
-        recent = leads.slice(0, 5).map((l: any) => ({
-          id: l.id,
-          name: `${l.first_name} ${l.last_name}`,
-          type: 'form' as const,
-          time: new Date(l.created_at).toLocaleString(),
-          status: l.status || 'new',
-          phone: l.phone,
-        }));
-      }
-
-      // Calculate cost per lead (calls + texts + forms)
-      const totalLeads = callMetrics.uniqueCallers + textClicks + leadMetrics.formLeads;
-      // Note: We'd need to fetch ad spend from Google Ads API for real data
-      // For now, showing placeholder
-      const adSpend = 0; // Will be populated when Google Ads sync is enabled
-
-      setMetrics({
-        ...callMetrics,
-        textClicks,
-        ...leadMetrics,
-        adSpend,
-        costPerLead: totalLeads > 0 && adSpend > 0 ? adSpend / totalLeads : 0,
-      });
-
-      setRecentLeads(recent);
-      setLastUpdated(new Date());
-      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
-      setLoading(false);
+    }
+    return null;
+  }, []);
+
+  // Fetch all time periods when sync version changes (global sync triggered)
+  const refreshAllData = useCallback(async () => {
+    const promises = ALL_DATE_FILTERS.map(filter => fetchData(filter));
+    await Promise.all(promises);
+  }, [fetchData]);
+
+  // Subscribe to global sync events
+  useEffect(() => {
+    if (syncVersion > 0) {
+      refreshAllData();
+    }
+  }, [syncVersion, refreshAllData]);
+
+  // When changing date filter, use cached data or fetch if not available
+  const handleDateFilterChange = (filter: DateFilter) => {
+    setDateFilter(filter);
+    if (!dataCache[filter]) {
+      setLoading(true);
+      fetchData(filter).finally(() => setLoading(false));
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
+  // Initial load - fetch current filter
+  useEffect(() => {
+    setLoading(true);
+    fetchData(dateFilter).finally(() => setLoading(false));
+  }, []);
 
-    // Sync RingCentral data first
-    try {
-      await fetch('/api/admin/sync/ringcentral', { method: 'POST' });
-    } catch (e) {
-      console.error('RingCentral sync error:', e);
-    }
-
-    // Then refresh dashboard
-    await fetchDashboardData();
-    setRefreshing(false);
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
   };
 
-  const formatTimeAgo = (date: Date | null) => {
-    if (!date) return 'Not yet loaded';
-    const now = new Date();
-    const diffMins = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    return `${Math.floor(diffMins / 60)}h ago`;
+  const formatPercent = (value: number) => {
+    return `${value.toFixed(1)}%`;
   };
 
-  if (loading) {
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  // Only show full-page spinner on initial load (no cached data at all)
+  if (loading && !hasAnyCachedData) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
@@ -209,258 +181,504 @@ export default function AdminDashboard() {
     );
   }
 
-  const answerRate = metrics && metrics.totalCalls > 0
-    ? Math.round((metrics.answeredCalls / metrics.totalCalls) * 100)
-    : 0;
+  // If data is null but we're loading a new period, show loading within the page
+  // If data is truly failed (not loading and no data), show error
+  if (!data && !loading) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-600">Failed to load dashboard data</p>
+          <button
+            onClick={() => fetchData(dateFilter)}
+            className="mt-4 px-4 py-2 bg-pink-600 text-white rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const totalLeads = (metrics?.uniqueCallers || 0) + (metrics?.textClicks || 0) + (metrics?.formLeads || 0);
+  // Use placeholder data while loading a new period
+  const displayData: UnifiedDashboardData = data || {
+    summary: { totalSpend: 0, totalLeads: 0, costPerLead: 0, totalClicks: 0, totalImpressions: 0, overallCtr: 0, conversionRate: 0, totalRevenue: 0, roas: 0 },
+    platforms: {
+      google: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
+      microsoft: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
+      other: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
+    },
+    calls: { total: 0, answered: 0, missed: 0, answerRate: 0, byPlatform: { google: 0, microsoft: 0, direct: 0 } },
+    leads: { total: 0, new: 0, byPlatform: { google: 0, microsoft: 0, direct: 0 } },
+    comparison: { cplDifference: 0, ctrDifference: 0, spendShare: { google: 0, microsoft: 0 }, leadShare: { google: 0, microsoft: 0, other: 0 }, winningPlatform: { cpl: '', ctr: '', volume: '' } },
+    dateRange: { start: '', end: '', display: 'Loading...', period: dateFilter },
+  };
+
+  const { summary, platforms, calls, leads, comparison } = displayData;
 
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Calls, texts, and leads at a glance</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Unified view of all advertising performance</p>
+      </div>
+
+      {/* Date Filter Bar */}
+      <DateFilterBar
+        dateFilter={dateFilter}
+        onFilterChange={handleDateFilterChange}
+        dateDisplay={displayData.dateRange.display}
+        color="pink"
+      />
+
+      {/* Key KPIs - Hero Section */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Total Spend */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">Total Ad Spend</span>
+            <DollarSign className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{formatCurrency(summary.totalSpend)}</p>
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <span className="text-blue-600">Google: {formatCurrency(platforms.google.spend)}</span>
+            <span className="text-gray-300">|</span>
+            <span className="text-cyan-600">MS: {formatCurrency(platforms.microsoft.spend)}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-          >
-            <option value="today">Today</option>
-            <option value="7days">Last 7 Days</option>
-            <option value="30days">Last 30 Days</option>
-          </select>
+        {/* Total Leads */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">Total Leads</span>
+            <Target className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{summary.totalLeads}</p>
+          <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
+            <span className="text-blue-600">Google: {platforms.google.leads.total}</span>
+            <span className="text-gray-300">|</span>
+            <span className="text-cyan-600">MS: {platforms.microsoft.leads.total}</span>
+            <span className="text-gray-300">|</span>
+            <span className="text-gray-600">Other: {platforms.other.leads.total}</span>
+          </div>
+        </div>
 
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Sync
-          </button>
+        {/* Cost Per Lead */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">Cost Per Lead</span>
+            <TrendingDown className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{formatCurrency(summary.costPerLead)}</p>
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <span className={`${comparison.winningPlatform.cpl === 'google' ? 'text-green-600 font-medium' : 'text-blue-600'}`}>
+              G: {formatCurrency(platforms.google.costPerLead)}
+            </span>
+            <span className="text-gray-300">|</span>
+            <span className={`${comparison.winningPlatform.cpl === 'microsoft' ? 'text-green-600 font-medium' : 'text-cyan-600'}`}>
+              MS: {formatCurrency(platforms.microsoft.costPerLead)}
+            </span>
+          </div>
+        </div>
+
+        {/* Conversion Rate */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">Conversion Rate</span>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{formatPercent(summary.conversionRate)}</p>
+          <p className="mt-2 text-sm text-gray-500">
+            {formatNumber(summary.totalClicks)} clicks &rarr; {summary.totalLeads} leads
+          </p>
         </div>
       </div>
 
-      {/* Last Updated */}
-      <div className="text-sm text-gray-500 mb-6">
-        Last updated: {formatTimeAgo(lastUpdated)}
+      {/* Platform Comparison */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Platform Comparison</h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Google Ads Card */}
+          <div className="border-2 border-blue-100 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-blue-600 font-bold">G</span>
+                </div>
+                <span className="font-semibold text-gray-900">Google Ads</span>
+              </div>
+              {comparison.winningPlatform.cpl === 'google' && (
+                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                  Lower CPL
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Spend</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.google.spend)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Leads</p>
+                <p className="text-xl font-bold text-gray-900">{platforms.google.leads.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CPL</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.google.costPerLead)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CTR</p>
+                <p className="text-xl font-bold text-gray-900">{formatPercent(platforms.google.ctr)}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Lead Breakdown</span>
+              </div>
+              <div className="flex gap-4 mt-2 text-sm">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-4 h-4 text-green-500" />
+                  {platforms.google.leads.calls}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  {platforms.google.leads.texts}
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileText className="w-4 h-4 text-purple-500" />
+                  {platforms.google.leads.forms}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Microsoft Ads Card */}
+          <div className="border-2 border-cyan-100 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
+                  <span className="text-cyan-600 font-bold">M</span>
+                </div>
+                <span className="font-semibold text-gray-900">Microsoft Ads</span>
+              </div>
+              {comparison.winningPlatform.cpl === 'microsoft' && (
+                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                  Lower CPL
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Spend</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.microsoft.spend)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Leads</p>
+                <p className="text-xl font-bold text-gray-900">{platforms.microsoft.leads.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CPL</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.microsoft.costPerLead)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CTR</p>
+                <p className="text-xl font-bold text-gray-900">{formatPercent(platforms.microsoft.ctr)}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Lead Breakdown</span>
+              </div>
+              <div className="flex gap-4 mt-2 text-sm">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-4 h-4 text-green-500" />
+                  {platforms.microsoft.leads.calls}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  {platforms.microsoft.leads.texts}
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileText className="w-4 h-4 text-purple-500" />
+                  {platforms.microsoft.leads.forms}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Other/Unattributed Card */}
+          <div className="border-2 border-gray-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-gray-600" />
+                </div>
+                <span className="font-semibold text-gray-900">Other / Direct</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Spend</p>
+                <p className="text-xl font-bold text-gray-400">N/A</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Leads</p>
+                <p className="text-xl font-bold text-gray-900">{platforms.other.leads.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CPL</p>
+                <p className="text-xl font-bold text-gray-400">N/A</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">CTR</p>
+                <p className="text-xl font-bold text-gray-400">N/A</p>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Lead Breakdown</span>
+              </div>
+              <div className="flex gap-4 mt-2 text-sm">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-4 h-4 text-green-500" />
+                  {platforms.other.leads.calls}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  {platforms.other.leads.texts}
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileText className="w-4 h-4 text-purple-500" />
+                  {platforms.other.leads.forms}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Spend Share Bar */}
+        <div className="mt-6">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-gray-600">Spend Distribution</span>
+            <span className="text-gray-600">
+              Google {formatPercent(comparison.spendShare.google)} | Microsoft {formatPercent(comparison.spendShare.microsoft)}
+            </span>
+          </div>
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
+            <div
+              className="bg-blue-500 transition-all duration-500"
+              style={{ width: `${comparison.spendShare.google}%` }}
+            />
+            <div
+              className="bg-cyan-500 transition-all duration-500"
+              style={{ width: `${comparison.spendShare.microsoft}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Lead Share Bar */}
+        <div className="mt-4">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-gray-600">Lead Distribution</span>
+            <span className="text-gray-600">
+              Google {formatPercent(comparison.leadShare.google)} | Microsoft {formatPercent(comparison.leadShare.microsoft)} | Other {formatPercent(comparison.leadShare.other)}
+            </span>
+          </div>
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
+            <div
+              className="bg-blue-500 transition-all duration-500"
+              style={{ width: `${comparison.leadShare.google}%` }}
+            />
+            <div
+              className="bg-cyan-500 transition-all duration-500"
+              style={{ width: `${comparison.leadShare.microsoft}%` }}
+            />
+            <div
+              className="bg-gray-400 transition-all duration-500"
+              style={{ width: `${comparison.leadShare.other}%` }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Total Leads - Hero Metric */}
-      <div className="bg-gradient-to-r from-pink-600 to-blue-600 rounded-xl p-6 mb-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-pink-100 text-sm font-medium">Total Leads ({dateRange === 'today' ? 'Today' : dateRange === '7days' ? 'Last 7 Days' : 'Last 30 Days'})</p>
-            <p className="text-5xl font-bold mt-2">{totalLeads}</p>
-            <p className="text-pink-100 text-sm mt-2">
-              {metrics?.uniqueCallers || 0} calls • {metrics?.textClicks || 0} texts • {metrics?.formLeads || 0} forms
+      {/* Call & Lead Attribution */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Call Analytics */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Call Analytics</h2>
+
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">{calls.total}</p>
+              <p className="text-sm text-gray-600">Total Calls</p>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">{calls.answered}</p>
+              <p className="text-sm text-gray-600">Answered</p>
+            </div>
+            <div className="text-center p-3 bg-red-50 rounded-lg">
+              <p className="text-2xl font-bold text-red-600">{calls.missed}</p>
+              <p className="text-sm text-gray-600">Missed</p>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Answer Rate</span>
+              <span className={`font-medium ${calls.answerRate >= 80 ? 'text-green-600' : calls.answerRate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                {formatPercent(calls.answerRate)}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full ${calls.answerRate >= 80 ? 'bg-green-500' : calls.answerRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                style={{ width: `${calls.answerRate}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-600 mb-2">Calls by Source</p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-blue-600">Google Ads</span>
+                <span className="text-sm font-medium">{calls.byPlatform.google}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-cyan-600">Microsoft Ads</span>
+                <span className="text-sm font-medium">{calls.byPlatform.microsoft}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Direct / Organic</span>
+                <span className="text-sm font-medium">{calls.byPlatform.direct}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lead Attribution */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Lead Attribution</h2>
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">{leads.total}</p>
+              <p className="text-sm text-gray-600">Total Form Leads</p>
+            </div>
+            <div className="text-center p-3 bg-yellow-50 rounded-lg">
+              <p className="text-2xl font-bold text-yellow-600">{leads.new}</p>
+              <p className="text-sm text-gray-600">New (Pending)</p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-600 mb-2">Leads by Source</p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-blue-600">Google Ads</span>
+                <span className="text-sm font-medium">{leads.byPlatform.google}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-cyan-600">Microsoft Ads</span>
+                <span className="text-sm font-medium">{leads.byPlatform.microsoft}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Direct / Organic</span>
+                <span className="text-sm font-medium">{leads.byPlatform.direct}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue & ROAS */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Total Revenue</span>
+              <span className="text-lg font-bold text-green-600">{formatCurrency(summary.totalRevenue)}</span>
+            </div>
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-sm text-gray-600">ROAS</span>
+              <span className={`text-lg font-bold ${summary.roas >= 1 ? 'text-green-600' : 'text-red-600'}`}>
+                {summary.roas.toFixed(2)}x
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Insights */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Insights</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* CPL Winner */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              {comparison.winningPlatform.cpl === 'google' ? (
+                <ArrowDownRight className="w-5 h-5 text-green-500" />
+              ) : comparison.winningPlatform.cpl === 'microsoft' ? (
+                <ArrowDownRight className="w-5 h-5 text-green-500" />
+              ) : (
+                <Minus className="w-5 h-5 text-gray-400" />
+              )}
+              <span className="font-medium text-gray-900">Best CPL</span>
+            </div>
+            <p className="text-sm text-gray-600">
+              {comparison.winningPlatform.cpl === 'google' ? (
+                <>Google Ads has {formatCurrency(Math.abs(comparison.cplDifference))} lower CPL</>
+              ) : comparison.winningPlatform.cpl === 'microsoft' ? (
+                <>Microsoft Ads has {formatCurrency(Math.abs(comparison.cplDifference))} lower CPL</>
+              ) : (
+                <>Both platforms have similar CPL</>
+              )}
             </p>
           </div>
-          <div className="bg-white/20 rounded-xl p-4">
-            <TrendingUp className="w-12 h-12" />
-          </div>
-        </div>
-      </div>
 
-      {/* Main Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Calls Card */}
-        <Link href="/admin/dashboard/leads" className="block">
-          <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-green-100 p-3 rounded-lg">
-                <Phone className="w-6 h-6 text-green-600" />
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
+          {/* CTR Winner */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              {comparison.winningPlatform.ctr === 'google' ? (
+                <ArrowUpRight className="w-5 h-5 text-green-500" />
+              ) : comparison.winningPlatform.ctr === 'microsoft' ? (
+                <ArrowUpRight className="w-5 h-5 text-green-500" />
+              ) : (
+                <Minus className="w-5 h-5 text-gray-400" />
+              )}
+              <span className="font-medium text-gray-900">Best CTR</span>
             </div>
-            <p className="text-sm font-medium text-gray-600">Phone Calls</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{metrics?.uniqueCallers || 0}</p>
-            <p className="text-sm text-gray-500 mt-2">unique callers</p>
-
-            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <PhoneIncoming className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-gray-600">{metrics?.answeredCalls || 0} answered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <PhoneMissed className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-gray-600">{metrics?.missedCalls || 0} missed</span>
-              </div>
-            </div>
-
-            {/* Answer Rate */}
-            <div className="mt-3">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Answer Rate</span>
-                <span className={`font-medium ${answerRate >= 80 ? 'text-green-600' : answerRate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                  {answerRate}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full ${answerRate >= 80 ? 'bg-green-500' : answerRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                  style={{ width: `${answerRate}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </Link>
-
-        {/* Texts Card */}
-        <Link href="/admin/dashboard/leads" className="block">
-          <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <MessageSquare className="w-6 h-6 text-blue-600" />
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
-            </div>
-            <p className="text-sm font-medium text-gray-600">Text Messages</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{metrics?.textClicks || 0}</p>
-            <p className="text-sm text-gray-500 mt-2">click-to-text events</p>
-
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
-                Tracks when visitors tap the text button on your website
-              </p>
-            </div>
-          </div>
-        </Link>
-
-        {/* Form Leads Card */}
-        <Link href="/admin/dashboard/leads" className="block">
-          <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <FileText className="w-6 h-6 text-purple-600" />
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
-            </div>
-            <p className="text-sm font-medium text-gray-600">Form Submissions</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{metrics?.formLeads || 0}</p>
-            <p className="text-sm text-gray-500 mt-2">booking requests</p>
-
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">New leads</span>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                  {metrics?.newLeads || 0} awaiting
-                </span>
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Revenue & Alerts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Revenue Card */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-green-100 p-2 rounded-lg">
-              <DollarSign className="w-5 h-5 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Revenue Tracking</h3>
+            <p className="text-sm text-gray-600">
+              {comparison.winningPlatform.ctr === 'google' ? (
+                <>Google Ads: {formatPercent(platforms.google.ctr)} CTR</>
+              ) : comparison.winningPlatform.ctr === 'microsoft' ? (
+                <>Microsoft Ads: {formatPercent(platforms.microsoft.ctr)} CTR</>
+              ) : (
+                <>Both platforms have similar CTR</>
+              )}
+            </p>
           </div>
 
-          <div className="text-3xl font-bold text-green-600">
-            ${(metrics?.totalRevenue || 0).toLocaleString()}
-          </div>
-          <p className="text-sm text-gray-500 mt-1">from closed leads</p>
-
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <Link
-              href="/admin/dashboard/leads"
-              className="text-sm text-pink-600 hover:text-pink-700 font-medium flex items-center gap-1"
-            >
-              Update revenue in Leads
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Alerts/Status Card */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-yellow-100 p-2 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
+          {/* Volume Leader */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <span className="font-medium text-gray-900">Volume Leader</span>
             </div>
-            <h3 className="font-semibold text-gray-900">Status & Alerts</h3>
+            <p className="text-sm text-gray-600">
+              {comparison.winningPlatform.volume === 'google' ? (
+                <>Google Ads: {formatPercent(comparison.leadShare.google)} of leads</>
+              ) : comparison.winningPlatform.volume === 'microsoft' ? (
+                <>Microsoft Ads: {formatPercent(comparison.leadShare.microsoft)} of leads</>
+              ) : (
+                <>Equal lead volume from both platforms</>
+              )}
+            </p>
           </div>
-
-          <div className="space-y-3">
-            {/* Missed Calls Alert */}
-            {metrics && metrics.missedCalls > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                <PhoneMissed className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-red-800">
-                    {metrics.missedCalls} missed call{metrics.missedCalls > 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-red-600">Consider following up</p>
-                </div>
-              </div>
-            )}
-
-            {/* New Leads Alert */}
-            {metrics && metrics.newLeads > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                <FileText className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-yellow-800">
-                    {metrics.newLeads} new lead{metrics.newLeads > 1 ? 's' : ''} pending
-                  </p>
-                  <p className="text-xs text-yellow-600">Review in Leads page</p>
-                </div>
-              </div>
-            )}
-
-            {/* All Good */}
-            {metrics && metrics.missedCalls === 0 && metrics.newLeads === 0 && (
-              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-green-800">All caught up!</p>
-                  <p className="text-xs text-green-600">No pending items</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Links */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            href="/admin/dashboard/leads"
-            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <span className="font-medium text-gray-700">View All Leads</span>
-            <ArrowRight className="w-5 h-5 text-gray-400" />
-          </Link>
-          <Link
-            href="/admin/dashboard/google-ads"
-            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <span className="font-medium text-gray-700">Google Ads Analysis</span>
-            <ArrowRight className="w-5 h-5 text-gray-400" />
-          </Link>
-          <a
-            href="https://ads.google.com/aw/campaigns"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <span className="font-medium text-gray-700">Open Google Ads</span>
-            <ArrowRight className="w-5 h-5 text-gray-400" />
-          </a>
         </div>
       </div>
     </DashboardLayout>
