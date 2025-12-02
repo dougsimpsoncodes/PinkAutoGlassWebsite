@@ -139,8 +139,8 @@ export async function GET(request: NextRequest) {
         .lte('start_time', end.toISOString()),
       // Google Ads API
       fetchGoogleAdsData(startDateStr, endDateStr),
-      // Microsoft Ads API
-      fetchMicrosoftAdsData(startDateStr, endDateStr),
+      // Microsoft Ads API (with session fallback)
+      fetchMicrosoftAdsData(startDateStr, endDateStr, start, end),
     ]);
 
     // Process Google Ads leads
@@ -388,7 +388,7 @@ async function fetchGoogleAdsData(startDate: string, endDate: string) {
   return { spend, clicks, impressions, ctr };
 }
 
-async function fetchMicrosoftAdsData(startDate: string, endDate: string) {
+async function fetchMicrosoftAdsData(startDate: string, endDate: string, startDateObj: Date, endDateObj: Date) {
   let spend = 0;
   let clicks = 0;
   let impressions = 0;
@@ -396,6 +396,8 @@ async function fetchMicrosoftAdsData(startDate: string, endDate: string) {
 
   const config = validateMicrosoftAdsConfig();
   console.log('Unified - Microsoft Ads config valid:', config.isValid, 'missing:', config.missingVars);
+
+  let usedFallback = false;
 
   if (config.isValid) {
     try {
@@ -410,11 +412,33 @@ async function fetchMicrosoftAdsData(startDate: string, endDate: string) {
         ctr = accountData.ctr;
         console.log('Unified - Microsoft Ads: Using API data - spend:', spend, 'clicks:', clicks);
       } else {
-        console.log('Unified - Microsoft Ads: API returned null or zero spend');
+        console.log('Unified - Microsoft Ads: API returned null or zero spend, using session fallback');
+        usedFallback = true;
       }
     } catch (error) {
       console.error('Error fetching Microsoft Ads data:', error);
+      usedFallback = true;
     }
+  } else {
+    console.log('Unified - Microsoft Ads: Config invalid, using session fallback');
+    usedFallback = true;
+  }
+
+  // Fallback to session-based estimates
+  if (usedFallback) {
+    const { data: sessions } = await supabase
+      .from('user_sessions')
+      .select('session_id')
+      .not('msclkid', 'is', null)
+      .gte('started_at', startDateObj.toISOString())
+      .lte('started_at', endDateObj.toISOString());
+
+    const msClickCount = sessions?.length || 0;
+    spend = msClickCount * 2.50; // Estimate at $2.50 CPC
+    clicks = msClickCount;
+    impressions = msClickCount * 60; // Estimate at ~1.67% CTR
+    ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+    console.log('Unified - Microsoft Ads: Using session estimates - sessions:', msClickCount, 'spend:', spend);
   }
 
   return { spend, clicks, impressions, ctr };
