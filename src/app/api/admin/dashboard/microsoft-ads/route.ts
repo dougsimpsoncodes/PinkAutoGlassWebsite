@@ -156,15 +156,37 @@ export async function GET(request: NextRequest) {
     let apiConversions = 0;
 
     const config = validateMicrosoftAdsConfig();
+    console.log('Microsoft Ads config valid:', config.isValid, 'missing:', config.missingVars);
+
     if (config.isValid) {
       try {
+        console.log('Fetching Microsoft Ads account performance for', startDateStr, 'to', endDateStr);
         const accountData = await fetchAccountPerformance(startDateStr, endDateStr);
-        if (accountData) {
+        console.log('Microsoft Ads API response:', accountData);
+
+        if (accountData && accountData.spend > 0) {
           spend = accountData.spend;
           clicks = accountData.clicks;
           impressions = accountData.impressions;
           ctr = accountData.ctr;
           apiConversions = accountData.conversions;
+          console.log('Microsoft Ads: Using API data - spend:', spend, 'clicks:', clicks);
+        } else {
+          // API returned null or zero spend - fall back to estimates
+          console.log('Microsoft Ads: API returned no data, using session estimates');
+          const { data: sessions } = await supabase
+            .from('user_sessions')
+            .select('session_id')
+            .not('msclkid', 'is', null)
+            .gte('started_at', start.toISOString())
+            .lte('started_at', end.toISOString());
+
+          const msClickCount = sessions?.length || 0;
+          spend = msClickCount * 2.50; // Estimate at $2.50 CPC
+          clicks = msClickCount;
+          impressions = msClickCount * 60; // Estimate at ~1.67% CTR
+          ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+          console.log('Microsoft Ads: Using session estimates - sessions:', msClickCount, 'spend:', spend);
         }
       } catch (apiError) {
         console.error('Error fetching from Microsoft Ads API:', apiError);
@@ -181,9 +203,11 @@ export async function GET(request: NextRequest) {
         clicks = msClickCount;
         impressions = msClickCount * 60;
         ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+        console.log('Microsoft Ads: API error, using session estimates - sessions:', msClickCount);
       }
     } else {
       // No API credentials - use session data as fallback
+      console.log('Microsoft Ads: No valid config, using session estimates');
       const { data: sessions } = await supabase
         .from('user_sessions')
         .select('session_id')
