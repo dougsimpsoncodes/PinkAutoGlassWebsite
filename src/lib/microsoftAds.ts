@@ -36,6 +36,7 @@ export function validateMicrosoftAdsConfig(): {
     'MICROSOFT_ADS_REFRESH_TOKEN',
     'MICROSOFT_ADS_DEVELOPER_TOKEN',
     'MICROSOFT_ADS_CUSTOMER_ID',
+    'MICROSOFT_ADS_ACCOUNT_ID',
   ];
 
   const missingVars = requiredVars.filter((varName) => {
