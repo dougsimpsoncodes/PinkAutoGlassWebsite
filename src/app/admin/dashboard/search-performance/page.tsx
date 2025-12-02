@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useCallback } from 'react';
+import DashboardLayout from '@/components/admin/DashboardLayout';
+import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useSync } from '@/contexts/SyncContext';
 
 interface SearchTerm {
   search_term: string;
@@ -18,6 +20,12 @@ interface SearchTerm {
   organic_ctr: number;
   organic_position: number;
   organic_pages: string[];
+  calls: number;
+  quotes: number;
+  texts: number;
+  total_leads: number;
+  cost_per_lead: number;
+  lead_conversion_rate: number;
   total_impressions: number;
   total_clicks: number;
   ctr: number;
@@ -47,28 +55,93 @@ interface SearchPerformanceData {
     totalImpressions: number;
     totalClicks: number;
     avgCombinedCTR: number;
+    totalCalls: number;
+    totalQuotes: number;
+    totalTexts: number;
+    totalLeads: number;
+    paidCalls: number;
+    paidQuotes: number;
+    paidTexts: number;
+    paidLeads: number;
+    organicCalls: number;
+    organicQuotes: number;
+    organicTexts: number;
+    organicLeads: number;
   };
   data: SearchTerm[];
 }
 
 export default function SearchPerformancePage() {
-  const [data, setData] = useState<SearchPerformanceData | null>(null);
+  // Get global sync state
+  const { syncVersion } = useSync();
+
+  // Cache data per time period - instant switching when cached
+  const [dataCache, setDataCache] = useState<Record<DateFilter, SearchPerformanceData | null>>({
+    today: null,
+    yesterday: null,
+    '7days': null,
+    '30days': null,
+    all: null,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState(30);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'paid' | 'organic'>('all');
-  const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{ message: string; success: boolean } | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [dateRange]);
+  // Get current data from cache
+  const data = dataCache[dateFilter];
 
-  async function fetchData() {
+  // Check if we have ANY cached data (for showing content while loading new period)
+  const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
+
+  // Convert DateFilter to days number for API
+  const getDateRangeDays = (filter: DateFilter): number => {
+    switch (filter) {
+      case 'today': return 0;
+      case 'yesterday': return 1;
+      case '7days': return 7;
+      case '30days': return 30;
+      case 'all': return 365; // Use 365 for "all time" in search performance
+      default: return 30;
+    }
+  };
+
+  // Get date display string
+  const getDateRangeDisplay = (): string => {
+    const today = new Date();
+    const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    switch (dateFilter) {
+      case 'today':
+        return formatDate(today);
+      case 'yesterday': {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return formatDate(yesterday);
+      }
+      case '7days': {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return `${formatDate(weekAgo)} - ${formatDate(today)}`;
+      }
+      case '30days': {
+        const monthAgo = new Date(today);
+        monthAgo.setDate(monthAgo.getDate() - 30);
+        return `${formatDate(monthAgo)} - ${formatDate(today)}`;
+      }
+      case 'all':
+        return 'All Time';
+      default:
+        return '';
+    }
+  };
+
+  const fetchData = useCallback(async (filter: DateFilter) => {
     try {
-      setLoading(true);
+      const days = getDateRangeDays(filter);
       const response = await fetch(
-        `/api/admin/dashboard/search-performance?days=${dateRange}&source=${sourceFilter}`
+        `/api/admin/dashboard/search-performance?days=${days}&source=${sourceFilter}`
       );
 
       if (!response.ok) {
@@ -76,82 +149,73 @@ export default function SearchPerformancePage() {
       }
 
       const result = await response.json();
-      setData(result);
+      setDataCache(prev => ({ ...prev, [filter]: result }));
+      return result;
     } catch (err: any) {
       setError(err.message);
-    } finally {
-      setLoading(false);
+      return null;
     }
-  }
+  }, [sourceFilter]);
 
-  async function syncData() {
-    try {
-      setSyncing(true);
-      setSyncStatus(null);
-
-      // Trigger both Google Ads and GSC sync
-      const responses = await Promise.all([
-        fetch(`/api/admin/sync/google-ads-search-terms?days=${dateRange}`, { method: 'POST' }),
-        fetch(`/api/admin/sync/google-search-console?days=${dateRange}`, { method: 'POST' }),
-      ]);
-
-      const results = await Promise.all(responses.map(r => r.json()));
-
-      const allSuccess = results.every(r => r.ok);
-
-      if (allSuccess) {
-        const totalRecords = results.reduce((sum, r) => sum + (r.summary?.recordsFetched || 0), 0);
-        setSyncStatus({
-          message: `Successfully synced ${totalRecords} records from Google Ads & Search Console`,
-          success: true,
-        });
-        // Auto-refresh data after successful sync
-        await fetchData();
-      } else {
-        const errors = results.filter(r => !r.ok).map(r => r.error).join(', ');
-        setSyncStatus({
-          message: `Sync failed: ${errors}`,
-          success: false,
-        });
-      }
-    } catch (err: any) {
-      setSyncStatus({
-        message: `Sync error: ${err.message}`,
-        success: false,
-      });
-    } finally {
-      setSyncing(false);
-      // Clear status after 5 seconds
-      setTimeout(() => setSyncStatus(null), 5000);
+  // Subscribe to global sync events - refresh all cached data
+  useEffect(() => {
+    if (syncVersion > 0) {
+      // Clear cache and refetch current filter
+      setDataCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
+      fetchData(dateFilter);
     }
-  }
+  }, [syncVersion]);
 
-  if (loading) {
+  // Handle date filter change - use cache or fetch
+  const handleDateFilterChange = (filter: DateFilter) => {
+    setDateFilter(filter);
+    if (!dataCache[filter]) {
+      setLoading(true);
+      fetchData(filter).finally(() => setLoading(false));
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    setLoading(true);
+    fetchData(dateFilter).finally(() => setLoading(false));
+  }, []);
+
+  // Only show full-page spinner on initial load (no cached data at all)
+  if (loading && !hasAnyCachedData) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="animate-pulse space-y-3">
-            <div className="h-6 bg-gray-200 rounded w-64"></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="h-32 bg-gray-200 rounded"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
-            </div>
-            <div className="h-96 bg-gray-200 rounded"></div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading search performance...</p>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
-  if (error || !data) {
+  if (error && !data) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
-            Error: {error || 'No data available'}
+      <DashboardLayout>
+        <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+          Error: {error || 'No data available'}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // If we're loading a new period and don't have data yet, show loading state
+  if (!data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading data...</p>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -185,47 +249,23 @@ export default function SearchPerformancePage() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 pt-24">
+    <DashboardLayout>
       <div className="max-w-[1600px] mx-auto space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Search Performance</h1>
-            <p className="text-xs text-gray-600 mt-0.5">
-              Combined paid ads + organic search analysis
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={dateRange}
-              onChange={e => setDateRange(parseInt(e.target.value))}
-              className="text-sm border border-gray-300 rounded px-3 py-1.5 bg-white"
-            >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={60}>Last 60 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-            <button
-              onClick={syncData}
-              disabled={syncing}
-              className={`text-sm px-3 py-1.5 rounded font-medium ${
-                syncing
-                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
-            >
-              {syncing ? 'Syncing...' : 'Sync Data'}
-            </button>
-            <button
-              onClick={fetchData}
-              disabled={syncing}
-              className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              Refresh
-            </button>
-          </div>
+        <div className="mb-4">
+          <h1 className="text-xl font-bold text-gray-900">Search Performance</h1>
+          <p className="text-xs text-gray-600 mt-0.5">
+            Combined paid ads + organic search analysis
+          </p>
         </div>
+
+        {/* Date Filter Bar */}
+        <DateFilterBar
+          dateFilter={dateFilter}
+          onFilterChange={handleDateFilterChange}
+          dateDisplay={getDateRangeDisplay()}
+          color="cyan"
+        />
 
         {/* Sync Status Message */}
         {syncStatus && (
@@ -262,23 +302,29 @@ export default function SearchPerformancePage() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">CTR</div>
-                <div className="text-lg font-bold text-gray-900">{summary.avgPaidCTR}%</div>
-              </div>
-              <div>
                 <div className="text-xs text-gray-600">Cost</div>
                 <div className="text-lg font-bold text-gray-900">
                   ${summary.totalPaidCost.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Avg CPC</div>
-                <div className="text-lg font-bold text-gray-900">${summary.avgPaidCPC.toFixed(2)}</div>
+                <div className="text-xs text-gray-600">Total Leads</div>
+                <div className="text-lg font-bold text-gray-900">
+                  {summary.paidLeads}
+                </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Conversions</div>
+                <div className="text-xs text-gray-600">Lead Breakdown</div>
+                <div className="text-xs text-gray-600 flex gap-1">
+                  <span>📞{summary.paidCalls}</span>
+                  <span>📧{summary.paidQuotes}</span>
+                  <span>💬{summary.paidTexts}</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600">Cost/Lead</div>
                 <div className="text-lg font-bold text-gray-900">
-                  {summary.totalPaidConversions.toFixed(1)}
+                  ${summary.paidLeads > 0 ? (summary.totalPaidCost / summary.paidLeads).toFixed(2) : '0.00'}
                 </div>
               </div>
             </div>
@@ -308,16 +354,26 @@ export default function SearchPerformancePage() {
                 <div className="text-lg font-bold text-gray-900">{summary.avgOrganicCTR}%</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Paid Rows</div>
-                <div className="text-lg font-bold text-gray-900">{summary.paidRows}</div>
+                <div className="text-xs text-gray-600">Total Leads</div>
+                <div className="text-lg font-bold text-green-600">
+                  {summary.organicLeads}
+                </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Organic Rows</div>
-                <div className="text-lg font-bold text-gray-900">{summary.organicRows}</div>
+                <div className="text-xs text-gray-600">Lead Breakdown</div>
+                <div className="text-xs text-gray-600 flex gap-1">
+                  <span>📞{summary.organicCalls}</span>
+                  <span>📧{summary.organicQuotes}</span>
+                  <span>💬{summary.organicTexts}</span>
+                </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">In Both</div>
-                <div className="text-lg font-bold text-gray-900">{summary.termsInBoth}</div>
+                <div className="text-xs text-gray-600">Lead Value</div>
+                <div className="text-lg font-bold text-green-600">
+                  ${summary.organicLeads > 0 && summary.paidLeads > 0 ?
+                    ((summary.totalPaidCost / summary.paidLeads) * summary.organicLeads).toFixed(0) :
+                    '0'}
+                </div>
               </div>
             </div>
           </div>
@@ -337,14 +393,12 @@ export default function SearchPerformancePage() {
                 <tr>
                   <th className="text-left p-2 font-semibold text-gray-700">Search Term</th>
                   <th className="text-center p-2 font-semibold text-gray-700">Source</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Paid Imp.</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Org Imp.</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Paid Clicks</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Org Clicks</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Paid CTR</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Org CTR</th>
+                  <th className="text-right p-2 font-semibold text-gray-700">Impressions</th>
+                  <th className="text-right p-2 font-semibold text-gray-700">Clicks</th>
+                  <th className="text-right p-2 font-semibold text-gray-700">Total Leads</th>
+                  <th className="text-right p-2 font-semibold text-gray-700">Lead Breakdown</th>
                   <th className="text-right p-2 font-semibold text-gray-700">Cost</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Avg CPC</th>
+                  <th className="text-right p-2 font-semibold text-gray-700">Cost/Lead</th>
                   <th className="text-right p-2 font-semibold text-gray-700">Position</th>
                 </tr>
               </thead>
@@ -375,33 +429,63 @@ export default function SearchPerformancePage() {
                         </span>
                       </td>
                       <td className="p-2 text-right text-gray-900">
-                        {term.paid_impressions > 0 ? term.paid_impressions.toLocaleString() : '-'}
+                        {term.total_impressions.toLocaleString()}
                       </td>
                       <td className="p-2 text-right text-gray-900">
-                        {term.organic_impressions > 0
-                          ? term.organic_impressions.toLocaleString()
-                          : '-'}
+                        {term.total_clicks.toLocaleString()}
                       </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.paid_clicks > 0 ? term.paid_clicks.toLocaleString() : '-'}
+                      <td className="p-2 text-right">
+                        <span className="font-semibold text-gray-900">
+                          {term.total_leads > 0 ? term.total_leads : '-'}
+                        </span>
                       </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.organic_clicks > 0 ? term.organic_clicks.toLocaleString() : '-'}
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.paid_ctr > 0 ? `${term.paid_ctr}%` : '-'}
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.organic_ctr > 0 ? `${term.organic_ctr}%` : '-'}
+                      <td className="p-2 text-right">
+                        <div className="flex gap-1 justify-end">
+                          {term.calls > 0 && (
+                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
+                              📞 {term.calls}
+                            </span>
+                          )}
+                          {term.quotes > 0 && (
+                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800">
+                              📧 {term.quotes}
+                            </span>
+                          )}
+                          {term.texts > 0 && (
+                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-800">
+                              💬 {term.texts}
+                            </span>
+                          )}
+                          {term.total_leads === 0 && <span className="text-gray-400">-</span>}
+                        </div>
                       </td>
                       <td className="p-2 text-right text-gray-900">
                         {term.paid_cost > 0 ? `$${term.paid_cost.toFixed(2)}` : '-'}
                       </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.paid_cpc > 0 ? `$${term.paid_cpc.toFixed(2)}` : '-'}
+                      <td className="p-2 text-right">
+                        {term.cost_per_lead > 0 ? (
+                          <span className={`font-semibold ${
+                            term.cost_per_lead > 50 ? 'text-red-600' :
+                            term.cost_per_lead > 30 ? 'text-orange-500' :
+                            term.cost_per_lead > 0 ? 'text-green-600' :
+                            ''
+                          }`}>
+                            ${term.cost_per_lead.toFixed(2)}
+                          </span>
+                        ) : term.source === 'ORG' && term.total_leads > 0 ? (
+                          <span className="font-semibold text-green-600">Free</span>
+                        ) : '-'}
                       </td>
                       <td className="p-2 text-right text-gray-900">
-                        {term.organic_position > 0 ? term.organic_position.toFixed(1) : '-'}
+                        {term.organic_position > 0 ? (
+                          <span className={`font-semibold ${
+                            term.organic_position <= 3 ? 'text-green-600' :
+                            term.organic_position <= 10 ? 'text-blue-600' :
+                            'text-gray-600'
+                          }`}>
+                            #{term.organic_position.toFixed(1)}
+                          </span>
+                        ) : '-'}
                       </td>
                     </tr>
                 ))}
@@ -489,6 +573,6 @@ export default function SearchPerformancePage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

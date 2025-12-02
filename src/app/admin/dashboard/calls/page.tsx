@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, RefreshCw, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
+import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useSync } from '@/contexts/SyncContext';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Call {
   id: string;
@@ -23,12 +25,21 @@ interface Call {
 }
 
 export default function CallAnalyticsPage() {
+  // Get global sync state
+  const { syncVersion } = useSync();
+
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [dateRange, setDateRange] = useState('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Subscribe to global sync events
+  useEffect(() => {
+    if (syncVersion > 0) {
+      fetchCalls();
+    }
+  }, [syncVersion]);
 
   useEffect(() => {
     fetchCalls();
@@ -76,34 +87,21 @@ export default function CallAnalyticsPage() {
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      // Step 1: Sync from RingCentral API to database
-      const syncRes = await fetch('/api/admin/sync/ringcentral', {
-        method: 'POST',
-        credentials: 'include' // Include Basic Auth credentials
-      });
-
-      if (!syncRes.ok) {
-        console.error('Sync failed:', await syncRes.text());
-      }
-
-      // Step 2: Fetch updated calls from database
-      await fetchCalls();
-    } catch (error) {
-      console.error('Refresh failed:', error);
-    }
-    setRefreshing(false);
-  };
 
   const getCallsInDateRange = () => {
     const now = new Date();
     let startDate = new Date();
+    let endDate: Date | null = null;
 
-    switch (dateRange) {
+    switch (dateFilter) {
       case 'today':
         startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'yesterday':
+        startDate.setDate(now.getDate() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59, 999);
         break;
       case '7days':
         startDate.setDate(now.getDate() - 7);
@@ -112,14 +110,42 @@ export default function CallAnalyticsPage() {
         startDate.setDate(now.getDate() - 30);
         break;
       case 'all':
-        // Return all calls without filtering
         return calls;
       default:
-        // Default to all calls
         return calls;
     }
 
-    return calls.filter(call => new Date(call.start_time) >= startDate);
+    return calls.filter(call => {
+      const callDate = new Date(call.start_time);
+      if (endDate) {
+        return callDate >= startDate && callDate <= endDate;
+      }
+      return callDate >= startDate;
+    });
+  };
+
+  const getDateRangeDisplay = () => {
+    const now = new Date();
+    switch (dateFilter) {
+      case 'today':
+        return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      case 'yesterday':
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      case '7days':
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return `${sevenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      case '30days':
+        const thirtyDaysAgo = new Date(now);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return `${thirtyDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      case 'all':
+        return 'All Time';
+      default:
+        return '';
+    }
   };
 
   const callsInDateRange = getCallsInDateRange();
@@ -329,37 +355,13 @@ export default function CallAnalyticsPage() {
         <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
       </div>
 
-      {/* Controls */}
-      <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Date Range:</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="7days">Last 7 Days</option>
-                <option value="30days">Last 30 Days</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Date Filter Bar */}
+      <DateFilterBar
+        dateFilter={dateFilter}
+        onFilterChange={setDateFilter}
+        dateDisplay={getDateRangeDisplay()}
+        color="gray"
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
