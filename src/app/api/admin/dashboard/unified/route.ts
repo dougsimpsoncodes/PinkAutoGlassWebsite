@@ -391,14 +391,22 @@ async function fetchMicrosoftAdsData(startDate: string, endDate: string) {
   let ctr = 0;
 
   const config = validateMicrosoftAdsConfig();
+  console.log('Unified - Microsoft Ads config valid:', config.isValid, 'missing:', config.missingVars);
+
   if (config.isValid) {
     try {
+      console.log('Unified - Fetching Microsoft Ads data for', startDate, 'to', endDate);
       const accountData = await fetchAccountPerformance(startDate, endDate);
-      if (accountData) {
+      console.log('Unified - Microsoft Ads API response:', accountData);
+
+      if (accountData && accountData.spend > 0) {
         spend = accountData.spend;
         clicks = accountData.clicks;
         impressions = accountData.impressions;
         ctr = accountData.ctr;
+        console.log('Unified - Microsoft Ads: Using API data - spend:', spend, 'clicks:', clicks);
+      } else {
+        console.log('Unified - Microsoft Ads: API returned null or zero spend');
       }
     } catch (error) {
       console.error('Error fetching Microsoft Ads data:', error);
