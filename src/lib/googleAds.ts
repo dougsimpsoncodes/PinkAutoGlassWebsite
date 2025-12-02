@@ -3,7 +3,7 @@
  * Handles authentication and data fetching from Google Ads
  */
 
-import { GoogleAdsApi, Customer } from 'google-ads-api';
+import { GoogleAdsApi, Customer, ResourceNames } from 'google-ads-api';
 
 /**
  * Validate that all required Google Ads credentials are configured
@@ -356,6 +356,220 @@ export async function fetchSearchQueryReport(
   }
 }
 
+// ============================================================================
+// OFFLINE CONVERSION UPLOAD
+// ============================================================================
+
+/**
+ * Offline conversion data for upload
+ */
+export interface OfflineConversion {
+  gclid: string;
+  conversionDateTime: string; // Format: yyyy-mm-dd HH:mm:ss+|-HH:mm (e.g., "2024-01-15 14:30:00-07:00")
+  conversionValue?: number;
+  currencyCode?: string; // Default: USD
+  conversionActionId?: string; // If not provided, uses GOOGLE_ADS_CONVERSION_ACTION_ID env var
+}
+
+/**
+ * Result of an offline conversion upload
+ */
+export interface OfflineConversionResult {
+  gclid: string;
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Format a Date object to Google Ads datetime format with timezone
+ * Format: yyyy-mm-dd HH:mm:ss+|-HH:mm
+ */
+export function formatConversionDateTime(date: Date, timezoneOffset: string = '-07:00'): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}${timezoneOffset}`;
+}
+
+/**
+ * Upload offline click conversions to Google Ads
+ *
+ * Use this to report conversions that happened offline (e.g., phone calls from RingCentral)
+ * back to Google Ads for attribution and optimization.
+ *
+ * Requirements:
+ * 1. You must have a conversion action set up in Google Ads
+ * 2. The GCLID must be captured when the user clicks the ad
+ * 3. Conversions should be uploaded within 90 days of the click
+ *
+ * @param conversions Array of offline conversions to upload
+ * @returns Array of results indicating success/failure for each conversion
+ */
+export async function uploadOfflineConversions(
+  conversions: OfflineConversion[]
+): Promise<{
+  results: OfflineConversionResult[];
+  successCount: number;
+  failureCount: number;
+}> {
+  if (conversions.length === 0) {
+    return { results: [], successCount: 0, failureCount: 0 };
+  }
+
+  const { customer } = getGoogleAdsClient();
+  const customerId = (process.env.GOOGLE_ADS_CUSTOMER_ID || '').replace(/[-\s]/g, '');
+  const defaultConversionActionId = process.env.GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID;
+
+  if (!defaultConversionActionId) {
+    console.warn('⚠️ GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID not set. Conversions will fail without a conversion action.');
+  }
+
+  // Build click conversion objects
+  const clickConversions = conversions.map((conv) => {
+    const conversionActionId = conv.conversionActionId || defaultConversionActionId;
+
+    if (!conversionActionId) {
+      throw new Error(`No conversion action ID provided for GCLID ${conv.gclid}`);
+    }
+
+    return {
+      gclid: conv.gclid,
+      conversion_action: ResourceNames.conversionAction(customerId, conversionActionId),
+      conversion_date_time: conv.conversionDateTime,
+      conversion_value: conv.conversionValue || 0,
+      currency_code: conv.currencyCode || 'USD',
+    };
+  });
+
+  try {
+    // Use the conversionUploads service
+    // Cast to any because the SDK's type definitions expect class instances
+    // but plain objects work correctly at runtime
+    const response = await customer.conversionUploads.uploadClickConversions({
+      customer_id: customerId,
+      conversions: clickConversions,
+      partial_failure: true, // Continue uploading even if some fail
+      validate_only: false,
+    } as any);
+
+    // Process results
+    const results: OfflineConversionResult[] = [];
+    let successCount = 0;
+    let failureCount = 0;
+
+    // Check for partial failure errors
+    const partialFailureError = response.partial_failure_error;
+    const failedIndices = new Set<number>();
+
+    if (partialFailureError && partialFailureError.details) {
+      // Extract failed indices from error details
+      // The details array contains serialized GoogleAdsFailure messages
+      for (const detail of partialFailureError.details as any[]) {
+        const errors = detail.errors || [];
+        for (const error of errors) {
+          if (error.location?.field_path_elements) {
+            for (const element of error.location.field_path_elements) {
+              if (element.field_name === 'conversions' && element.index !== undefined) {
+                failedIndices.add(element.index);
+                results.push({
+                  gclid: conversions[element.index].gclid,
+                  success: false,
+                  error: error.message || 'Unknown error',
+                });
+                failureCount++;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Add successful results
+    for (let i = 0; i < conversions.length; i++) {
+      if (!failedIndices.has(i)) {
+        results.push({
+          gclid: conversions[i].gclid,
+          success: true,
+        });
+        successCount++;
+      }
+    }
+
+    console.log(`📤 Uploaded ${successCount} offline conversions (${failureCount} failed)`);
+
+    return { results, successCount, failureCount };
+  } catch (error: any) {
+    console.error('❌ Error uploading offline conversions:', error);
+
+    // Return all as failed
+    return {
+      results: conversions.map((conv) => ({
+        gclid: conv.gclid,
+        success: false,
+        error: error.message || 'Upload failed',
+      })),
+      successCount: 0,
+      failureCount: conversions.length,
+    };
+  }
+}
+
+/**
+ * Upload a single offline conversion
+ * Convenience wrapper around uploadOfflineConversions
+ */
+export async function uploadOfflineConversion(
+  conversion: OfflineConversion
+): Promise<OfflineConversionResult> {
+  const { results } = await uploadOfflineConversions([conversion]);
+  return results[0] || { gclid: conversion.gclid, success: false, error: 'No result returned' };
+}
+
+/**
+ * List available conversion actions in the account
+ * Use this to find the conversion action ID for offline conversion uploads
+ */
+export async function listConversionActions(): Promise<Array<{
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  category: string;
+}>> {
+  const { customer } = getGoogleAdsClient();
+
+  const query = `
+    SELECT
+      conversion_action.id,
+      conversion_action.name,
+      conversion_action.type,
+      conversion_action.status,
+      conversion_action.category
+    FROM conversion_action
+    WHERE conversion_action.status != 'REMOVED'
+    ORDER BY conversion_action.name
+  `;
+
+  try {
+    const results = await customer.query(query);
+
+    return results.map((row: any) => ({
+      id: row.conversion_action.id?.toString() || '',
+      name: row.conversion_action.name || '',
+      type: row.conversion_action.type || '',
+      status: row.conversion_action.status || '',
+      category: row.conversion_action.category || '',
+    }));
+  } catch (error: any) {
+    console.error('Error listing conversion actions:', error);
+    throw new Error(`Failed to list conversion actions: ${error.message}`);
+  }
+}
+
 /**
  * Test Google Ads API connection
  */
@@ -380,11 +594,11 @@ export async function testConnection(): Promise<{
     const results = await customer.query(query);
 
     if (results.length > 0) {
-      const customerData = results[0];
+      const customerData = results[0] as any;
       return {
         success: true,
-        customerId: customerData.customer.id?.toString() || '',
-        customerName: customerData.customer.descriptive_name || '',
+        customerId: customerData.customer?.id?.toString() || '',
+        customerName: customerData.customer?.descriptive_name || '',
       };
     }
 
