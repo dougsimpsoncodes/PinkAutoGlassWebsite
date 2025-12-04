@@ -623,6 +623,49 @@ export async function GET(request: NextRequest) {
     // Get yesterday's stats (last item in the array)
     const reportDay = dailyStats[dailyStats.length - 1];
 
+    // =============================================================================
+    // CRITICAL ALERT: Zero leads detection
+    // Added after Dec 2025 incident where quote form was broken for 4 days undetected
+    // =============================================================================
+    const totalLeadsYesterday = reportDay.quoteRequests;
+    if (totalLeadsYesterday === 0) {
+      console.warn('⚠️ ALERT: Zero quote requests yesterday - possible form issue!');
+
+      // Send urgent alert email
+      const alertHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; padding: 24px;">
+    <h1 style="color: #dc2626; margin: 0 0 16px 0;">⚠️ URGENT: Zero Quote Requests</h1>
+    <p style="color: #991b1b; font-size: 16px; margin: 0 0 16px 0;">
+      <strong>No quote form submissions were recorded yesterday.</strong>
+    </p>
+    <p style="color: #7f1d1d; margin: 0 0 16px 0;">
+      This could indicate:
+    </p>
+    <ul style="color: #7f1d1d; margin: 0 0 16px 0;">
+      <li>The quote form is broken</li>
+      <li>Database insert function is failing</li>
+      <li>A migration broke lead capture</li>
+    </ul>
+    <p style="color: #7f1d1d; margin: 0 0 16px 0;">
+      <strong>Action Required:</strong> Test the quote form at <a href="https://pinkautoglass.com/#quote-form" style="color: #dc2626;">pinkautoglass.com</a> immediately.
+    </p>
+    <div style="background: #fee2e2; padding: 12px; border-radius: 4px; margin-top: 16px;">
+      <p style="color: #991b1b; margin: 0; font-size: 13px;">
+        <strong>Quick Test:</strong> Submit a test quote and verify it appears in the admin dashboard.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      await sendAdminEmail('🚨 URGENT: Zero Quote Requests Yesterday', alertHtml);
+      console.log('📧 Zero-lead alert email sent');
+    }
+
     // Generate HTML
     const html = generateEmailHTML(metrics, contacts, reportDay);
 
