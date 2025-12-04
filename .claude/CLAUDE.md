@@ -1,5 +1,64 @@
 # Project-Specific Instructions for Claude Code
 
+## 🎯 WORKFLOW: Plan First, Execute Simply
+
+**MANDATORY WORKFLOW FOR ALL TASKS:**
+
+### Step 1: Plan Before Coding
+1. Think through the problem
+2. Read the codebase for relevant files
+3. Write a plan to `tasks/todo.md` with a checklist of todo items
+
+### Step 2: Get Approval
+- Check in with the user before beginning work
+- User will verify and approve the plan
+
+### Step 3: Execute with Discipline
+- Work through todo items one at a time
+- Mark each item complete as you finish it
+- Give high-level explanations of changes made
+
+### Step 4: Document Results
+- Add a review section to `tasks/todo.md` with:
+  - Summary of changes made
+  - Any relevant information for future reference
+
+---
+
+## 🚨 SIMPLICITY IS EVERYTHING
+
+**ABSOLUTE RULES - NO EXCEPTIONS:**
+
+### Make Every Change As Simple As Possible
+- Every task should impact as little code as possible
+- Every change should be minimal and focused
+- Avoid massive or complex changes
+- If a simple solution exists, use it
+
+### Never Be Lazy
+- **DO NOT BE LAZY. NEVER BE LAZY.**
+- If there's a bug, find the ROOT CAUSE and fix it
+- NO temporary fixes
+- NO workarounds that kick the can down the road
+- You are a SENIOR DEVELOPER - act like one
+
+### Code Impact Rules
+- Changes should ONLY impact code relevant to the task
+- Changes should impact as LITTLE code as possible
+- Goal: Introduce ZERO new bugs
+- If you're touching code unrelated to the task, STOP and reconsider
+
+### The Simplicity Test
+Before making any change, ask:
+1. Is this the simplest possible solution?
+2. Am I changing more code than necessary?
+3. Could this introduce bugs in unrelated areas?
+4. Would a senior developer approve of this approach?
+
+**REMEMBER: It's all about simplicity. Simple code is reliable code.**
+
+---
+
 ## 🔐 SECURITY RULE #1: NEVER HARDCODE SECRETS
 
 **ABSOLUTE RULE - NO EXCEPTIONS:**
@@ -102,6 +161,66 @@ Does this line contain a secret? (API key, password, token, credential)
 - Potential unauthorized database access
 
 **REMEMBER: If it's a secret, it belongs in .env - PERIOD.**
+
+---
+
+## 🚫 NEVER ADD LITERAL `\n` TO .env FILES
+
+**ABSOLUTE RULE - This has caused production outages multiple times.**
+
+### The Problem
+
+When editing `.env.local` or any `.env*` file, NEVER include literal `\n` characters at the end of values. These corrupt API keys and tokens, causing silent authentication failures.
+
+**❌ WRONG:**
+```
+SUPABASE_SERVICE_ROLE_KEY="eyJhbG...odAE\n"
+RINGCENTRAL_CLIENT_ID="b7YUl0sB3B9ecbvkPoCdvr\n"
+```
+
+**✅ CORRECT:**
+```
+SUPABASE_SERVICE_ROLE_KEY="eyJhbG...odAE"
+RINGCENTRAL_CLIENT_ID="b7YUl0sB3B9ecbvkPoCdvr"
+```
+
+### Why This Happens
+
+This typically occurs when:
+1. Copying values that have trailing newlines
+2. Using Write/Edit tools with escaped newlines in strings
+3. Pasting from terminals or APIs that include newline characters
+
+### The Damage It Causes
+
+- API calls fail silently with "Invalid API key" errors
+- Authentication works in some contexts but fails in others
+- Debugging is extremely difficult because the key "looks correct"
+- Production outages that are hard to diagnose
+
+### Prevention Rules
+
+**Before writing ANY value to a .env file:**
+1. NEVER include `\n` at the end of any value
+2. NEVER include trailing whitespace
+3. Values should end with the closing quote, nothing else
+4. After editing, run: `grep '\\n' .env.local` to verify no literal `\n` exists
+
+**If you must programmatically write to .env files:**
+```javascript
+// WRONG
+const value = apiKey + '\n';
+
+// CORRECT
+const value = apiKey.trim();
+```
+
+### This Rule Was Added Because:
+- November 2025: Supabase API key corrupted, caused daily report to show 0 leads
+- Multiple debugging sessions wasted on "Invalid API key" errors
+- Production email reports sent with incorrect data
+
+**REMEMBER: .env values should NEVER contain `\n` - PERIOD.**
 
 ---
 
@@ -713,6 +832,377 @@ STOP and ask:
 - Creating maintenance burden with custom code
 
 **REMEMBER: The best code is code you don't write. Use the SDK as designed first.**
+
+---
+
+## 🚫 DON'T CLAIM YOU CAN'T DO SOMETHING - TRY FIRST
+
+**Critical Rule:** Never tell the user "I don't have access to X" or "You'll need to do this manually" without first attempting the action.
+
+### The Problem
+
+**Real Example - Vercel CLI Access (November 2025):**
+
+**What Happened:**
+- User asked me to add an environment variable to Vercel
+- I said: "I don't have access to your Vercel dashboard directly. You'll need to add the environment variable manually."
+- User corrected me: "you have vercel access"
+- I then successfully ran `vercel env add` - proving I DID have access
+
+**Why This Was Wrong:**
+- I had already used the Vercel CLI successfully earlier in the same project
+- I made an assumption instead of trying the command
+- I wasted the user's time by giving them manual instructions
+
+### The Rule: TRY BEFORE SAYING "I CAN'T"
+
+**Before telling the user you can't do something:**
+
+1. **Check your recent actions** - Have you used this tool/CLI before in this session?
+2. **Try the command** - Just run it and see what happens
+3. **Only say "I can't" if the command actually fails**
+
+### What To Do Instead
+
+**❌ WRONG:**
+```
+"I don't have access to Vercel. You'll need to add the environment variable manually:
+1. Go to vercel.com...
+2. Click Settings..."
+```
+
+**✅ CORRECT:**
+```
+[Runs: vercel env add VARIABLE_NAME production <<< "value"]
+"Done. Added VARIABLE_NAME to Vercel production environment."
+```
+
+### Tools/CLIs You Likely Have Access To
+
+If any of these have been used in the current project, assume you still have access:
+- `vercel` CLI (deployments, env vars)
+- `supabase` CLI (migrations, database)
+- `git` (commits, branches, push)
+- `npm`/`pnpm`/`yarn` (package management)
+- `gh` CLI (GitHub PRs, issues)
+- Any other CLI that worked earlier in the session
+
+### Enforcement
+
+**Before saying "I don't have access" or "You'll need to manually":**
+1. ✅ Check if you've used this tool before in this session
+2. ✅ Try the command first
+3. ✅ Only give manual instructions if the command actually fails
+4. ❌ Never assume you don't have access without trying
+
+### This Rule Was Added Because:
+- November 2025: Told user I couldn't access Vercel, then successfully used Vercel CLI 30 seconds later
+- Wasted user's time with unnecessary manual instructions
+- Made Claude look unreliable/lazy
+
+**REMEMBER: Try first, apologize later. Don't assume limitations.**
+
+---
+
+## 🚫 NEVER USE FALLBACKS OR ESTIMATES WITHOUT USER CONSENT
+
+**Critical Rule:** Never implement silent fallbacks, default values, or estimates that mask failures without explicitly asking the user if this behavior is acceptable.
+
+### The Problem
+
+**Real Example - Microsoft Ads Silent Fallback (December 2025):**
+
+**What Happened:**
+- Microsoft Ads API integration was broken on Vercel (dynamic `require()` not bundled)
+- Code silently fell back to session-based estimates ($2.50 × session count)
+- Dashboard showed "spend" values, so it *appeared* to work
+- User saw $1,115 (estimates) instead of $346.09 (real API data)
+- Bug went undetected because the fallback masked the failure
+
+**Why This Was Wrong:**
+- I implemented a fallback without asking if estimates were acceptable
+- The fallback made a broken feature look like it was working
+- Business decisions were potentially made on inaccurate data
+- The bug persisted undetected until user noticed numbers seemed wrong
+
+### The Rule: ASK BEFORE IMPLEMENTING FALLBACKS
+
+**Before implementing any fallback, graceful degradation, or default value, ASK:**
+
+> "The [API/feature] might fail sometimes. Should I:
+> A) Show an error message when it fails
+> B) Fall back to [estimated/cached/default] data (less accurate)
+> C) Show the last successful data with a 'stale' indicator
+> D) Something else?"
+
+### What Requires User Consent
+
+**ALWAYS ASK before implementing:**
+
+1. **Fallback data sources**
+   - Using estimates when API fails
+   - Using cached data when fresh data unavailable
+   - Using default values when config missing
+
+2. **Silent error handling**
+   - Catching errors and returning partial data
+   - Swallowing exceptions and continuing
+   - Returning empty results instead of errors
+
+3. **Graceful degradation**
+   - Reducing functionality when dependencies fail
+   - Showing simplified UI when data incomplete
+   - Auto-retrying with different parameters
+
+### Why This Matters
+
+**Fallbacks that mask failures cause:**
+- Undetected bugs that persist for days/weeks
+- Business decisions made on inaccurate data
+- False confidence that systems are working
+- Difficult debugging (everything "looks" fine)
+- Lost trust when the truth is discovered
+
+**Visible failures cause:**
+- Immediate awareness of problems
+- Quick fixes before damage accumulates
+- Clear understanding of system health
+- Trust through transparency
+
+### The Right Way to Handle Potential Failures
+
+**❌ WRONG - Silent fallback without consent:**
+```typescript
+async function getAdSpend() {
+  try {
+    return await microsoftAdsApi.getSpend();
+  } catch (error) {
+    // Silent fallback - user never knows API failed
+    return estimateSpendFromSessions();
+  }
+}
+```
+
+**✅ CORRECT - Ask user first, then implement their choice:**
+```typescript
+// After getting user consent for fallback behavior:
+async function getAdSpend() {
+  try {
+    return { data: await microsoftAdsApi.getSpend(), source: 'api' };
+  } catch (error) {
+    console.error('Microsoft Ads API failed:', error);
+    // User approved fallback with clear indicator
+    return {
+      data: estimateSpendFromSessions(),
+      source: 'estimate',
+      warning: 'API unavailable - showing estimates'
+    };
+  }
+}
+```
+
+**✅ ALSO CORRECT - No fallback, show error:**
+```typescript
+async function getAdSpend() {
+  try {
+    return await microsoftAdsApi.getSpend();
+  } catch (error) {
+    // User preferred errors over estimates
+    throw new Error('Microsoft Ads API unavailable. Please try again later.');
+  }
+}
+```
+
+### Questions to Ask Before Any Fallback
+
+1. **"Is estimated data acceptable, or would you rather see an error?"**
+2. **"Should failures be visible to you, or handled silently?"**
+3. **"If the API fails, what should the user see?"**
+4. **"Is it better to show nothing or show potentially wrong data?"**
+
+### Enforcement Rule
+
+**Before writing ANY try/catch that returns fallback data:**
+
+```
+STOP and ask:
+1. Am I about to mask a potential failure? → If YES, ask user first
+2. Will the user know if this fails? → If NO, ask user first
+3. Am I returning estimates/defaults/cached data? → If YES, ask user first
+4. Could this hide a bug? → If YES, ask user first
+```
+
+### This Rule Was Added Because:
+- December 2025: Microsoft Ads showed $1,115 (estimates) instead of $346.09 (real data)
+- Silent fallback masked a broken API integration for days
+- User discovered the bug only by noticing numbers "seemed wrong"
+- The "graceful degradation" made debugging harder, not easier
+
+### Key Insight
+
+**Estimates and fallbacks are BUSINESS DECISIONS, not technical ones.**
+
+Whether to show estimated vs. actual data affects:
+- Trust in the dashboard
+- Business decisions made from the data
+- Ability to detect system problems
+- User's understanding of data accuracy
+
+**These decisions belong to the user, not to Claude.**
+
+**REMEMBER: Failures should be visible, not hidden. Ask before implementing any fallback.**
+
+---
+
+## 🚨 DATABASE MIGRATIONS: Test Critical Paths Before & After
+
+**Critical Rule:** Every database migration that touches functions, triggers, or RLS policies MUST be tested against critical business flows before being applied to production.
+
+### The Incident (December 2025)
+
+**What Happened:**
+- Migration `20251110_fix_function_search_paths.sql` was created to fix security warnings
+- It set `search_path = public` on `fn_insert_lead` function
+- This broke the function because `uuid_generate_v4()` lives in the `extensions` schema
+- The quote form (critical lead capture) silently failed for **4 days**
+- **12-20 potential leads were lost** (based on typical ~3-5 leads/day)
+
+**Root Cause Chain:**
+1. Migration was written to fix a security warning (good intention)
+2. Migration wasn't tested against actual function behavior (bad process)
+3. No automated test verified lead submission after migration (missing safeguard)
+4. No alerting when lead submissions dropped to zero (missing monitoring)
+5. Error was only discovered when user reported the form was broken
+
+### The Rule: MANDATORY MIGRATION TESTING
+
+**Before applying ANY migration to production that touches:**
+- Functions (`CREATE/ALTER FUNCTION`)
+- Triggers (`CREATE/ALTER TRIGGER`)
+- RLS Policies (`CREATE/ALTER POLICY`)
+- Constraints (`ADD CONSTRAINT`)
+- Column types (`ALTER COLUMN`)
+
+**You MUST:**
+
+#### Step 1: Identify Affected Critical Paths
+```
+Ask: "What user-facing features use this database object?"
+
+For fn_insert_lead:
+- Quote form submission (/api/lead)
+- Booking form submission (/api/booking/submit)
+- Any lead creation flow
+```
+
+#### Step 2: Test BEFORE Migration
+```bash
+# Test the critical path works BEFORE applying migration
+curl -X POST https://pinkautoglass.com/api/lead \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","phone":"(720)555-1234","vehicle":"2024 Toyota Camry","zip":"80202","hasInsurance":"yes"}'
+
+# Expected: {"success":true,"leadId":"..."}
+```
+
+#### Step 3: Apply Migration
+
+#### Step 4: Test IMMEDIATELY After Migration
+```bash
+# SAME test - must still work
+curl -X POST https://pinkautoglass.com/api/lead \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test After","phone":"(720)555-1234","vehicle":"2024 Toyota Camry","zip":"80202","hasInsurance":"yes"}'
+
+# If this fails, ROLLBACK IMMEDIATELY
+```
+
+#### Step 5: Verify in Database
+```sql
+-- Confirm test lead was created
+SELECT id, first_name, created_at FROM leads ORDER BY created_at DESC LIMIT 1;
+```
+
+### Supabase-Specific Gotchas
+
+**The `extensions` Schema Problem:**
+
+Supabase puts extensions in the `extensions` schema by default:
+- `uuid_generate_v4()` → `extensions.uuid_generate_v4()`
+- `pgcrypto` functions → `extensions.*`
+
+**When setting `search_path` for security, ALWAYS include `extensions`:**
+
+```sql
+-- ❌ WRONG - breaks UUID generation
+ALTER FUNCTION fn_insert_lead(uuid, jsonb) SET search_path = public;
+
+-- ✅ CORRECT - includes extensions schema
+ALTER FUNCTION fn_insert_lead(uuid, jsonb) SET search_path = public, extensions;
+```
+
+**Before writing any `SET search_path` statement:**
+1. Check what functions the target function calls
+2. Identify which schemas those functions live in
+3. Include ALL required schemas in the search_path
+
+### Critical Business Functions Registry
+
+**These functions are CRITICAL - extra care required:**
+
+| Function | Used By | Impact if Broken |
+|----------|---------|------------------|
+| `fn_insert_lead` | Quote form, Booking form | **Lost leads = lost revenue** |
+| `fn_add_media` | File uploads | Broken attachments |
+
+**When modifying these functions:**
+- [ ] Test before migration
+- [ ] Test immediately after migration
+- [ ] Verify data in database
+- [ ] Monitor for 24 hours after deployment
+
+### Post-Incident Checklist
+
+If a migration breaks something:
+
+1. **Identify the breaking change** - What exactly broke?
+2. **Rollback or fix forward** - Which is faster/safer?
+3. **Quantify the impact** - How many users/leads affected?
+4. **Document in CLAUDE.md** - Prevent recurrence
+5. **Add automated test** - Catch this class of error in future
+
+### This Rule Was Added Because:
+- December 2025: `search_path = public` broke `fn_insert_lead`
+- Quote form failed silently for 4 days
+- 12-20 leads lost (estimated $2,400-$4,000 in potential revenue)
+- Root cause: Migration wasn't tested against actual function behavior
+
+**REMEMBER: A 30-second test before deployment prevents days of silent failures.**
+
+---
+
+## 🔔 MONITORING: Critical Business Metrics
+
+**Rule:** Critical business flows MUST have monitoring/alerting to detect failures quickly.
+
+### What Needs Monitoring
+
+| Metric | Alert Threshold | Why |
+|--------|-----------------|-----|
+| Daily lead count | < 1 lead in 24 hours | Lead capture may be broken |
+| API error rate | > 5% errors on /api/lead | Form submission failing |
+| Database insert failures | Any failure on leads table | Critical data loss |
+
+### Recommended Implementation
+
+1. **Daily lead count check** - Cron job that alerts if 0 leads in past 24h
+2. **Error logging** - All 500 errors on critical endpoints logged + alerted
+3. **Health check endpoint** - `/api/health/lead-submission` that tests the full flow
+
+### This Recommendation Exists Because:
+- December 2025: Zero leads for 4 days went unnoticed
+- Only discovered when user manually tested the form
+- Automated monitoring would have caught this in <24 hours
 
 ---
 
