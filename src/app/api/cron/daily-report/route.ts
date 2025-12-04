@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance } from '@/lib/googleAds';
+import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
 
 // Types
@@ -34,6 +35,11 @@ interface DailyStats {
   clicks: number;
   spend: number;
   conversions: number;
+  // Microsoft Ads
+  msImpressions: number;
+  msClicks: number;
+  msSpend: number;
+  msConversions: number;
 }
 
 interface Contact {
@@ -201,7 +207,7 @@ async function fetchData() {
     // Continue without ads data
   }
 
-  // Aggregate Ads data by date
+  // Aggregate Google Ads data by date
   const adsDataByDate: Record<string, { impressions: number; clicks: number; spend: number; conversions: number }> = {};
   campaigns.forEach((campaign: any) => {
     const { date, impressions, clicks, cost, conversions } = campaign;
@@ -214,22 +220,47 @@ async function fetchData() {
     adsDataByDate[date].conversions += conversions || 0;
   });
 
+  // 6. Fetch Microsoft Ads data (summary for yesterday only - API doesn't support daily breakdown easily)
+  let msAdsData: { impressions: number; clicks: number; spend: number; conversions: number } | null = null;
+  try {
+    // Get yesterday's date for Microsoft Ads
+    const yesterdayMT = new Date(todayMT);
+    yesterdayMT.setDate(yesterdayMT.getDate() - 1);
+    const yesterdayStr = yesterdayMT.toISOString().split('T')[0];
+
+    const msPerformance = await fetchMicrosoftAdsPerformance(yesterdayStr, yesterdayStr);
+    if (msPerformance) {
+      msAdsData = {
+        impressions: msPerformance.impressions,
+        clicks: msPerformance.clicks,
+        spend: msPerformance.spend,
+        conversions: msPerformance.conversions,
+      };
+      console.log('✅ Microsoft Ads data fetched:', msAdsData);
+    }
+  } catch (error: any) {
+    console.error('Error fetching Microsoft Ads data:', error.message);
+    // Continue without Microsoft Ads data
+  }
+
   return {
     calls: calls || [],
     leads: leads || [],
     conversionEvents: conversionEvents || [],
     adsDataByDate,
+    msAdsData,
   };
 }
 
-// Aggregate data by day from all 5 sources
+// Aggregate data by day from all 6 sources
 // Note: We use YESTERDAY as the "current" day since the report runs early morning
 // IMPORTANT: Use Mountain Time (UTC-7) for date boundaries since that's the business timezone
 function aggregateDataByDay(
   calls: any[],
   leads: any[],
   conversionEvents: any[],
-  adsDataByDate: any
+  adsDataByDate: any,
+  msAdsData: { impressions: number; clicks: number; spend: number; conversions: number } | null
 ): DailyStats[] {
   // Mountain Time is UTC-7
   const mtOffset = -7 * 60; // Mountain Time offset in minutes
@@ -283,6 +314,9 @@ function aggregateDataByDay(
     // 5. Google Ads data
     const adsForDay = adsDataByDate[dateStr] || { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
 
+    // 6. Microsoft Ads data (only available for yesterday, i=0)
+    const msAdsForDay = i === 0 && msAdsData ? msAdsData : { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
+
     dailyStats.push({
       date: dateStr,
       dayName: getDayName(dateMT),
@@ -294,6 +328,10 @@ function aggregateDataByDay(
       clicks: adsForDay.clicks,
       spend: adsForDay.spend,
       conversions: adsForDay.conversions,
+      msImpressions: msAdsForDay.impressions,
+      msClicks: msAdsForDay.clicks,
+      msSpend: msAdsForDay.spend,
+      msConversions: msAdsForDay.conversions,
     });
   }
 
@@ -553,11 +591,34 @@ function generateEmailHTML(
           </div>
         </div>
         <div style="background: #f8f9fa; padding: 14px; border-radius: 8px;">
-          <div style="font-size: 13px; color: #666; margin-bottom: 2px;">Click to Call (Ad)</div>
+          <div style="font-size: 13px; color: #666; margin-bottom: 2px;">Conversions</div>
           <div style="font-size: 24px; font-weight: 600; color: #333;">${reportDay.conversions.toFixed(0)}</div>
           <div style="font-size: 11px; color: ${parseFloat(trends.conversions?.change || '0') >= 0 ? '#10b981' : '#ef4444'};">
             ${parseFloat(trends.conversions?.change || '0') >= 0 ? '↑' : '↓'} ${Math.abs(parseFloat(trends.conversions?.change || '0'))}% vs last week
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Microsoft Ads Performance -->
+    <div style="padding: 0 24px 32px 24px;">
+      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">Microsoft Ads Performance</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="background: #eff6ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0078d4;">
+          <div style="font-size: 13px; color: #1e40af; margin-bottom: 2px;">Impressions</div>
+          <div style="font-size: 24px; font-weight: 600; color: #1e3a8a;">${reportDay.msImpressions.toLocaleString()}</div>
+        </div>
+        <div style="background: #eff6ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0078d4;">
+          <div style="font-size: 13px; color: #1e40af; margin-bottom: 2px;">Ad Clicks</div>
+          <div style="font-size: 24px; font-weight: 600; color: #1e3a8a;">${reportDay.msClicks.toLocaleString()}</div>
+        </div>
+        <div style="background: #eff6ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0078d4;">
+          <div style="font-size: 13px; color: #1e40af; margin-bottom: 2px;">Ad Spend</div>
+          <div style="font-size: 24px; font-weight: 600; color: #1e3a8a;">$${reportDay.msSpend.toFixed(2)}</div>
+        </div>
+        <div style="background: #eff6ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0078d4;">
+          <div style="font-size: 13px; color: #1e40af; margin-bottom: 2px;">Conversions</div>
+          <div style="font-size: 24px; font-weight: 600; color: #1e3a8a;">${reportDay.msConversions.toFixed(0)}</div>
         </div>
       </div>
     </div>
@@ -611,12 +672,15 @@ export async function GET(request: NextRequest) {
 
     console.log('🔄 Starting daily report generation...');
 
-    // Fetch all data from all 5 sources
+    // Fetch all data from all 6 sources
     const data = await fetchData();
     console.log(`✅ Fetched ${data.calls.length} calls, ${data.leads.length} leads, ${data.conversionEvents.length} conversion events`);
+    if (data.msAdsData) {
+      console.log(`✅ Microsoft Ads: ${data.msAdsData.impressions} impressions, ${data.msAdsData.clicks} clicks, $${data.msAdsData.spend.toFixed(2)} spend`);
+    }
 
     // Aggregate and calculate
-    const dailyStats = aggregateDataByDay(data.calls, data.leads, data.conversionEvents, data.adsDataByDate);
+    const dailyStats = aggregateDataByDay(data.calls, data.leads, data.conversionEvents, data.adsDataByDate, data.msAdsData);
     const metrics = calculateTrends(dailyStats);
     const contacts = getYesterdaysContacts(data.calls, data.leads, data.conversionEvents);
 
@@ -693,10 +757,16 @@ export async function GET(request: NextRequest) {
         quoteRequests: reportDay.quoteRequests,
         clickToCalls: reportDay.clickToCalls,
         clickToTexts: reportDay.clickToTexts,
+        // Google Ads
         impressions: reportDay.impressions,
         clicks: reportDay.clicks,
         spend: reportDay.spend,
         conversions: reportDay.conversions,
+        // Microsoft Ads
+        msImpressions: reportDay.msImpressions,
+        msClicks: reportDay.msClicks,
+        msSpend: reportDay.msSpend,
+        msConversions: reportDay.msConversions,
         totalContacts: contacts.length,
       },
     });
