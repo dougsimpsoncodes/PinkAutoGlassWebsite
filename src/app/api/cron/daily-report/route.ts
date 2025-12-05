@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance } from '@/lib/googleAds';
-import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
+import { fetchDailyAccountPerformance as fetchMicrosoftAdsDailyPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
 
 // Types
@@ -220,35 +220,35 @@ async function fetchData() {
     adsDataByDate[date].conversions += conversions || 0;
   });
 
-  // 6. Fetch Microsoft Ads data (summary for yesterday only - API doesn't support daily breakdown easily)
-  let msAdsData: { impressions: number; clicks: number; spend: number; conversions: number } | null = null;
+  // 6. Fetch Microsoft Ads data (same pattern as Google Ads - daily breakdown)
+  let msAdsCampaigns: any[] = [];
   try {
-    // Get yesterday's date for Microsoft Ads
-    const yesterdayMT = new Date(todayMT);
-    yesterdayMT.setDate(yesterdayMT.getDate() - 1);
-    const yesterdayStr = yesterdayMT.toISOString().split('T')[0];
-
-    const msPerformance = await fetchMicrosoftAdsPerformance(yesterdayStr, yesterdayStr);
-    if (msPerformance) {
-      msAdsData = {
-        impressions: msPerformance.impressions,
-        clicks: msPerformance.clicks,
-        spend: msPerformance.spend,
-        conversions: msPerformance.conversions,
-      };
-      console.log('✅ Microsoft Ads data fetched:', msAdsData);
-    }
+    msAdsCampaigns = await fetchMicrosoftAdsDailyPerformance(startDate, endDate);
+    console.log(`✅ Microsoft Ads: fetched ${msAdsCampaigns.length} daily records`);
   } catch (error: any) {
     console.error('Error fetching Microsoft Ads data:', error.message);
     // Continue without Microsoft Ads data
   }
+
+  // Aggregate Microsoft Ads data by date (same pattern as Google Ads)
+  const msAdsDataByDate: Record<string, { impressions: number; clicks: number; spend: number; conversions: number }> = {};
+  msAdsCampaigns.forEach((record: any) => {
+    const { date, impressions, clicks, spend, conversions } = record;
+    if (!msAdsDataByDate[date]) {
+      msAdsDataByDate[date] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
+    }
+    msAdsDataByDate[date].impressions += impressions || 0;
+    msAdsDataByDate[date].clicks += clicks || 0;
+    msAdsDataByDate[date].spend += spend || 0;
+    msAdsDataByDate[date].conversions += conversions || 0;
+  });
 
   return {
     calls: calls || [],
     leads: leads || [],
     conversionEvents: conversionEvents || [],
     adsDataByDate,
-    msAdsData,
+    msAdsDataByDate,
   };
 }
 
@@ -260,7 +260,7 @@ function aggregateDataByDay(
   leads: any[],
   conversionEvents: any[],
   adsDataByDate: any,
-  msAdsData: { impressions: number; clicks: number; spend: number; conversions: number } | null
+  msAdsDataByDate: any
 ): DailyStats[] {
   // Mountain Time is UTC-7
   const mtOffset = -7 * 60; // Mountain Time offset in minutes
@@ -314,8 +314,8 @@ function aggregateDataByDay(
     // 5. Google Ads data
     const adsForDay = adsDataByDate[dateStr] || { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
 
-    // 6. Microsoft Ads data (only available for yesterday, i=0)
-    const msAdsForDay = i === 0 && msAdsData ? msAdsData : { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
+    // 6. Microsoft Ads data (same pattern as Google Ads - by date)
+    const msAdsForDay = msAdsDataByDate[dateStr] || { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
 
     dailyStats.push({
       date: dateStr,
@@ -675,12 +675,15 @@ export async function GET(request: NextRequest) {
     // Fetch all data from all 6 sources
     const data = await fetchData();
     console.log(`✅ Fetched ${data.calls.length} calls, ${data.leads.length} leads, ${data.conversionEvents.length} conversion events`);
-    if (data.msAdsData) {
-      console.log(`✅ Microsoft Ads: ${data.msAdsData.impressions} impressions, ${data.msAdsData.clicks} clicks, $${data.msAdsData.spend.toFixed(2)} spend`);
+    // Log Microsoft Ads data
+    const msAdsDates = Object.keys(data.msAdsDataByDate);
+    if (msAdsDates.length > 0) {
+      const totalMsSpend = msAdsDates.reduce((sum, d) => sum + (data.msAdsDataByDate[d]?.spend || 0), 0);
+      console.log(`✅ Microsoft Ads: ${msAdsDates.length} days of data, $${totalMsSpend.toFixed(2)} total spend`);
     }
 
     // Aggregate and calculate
-    const dailyStats = aggregateDataByDay(data.calls, data.leads, data.conversionEvents, data.adsDataByDate, data.msAdsData);
+    const dailyStats = aggregateDataByDay(data.calls, data.leads, data.conversionEvents, data.adsDataByDate, data.msAdsDataByDate);
     const metrics = calculateTrends(dailyStats);
     const contacts = getYesterdaysContacts(data.calls, data.leads, data.conversionEvents);
 

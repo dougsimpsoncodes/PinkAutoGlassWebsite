@@ -16,6 +16,9 @@
  * npm install @microsoft/bing-ads-api
  */
 
+// Import adm-zip at top level for proper bundling on Vercel
+import AdmZip from 'adm-zip';
+
 // Microsoft Ads API configuration
 const MICROSOFT_ADS_CLIENT_ID = process.env.MICROSOFT_ADS_CLIENT_ID;
 const MICROSOFT_ADS_CLIENT_SECRET = process.env.MICROSOFT_ADS_CLIENT_SECRET;
@@ -280,7 +283,6 @@ async function downloadAndParseReport(downloadUrl: string): Promise<any[]> {
     }
 
     // Microsoft returns a ZIP file containing the CSV
-    const AdmZip = require('adm-zip');
     const buffer = await response.arrayBuffer();
     let csvText = '';
 
@@ -369,6 +371,81 @@ async function executeMicrosoftAdsQuery(
   // Download and parse
   const results = await downloadAndParseReport(downloadUrl);
   return results;
+}
+
+/**
+ * Fetch daily account performance for date range (matches Google Ads pattern)
+ * Returns array of daily stats for aggregation in daily report
+ */
+export async function fetchDailyAccountPerformance(
+  startDate: string, // Format: YYYY-MM-DD
+  endDate: string // Format: YYYY-MM-DD
+): Promise<Array<{
+  date: string;
+  impressions: number;
+  clicks: number;
+  spend: number;
+  conversions: number;
+}>> {
+  const config = validateMicrosoftAdsConfig();
+  if (!config.isValid) {
+    console.warn('Microsoft Ads credentials not configured:', config.missingVars);
+    return [];
+  }
+
+  try {
+    // Use AccountPerformanceReport with Daily aggregation
+    // TimePeriod column gives us the date for each row
+    const columns = [
+      'TimePeriod',
+      'AccountName',
+      'Impressions',
+      'Clicks',
+      'Spend',
+      'Conversions',
+    ];
+
+    const results = await executeMicrosoftAdsQuery(
+      'AccountPerformanceReportRequest',
+      columns,
+      { start: startDate, end: endDate },
+      'Daily' // Daily breakdown like Google Ads
+    );
+
+    if (results.length === 0) {
+      console.log('Microsoft Ads Daily: No data returned from report');
+      return [];
+    }
+
+    console.log('Microsoft Ads Daily: Got', results.length, 'row(s) from report');
+
+    // Transform to match Google Ads format
+    return results.map((row: any) => {
+      // TimePeriod format from Microsoft is typically "M/D/YYYY"
+      let dateStr = row.TimePeriod;
+      // Convert to YYYY-MM-DD format if needed
+      if (dateStr && dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const month = parts[0].padStart(2, '0');
+          const day = parts[1].padStart(2, '0');
+          const year = parts[2];
+          dateStr = `${year}-${month}-${day}`;
+        }
+      }
+
+      return {
+        date: dateStr,
+        impressions: parseInt(row.Impressions) || 0,
+        clicks: parseInt(row.Clicks) || 0,
+        spend: parseFloat(row.Spend) || 0,
+        conversions: parseFloat(row.Conversions) || 0,
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching Microsoft Ads daily performance:', error);
+    return [];
+  }
 }
 
 /**
