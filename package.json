@@ -16,6 +16,7 @@
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "@anthropic-ai/sdk": "^0.67.0",
     "@google-analytics/data": "^5.2.1",
     "@radix-ui/react-accordion": "1.1.2",
@@ -26,8 +27,6 @@
     "@sendgrid/mail": "^8.1.6",
     "@supabase/supabase-js": "^2.55.0",
     "@types/node": "20.10.4",
-    "@types/react": "18.2.45",
-    "@types/react-dom": "18.2.18",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/postgres": "^0.10.0",
@@ -58,6 +57,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
+    "@types/adm-zip": "^0.5.7",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "dotenv": "^17.2.3",
     "eslint": "8.56.0",
     "eslint-config-next": "14.0.4",
