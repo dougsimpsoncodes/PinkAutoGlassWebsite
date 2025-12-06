@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance } from '@/lib/googleAds';
-import { fetchDailyAccountPerformance as fetchMicrosoftAdsDailyPerformance } from '@/lib/microsoftAds';
+import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
 
 // Types
@@ -220,28 +220,33 @@ async function fetchData() {
     adsDataByDate[date].conversions += conversions || 0;
   });
 
-  // 6. Fetch Microsoft Ads data (same pattern as Google Ads - daily breakdown)
-  let msAdsCampaigns: any[] = [];
+  // 6. Fetch Microsoft Ads data - use the SAME function that works in the dashboard
+  // Fetch for yesterday only (the day we're reporting on)
+  const msAdsDataByDate: Record<string, { impressions: number; clicks: number; spend: number; conversions: number }> = {};
   try {
-    msAdsCampaigns = await fetchMicrosoftAdsDailyPerformance(startDate, endDate);
-    console.log(`✅ Microsoft Ads: fetched ${msAdsCampaigns.length} daily records`);
+    // Get yesterday's date (the day the report is about)
+    const yesterdayMT = new Date(todayMT);
+    yesterdayMT.setDate(yesterdayMT.getDate() - 1);
+    const yesterdayStr = yesterdayMT.toISOString().split('T')[0];
+
+    console.log(`Fetching Microsoft Ads for ${yesterdayStr}...`);
+    const msPerformance = await fetchMicrosoftAdsPerformance(yesterdayStr, yesterdayStr);
+
+    if (msPerformance) {
+      msAdsDataByDate[yesterdayStr] = {
+        impressions: msPerformance.impressions,
+        clicks: msPerformance.clicks,
+        spend: msPerformance.spend,
+        conversions: msPerformance.conversions,
+      };
+      console.log(`✅ Microsoft Ads for ${yesterdayStr}:`, msAdsDataByDate[yesterdayStr]);
+    } else {
+      console.log(`⚠️ Microsoft Ads: No data returned for ${yesterdayStr}`);
+    }
   } catch (error: any) {
     console.error('Error fetching Microsoft Ads data:', error.message);
     // Continue without Microsoft Ads data
   }
-
-  // Aggregate Microsoft Ads data by date (same pattern as Google Ads)
-  const msAdsDataByDate: Record<string, { impressions: number; clicks: number; spend: number; conversions: number }> = {};
-  msAdsCampaigns.forEach((record: any) => {
-    const { date, impressions, clicks, spend, conversions } = record;
-    if (!msAdsDataByDate[date]) {
-      msAdsDataByDate[date] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
-    }
-    msAdsDataByDate[date].impressions += impressions || 0;
-    msAdsDataByDate[date].clicks += clicks || 0;
-    msAdsDataByDate[date].spend += spend || 0;
-    msAdsDataByDate[date].conversions += conversions || 0;
-  });
 
   return {
     calls: calls || [],
