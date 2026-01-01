@@ -198,17 +198,16 @@ export function DashboardCacheProvider({ children }: { children: React.ReactNode
     setPreloadStatus('idle');
   }, []);
 
-  // Auto-preload on mount (once per session)
-  useEffect(() => {
-    if (!preloadAttempted.current) {
-      preloadAttempted.current = true;
-      // Small delay to let the page render first
-      const timer = setTimeout(() => {
-        preloadAll();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [preloadAll]);
+  // Auto-preload disabled - pages need to be updated to use useDashboardData hook first
+  // Otherwise we make duplicate requests (preload + page fetch)
+  // TODO: Update dashboard pages to use useDashboardData, then re-enable:
+  // useEffect(() => {
+  //   if (!preloadAttempted.current) {
+  //     preloadAttempted.current = true;
+  //     const timer = setTimeout(() => preloadAll(), 100);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [preloadAll]);
 
   return (
     <DashboardCacheContext.Provider
