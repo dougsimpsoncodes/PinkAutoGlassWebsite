@@ -54,10 +54,31 @@ export async function POST(req: NextRequest) {
     const authData = await platform.auth().data();
     const accessToken = authData.access_token;
 
-    // Step 3: Fetch call log data using standard fetch (we know this works)
-    // Fetch last 120 days of call history (extended to capture all October data)
-    const dateFrom = new Date();
-    dateFrom.setDate(dateFrom.getDate() - 120);
+    // Step 3: Check for incremental sync - get the most recent call's start_time
+    // This dramatically reduces unnecessary upserts (from ~52,000/day to ~50/day)
+    const { data: lastCall } = await supabase
+      .from('ringcentral_calls')
+      .select('start_time')
+      .order('start_time', { ascending: false })
+      .limit(1)
+      .single();
+
+    // If we have existing calls, only fetch calls newer than the last one (plus 1 hour buffer)
+    // Otherwise, do a full 120-day backfill
+    let dateFrom: Date;
+    const isIncrementalSync = !!lastCall?.start_time;
+
+    if (isIncrementalSync) {
+      dateFrom = new Date(lastCall.start_time);
+      // Add 1-hour buffer to catch any calls that might have been in-progress during last sync
+      dateFrom.setHours(dateFrom.getHours() - 1);
+      console.log(`🔄 Incremental sync: fetching calls since ${dateFrom.toISOString()}`);
+    } else {
+      dateFrom = new Date();
+      dateFrom.setDate(dateFrom.getDate() - 120);
+      console.log(`📥 Full sync: fetching 120 days of call history`);
+    }
+
     const dateFromISO = dateFrom.toISOString();
 
     console.log(`Fetching call logs from ${dateFromISO}...`);
@@ -97,61 +118,53 @@ export async function POST(req: NextRequest) {
       console.log(`RingCentral returned calls spanning ${Math.ceil((latest.getTime() - earliest.getTime()) / (1000 * 60 * 60 * 24))} days`);
     }
 
-    // Step 4: Store calls in database
+    // Step 4: Store calls in database using batch upsert (1 query instead of 1000)
+    const errors: { call_id: string; error: string }[] = [];
+    const syncTimestamp = new Date().toISOString();
+
+    // Transform all records to database format
+    const callDataBatch = records.map((record: any) => ({
+      call_id: record.id,
+      session_id: record.sessionId,
+      start_time: record.startTime,
+      end_time: record.endTime || null,
+      duration: record.duration || 0,
+      direction: record.direction,
+      from_number: record.from?.phoneNumber || '',
+      from_name: record.from?.name || null,
+      to_number: record.to?.phoneNumber || '',
+      to_name: record.to?.name || null,
+      result: record.result,
+      action: record.action,
+      recording_id: record.recording?.id || null,
+      recording_uri: record.recording?.uri || null,
+      recording_type: record.recording?.type || null,
+      recording_content_uri: record.recording?.contentUri || null,
+      transport: record.transport || null,
+      sync_timestamp: syncTimestamp,
+      raw_data: record,
+    }));
+
+    // Batch upsert - single database call instead of N calls
     let newCalls = 0;
     let updatedCalls = 0;
-    const errors = [];
 
-    for (const record of records) {
-      try {
-        // Extract call details
-        const callData = {
-          call_id: record.id,
-          session_id: record.sessionId,
-          start_time: record.startTime,
-          end_time: record.endTime || null,
-          duration: record.duration || 0,
-          direction: record.direction, // 'Inbound' or 'Outbound'
-          from_number: record.from?.phoneNumber || '',
-          from_name: record.from?.name || null,
-          to_number: record.to?.phoneNumber || '',
-          to_name: record.to?.name || null,
-          result: record.result, // 'Accepted', 'Missed', 'Voicemail', etc.
-          action: record.action, // 'Phone Call', 'VoIP Call', etc.
-          recording_id: record.recording?.id || null,
-          recording_uri: record.recording?.uri || null,
-          recording_type: record.recording?.type || null,
-          recording_content_uri: record.recording?.contentUri || null,
-          transport: record.transport || null,
-          sync_timestamp: new Date().toISOString(),
-          raw_data: record, // Store full response
-        };
+    if (callDataBatch.length > 0) {
+      const { error: batchError } = await supabase
+        .from('ringcentral_calls')
+        .upsert(callDataBatch, { onConflict: 'call_id' });
 
-        // Insert or update
-        const { data, error } = await supabase
-          .from('ringcentral_calls')
-          .upsert(callData, {
-            onConflict: 'call_id',
-          })
-          .select();
-
-        if (error) {
-          errors.push({
-            call_id: record.id,
-            error: error.message,
-          });
-        } else if (data) {
-          if (data.length > 0) {
-            newCalls++;
-          } else {
-            updatedCalls++;
-          }
-        }
-      } catch (err: any) {
+      if (batchError) {
         errors.push({
-          call_id: record.id,
-          error: err.message,
+          call_id: 'batch',
+          error: batchError.message,
         });
+        console.error('Batch upsert error:', batchError.message);
+      } else {
+        // With batch upsert, we can't distinguish new vs updated easily
+        // Just report total processed
+        newCalls = callDataBatch.length;
+        console.log(`✅ Batch upserted ${callDataBatch.length} calls`);
       }
     }
 
@@ -194,6 +207,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       message: 'RingCentral call log sync completed',
       summary: {
+        syncType: isIncrementalSync ? 'incremental' : 'full',
         recordsFetched: records.length,
         newCalls,
         updatedCalls,
