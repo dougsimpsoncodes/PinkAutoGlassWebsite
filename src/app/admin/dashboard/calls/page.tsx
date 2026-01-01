@@ -30,7 +30,7 @@ export default function CallAnalyticsPage() {
 
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 

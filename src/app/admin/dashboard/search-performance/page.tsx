@@ -85,7 +85,7 @@ export default function SearchPerformancePage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'paid' | 'organic'>('all');
   const [syncStatus, setSyncStatus] = useState<{ message: string; success: boolean } | null>(null);
 
@@ -250,11 +250,11 @@ export default function SearchPerformancePage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-[1600px] mx-auto space-y-3">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-xl font-bold text-gray-900">Search Performance</h1>
-          <p className="text-xs text-gray-600 mt-0.5">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Search Performance</h1>
+          <p className="text-gray-600 mt-1">
             Combined paid ads + organic search analysis
           </p>
         </div>
@@ -281,49 +281,49 @@ export default function SearchPerformancePage() {
         )}
 
         {/* Overview Metrics - Side by Side */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Google Ads (Paid) */}
-          <div className="bg-white rounded border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <h3 className="text-sm font-semibold text-gray-900">Google Ads (Paid)</h3>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+              <h3 className="text-lg font-semibold text-gray-900">Google Ads (Paid)</h3>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <div className="text-xs text-gray-600">Impressions</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Impressions</div>
+                <div className="text-2xl font-bold text-gray-900">
                   {summary.totalPaidImpressions.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Clicks</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Clicks</div>
+                <div className="text-2xl font-bold text-gray-900">
                   {summary.totalPaidClicks.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Cost</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Cost</div>
+                <div className="text-2xl font-bold text-gray-900">
                   ${summary.totalPaidCost.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Total Leads</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Total Leads</div>
+                <div className="text-2xl font-bold text-gray-900">
                   {summary.paidLeads}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Lead Breakdown</div>
-                <div className="text-xs text-gray-600 flex gap-1">
+                <div className="text-sm text-gray-600 mb-1">Lead Breakdown</div>
+                <div className="text-sm text-gray-600 flex gap-2">
                   <span>📞{summary.paidCalls}</span>
                   <span>📧{summary.paidQuotes}</span>
                   <span>💬{summary.paidTexts}</span>
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Cost/Lead</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Cost/Lead</div>
+                <div className="text-2xl font-bold text-gray-900">
                   ${summary.paidLeads > 0 ? (summary.totalPaidCost / summary.paidLeads).toFixed(2) : '0.00'}
                 </div>
               </div>
@@ -331,45 +331,45 @@ export default function SearchPerformancePage() {
           </div>
 
           {/* Organic Search */}
-          <div className="bg-white rounded border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <h3 className="text-sm font-semibold text-gray-900">Organic Search (Free)</h3>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <h3 className="text-lg font-semibold text-gray-900">Organic Search (Free)</h3>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <div className="text-xs text-gray-600">Impressions</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Impressions</div>
+                <div className="text-2xl font-bold text-gray-900">
                   {summary.totalOrganicImpressions.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Clicks</div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm text-gray-600 mb-1">Clicks</div>
+                <div className="text-2xl font-bold text-gray-900">
                   {summary.totalOrganicClicks.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">CTR</div>
-                <div className="text-lg font-bold text-gray-900">{summary.avgOrganicCTR}%</div>
+                <div className="text-sm text-gray-600 mb-1">CTR</div>
+                <div className="text-2xl font-bold text-gray-900">{summary.avgOrganicCTR}%</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Total Leads</div>
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-sm text-gray-600 mb-1">Total Leads</div>
+                <div className="text-2xl font-bold text-green-600">
                   {summary.organicLeads}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Lead Breakdown</div>
-                <div className="text-xs text-gray-600 flex gap-1">
+                <div className="text-sm text-gray-600 mb-1">Lead Breakdown</div>
+                <div className="text-sm text-gray-600 flex gap-2">
                   <span>📞{summary.organicCalls}</span>
                   <span>📧{summary.organicQuotes}</span>
                   <span>💬{summary.organicTexts}</span>
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-600">Lead Value</div>
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-sm text-gray-600 mb-1">Lead Value</div>
+                <div className="text-2xl font-bold text-green-600">
                   ${summary.organicLeads > 0 && summary.paidLeads > 0 ?
                     ((summary.totalPaidCost / summary.paidLeads) * summary.organicLeads).toFixed(0) :
                     '0'}
@@ -380,10 +380,10 @@ export default function SearchPerformancePage() {
         </div>
 
         {/* Main Search Terms Table */}
-        <div className="bg-white rounded border border-gray-200">
-          <div className="p-3 border-b border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-900">Search Terms Performance</h3>
-            <p className="text-xs text-gray-600 mt-0.5">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">Search Terms Performance</h3>
+            <p className="text-sm text-gray-600 mt-1">
               All search terms sorted by total impressions
             </p>
           </div>
@@ -495,11 +495,11 @@ export default function SearchPerformancePage() {
         </div>
 
         {/* Quick Action Cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Performers */}
-          <div className="bg-white rounded border border-gray-200 p-3">
-            <h4 className="text-xs font-semibold text-gray-900 mb-2">
-              🏆 Top Organic Performers
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              Top Organic Performers
             </h4>
             <div className="space-y-1.5">
               {topPerformers.map((term, idx) => (
@@ -521,11 +521,11 @@ export default function SearchPerformancePage() {
           </div>
 
           {/* Paid Opportunities */}
-          <div className="bg-white rounded border border-gray-200 p-3">
-            <h4 className="text-xs font-semibold text-gray-900 mb-2">
-              ⚡ Add Paid Campaigns
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              Add Paid Campaigns
             </h4>
-            <p className="text-xs text-gray-600 mb-2">
+            <p className="text-sm text-gray-600 mb-4">
               High organic volume, top 10 position - add paid to dominate
             </p>
             <div className="space-y-1.5">
@@ -548,11 +548,11 @@ export default function SearchPerformancePage() {
           </div>
 
           {/* High Cost Terms */}
-          <div className="bg-white rounded border border-gray-200 p-3">
-            <h4 className="text-xs font-semibold text-gray-900 mb-2">
-              💰 High Cost Terms
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              High Cost Terms
             </h4>
-            <p className="text-xs text-gray-600 mb-2">
+            <p className="text-sm text-gray-600 mb-4">
               Expensive terms - consider pausing or optimizing
             </p>
             <div className="space-y-1.5">
