@@ -72,7 +72,7 @@ export default function LeadManagementDashboard() {
   const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
-  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
   // Convert DateFilter to number of days for filtering
   const getDateRangeDays = (filter: DateFilter): number => {

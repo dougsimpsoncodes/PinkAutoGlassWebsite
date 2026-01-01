@@ -73,7 +73,7 @@ export default function MicrosoftAdsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
   // Get current data from cache
   const data = dataCache[dateFilter];

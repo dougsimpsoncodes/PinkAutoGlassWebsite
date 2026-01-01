@@ -101,7 +101,7 @@ export default function AdminDashboard() {
     all: null,
   });
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('30days');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
   // Get current data from cache
   const data = dataCache[dateFilter];
