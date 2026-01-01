@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter, ALL_DATE_FILTERS } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
+import { useDashboardCache } from '@/contexts/DashboardCacheContext';
 import {
   DollarSign,
   TrendingUp,
@@ -92,42 +93,38 @@ export default function AdminDashboard() {
   // Get global sync state
   const { syncVersion } = useSync();
 
-  // Cache data for all time periods
-  const [dataCache, setDataCache] = useState<Record<DateFilter, UnifiedDashboardData | null>>({
-    today: null,
-    yesterday: null,
-    '7days': null,
-    '30days': null,
-    all: null,
-  });
+  // Use shared dashboard cache context
+  const { getCachedData, setCachedData, invalidateCache } = useDashboardCache();
+
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
-  // Get current data from cache
-  const data = dataCache[dateFilter];
+  // Get current data from shared cache
+  const data = getCachedData(dateFilter) as UnifiedDashboardData | null;
 
   // Check if we have ANY cached data (for showing content while loading new period)
-  const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
+  const hasAnyCachedData = ALL_DATE_FILTERS.some(f => getCachedData(f) !== null);
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
       const res = await fetch(`/api/admin/dashboard/unified?period=${filter}`);
       if (res.ok) {
         const json = await res.json();
-        setDataCache(prev => ({ ...prev, [filter]: json }));
+        setCachedData(filter, json); // Store in shared cache
         return json;
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     }
     return null;
-  }, []);
+  }, [setCachedData]);
 
   // Fetch all time periods when sync version changes (global sync triggered)
   const refreshAllData = useCallback(async () => {
+    invalidateCache(); // Clear shared cache
     const promises = ALL_DATE_FILTERS.map(filter => fetchData(filter));
     await Promise.all(promises);
-  }, [fetchData]);
+  }, [fetchData, invalidateCache]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -139,16 +136,20 @@ export default function AdminDashboard() {
   // When changing date filter, use cached data or fetch if not available
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
-    if (!dataCache[filter]) {
+    if (!getCachedData(filter)) {
       setLoading(true);
       fetchData(filter).finally(() => setLoading(false));
     }
   };
 
-  // Initial load - fetch current filter
+  // Initial load - fetch current filter if not cached
   useEffect(() => {
-    setLoading(true);
-    fetchData(dateFilter).finally(() => setLoading(false));
+    if (!getCachedData(dateFilter)) {
+      setLoading(true);
+      fetchData(dateFilter).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const formatCurrency = (value: number) => {

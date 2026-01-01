@@ -198,16 +198,35 @@ export function DashboardCacheProvider({ children }: { children: React.ReactNode
     setPreloadStatus('idle');
   }, []);
 
-  // Auto-preload disabled - pages need to be updated to use useDashboardData hook first
-  // Otherwise we make duplicate requests (preload + page fetch)
-  // TODO: Update dashboard pages to use useDashboardData, then re-enable:
-  // useEffect(() => {
-  //   if (!preloadAttempted.current) {
-  //     preloadAttempted.current = true;
-  //     const timer = setTimeout(() => preloadAll(), 100);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [preloadAll]);
+  // Auto-preload just "today" on mount (the default view)
+  // Other periods are fetched on-demand
+  useEffect(() => {
+    if (!preloadAttempted.current) {
+      preloadAttempted.current = true;
+      // Preload just "today" - the most common view
+      const timer = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/dashboard/unified?period=today');
+          if (response.ok) {
+            const data = await response.json();
+            const now = Date.now();
+            setCache(prev => {
+              const next = new Map(prev);
+              next.set('today', {
+                data,
+                timestamp: now,
+                expiresAt: now + CACHE_TTL_MS,
+              });
+              return next;
+            });
+          }
+        } catch (error) {
+          console.error('Preload failed:', error);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   return (
     <DashboardCacheContext.Provider
