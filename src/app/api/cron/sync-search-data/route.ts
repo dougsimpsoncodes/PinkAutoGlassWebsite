@@ -20,6 +20,8 @@ import {
   fetchQueryPerformance,
   fetchDailyPerformance,
 } from '@/lib/googleSearchConsole';
+import { syncOfflineConversions, syncMicrosoftOfflineConversions } from '@/lib/offlineConversionSync';
+import { validateMicrosoftAdsConfig } from '@/lib/microsoftAds';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -58,6 +60,10 @@ export async function GET(request: NextRequest) {
       googleAds: {
         campaigns: { success: false, records: 0, error: null as string | null },
         searchTerms: { success: false, records: 0, error: null as string | null },
+        offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
+      },
+      microsoftAds: {
+        offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
       },
       googleSearchConsole: {
         queries: { success: false, records: 0, error: null as string | null },
@@ -100,9 +106,28 @@ export async function GET(request: NextRequest) {
         const authData = await platform.auth().data();
         const accessToken = authData.access_token;
 
-        // Fetch last 30 days of call logs
-        const callDateFrom = new Date();
-        callDateFrom.setDate(callDateFrom.getDate() - 30);
+        // Incremental sync: get most recent call's start_time
+        const { data: lastCall } = await supabase
+          .from('ringcentral_calls')
+          .select('start_time')
+          .order('start_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        // If we have existing calls, only fetch calls newer than the last one (plus 1 hour buffer)
+        // Otherwise, do a 30-day backfill
+        let callDateFrom: Date;
+        const isIncrementalSync = !!lastCall?.start_time;
+
+        if (isIncrementalSync) {
+          callDateFrom = new Date(lastCall.start_time);
+          callDateFrom.setHours(callDateFrom.getHours() - 1); // 1-hour buffer
+          console.log(`🔄 Incremental RingCentral sync since ${callDateFrom.toISOString()}`);
+        } else {
+          callDateFrom = new Date();
+          callDateFrom.setDate(callDateFrom.getDate() - 30);
+          console.log(`📥 Full RingCentral sync: 30 days of history`);
+        }
 
         const callLogResponse = await fetch(
           `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
@@ -121,41 +146,50 @@ export async function GET(request: NextRequest) {
         if (callLogResponse.ok) {
           const callLogData = await callLogResponse.json();
           const records = callLogData.records || [];
+          const syncTimestamp = new Date().toISOString();
 
-          let inserted = 0;
-          for (const call of records) {
-            const callData = {
-              call_id: call.id,
-              session_id: call.sessionId,
-              start_time: call.startTime,
-              duration: call.duration,
-              direction: call.direction,
-              from_number: call.from?.phoneNumber || '',
-              from_name: call.from?.name || null,
-              to_number: call.to?.phoneNumber || '',
-              to_name: call.to?.name || null,
-              result: call.result,
-              action: call.action || '',
-              recording_id: call.recording?.id || null,
-              recording_uri: call.recording?.contentUri || null,
-              transport: call.transport || '',
-              raw_data: call,
-              last_modified: call.lastModifiedTime || call.startTime,
-            };
+          // Transform all records to database format for batch upsert
+          const callDataBatch = records.map((call: any) => ({
+            call_id: call.id,
+            session_id: call.sessionId,
+            start_time: call.startTime,
+            end_time: call.endTime || null,
+            duration: call.duration || 0,
+            direction: call.direction,
+            from_number: call.from?.phoneNumber || '',
+            from_name: call.from?.name || null,
+            to_number: call.to?.phoneNumber || '',
+            to_name: call.to?.name || null,
+            result: call.result,
+            action: call.action || '',
+            recording_id: call.recording?.id || null,
+            recording_uri: call.recording?.uri || null,
+            recording_type: call.recording?.type || null,
+            recording_content_uri: call.recording?.contentUri || null,
+            transport: call.transport || '',
+            sync_timestamp: syncTimestamp,
+            raw_data: call,
+          }));
 
+          // Batch upsert - single database call instead of N calls
+          let inserted = callDataBatch.length;
+          if (callDataBatch.length > 0) {
             const { error } = await supabase
               .from('ringcentral_calls')
-              .upsert(callData, { onConflict: 'call_id' });
+              .upsert(callDataBatch, { onConflict: 'call_id' });
 
-            if (!error) inserted++;
+            if (error) {
+              inserted = 0;
+              console.error('Batch upsert error:', error.message);
+            }
           }
 
           results.ringcentral.calls = {
-            success: true,
+            success: inserted > 0,
             records: inserted,
             error: null,
           };
-          console.log(`✅ Synced ${inserted} RingCentral calls`);
+          console.log(`✅ Synced ${inserted} RingCentral calls (batch)`);
         } else {
           const errorText = await callLogResponse.text();
           throw new Error(`RingCentral API error: ${errorText}`);
@@ -358,6 +392,73 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.googleSearchConsole.dailyTotals.error = error.message;
       console.error('❌ GSC daily totals sync failed:', error.message);
+    }
+
+    // ========================================
+    // 6. Upload Offline Conversions to Google Ads
+    // ========================================
+    // This must run AFTER RingCentral sync so we have the latest calls
+    try {
+      const configValid = validateGoogleAdsConfig();
+      const hasOfflineConversionAction = !!process.env.GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID;
+
+      if (configValid.isValid && hasOfflineConversionAction) {
+        console.log('📤 Uploading offline conversions to Google Ads...');
+        const syncResult = await syncOfflineConversions();
+
+        results.googleAds.offlineConversions = {
+          success: true,
+          uploaded: syncResult.conversionsUploaded,
+          failed: syncResult.conversionsFailed,
+          error: syncResult.errors.length > 0 ? syncResult.errors.join('; ') : null,
+        };
+
+        if (syncResult.conversionsUploaded > 0) {
+          console.log(`✅ Uploaded ${syncResult.conversionsUploaded} offline conversions`);
+        } else {
+          console.log('📭 No offline conversions to upload');
+        }
+      } else if (!hasOfflineConversionAction) {
+        results.googleAds.offlineConversions.error = 'GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID not configured';
+        console.warn('⚠️ Offline conversion upload skipped: No conversion action ID configured');
+      } else {
+        results.googleAds.offlineConversions.error = `Missing config: ${configValid.missingVars.join(', ')}`;
+      }
+    } catch (error: any) {
+      results.googleAds.offlineConversions.error = error.message;
+      console.error('❌ Offline conversion upload failed:', error.message);
+    }
+
+    // ========================================
+    // 7. Upload Offline Conversions to Microsoft Ads
+    // ========================================
+    // This must run AFTER RingCentral sync so we have the latest calls
+    try {
+      const msConfigValid = validateMicrosoftAdsConfig();
+
+      if (msConfigValid.isValid) {
+        console.log('📤 Uploading offline conversions to Microsoft Ads...');
+        const syncResult = await syncMicrosoftOfflineConversions();
+
+        results.microsoftAds.offlineConversions = {
+          success: true,
+          uploaded: syncResult.conversionsUploaded,
+          failed: syncResult.conversionsFailed,
+          error: syncResult.errors.length > 0 ? syncResult.errors.join('; ') : null,
+        };
+
+        if (syncResult.conversionsUploaded > 0) {
+          console.log(`✅ Uploaded ${syncResult.conversionsUploaded} Microsoft Ads offline conversions`);
+        } else {
+          console.log('📭 No Microsoft Ads offline conversions to upload');
+        }
+      } else {
+        results.microsoftAds.offlineConversions.error = `Missing config: ${msConfigValid.missingVars.join(', ')}`;
+        console.warn('⚠️ Microsoft Ads offline conversion upload skipped: Not configured');
+      }
+    } catch (error: any) {
+      results.microsoftAds.offlineConversions.error = error.message;
+      console.error('❌ Microsoft Ads offline conversion upload failed:', error.message);
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
