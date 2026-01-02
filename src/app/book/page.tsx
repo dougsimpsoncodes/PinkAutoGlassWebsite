@@ -8,7 +8,7 @@ import { ContactLocation } from '@/components/book/contact-location';
 import { ReviewSubmit } from '@/components/book/review-submit';
 import { SuccessConfirmation } from '@/components/book/success-confirmation';
 import TrustBadges from '@/components/TrustBadges';
-import { trackLeadFormConversion } from '@/lib/analytics';
+import { trackFormSubmission, getSessionId, getGclid, getMsclkid } from '@/lib/tracking';
 
 // Types for form data
 const TOTAL_STEPS = 3;
@@ -231,7 +231,7 @@ export default function BookingPage() {
         return `+${cleaned}`;
       };
 
-      // Generate session and client IDs
+      // Generate client ID (UUID format, persisted in localStorage)
       const generateUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
           const r = Math.random() * 16 | 0;
@@ -240,12 +240,15 @@ export default function BookingPage() {
         });
       };
 
-      const sessionId = sessionStorage.getItem('session_id') || generateUUID();
+      // Use tracking session ID for attribution matching (consistent with user_sessions table)
+      const sessionId = getSessionId();
       const clientId = localStorage.getItem('client_id') || generateUUID();
-
-      // Store IDs for future use
-      sessionStorage.setItem('session_id', sessionId);
       localStorage.setItem('client_id', clientId);
+
+      // Get click IDs for attribution (from URL or localStorage)
+      // Note: ad_platform is derived SERVER-SIDE from gclid/msclkid presence (trust boundary)
+      const gclid = getGclid();
+      const msclkid = getMsclkid();
 
       // Get UTM data from URL or sessionStorage
       const params = new URLSearchParams(window.location.search);
@@ -328,6 +331,9 @@ export default function BookingPage() {
         referralCode: formData.referralCode || undefined,
         clientId: clientId,
         sessionId: sessionId,
+        // Attribution: click IDs for Google/Microsoft Ads (ad_platform derived server-side)
+        gclid: gclid || undefined,
+        msclkid: msclkid || undefined,
         website: '', // Honeypot field (must be empty)
         formStartTime: Date.now() - 5000, // Timestamp (submitted 5 seconds after load)
       };
@@ -368,9 +374,9 @@ export default function BookingPage() {
       // Clear session storage on successful submission
       sessionStorage.removeItem('booking_form_data');
 
-      // Track Google Ads conversion with lead ID as transaction_id
-      // Transaction ID prevents duplicate conversions
-      trackLeadFormConversion(leadId);
+      // Track form submission with GCLID/MSCLKID attribution to conversion_events table
+      // This also fires Google Ads and Microsoft Ads conversion tracking
+      trackFormSubmission('booking_form', { leadId, referenceNumber });
 
     } catch (error) {
       console.error('Submission error:', error);
