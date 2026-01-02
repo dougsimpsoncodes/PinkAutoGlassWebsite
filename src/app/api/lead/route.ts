@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
+import { buildAttribution } from '@/lib/attribution';
 import { sendAdminEmail } from '@/lib/notifications/email';
 import { sendAdminSMS } from '@/lib/notifications/sms';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
@@ -111,6 +112,19 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    // =============================================================================
+    // ATTRIBUTION: Build immutable attribution using centralized helper
+    // =============================================================================
+    // For /api/lead, we don't have session lookup - only body values
+    // (QuoteForm is a simple form without session context)
+    const attribution = buildAttribution({
+      bodyGclid: validatedData.gclid,
+      bodyMsclkid: validatedData.msclkid,
+      utmSource: validatedData.utmSource,
+      utmMedium: validatedData.utmMedium,
+      utmCampaign: validatedData.utmCampaign,
+    });
+
     // Build payload for fn_insert_lead RPC using validated data
     // IMPORTANT: Field names must match what fn_insert_lead expects in the SQL function
     const payload = {
@@ -126,12 +140,11 @@ export async function POST(request: NextRequest) {
       city: validatedData.city || null,
       state: validatedData.state || null,
       zip: validatedData.zipCode || null,
-      utmSource: validatedData.utmSource || null,
-      utmMedium: validatedData.utmMedium || null,
-      utmCampaign: validatedData.utmCampaign || null,
       referralCode: validatedData.referralCode || null,
       clientId: body.clientId || null,
       sessionId: body.sessionId || null,
+      // Spread immutable attribution (gclid, msclkid, ad_platform, utm_*)
+      ...attribution,
     };
 
     // Insert lead via RPC (enforces RLS and business logic)

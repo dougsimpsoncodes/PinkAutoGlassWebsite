@@ -22,6 +22,46 @@ const stateSchema = z.string().trim().toUpperCase().length(2).regex(/^[A-Z]{2}$/
 const zipCodeSchema = z.string().trim().regex(/^\d{5}(-\d{4})?$/);
 const addressSchema = z.string().trim().min(5).max(200).regex(/^[a-zA-Z0-9\s\-.,#]+$/);
 const notesSchema = z.string().trim().max(500).optional().transform((notes) => notes ? notes.replace(/<[^>]*>/g, '') : undefined);
+
+// Attribution field validators with length caps and pattern allowlists for security
+
+// Session ID: must match session_{timestamp}_{random} format from tracking.ts
+// Format: session_ + 10-16 digit timestamp + _ + 6+ char random alphanumeric
+// Non-fatal: invalid format → treated as undefined (rely on cookie/lookup)
+const sessionIdSchema = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().trim().max(100)
+    .regex(/^session_[0-9]{10,16}_[a-z0-9]{6,}$/, 'Invalid session ID format')
+    .optional()
+);
+
+// Click IDs: preprocess empty strings to undefined, then validate non-empty
+// Alphanumeric with common separators (_, -, .) - no weird Unicode
+const gclidSchema = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().trim().max(200)
+    .regex(/^[a-zA-Z0-9_\-\.]+$/, 'Invalid gclid format')
+    .optional()
+);
+
+const msclkidSchema = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().trim().max(200)
+    .regex(/^[a-zA-Z0-9_\-\.]+$/, 'Invalid msclkid format')
+    .optional()
+);
+
+// UTM source: normalize lowercase, accept any but only map known sources server-side
+export const KNOWN_UTM_SOURCES = ['google', 'bing', 'facebook', 'instagram', 'twitter', 'linkedin', 'email', 'direct', 'referral'] as const;
+export type KnownUtmSource = typeof KNOWN_UTM_SOURCES[number];
+// Accept any string but normalize; server-side checks KNOWN_UTM_SOURCES for platform derivation
+const utmSourceSchema = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  z.string().trim().max(100).transform(s => s.toLowerCase()).optional()
+);
+// Helper to check if a source is known (for server-side use)
+export const isKnownUtmSource = (src: string | undefined): src is KnownUtmSource =>
+  !!src && KNOWN_UTM_SOURCES.includes(src as KnownUtmSource);
 const vehicleYearSchema = z.number().int().min(1990).max(new Date().getFullYear() + 2);
 const vehicleMakeModelSchema = z.string().trim().min(2).max(50).regex(/^[a-zA-Z0-9\s\-]+$/);
 const serviceTypeSchema = z.enum(['repair', 'replacement']);
@@ -39,10 +79,13 @@ export const leadFormSchema = z.object({
   city: citySchema.optional(),
   state: stateSchema.optional(),
   zipCode: zipCodeSchema.optional(),
-  utmSource: z.string().trim().max(100).optional(),
-  utmMedium: z.string().trim().max(100).optional(),
+  utmSource: utmSourceSchema, // Normalized lowercase
+  utmMedium: z.string().trim().max(100).transform(val => val?.toLowerCase()).optional(),
   utmCampaign: z.string().trim().max(100).optional(),
   referralCode: z.string().trim().max(50).optional(),
+  sessionId: sessionIdSchema, // Accepts session_xxx format from tracking.ts
+  gclid: gclidSchema, // Google Ads click ID
+  msclkid: msclkidSchema, // Microsoft Ads click ID
   smsConsent: z.boolean().default(false), // Optional for quick quotes
   privacyAcknowledgment: z.boolean().default(false), // Optional for quick quotes
   website: z.string().max(0).optional().default(''), // Honeypot
@@ -66,12 +109,14 @@ export const bookingFormSchema = z.object({
   preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   timeWindow: z.enum(['morning', 'afternoon', 'anytime']).optional().default('anytime'),
   damageDescription: notesSchema,
-  utmSource: z.string().trim().max(100).optional(),
-  utmMedium: z.string().trim().max(100).optional(),
+  utmSource: utmSourceSchema, // Normalized lowercase
+  utmMedium: z.string().trim().max(100).transform(val => val?.toLowerCase()).optional(),
   utmCampaign: z.string().trim().max(100).optional(),
   referralCode: z.string().trim().max(50).optional(),
   clientId: z.string().uuid().optional(),
-  sessionId: z.string().uuid().optional(),
+  sessionId: sessionIdSchema, // Accepts session_xxx format from tracking.ts
+  gclid: gclidSchema, // Google Ads click ID
+  msclkid: msclkidSchema, // Microsoft Ads click ID
   smsConsent: z.literal(true),
   privacyAcknowledgment: z.literal(true),
   termsAccepted: z.literal(true),

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/validation";
+import { buildAttribution } from "@/lib/attribution";
 import { sendEmail, sendAdminEmail } from "@/lib/notifications/email";
 import { sendSMS, sendAdminSMS } from "@/lib/notifications/sms";
 import {
@@ -218,12 +219,10 @@ export async function POST(req: NextRequest) {
     // =============================================================================
     let sessionId: string | null = null;
     let utmParams: any = {};
-    let adPlatform: string | null = null;
 
     try {
-      // Get session ID from cookie
-      const sessionCookie = req.cookies.get('session_id');
-      sessionId = sessionCookie?.value || null;
+      // Get session ID from body first (passed from form), fall back to cookie
+      sessionId = validatedData.sessionId || req.cookies.get('session_id')?.value || null;
 
       if (sessionId) {
         // Look up session in user_sessions table to get UTM params
@@ -234,6 +233,7 @@ export async function POST(req: NextRequest) {
           .single();
 
         if (!sessionError && sessionData) {
+          // Store raw session data - platform derivation happens below with consistent labels
           utmParams = {
             utm_source: sessionData.utm_source,
             utm_medium: sessionData.utm_medium,
@@ -244,23 +244,12 @@ export async function POST(req: NextRequest) {
             msclkid: sessionData.msclkid,
           };
 
-          // Determine ad platform from click IDs
-          if (sessionData.gclid) {
-            adPlatform = 'google';
-          } else if (sessionData.msclkid) {
-            adPlatform = 'bing';
-          } else if (sessionData.utm_source === 'google' && sessionData.utm_medium === 'organic') {
-            adPlatform = 'organic';
-          } else if (sessionData.utm_source) {
-            adPlatform = sessionData.utm_source;
-          } else {
-            adPlatform = 'direct';
-          }
-
-          console.log(`📊 Attribution captured for session ${sessionId}:`, {
-            platform: adPlatform,
+          // Log attribution found (mask sensitive IDs)
+          console.log('📊 Session attribution found:', {
             source: sessionData.utm_source,
             campaign: sessionData.utm_campaign,
+            hasGclid: !!sessionData.gclid,
+            hasMsclkid: !!sessionData.msclkid,
           });
         }
       }
@@ -269,21 +258,39 @@ export async function POST(req: NextRequest) {
       // Continue with lead creation even if attribution fails
     }
 
+    // =============================================================================
+    // ATTRIBUTION: Build immutable attribution using centralized helper
+    // =============================================================================
+    // Uses buildAttribution() which handles:
+    // - TRUST BOUNDARY: ad_platform derived server-side from click ID presence
+    // - PRECEDENCE: gclid > msclkid > known utm_source
+    // - SOURCE OF TRUTH: Lookup wins over body (prevents spoofing)
+    // - NORMALIZATION: Empty strings → null
+    const finalAttribution = buildAttribution({
+      lookupGclid: utmParams.gclid,
+      lookupMsclkid: utmParams.msclkid,
+      bodyGclid: (validatedData as any).gclid,
+      bodyMsclkid: (validatedData as any).msclkid,
+      utmSource: utmParams.utm_source,
+      utmMedium: utmParams.utm_medium,
+      utmCampaign: utmParams.utm_campaign,
+      utmTerm: utmParams.utm_term,
+      utmContent: utmParams.utm_content,
+    });
+
     // Enhance validated data with attribution
     // IMPORTANT: Field names must match what fn_insert_lead expects in the SQL function
+    // Use finalAttribution (immutable) - never spread utmParams directly
+    // Destructure to omit phone/zipCode (they're renamed to phoneE164/zip)
+    const { phone, zipCode, ...restValidatedData } = validatedData;
     const leadData = {
-      ...validatedData,
-      phoneE164: validatedData.phone, // Map phone -> phoneE164
-      zip: validatedData.zipCode, // Map zipCode -> zip
+      ...restValidatedData,
+      phoneE164: phone, // Map phone -> phoneE164
+      zip: zipCode, // Map zipCode -> zip
       website_session_id: sessionId,
-      ad_platform: adPlatform,
       first_contact_method: 'form', // This is a form submission
-      ...utmParams,
+      ...finalAttribution, // Immutable attribution: gclid, msclkid, ad_platform, utm_*
     };
-
-    // Remove the original fields that were renamed
-    delete leadData.phone;
-    delete leadData.zipCode;
 
     // Insert lead using RPC with validated data + attribution
     const { error: leadError } = await client.rpc("fn_insert_lead", {

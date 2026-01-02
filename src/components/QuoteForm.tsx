@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { trackFormStart, trackFormSubmit, trackLeadFormConversion } from '@/lib/analytics';
+import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid } from '@/lib/tracking';
 
 export default function QuoteForm() {
   const router = useRouter();
@@ -114,13 +114,17 @@ export default function QuoteForm() {
     setIsSubmitting(true);
 
     try {
-      // Generate session and client IDs
-      const sessionId = sessionStorage.getItem('session_id') || crypto.randomUUID();
+      // Use the same session ID as tracking (matches user_sessions table for attribution)
+      const sessionId = getSessionId();
       const clientId = localStorage.getItem('client_id') || crypto.randomUUID();
 
-      // Store IDs for future use
-      sessionStorage.setItem('session_id', sessionId);
+      // Store client ID for future use
       localStorage.setItem('client_id', clientId);
+
+      // Get click IDs for attribution (from URL or localStorage)
+      // Note: ad_platform is derived SERVER-SIDE from gclid/msclkid presence (trust boundary)
+      const gclid = getGclid();
+      const msclkid = getMsclkid();
 
       // Combine vehicle data into single string for API
       const vehicle = `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`.trim();
@@ -140,6 +144,8 @@ export default function QuoteForm() {
           timestamp: new Date().toISOString(),
           clientId,
           sessionId,
+          gclid,
+          msclkid,
           firstTouch: {
             utm_source: 'direct',
             referrer: document.referrer || 'direct'
@@ -153,11 +159,9 @@ export default function QuoteForm() {
 
       if (response.ok) {
         const data = await response.json();
-        trackFormSubmit('homepage_quote_form');
-        // Track Google Ads conversion with lead ID as transaction_id
-        if (data.leadId) {
-          trackLeadFormConversion(data.leadId);
-        }
+        // Track form submission with GCLID/MSCLKID attribution to conversion_events table
+        // This also fires Google Ads and Microsoft Ads conversion tracking
+        trackFormSubmission('homepage_quote_form', { leadId: data.leadId });
         router.push('/thank-you');
       } else {
         alert('Something went wrong. Please call us at (720) 918-7465');
