@@ -3,80 +3,19 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance, validateGoogleAdsConfig } from '@/lib/googleAds';
 import { fetchAccountPerformance, validateMicrosoftAdsConfig } from '@/lib/microsoftAds';
 import { getCache, getCacheKey, CACHE_TTL, setCache } from '@/lib/cache';
+import {
+  getMountainDateRange,
+  getLeadMetrics,
+  getCallMetrics,
+  DateFilter,
+  MIN_CALL_DURATION_SECONDS,
+  ATTRIBUTION_WINDOW_MINUTES,
+} from '@/lib/dashboardData';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-const MIN_CALL_DURATION_SECONDS = 30;
-
-interface DateRangeResult {
-  start: Date;
-  end: Date;
-  display: string;
-}
-
-// Get current time in Mountain Time (UTC-7)
-function getMountainTime(): Date {
-  const now = new Date();
-  const mtOffset = -7 * 60; // Mountain Time offset in minutes
-  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utcNow + (mtOffset * 60000));
-}
-
-function getDateRange(period: string): DateRangeResult {
-  // Use Mountain Time for all date calculations (business is in Denver)
-  const mtNow = getMountainTime();
-  const today = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
-
-  switch (period) {
-    case 'today':
-      // For today: start at midnight, end at current time
-      // Note: For Ads API dates (YYYY-MM-DD), both are the same day
-      // But for database queries we need the full time range
-      return {
-        start: today,
-        end: mtNow,  // Current time for database queries
-        display: today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      };
-    case 'yesterday':
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayEnd = new Date(yesterday);
-      yesterdayEnd.setHours(23, 59, 59, 999);
-      // For yesterday: start at midnight, end at 23:59:59
-      return {
-        start: yesterday,
-        end: yesterdayEnd,  // End of yesterday for database queries
-        display: yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      };
-    case '7days':
-      const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      return {
-        start: sevenDaysAgo,
-        end: mtNow,
-        display: `${sevenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${mtNow.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-      };
-    case '30days':
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return {
-        start: thirtyDaysAgo,
-        end: mtNow,
-        display: `${thirtyDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${mtNow.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-      };
-    case 'all':
-    default:
-      const allTimeStart = new Date('2024-01-01');
-      return {
-        start: allTimeStart,
-        end: mtNow,
-        display: `${allTimeStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${mtNow.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-      };
-  }
-}
 
 interface PlatformMetrics {
   spend: number;
@@ -95,7 +34,7 @@ interface PlatformMetrics {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || '30days';
+    const period = (searchParams.get('period') || '30days') as DateFilter;
     const skipCache = searchParams.get('fresh') === 'true';
 
     // Check cache first (unless fresh data requested)
@@ -107,10 +46,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const { start, end, display } = getDateRange(period);
+    // Use shared date range function for consistent timezone handling
+    const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
 
-    const startDateStr = start.toISOString().split('T')[0];
-    const endDateStr = end.toISOString().split('T')[0];
+    // Fetch unified metrics using shared functions (consistent with Leads/Calls pages)
+    const [unifiedLeadMetrics, unifiedCallMetrics] = await Promise.all([
+      getLeadMetrics(supabase, start, end),
+      getCallMetrics(supabase, start, end),
+    ]);
 
     // Fetch all data in parallel
     const [
@@ -168,12 +111,12 @@ export async function GET(request: NextRequest) {
     const microsoftFormSubmits = microsoftEvents.filter(e => e.event_type === 'form_submit').length;
 
     // Process calls by attribution (including session-based matching)
-    const ATTRIBUTION_WINDOW_MINUTES = 5;
     const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
     const calls = allCalls.data || [];
+    // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
     let googleCalls = calls.filter(c => c.ad_platform === 'google').length;
-    let microsoftCalls = calls.filter(c => c.ad_platform === 'bing').length;
+    let microsoftCalls = calls.filter(c => c.ad_platform === 'microsoft').length;
     const answeredCalls = calls.filter(c => c.result === 'Accepted' || c.result === 'Call connected').length;
     const missedCalls = calls.filter(c => c.result === 'Missed').length;
 
@@ -232,9 +175,10 @@ export async function GET(request: NextRequest) {
     const directCalls = calls.length - googleCalls - microsoftCalls;
 
     // Process leads by attribution
+    // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
     const leads = allLeads.data || [];
     const googleLeads = leads.filter(l => l.ad_platform === 'google').length;
-    const microsoftLeads = leads.filter(l => l.ad_platform === 'bing').length;
+    const microsoftLeads = leads.filter(l => l.ad_platform === 'microsoft').length;
     const directLeads = leads.filter(l => l.ad_platform === 'direct' || !l.ad_platform).length;
     const newLeads = leads.filter(l => l.status === 'new').length;
     const totalRevenue = leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0);
@@ -309,32 +253,35 @@ export async function GET(request: NextRequest) {
 
     // Build response data
     const responseData = {
-      // Executive Summary KPIs
+      // Executive Summary KPIs - uses unified metrics (consistent with Leads page)
       summary: {
         totalSpend,
-        totalLeads,
-        costPerLead: totalLeads > 0 ? totalSpend / totalLeads : 0,
+        // UNIFIED: Total leads = form submissions + unique qualifying callers
+        totalLeads: unifiedLeadMetrics.total,
+        costPerLead: unifiedLeadMetrics.total > 0 ? totalSpend / unifiedLeadMetrics.total : 0,
         totalClicks,
         totalImpressions,
         overallCtr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
-        conversionRate: totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0,
-        totalRevenue,
-        roas: totalSpend > 0 ? totalRevenue / totalSpend : 0,
+        conversionRate: totalClicks > 0 ? (unifiedLeadMetrics.total / totalClicks) * 100 : 0,
+        totalRevenue: unifiedLeadMetrics.totalRevenue,
+        roas: totalSpend > 0 ? unifiedLeadMetrics.totalRevenue / totalSpend : 0,
       },
 
-      // Platform breakdown
+      // Platform breakdown (attributed leads for ads reporting)
       platforms: {
         google,
         microsoft,
         other,
       },
 
-      // Call metrics
+      // Call metrics - uses unified metrics (consistent with Calls page)
       calls: {
-        total: calls.length,
-        answered: answeredCalls,
-        missed: missedCalls,
-        answerRate: calls.length > 0 ? (answeredCalls / calls.length) * 100 : 0,
+        total: unifiedCallMetrics.total,
+        uniqueCallers: unifiedCallMetrics.uniqueCallers,
+        answered: unifiedCallMetrics.answered,
+        missed: unifiedCallMetrics.missed,
+        answerRate: unifiedCallMetrics.answerRate,
+        avgDuration: unifiedCallMetrics.avgDuration,
         byPlatform: {
           google: googleCalls,
           microsoft: microsoftCalls,
@@ -342,7 +289,27 @@ export async function GET(request: NextRequest) {
         },
       },
 
-      // Lead metrics (form submissions)
+      // Form lead metrics (consistent with Leads page)
+      formLeads: {
+        total: unifiedLeadMetrics.forms,
+        new: unifiedLeadMetrics.byStatus.new,
+        byPlatform: {
+          google: googleLeads,
+          microsoft: microsoftLeads,
+          direct: directLeads,
+        },
+        byStatus: unifiedLeadMetrics.byStatus,
+      },
+
+      // Unified lead metrics (forms + unique callers - matches Leads page exactly)
+      unifiedLeads: {
+        total: unifiedLeadMetrics.total,
+        forms: unifiedLeadMetrics.forms,
+        uniqueCallers: unifiedLeadMetrics.uniqueCallers,
+        revenue: unifiedLeadMetrics.totalRevenue,
+      },
+
+      // Legacy "leads" field for backwards compatibility
       leads: {
         total: leads.length,
         new: newLeads,

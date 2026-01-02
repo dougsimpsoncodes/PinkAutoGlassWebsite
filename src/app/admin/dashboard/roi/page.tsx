@@ -23,7 +23,7 @@ interface ROIData {
   };
   platforms: {
     google_ads: PlatformROI;
-    bing_ads: PlatformROI;
+    microsoft_ads: PlatformROI;
     organic: PlatformROI;
     direct: PlatformROI;
   };
@@ -123,12 +123,12 @@ export default function ROIDashboard() {
 
   const platforms = [
     { key: 'google_ads', name: 'Google Ads', color: 'blue', icon: '🔵' },
-    { key: 'bing_ads', name: 'Bing Ads', color: 'green', icon: '🟢' },
+    { key: 'microsoft_ads', name: 'Microsoft Ads', color: 'green', icon: '🟢' },
     { key: 'organic', name: 'Organic Search', color: 'purple', icon: '🟣' },
     { key: 'direct', name: 'Direct/Unknown', color: 'gray', icon: '⚪' },
   ];
 
-  const paidPlatforms = platforms.filter(p => ['google_ads', 'bing_ads'].includes(p.key));
+  const paidPlatforms = platforms.filter(p => ['google_ads', 'microsoft_ads'].includes(p.key));
 
   return (
     <DashboardLayout>
@@ -312,7 +312,7 @@ export default function ROIDashboard() {
             return null;
           }
 
-          const isPaid = ['google_ads', 'bing_ads'].includes(platform.key);
+          const isPaid = ['google_ads', 'microsoft_ads'].includes(platform.key);
 
           return (
             <div key={platform.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
