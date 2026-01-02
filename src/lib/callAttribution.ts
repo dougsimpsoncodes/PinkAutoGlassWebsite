@@ -77,7 +77,7 @@ interface RingCentralCall {
 interface CampaignActivity {
   date: string;
   hour: number;
-  platform: 'google' | 'bing';
+  platform: 'google' | 'microsoft';  // Database stores 'microsoft', not 'bing'
   campaign_id: string;
   campaign_name: string;
   impressions: number;
@@ -149,9 +149,10 @@ export async function matchDirectConversions(
       if (timeDiffMin > 4) confidence = 90;
 
       // Determine platform from click IDs
+      // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
       let platform = 'direct';
       if (matchingEvent.gclid) platform = 'google';
-      else if (matchingEvent.msclkid) platform = 'bing';
+      else if (matchingEvent.msclkid) platform = 'microsoft';
       else if (matchingEvent.utm_source === 'google' && matchingEvent.utm_medium === 'organic') platform = 'organic';
       else if (matchingEvent.utm_source) platform = matchingEvent.utm_source;
 
@@ -305,7 +306,7 @@ async function getHourlyCampaignActivity(
     activities.push(...bingAds.map((row: any) => ({
       date: row.date,
       hour: row.hour_of_day,
-      platform: 'bing' as const,
+      platform: 'microsoft' as const,  // Database stores 'microsoft', not 'bing'
       campaign_id: row.campaign_id.toString(),
       campaign_name: row.campaign_name,
       impressions: row.impressions || 0,

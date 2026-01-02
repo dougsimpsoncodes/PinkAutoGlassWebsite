@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 
     const [
       googleAdsResult,
-      bingAdsResult,
+      microsoftAdsResult,
       callsResult,
       formsResult,
       leadsResult,
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
         .gte('date', startDate)
         .lte('date', endDate),
 
-      // Bing Ads cost
+      // Microsoft Ads cost
       client
         .from('microsoft_ads_daily_performance')
         .select('cost_micros')
@@ -123,9 +123,9 @@ export async function GET(req: NextRequest) {
     const googleCostMicros = googleAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
     const googleCost = googleCostMicros / 1000000;
 
-    const bingAdsData = bingAdsResult.status === 'fulfilled' ? bingAdsResult.value.data : [];
-    const bingCostMicros = bingAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
-    const bingCost = bingCostMicros / 1000000;
+    const microsoftAdsData = microsoftAdsResult.status === 'fulfilled' ? microsoftAdsResult.value.data : [];
+    const microsoftCostMicros = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
+    const microsoftCost = microsoftCostMicros / 1000000;
 
     // =============================================================================
     // DEDUPLICATE CUSTOMERS
@@ -137,11 +137,12 @@ export async function GET(req: NextRequest) {
     const allUniqueCustomers = deduplicateCustomers(calls, forms);
 
     // Split by platform
+    // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
     const googleCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'google');
-    const bingCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'bing');
+    const microsoftCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'microsoft');
     const organicCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'organic');
     const directCustomers = allUniqueCustomers.filter(c =>
-      c.attribution.platform === 'direct' || c.attribution.platform === 'unknown'
+      c.attribution.platform === 'direct' || c.attribution.platform === 'unknown' || c.attribution.platform === null
     );
 
     // =============================================================================
@@ -151,9 +152,10 @@ export async function GET(req: NextRequest) {
     const leadsWithRevenue = leadsResult.status === 'fulfilled' ? (leadsResult.value.data || []) : [];
 
     // Group revenue by platform
+    // NOTE: Keys must match database ad_platform values from src/lib/attribution.ts
     const revenueByPlatform: Record<string, number> = {
       google: 0,
-      bing: 0,
+      microsoft: 0,  // Database stores 'microsoft', not 'bing'
       organic: 0,
       direct: 0,
       unknown: 0,
@@ -201,10 +203,10 @@ export async function GET(req: NextRequest) {
         googleCost,
         revenueByPlatform.google
       ),
-      bing_ads: calculatePlatformMetrics(
-        bingCustomers.length,
-        bingCost,
-        revenueByPlatform.bing
+      microsoft_ads: calculatePlatformMetrics(
+        microsoftCustomers.length,
+        microsoftCost,
+        revenueByPlatform.microsoft
       ),
       organic: calculatePlatformMetrics(
         organicCustomers.length,
@@ -223,7 +225,7 @@ export async function GET(req: NextRequest) {
     // =============================================================================
 
     const totalCustomers = allUniqueCustomers.length;
-    const totalCost = googleCost + bingCost;
+    const totalCost = googleCost + microsoftCost;
     const totalRevenue = Object.values(revenueByPlatform).reduce((sum, rev) => sum + rev, 0);
     const totalProfit = totalRevenue - totalCost;
 

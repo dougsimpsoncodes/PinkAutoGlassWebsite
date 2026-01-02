@@ -26,7 +26,7 @@ interface FunnelData {
   };
   platforms: {
     google_ads: PlatformMetrics;
-    bing_ads: PlatformMetrics;
+    microsoft_ads: PlatformMetrics;
     organic: PlatformMetrics;
     direct: PlatformMetrics;
   };
@@ -129,7 +129,7 @@ export default function MarketingFunnelDashboard() {
 
   const platforms = [
     { key: 'google_ads', name: 'Google Ads', color: 'blue', icon: '🔵' },
-    { key: 'bing_ads', name: 'Bing Ads', color: 'green', icon: '🟢' },
+    { key: 'microsoft_ads', name: 'Microsoft Ads', color: 'green', icon: '🟢' },
     { key: 'organic', name: 'Organic Search', color: 'purple', icon: '🟣' },
     { key: 'direct', name: 'Direct/Unknown', color: 'gray', icon: '⚪' },
   ];

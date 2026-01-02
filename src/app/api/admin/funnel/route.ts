@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
     const [
       googleAdsResult,
-      bingAdsResult,
+      microsoftAdsResult,
       organicResult,
       callsResult,
       formsResult,
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         .gte('date', startDate)
         .lte('date', endDate),
 
-      // Bing Ads performance
+      // Microsoft Ads performance
       client
         .from('microsoft_ads_daily_performance')
         .select('impressions, clicks, cost_micros')
@@ -130,12 +130,12 @@ export async function GET(req: NextRequest) {
     const googleCostMicros = googleAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
     const googleCost = googleCostMicros / 1000000;
 
-    // Bing Ads
-    const bingAdsData = bingAdsResult.status === 'fulfilled' ? bingAdsResult.value.data : [];
-    const bingImpressions = bingAdsData?.reduce((sum: number, row: any) => sum + (row.impressions || 0), 0) || 0;
-    const bingClicks = bingAdsData?.reduce((sum: number, row: any) => sum + (row.clicks || 0), 0) || 0;
-    const bingCostMicros = bingAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
-    const bingCost = bingCostMicros / 1000000;
+    // Microsoft Ads
+    const microsoftAdsData = microsoftAdsResult.status === 'fulfilled' ? microsoftAdsResult.value.data : [];
+    const microsoftImpressions = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.impressions || 0), 0) || 0;
+    const microsoftClicks = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.clicks || 0), 0) || 0;
+    const microsoftCostMicros = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
+    const microsoftCost = microsoftCostMicros / 1000000;
 
     // Organic
     const organicData = organicResult.status === 'fulfilled' ? organicResult.value.data : [];
@@ -153,14 +153,15 @@ export async function GET(req: NextRequest) {
     const allUniqueCustomers = deduplicateCustomers(calls, forms);
 
     // Split by platform
+    // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
     const googleCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'google');
-    const bingCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'bing');
+    const microsoftCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'microsoft');
     const organicCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'organic');
-    const directCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'direct' || c.attribution.platform === 'unknown');
+    const directCustomers = allUniqueCustomers.filter(c => c.attribution.platform === 'direct' || c.attribution.platform === 'unknown' || c.attribution.platform === null);
 
     // Get breakdowns
     const googleBreakdown = getCustomerBreakdown(googleCustomers);
-    const bingBreakdown = getCustomerBreakdown(bingCustomers);
+    const microsoftBreakdown = getCustomerBreakdown(microsoftCustomers);
     const organicBreakdown = getCustomerBreakdown(organicCustomers);
     const directBreakdown = getCustomerBreakdown(directCustomers);
     const totalBreakdown = getCustomerBreakdown(allUniqueCustomers);
@@ -183,18 +184,18 @@ export async function GET(req: NextRequest) {
         conversionRate: googleClicks > 0 ? parseFloat(((googleBreakdown.total / googleClicks) * 100).toFixed(2)) : 0,
         costPerCustomer: googleBreakdown.total > 0 ? parseFloat((googleCost / googleBreakdown.total).toFixed(2)) : 0,
       },
-      bing_ads: {
-        impressions: bingImpressions,
-        clicks: bingClicks,
-        uniqueCustomers: bingBreakdown.total,
+      microsoft_ads: {
+        impressions: microsoftImpressions,
+        clicks: microsoftClicks,
+        uniqueCustomers: microsoftBreakdown.total,
         breakdown: {
-          byCall: bingBreakdown.byCall,
-          byForm: bingBreakdown.byForm,
+          byCall: microsoftBreakdown.byCall,
+          byForm: microsoftBreakdown.byForm,
         },
-        cost: parseFloat(bingCost.toFixed(2)),
-        ctr: bingImpressions > 0 ? parseFloat(((bingClicks / bingImpressions) * 100).toFixed(2)) : 0,
-        conversionRate: bingClicks > 0 ? parseFloat(((bingBreakdown.total / bingClicks) * 100).toFixed(2)) : 0,
-        costPerCustomer: bingBreakdown.total > 0 ? parseFloat((bingCost / bingBreakdown.total).toFixed(2)) : 0,
+        cost: parseFloat(microsoftCost.toFixed(2)),
+        ctr: microsoftImpressions > 0 ? parseFloat(((microsoftClicks / microsoftImpressions) * 100).toFixed(2)) : 0,
+        conversionRate: microsoftClicks > 0 ? parseFloat(((microsoftBreakdown.total / microsoftClicks) * 100).toFixed(2)) : 0,
+        costPerCustomer: microsoftBreakdown.total > 0 ? parseFloat((microsoftCost / microsoftBreakdown.total).toFixed(2)) : 0,
       },
       organic: {
         impressions: organicImpressions,
@@ -224,9 +225,9 @@ export async function GET(req: NextRequest) {
       },
     };
 
-    const totalCost = googleCost + bingCost;
-    const totalImpressions = googleImpressions + bingImpressions + organicImpressions;
-    const totalClicks = googleClicks + bingClicks + organicClicks;
+    const totalCost = googleCost + microsoftCost;
+    const totalImpressions = googleImpressions + microsoftImpressions + organicImpressions;
+    const totalClicks = googleClicks + microsoftClicks + organicClicks;
 
     const totals = {
       impressions: totalImpressions,
