@@ -28,35 +28,38 @@ const notesSchema = z.string().trim().max(500).optional().transform((notes) => n
 // Session ID: must match session_{timestamp}_{random} format from tracking.ts
 // Format: session_ + 10-16 digit timestamp + _ + 6+ char random alphanumeric
 // Non-fatal: invalid format → treated as undefined (rely on cookie/lookup)
+// FIX: Handle null (typeof null === 'object' in JS, not 'string')
 const sessionIdSchema = z.preprocess(
-  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '') ? undefined : val),
   z.string().trim().max(100)
     .regex(/^session_[0-9]{10,16}_[a-z0-9]{6,}$/, 'Invalid session ID format')
     .optional()
 );
 
-// Click IDs: preprocess empty strings to undefined, then validate non-empty
+// Click IDs: preprocess null/empty strings to undefined, then validate non-empty
 // Alphanumeric with common separators (_, -, .) - no weird Unicode
+// FIX: Must handle null (typeof null === 'object' in JS), not just empty string
 const gclidSchema = z.preprocess(
-  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '') ? undefined : val),
   z.string().trim().max(200)
     .regex(/^[a-zA-Z0-9_\-\.]+$/, 'Invalid gclid format')
     .optional()
 );
 
 const msclkidSchema = z.preprocess(
-  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '') ? undefined : val),
   z.string().trim().max(200)
     .regex(/^[a-zA-Z0-9_\-\.]+$/, 'Invalid msclkid format')
     .optional()
 );
 
 // UTM source: normalize lowercase, accept any but only map known sources server-side
+// FIX: Handle null values
 export const KNOWN_UTM_SOURCES = ['google', 'bing', 'facebook', 'instagram', 'twitter', 'linkedin', 'email', 'direct', 'referral'] as const;
 export type KnownUtmSource = typeof KNOWN_UTM_SOURCES[number];
 // Accept any string but normalize; server-side checks KNOWN_UTM_SOURCES for platform derivation
 const utmSourceSchema = z.preprocess(
-  (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+  (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '') ? undefined : val),
   z.string().trim().max(100).transform(s => s.toLowerCase()).optional()
 );
 // Helper to check if a source is known (for server-side use)
