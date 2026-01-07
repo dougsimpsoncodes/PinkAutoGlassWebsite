@@ -27,8 +27,9 @@ export async function POST(request: NextRequest) {
       const year = parseInt(vehicleParts[0]);
       if (!isNaN(year)) {
         transformedBody.vehicleYear = year;
-        transformedBody.vehicleMake = vehicleParts[1] || '';
-        transformedBody.vehicleModel = vehicleParts.slice(2).join(' ') || '';
+        transformedBody.vehicleMake = vehicleParts[1] || 'Unknown';
+        // Default empty model to make name or 'Unknown' to pass validation
+        transformedBody.vehicleModel = vehicleParts.slice(2).join(' ') || vehicleParts[1] || 'Unknown';
       }
     }
 
