@@ -13,6 +13,8 @@
     "generate-brand": "node assets/scripts/generate-brand-images.mjs",
     "verify:brands": "./scripts/verify-brand-urls.sh",
     "verify:schema": "node scripts/validate-schema.js",
+    "ci:guard:ad-platform": "node scripts/ci/guard-no-bing.js",
+    "ci:guards": "npm run ci:guard:ad-platform",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
   "dependencies": {
@@ -40,7 +42,7 @@
     "google-ads-api": "^21.0.1",
     "googleapis": "^164.1.0",
     "lucide-react": "0.294.0",
-    "next": "^14.2.32",
+    "next": "^15.5.10",
     "next-themes": "^0.4.6",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
