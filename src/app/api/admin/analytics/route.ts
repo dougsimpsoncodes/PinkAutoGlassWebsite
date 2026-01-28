@@ -115,6 +115,10 @@ export async function GET(req: NextRequest) {
       case '90days':
         startDate = new Date(now.setDate(now.getDate() - 90));
         break;
+      case 'all':
+        // All time - use a date far in the past
+        startDate = new Date('2020-01-01');
+        break;
       default:
         startDate = new Date(now.setDate(now.getDate() - 7));
     }
@@ -367,6 +371,18 @@ async function getTrafficDetail(startDate: Date) {
       if (sourceMap.has(source)) {
         sourceMap.get(source).conversions += 1;
       }
+    } else {
+      // Orphan conversion - no matching session, attribute to 'unknown'
+      if (!sourceMap.has('unknown')) {
+        sourceMap.set('unknown', {
+          source: 'unknown',
+          visitors: 0,
+          page_views: 0,
+          conversions: 0,
+          conversion_rate: 0,
+        });
+      }
+      sourceMap.get('unknown').conversions += 1;
     }
   });
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+require('dotenv').config({ path: '.env.local' });
 const { SDK } = require('@ringcentral/sdk');
 
 const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ringcentral.com';

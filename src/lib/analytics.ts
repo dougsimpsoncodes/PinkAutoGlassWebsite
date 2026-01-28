@@ -235,3 +235,62 @@ export const trackTextClickConversion = (sessionId: string) => {
 export const trackCallClickConversion = (sessionId: string) => {
   trackGoogleAdsConversion(`call_${sessionId}`, GOOGLE_ADS_CALL_LABEL);
 };
+
+// ============================================================================
+// MICROSOFT ADS UET CONVERSION TRACKING
+// ============================================================================
+
+declare global {
+  interface Window {
+    uetq?: any[];
+  }
+}
+
+/**
+ * Track Microsoft Ads UET conversion event
+ * @param eventAction - The action name (e.g., 'phone_click', 'text_click', 'form_submit')
+ * @param eventCategory - Category for the event (default: 'conversion')
+ * @param eventLabel - Optional label for additional context
+ * @param eventValue - Optional revenue value
+ */
+export const trackMicrosoftAdsEvent = (
+  eventAction: string,
+  eventCategory: string = 'conversion',
+  eventLabel?: string,
+  eventValue?: number
+) => {
+  if (typeof window !== 'undefined' && window.uetq) {
+    window.uetq.push('event', eventAction, {
+      event_category: eventCategory,
+      event_label: eventLabel,
+      event_value: eventValue,
+    });
+  }
+};
+
+/**
+ * Track phone call click for Microsoft Ads
+ * Maps to "Phone call website click" conversion goal in Microsoft Ads
+ * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ */
+export const trackMicrosoftAdsCallClick = (source: string) => {
+  trackMicrosoftAdsEvent('Phone call website click', 'conversion', source);
+};
+
+/**
+ * Track text/SMS click for Microsoft Ads
+ * Maps to "Text_click" conversion goal in Microsoft Ads
+ * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ */
+export const trackMicrosoftAdsTextClick = (source: string) => {
+  trackMicrosoftAdsEvent('Text_click', 'conversion', source);
+};
+
+/**
+ * Track lead form submission for Microsoft Ads
+ * Maps to "Quick quote" conversion goal in Microsoft Ads
+ * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ */
+export const trackMicrosoftAdsLeadForm = (formName: string, value?: number) => {
+  trackMicrosoftAdsEvent('Quick quote', 'conversion', formName, value);
+};

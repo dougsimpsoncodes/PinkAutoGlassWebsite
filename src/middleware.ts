@@ -93,12 +93,12 @@ export async function middleware(request: NextRequest) {
     // Content Security Policy - Prevent XSS attacks
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://*.google.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://*.google.com https://bat.bing.com https://*.bing.com https://bat.bing.net https://*.bing.net https://*.clarity.ms",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://*.google.com",
-      "frame-src 'self' https://googleads.g.doubleclick.net https://www.googleadservices.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.io https://www.google-analytics.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://*.google.com https://bat.bing.com https://*.bing.com https://bat.bing.net https://*.bing.net https://*.clarity.ms",
+      "frame-src 'self' https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://www.googletagmanager.com https://*.google.com https://*.clarity.ms",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

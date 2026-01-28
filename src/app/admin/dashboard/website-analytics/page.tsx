@@ -130,9 +130,9 @@ export default function WebsiteAnalyticsPage() {
   const getSourceLabel = (source: string) => {
     if (source === 'google-ads') return 'Google Ads';
     if (source === 'google-organic') return 'Organic Search';
-    if (source === 'microsoft-ads') return 'Microsoft Ads';
+    if (source === 'microsoft-ads' || source.includes('microsoft')) return 'Microsoft Ads';
     if (source === 'direct') return 'Direct';
-    if (source === 'bing') return 'Bing';
+    if (source === 'bing') return 'Microsoft/Bing';
     return source.charAt(0).toUpperCase() + source.slice(1).replace(/-/g, ' ');
   };
 
