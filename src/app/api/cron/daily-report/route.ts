@@ -124,6 +124,32 @@ function deduplicateLeads(leads: any[]): any[] {
   return Array.from(contactMap.values());
 }
 
+// Deduplicate conversion events - only show one click per session_id per event type
+// This reduces noise from users clicking the same button multiple times
+function deduplicateConversionEvents(events: any[]): any[] {
+  const sessionMap = new Map<string, any>();
+
+  events.forEach(event => {
+    // Create unique key: session_id + event_type (so phone_click and text_click are separate)
+    const key = `${event.session_id || event.id}_${event.event_type}`;
+    const existing = sessionMap.get(key);
+
+    if (!existing) {
+      // First click in this session - add it
+      sessionMap.set(key, event);
+    } else {
+      // Keep the earliest click (first intent signal)
+      const eventDate = new Date(event.created_at);
+      const existingDate = new Date(existing.created_at);
+      if (eventDate < existingDate) {
+        sessionMap.set(key, event);
+      }
+    }
+  });
+
+  return Array.from(sessionMap.values());
+}
+
 // Filter out test leads
 // Test leads = has "test" in name OR email, AND domain is @pink.com or @pinkautoglass.com
 function filterTestLeads(leads: any[]): any[] {
@@ -189,22 +215,34 @@ async function fetchData() {
   const leads = deduplicateLeads(filteredLeads);
 
   // 3 & 4. Fetch conversion events (click-to-call and click-to-text)
-  const { data: conversionEvents } = await supabase
+  const { data: allConversionEvents } = await supabase
     .from('conversion_events')
     .select('*')
     .gte('created_at', fourteenDaysAgoUTC.toISOString())
     .in('event_type', ['phone_click', 'text_click'])
     .order('created_at', { ascending: false });
 
-  // 5. Fetch Google Ads data
+  // Deduplicate clicks - only count one per session per event type
+  const conversionEvents = deduplicateConversionEvents(allConversionEvents || []);
+
+  // 5. Fetch Google Ads data with improved error handling
   const startDate = fourteenDaysAgoMT.toISOString().split('T')[0];
   const endDate = todayMT.toISOString().split('T')[0];
   let campaigns: any[] = [];
   try {
+    console.log(`🔄 Fetching Google Ads data for ${startDate} to ${endDate}...`);
     campaigns = await fetchCampaignPerformance(startDate, endDate);
+    console.log(`✅ Google Ads: Fetched ${campaigns.length} campaign records`);
   } catch (error: any) {
-    console.error('Error fetching Google Ads data:', error.message);
-    // Continue without ads data
+    console.error('❌ Error fetching Google Ads data:', error.message);
+    
+    // Check if it's a credential/auth issue
+    if (error.message.includes('credentials') || error.message.includes('token') || error.message.includes('authentication')) {
+      console.error('🔑 Google Ads authentication issue detected - check credentials and refresh tokens');
+    }
+    
+    // Continue without ads data but log for debugging
+    campaigns = [];
   }
 
   // Aggregate Google Ads data by date
@@ -220,8 +258,7 @@ async function fetchData() {
     adsDataByDate[date].conversions += conversions || 0;
   });
 
-  // 6. Fetch Microsoft Ads data - use the SAME function that works in the dashboard
-  // Fetch for yesterday only (the day we're reporting on)
+  // 6. Fetch Microsoft Ads data with improved error handling and retry logic
   const msAdsDataByDate: Record<string, { impressions: number; clicks: number; spend: number; conversions: number }> = {};
   try {
     // Get yesterday's date (the day the report is about)
@@ -229,10 +266,28 @@ async function fetchData() {
     yesterdayMT.setDate(yesterdayMT.getDate() - 1);
     const yesterdayStr = yesterdayMT.toISOString().split('T')[0];
 
-    console.log(`Fetching Microsoft Ads for ${yesterdayStr}...`);
-    const msPerformance = await fetchMicrosoftAdsPerformance(yesterdayStr, yesterdayStr);
+    console.log(`🔄 Fetching Microsoft Ads for ${yesterdayStr}...`);
+    
+    // Retry Microsoft Ads API call up to 3 times with backoff
+    let msPerformance = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`   Attempt ${attempt}/3 for Microsoft Ads...`);
+        msPerformance = await fetchMicrosoftAdsPerformance(yesterdayStr, yesterdayStr);
+        if (msPerformance) break;
+        
+        if (attempt < 3) {
+          console.log(`   No data on attempt ${attempt}, waiting 5 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      } catch (attemptError: any) {
+        console.error(`   Attempt ${attempt} failed:`, attemptError.message);
+        if (attempt === 3) throw attemptError;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
 
-    if (msPerformance) {
+    if (msPerformance && (msPerformance.impressions > 0 || msPerformance.clicks > 0 || msPerformance.spend > 0)) {
       msAdsDataByDate[yesterdayStr] = {
         impressions: msPerformance.impressions,
         clicks: msPerformance.clicks,
@@ -241,11 +296,17 @@ async function fetchData() {
       };
       console.log(`✅ Microsoft Ads for ${yesterdayStr}:`, msAdsDataByDate[yesterdayStr]);
     } else {
-      console.log(`⚠️ Microsoft Ads: No data returned for ${yesterdayStr}`);
+      console.log(`⚠️ Microsoft Ads: No valid data returned for ${yesterdayStr}`);
+      // Add note to email about missing data
+      msAdsDataByDate[yesterdayStr] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
     }
   } catch (error: any) {
-    console.error('Error fetching Microsoft Ads data:', error.message);
-    // Continue without Microsoft Ads data
+    console.error('❌ Error fetching Microsoft Ads data:', error.message);
+    // Add error indicator to report
+    const yesterdayMT = new Date(todayMT);
+    yesterdayMT.setDate(yesterdayMT.getDate() - 1);
+    const yesterdayStr = yesterdayMT.toISOString().split('T')[0];
+    msAdsDataByDate[yesterdayStr] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
   }
 
   return {
@@ -254,6 +315,7 @@ async function fetchData() {
     conversionEvents: conversionEvents || [],
     adsDataByDate,
     msAdsDataByDate,
+    campaigns: campaigns || [],
   };
 }
 
@@ -503,7 +565,12 @@ function getSourceStyle(source: Contact['source']): { label: string; color: stri
 function generateEmailHTML(
   metrics: any,
   contacts: Contact[],
-  reportDay: DailyStats
+  reportDay: DailyStats,
+  dataStatus?: {
+    googleAdsWorking: boolean;
+    msAdsWorking: boolean;
+    totalCampaigns: number;
+  }
 ): string {
   const { trends } = metrics;
 
@@ -572,7 +639,10 @@ function generateEmailHTML(
 
     <!-- Google Ads Performance -->
     <div style="padding: 16px 24px 32px 24px;">
-      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">Google Ads Performance</h2>
+      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">
+        Google Ads Performance 
+        ${!dataStatus?.googleAdsWorking ? '<span style="color: #ef4444; font-size: 14px;">⚠️ Data Issue</span>' : ''}
+      </h2>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div style="background: #f8f9fa; padding: 14px; border-radius: 8px;">
           <div style="font-size: 13px; color: #666; margin-bottom: 2px;">Impressions</div>
@@ -607,7 +677,10 @@ function generateEmailHTML(
 
     <!-- Microsoft Ads Performance -->
     <div style="padding: 0 24px 32px 24px;">
-      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">Microsoft Ads Performance</h2>
+      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">
+        Microsoft Ads Performance
+        ${!dataStatus?.msAdsWorking ? '<span style="color: #ef4444; font-size: 14px;">⚠️ Data Issue</span>' : ''}
+      </h2>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div style="background: #eff6ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0078d4;">
           <div style="font-size: 13px; color: #1e40af; margin-bottom: 2px;">Impressions</div>
@@ -679,7 +752,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch all data from all 6 sources
     const data = await fetchData();
-    console.log(`✅ Fetched ${data.calls.length} calls, ${data.leads.length} leads, ${data.conversionEvents.length} conversion events`);
+    console.log(`✅ Fetched ${data.calls.length} calls, ${data.leads.length} leads, ${data.conversionEvents.length} conversion events (deduplicated by session)`);
     // Log Microsoft Ads data
     const msAdsDates = Object.keys(data.msAdsDataByDate);
     if (msAdsDates.length > 0) {
@@ -696,14 +769,62 @@ export async function GET(request: NextRequest) {
     const reportDay = dailyStats[dailyStats.length - 1];
 
     // =============================================================================
-    // CRITICAL ALERT: Zero leads detection
-    // Added after Dec 2025 incident where quote form was broken for 4 days undetected
+    // CRITICAL ALERTS: Data gap and zero activity detection
+    // Expanded after Jan 2026 incident where 41-hour outage went undetected
     // =============================================================================
-    const totalLeadsYesterday = reportDay.quoteRequests;
-    if (totalLeadsYesterday === 0) {
+    const totalActivity = reportDay.phoneCalls + reportDay.quoteRequests + reportDay.clickToCalls + reportDay.clickToTexts;
+    const isWeekday = ![0, 6].includes(new Date(reportDay.date).getDay()); // 0=Sun, 6=Sat
+
+    // ALERT 1: Complete data gap (zero everything) - highest severity
+    if (totalActivity === 0) {
+      console.error('🚨 CRITICAL: Complete data gap yesterday - zero activity across ALL sources!');
+
+      const alertHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #450a0a; border: 3px solid #dc2626; border-radius: 8px; padding: 24px;">
+    <h1 style="color: #fca5a5; margin: 0 0 16px 0;">🚨 CRITICAL: Complete Data Gap</h1>
+    <p style="color: #fecaca; font-size: 18px; margin: 0 0 16px 0;">
+      <strong>ZERO activity was recorded yesterday across ALL sources:</strong>
+    </p>
+    <ul style="color: #fecaca; margin: 0 0 16px 0; font-size: 16px;">
+      <li>Phone Calls: 0</li>
+      <li>Quote Requests: 0</li>
+      <li>Click to Call: 0</li>
+      <li>Click to Text: 0</li>
+    </ul>
+    <p style="color: #fca5a5; margin: 0 0 16px 0; font-size: 16px;">
+      This indicates a <strong>system outage</strong>, not a quiet day. Possible causes:
+    </p>
+    <ul style="color: #fecaca; margin: 0 0 16px 0;">
+      <li>Website/Vercel deployment issue</li>
+      <li>Supabase database connection failure</li>
+      <li>RingCentral sync job failure</li>
+      <li>Environment variable issue</li>
+    </ul>
+    <div style="background: #7f1d1d; padding: 16px; border-radius: 4px; margin-top: 16px;">
+      <p style="color: #fecaca; margin: 0; font-size: 14px;">
+        <strong>Immediate Actions:</strong><br>
+        1. Check <a href="https://pinkautoglass.com" style="color: #fca5a5;">pinkautoglass.com</a> is loading<br>
+        2. Submit a test quote form<br>
+        3. Make a test call to verify RingCentral<br>
+        4. Check Vercel deployment status<br>
+        5. Check Supabase dashboard for errors
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      await sendAdminEmail('🚨 CRITICAL: Complete Data Gap - Zero Activity Yesterday', alertHtml);
+      console.log('📧 Critical data gap alert email sent');
+    }
+    // ALERT 2: Zero quote requests specifically (form may be broken)
+    else if (reportDay.quoteRequests === 0) {
       console.warn('⚠️ ALERT: Zero quote requests yesterday - possible form issue!');
 
-      // Send urgent alert email
       const alertHtml = `
 <!DOCTYPE html>
 <html>
@@ -714,32 +835,68 @@ export async function GET(request: NextRequest) {
     <p style="color: #991b1b; font-size: 16px; margin: 0 0 16px 0;">
       <strong>No quote form submissions were recorded yesterday.</strong>
     </p>
-    <p style="color: #7f1d1d; margin: 0 0 16px 0;">
-      This could indicate:
+    <p style="color: #666; margin: 0 0 16px 0;">
+      Other activity was recorded (${reportDay.phoneCalls} calls, ${reportDay.clickToCalls} click-to-calls),
+      so the website is working but the quote form may be broken.
     </p>
     <ul style="color: #7f1d1d; margin: 0 0 16px 0;">
-      <li>The quote form is broken</li>
-      <li>Database insert function is failing</li>
-      <li>A migration broke lead capture</li>
+      <li>The quote form may be broken</li>
+      <li>Database insert function may be failing</li>
+      <li>A migration may have broken lead capture</li>
     </ul>
     <p style="color: #7f1d1d; margin: 0 0 16px 0;">
       <strong>Action Required:</strong> Test the quote form at <a href="https://pinkautoglass.com/#quote-form" style="color: #dc2626;">pinkautoglass.com</a> immediately.
     </p>
-    <div style="background: #fee2e2; padding: 12px; border-radius: 4px; margin-top: 16px;">
-      <p style="color: #991b1b; margin: 0; font-size: 13px;">
-        <strong>Quick Test:</strong> Submit a test quote and verify it appears in the admin dashboard.
-      </p>
-    </div>
   </div>
 </body>
 </html>`;
 
       await sendAdminEmail('🚨 URGENT: Zero Quote Requests Yesterday', alertHtml);
-      console.log('📧 Zero-lead alert email sent');
+      console.log('📧 Zero quote requests alert email sent');
+    }
+    // ALERT 3: Zero phone calls on a weekday (RingCentral sync may be broken)
+    else if (reportDay.phoneCalls === 0 && isWeekday) {
+      console.warn('⚠️ WARNING: Zero phone calls on a weekday - RingCentral sync may be broken');
+
+      const alertHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 24px;">
+    <h1 style="color: #b45309; margin: 0 0 16px 0;">⚠️ Warning: Zero Phone Calls</h1>
+    <p style="color: #92400e; font-size: 16px; margin: 0 0 16px 0;">
+      <strong>No phone calls were recorded yesterday (a weekday).</strong>
+    </p>
+    <p style="color: #666; margin: 0 0 16px 0;">
+      Website activity was normal (${reportDay.quoteRequests} quotes, ${reportDay.clickToCalls} click-to-calls),
+      but zero calls is unusual for a weekday.
+    </p>
+    <ul style="color: #92400e; margin: 0 0 16px 0;">
+      <li>RingCentral sync job may have failed</li>
+      <li>RingCentral API credentials may have expired</li>
+      <li>Phone lines may be down</li>
+    </ul>
+    <p style="color: #92400e; margin: 0 0 16px 0;">
+      <strong>Action:</strong> Check RingCentral dashboard and verify the sync is running.
+    </p>
+  </div>
+</body>
+</html>`;
+
+      await sendAdminEmail('⚠️ Warning: Zero Phone Calls Yesterday', alertHtml);
+      console.log('📧 Zero phone calls warning email sent');
     }
 
+    // Determine data status for quality indicators
+    const dataStatus = {
+      googleAdsWorking: data.campaigns.length > 0,
+      msAdsWorking: Object.values(data.msAdsDataByDate).some(d => d.impressions > 0 || d.clicks > 0 || d.spend > 0),
+      totalCampaigns: data.campaigns.length
+    };
+
     // Generate HTML
-    const html = generateEmailHTML(metrics, contacts, reportDay);
+    const html = generateEmailHTML(metrics, contacts, reportDay, dataStatus);
 
     // Send email - use yesterday's date (in Mountain Time)
     const mtOffset = -7 * 60;
@@ -749,13 +906,16 @@ export async function GET(request: NextRequest) {
     const yesterdayMT = new Date(mtNowForSubject);
     yesterdayMT.setDate(yesterdayMT.getDate() - 1);
     const subject = `Daily Report - ${yesterdayMT.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    console.log(`📧 Attempting to send daily report: "${subject}"`);
     const emailSent = await sendAdminEmail(subject, html);
 
     if (!emailSent) {
-      throw new Error('Failed to send email');
+      console.error('❌ Daily report email failed to send');
+      throw new Error('Failed to send daily report email');
     }
 
     console.log('✅ Daily report sent successfully');
+    console.log(`📊 Report summary: ${reportDay.phoneCalls} calls, ${reportDay.quoteRequests} quotes, ${reportDay.clickToCalls} click-calls, ${reportDay.clickToTexts} click-texts (${totalActivity} total)`);
 
     return NextResponse.json({
       success: true,

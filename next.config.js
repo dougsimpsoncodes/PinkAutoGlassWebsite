@@ -91,7 +91,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   reactStrictMode: true,
-  swcMinify: true,
 
   // Image optimization configuration
   images: {
