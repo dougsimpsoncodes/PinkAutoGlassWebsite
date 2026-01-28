@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
+import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Call {
@@ -88,65 +89,17 @@ export default function CallAnalyticsPage() {
   };
 
 
+  // Get date range using Mountain Time (consistent with server-side and other pages)
+  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
+
   const getCallsInDateRange = () => {
-    const now = new Date();
-    let startDate = new Date();
-    let endDate: Date | null = null;
+    if (dateFilter === 'all') return calls;
 
-    switch (dateFilter) {
-      case 'today':
-        startDate.setHours(0, 0, 0, 0);
-        break;
-      case 'yesterday':
-        startDate.setDate(now.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case '7days':
-        startDate.setDate(now.getDate() - 7);
-        break;
-      case '30days':
-        startDate.setDate(now.getDate() - 30);
-        break;
-      case 'all':
-        return calls;
-      default:
-        return calls;
-    }
-
-    return calls.filter(call => {
-      const callDate = new Date(call.start_time);
-      if (endDate) {
-        return callDate >= startDate && callDate <= endDate;
-      }
-      return callDate >= startDate;
-    });
+    return calls.filter(call => isInDateRange(call.start_time, dateRangeObj));
   };
 
-  const getDateRangeDisplay = () => {
-    const now = new Date();
-    switch (dateFilter) {
-      case 'today':
-        return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      case 'yesterday':
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        return yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      case '7days':
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        return `${sevenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      case '30days':
-        const thirtyDaysAgo = new Date(now);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        return `${thirtyDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      case 'all':
-        return 'All Time';
-      default:
-        return '';
-    }
-  };
+  // Use consistent date display from shared utility (Mountain Time)
+  const getDateRangeDisplay = () => dateRangeObj.display;
 
   const callsInDateRange = getCallsInDateRange();
 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
+import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import {
   Search,
   DollarSign,
@@ -74,59 +75,21 @@ export default function LeadManagementDashboard() {
   const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
-  // Convert DateFilter to number of days for filtering
-  const getDateRangeDays = (filter: DateFilter): number => {
-    switch (filter) {
-      case 'today': return 0;
-      case 'yesterday': return 1;
-      case '7days': return 7;
-      case '30days': return 30;
-      case 'all': return 9999;
-      default: return 30;
-    }
-  };
+  // Get date range using Mountain Time (consistent with server-side)
+  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
 
-  const dateRange = getDateRangeDays(dateFilter);
-
-  // Filter leads by date range (client-side, instant)
+  // Filter leads by date range (client-side, instant) - uses Mountain Time
   const getFilteredLeads = useCallback(() => {
     if (allLeadsCache.length === 0) return [];
 
-    const now = new Date();
-    let startDate = new Date();
-    let endDate: Date | null = null;
-
-    if (dateRange === 0) {
-      // Today - start of today
-      startDate.setHours(0, 0, 0, 0);
-    } else if (dateRange === 1) {
-      // Yesterday
-      startDate.setDate(now.getDate() - 1);
-      startDate.setHours(0, 0, 0, 0);
-      endDate = new Date(startDate);
-      endDate.setHours(23, 59, 59, 999);
-    } else if (dateRange === 9999) {
-      // All time - return all leads
-      return [...allLeadsCache].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    } else {
-      // Last N days
-      startDate.setDate(now.getDate() - dateRange);
-    }
-
-    const filteredLeads = allLeadsCache.filter(lead => {
-      const leadDate = new Date(lead.created_at);
-      if (endDate) {
-        return leadDate >= startDate && leadDate <= endDate;
-      }
-      return leadDate >= startDate;
-    });
+    const filteredLeads = allLeadsCache.filter(lead =>
+      isInDateRange(lead.created_at, dateRangeObj)
+    );
 
     return filteredLeads.sort((a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [allLeadsCache, dateRange]);
+  }, [allLeadsCache, dateRangeObj]);
 
   // Get filtered leads - computed from cache, no loading spinner
   const leads = getFilteredLeads();
@@ -241,29 +204,8 @@ export default function LeadManagementDashboard() {
   };
 
 
-  const getDateRangeDisplay = () => {
-    const now = new Date();
-    switch (dateFilter) {
-      case 'today':
-        return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      case 'yesterday':
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        return yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      case '7days':
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        return `${sevenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      case '30days':
-        const thirtyDaysAgo = new Date(now);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        return `${thirtyDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      case 'all':
-        return 'All Time';
-      default:
-        return '';
-    }
-  };
+  // Use consistent date display from shared utility (Mountain Time)
+  const getDateRangeDisplay = () => dateRangeObj.display;
 
   const updateLead = async () => {
     if (!selectedLead || selectedLead.type !== 'form') return;

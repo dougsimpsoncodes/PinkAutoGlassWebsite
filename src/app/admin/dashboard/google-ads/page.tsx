@@ -22,9 +22,8 @@ interface GoogleAdsData {
   ctr: number;
   leads: {
     total: number;
-    calls: number;
-    texts: number;
-    forms: number;
+    calls: number;  // Unique callers (30s+ inbound calls)
+    forms: number;  // Form submissions
   };
   costPerLead: number;
   apiConversions: number;
@@ -160,7 +159,7 @@ export default function GoogleAdsPage() {
     clicks: 0,
     impressions: 0,
     ctr: 0,
-    leads: { total: 0, calls: 0, texts: 0, forms: 0 },
+    leads: { total: 0, calls: 0, forms: 0 },
     costPerLead: 0,
     apiConversions: 0,
     topConverters: [],
@@ -236,7 +235,7 @@ export default function GoogleAdsPage() {
               {displayData.leads.total}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {displayData.leads.calls} calls • {displayData.leads.texts} texts • {displayData.leads.forms} forms
+              {displayData.leads.calls} calls • {displayData.leads.forms} forms
             </p>
           </div>
 
@@ -256,37 +255,32 @@ export default function GoogleAdsPage() {
         </div>
       </div>
 
-      {/* Website Conversions */}
+      {/* Lead Attribution Breakdown */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-blue-600" />
-          Website Conversions (GCLID Tracking)
+          Lead Attribution (Google Ads)
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Phone Clicks</p>
+            <p className="text-sm text-gray-600 mb-1">Unique Callers</p>
             <p className="text-2xl font-bold text-blue-600">{displayData.leads.calls}</p>
-            <p className="text-xs text-gray-500 mt-1">Click-to-call events</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Text Clicks</p>
-            <p className="text-2xl font-bold text-green-600">{displayData.leads.texts}</p>
-            <p className="text-xs text-gray-500 mt-1">Click-to-text events</p>
+            <p className="text-xs text-gray-500 mt-1">30s+ inbound calls attributed to Google</p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4">
             <p className="text-sm text-gray-600 mb-1">Form Submissions</p>
             <p className="text-2xl font-bold text-purple-600">{displayData.leads.forms}</p>
-            <p className="text-xs text-gray-500 mt-1">Quote requests</p>
+            <p className="text-xs text-gray-500 mt-1">Quote forms attributed to Google</p>
           </div>
           <div className="bg-orange-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">API Conversions</p>
+            <p className="text-sm text-gray-600 mb-1">Google Conversions</p>
             <p className="text-2xl font-bold text-orange-600">{displayData.apiConversions}</p>
-            <p className="text-xs text-gray-500 mt-1">Google Ads tracked</p>
+            <p className="text-xs text-gray-500 mt-1">Conversions tracked by Google Ads API</p>
           </div>
         </div>
         <div className="mt-3 p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-600">
-            <strong>Note:</strong> Website conversions (GCLID) and API conversions are tracked separately. Our tracking captures all lead events with Google click attribution.
+            <strong>Lead Definition:</strong> A lead is either a form submission OR a unique phone caller with a 30+ second call. Calls are attributed to Google via GCLID tracking within a 5-minute session window.
           </p>
         </div>
       </div>
