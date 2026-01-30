@@ -25,40 +25,7 @@ import {
   Play,
   Filter
 } from 'lucide-react';
-
-// Unified Lead interface - combines forms, calls, texts
-interface UnifiedLead {
-  id: string;
-  type: 'form' | 'call' | 'text';
-  name: string;
-  phone: string;
-  email?: string;
-  created_at: string;
-  status: string;
-
-  // Form-specific
-  vehicle_year?: number;
-  vehicle_make?: string;
-  vehicle_model?: string;
-  service_type?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  quote_amount?: number;
-  revenue_amount?: number;
-  close_date?: string;
-  notes?: string;
-
-  // Call-specific
-  direction?: string;
-  duration?: number;
-  result?: string;
-  recording_id?: string;
-
-  // Attribution
-  ad_platform?: string;
-  utm_campaign?: string;
-}
+import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
 
 export default function LeadManagementDashboard() {
   // Get global sync state
@@ -109,93 +76,7 @@ export default function LeadManagementDashboard() {
   const fetchAllLeads = async () => {
     try {
       setLoading(true);
-
-      // Fetch all data in parallel
-      const [formRes, callsRes] = await Promise.all([
-        fetch('/api/admin/leads?limit=10000'),
-        fetch('/api/admin/calls?limit=1000'),
-      ]);
-
-      const allLeads: UnifiedLead[] = [];
-
-      // Process form leads
-      if (formRes.ok) {
-        const formData = await formRes.json();
-        const formLeads = (formData.leads || []).map((lead: any) => ({
-          id: lead.id,
-          type: 'form' as const,
-          name: `${lead.first_name} ${lead.last_name}`,
-          phone: lead.phone,
-          email: lead.email,
-          created_at: lead.created_at,
-          status: lead.status || 'new',
-          vehicle_year: lead.vehicle_year,
-          vehicle_make: lead.vehicle_make,
-          vehicle_model: lead.vehicle_model,
-          service_type: lead.service_type,
-          city: lead.city,
-          state: lead.state,
-          zip: lead.zip,
-          quote_amount: lead.quote_amount,
-          revenue_amount: lead.revenue_amount,
-          close_date: lead.close_date,
-          notes: lead.notes,
-          ad_platform: lead.ad_platform,
-          utm_campaign: lead.utm_campaign,
-        }));
-        allLeads.push(...formLeads);
-      }
-
-      // Process calls - deduplicate by customer
-      if (callsRes.ok) {
-        const callsData = await callsRes.json();
-        const calls = callsData.calls || [];
-
-        // Group by customer phone number (only inbound callers)
-        const customerMap = new Map<string, any[]>();
-        const businessNumber = '+17209187465';
-
-        calls.forEach((call: any) => {
-          if (call.direction === 'Inbound' && call.from_number !== businessNumber) {
-            const customerNumber = call.from_number;
-            if (!customerMap.has(customerNumber)) {
-              customerMap.set(customerNumber, []);
-            }
-            customerMap.get(customerNumber)!.push(call);
-          }
-        });
-
-        // Create lead for each unique caller
-        customerMap.forEach((customerCalls, phoneNumber) => {
-          // Sort by most recent first
-          customerCalls.sort((a, b) =>
-            new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-          );
-
-          const mostRecent = customerCalls[0];
-          const hasAnswered = customerCalls.some(c =>
-            c.result === 'Accepted' || c.result === 'Call connected'
-          );
-          const hasMissed = customerCalls.some(c => c.result === 'Missed');
-
-          allLeads.push({
-            id: `call-${phoneNumber}`,
-            type: 'call',
-            name: mostRecent.from_name || 'Unknown Caller',
-            phone: phoneNumber,
-            created_at: mostRecent.start_time,
-            status: hasAnswered ? 'contacted' : hasMissed ? 'new' : 'new',
-            direction: mostRecent.direction,
-            duration: customerCalls.reduce((sum: number, c: any) => sum + (c.duration || 0), 0),
-            result: mostRecent.result,
-            recording_id: mostRecent.recording_id,
-            ad_platform: mostRecent.ad_platform,
-            notes: `${customerCalls.length} total call(s)`,
-          });
-        });
-      }
-
-      // Store all leads in cache - filtering happens client-side
+      const allLeads = await fetchUnifiedLeads({ includeAttribution: true });
       setAllLeadsCache(allLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);

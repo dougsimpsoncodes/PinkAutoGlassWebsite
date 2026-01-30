@@ -13,12 +13,14 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import {
+  BUSINESS_PHONE_NUMBER,
+  MIN_CALL_DURATION_SECONDS,
+  ATTRIBUTION_WINDOW_MINUTES,
+} from './constants';
 
-// Minimum call duration to count as a qualifying lead (in seconds)
-export const MIN_CALL_DURATION_SECONDS = 30;
-
-// Attribution window for session-based matching (in minutes)
-export const ATTRIBUTION_WINDOW_MINUTES = 5;
+// Re-export for backwards compatibility
+export { MIN_CALL_DURATION_SECONDS, ATTRIBUTION_WINDOW_MINUTES };
 
 export type DateFilter = 'today' | 'yesterday' | '7days' | '30days' | 'all';
 
@@ -181,11 +183,12 @@ export async function getLeadMetrics(
     .gte('created_at', startDate.toISOString())
     .lte('created_at', endDate.toISOString());
 
-  // Fetch qualifying calls (inbound, 30s+)
+  // Fetch qualifying calls (inbound, 30s+, exclude business number)
   const { data: calls } = await supabase
     .from('ringcentral_calls')
     .select('call_id, from_number, duration')
     .eq('direction', 'Inbound')
+    .neq('from_number', BUSINESS_PHONE_NUMBER)
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', startDate.toISOString())
     .lte('start_time', endDate.toISOString());
@@ -242,11 +245,12 @@ export async function getCallMetrics(
   startDate: Date,
   endDate: Date
 ): Promise<CallMetrics> {
-  // Fetch all qualifying inbound calls
+  // Fetch all qualifying inbound calls (exclude business number)
   const { data: calls } = await supabase
     .from('ringcentral_calls')
     .select('call_id, from_number, duration, result, ad_platform')
     .eq('direction', 'Inbound')
+    .neq('from_number', BUSINESS_PHONE_NUMBER)
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', startDate.toISOString())
     .lte('start_time', endDate.toISOString());
@@ -312,11 +316,12 @@ export async function getAttributedLeadMetrics(
     .gte('created_at', startDate.toISOString())
     .lte('created_at', endDate.toISOString());
 
-  // Fetch qualifying calls
+  // Fetch qualifying calls (exclude business number)
   const { data: calls } = await supabase
     .from('ringcentral_calls')
     .select('call_id, from_number, start_time, ad_platform')
     .eq('direction', 'Inbound')
+    .neq('from_number', BUSINESS_PHONE_NUMBER)
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', startDate.toISOString())
     .lte('start_time', endDate.toISOString());

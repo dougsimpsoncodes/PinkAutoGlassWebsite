@@ -30,13 +30,10 @@ import {
   MicrosoftOfflineConversion,
   validateMicrosoftAdsConfig,
 } from './microsoftAds';
-
-// Attribution window in minutes (session/phone_click to actual call)
-const ATTRIBUTION_WINDOW_MINUTES = 5;
-
-// Minimum call duration in seconds to count as a valid conversion
-// Filters out hang-ups and wrong numbers
-const MIN_CALL_DURATION_SECONDS = 30;
+import {
+  ATTRIBUTION_WINDOW_MINUTES,
+  MIN_CALL_DURATION_SECONDS,
+} from './constants';
 
 // Default conversion value for phone calls
 const DEFAULT_CALL_VALUE = 150;
@@ -253,7 +250,7 @@ async function markCallsAsUploaded(
  */
 export async function syncOfflineConversions(): Promise<SyncResult> {
   console.log('\n📤 Starting offline conversion sync...');
-  console.log(`   Attribution method: Direct phone_click match (${DIRECT_MATCH_WINDOW_MINUTES} min window)`);
+  console.log(`   Attribution method: Direct phone_click match (${ATTRIBUTION_WINDOW_MINUTES} min window)`);
   console.log(`   Min call duration: ${MIN_CALL_DURATION_SECONDS} seconds`);
 
   const result: SyncResult = {
@@ -535,7 +532,7 @@ async function markCallsAsUploadedToMicrosoft(
  */
 export async function syncMicrosoftOfflineConversions(): Promise<MicrosoftSyncResult> {
   console.log('\n📤 Starting Microsoft Ads offline conversion sync...');
-  console.log(`   Attribution method: Direct phone_click match (${DIRECT_MATCH_WINDOW_MINUTES} min window)`);
+  console.log(`   Attribution method: Direct phone_click match (${ATTRIBUTION_WINDOW_MINUTES} min window)`);
   console.log(`   Min call duration: ${MIN_CALL_DURATION_SECONDS} seconds`);
   console.log(`   Conversion name: ${MICROSOFT_OFFLINE_CONVERSION_NAME}`);
 

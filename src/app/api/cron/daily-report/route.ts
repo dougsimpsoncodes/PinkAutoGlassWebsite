@@ -20,6 +20,7 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance } from '@/lib/googleAds';
 import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
+import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 // Types
 interface DailyStats {
@@ -87,9 +88,9 @@ function deduplicateCalls(calls: any[]): any[] {
       // First party in this session - add it
       sessionMap.set(call.session_id, call);
     } else {
-      // Prefer Inbound calls to our business number (+17209187465)
-      const isInboundToUs = call.direction === 'Inbound' && call.to_number === '+17209187465';
-      const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === '+17209187465';
+      // Prefer Inbound calls to our business number
+      const isInboundToUs = call.direction === 'Inbound' && call.to_number === BUSINESS_PHONE_NUMBER;
+      const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === BUSINESS_PHONE_NUMBER;
 
       if (isInboundToUs && !existingIsInboundToUs) {
         sessionMap.set(call.session_id, call);
