@@ -7,13 +7,10 @@ import {
   DollarSign,
   Target,
   Users,
-  MousePointer,
-  Eye,
-  BarChart3,
-  Zap,
   ExternalLink,
   RefreshCw,
 } from 'lucide-react';
+import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
 
 interface MicrosoftAdsData {
   spend: number;
@@ -278,95 +275,8 @@ export default function MicrosoftAdsPage() {
         </div>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Spend</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
-                ${displayData.spend.toFixed(2)}
-              </p>
-            </div>
-            <DollarSign className="w-8 h-8 text-cyan-600" />
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Clicks</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
-                {displayData.clicks.toLocaleString()}
-              </p>
-            </div>
-            <MousePointer className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Impressions</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
-                {displayData.impressions.toLocaleString()}
-              </p>
-            </div>
-            <Eye className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">CTR</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
-                {displayData.ctr.toFixed(2)}%
-              </p>
-            </div>
-            <BarChart3 className="w-8 h-8 text-purple-600" />
-          </div>
-        </div>
-      </div>
-
-      {/* Top Converters */}
-      {displayData.topConverters.length > 0 && (
-        <div className="bg-white shadow-sm border border-green-200 rounded-lg p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Zap className="w-6 h-6 text-green-600" />
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Top Converting Terms - Increase Bids</h2>
-                <p className="text-sm text-gray-600 mt-1">These terms are winners - consider increasing bids by +40%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {displayData.topConverters.map((term, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100"
-              >
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{term.term}</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {term.conversions} conversions @ {term.convRate.toFixed(1)}% rate • ${term.cpa.toFixed(2)} CPA • {term.clicks} clicks
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-green-700">
-                    {term.convRate.toFixed(1)}% Conv Rate
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    ${term.cpa.toFixed(2)} CPA
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Platform Leads Table */}
+      <PlatformLeadsTable platform="microsoft" dateFilter={dateFilter} accentColor="cyan" />
 
       {/* Quick Links */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
