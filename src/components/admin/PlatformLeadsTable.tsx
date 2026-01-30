@@ -147,14 +147,24 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
     try {
       setLoading(true);
 
-      const [formRes, callsRes] = await Promise.all([
+      // Fetch leads, calls, AND attributed phone numbers in parallel
+      const [formRes, callsRes, attrRes] = await Promise.all([
         fetch('/api/admin/leads?limit=10000'),
         fetch('/api/admin/calls?limit=1000'),
+        fetch('/api/admin/calls/attributed'),
       ]);
+
+      // Parse attributed phone numbers (session-based GCLID/MSCLKID matching)
+      let attributedPhones: { google: string[]; microsoft: string[] } = { google: [], microsoft: [] };
+      if (attrRes.ok) {
+        attributedPhones = await attrRes.json();
+      }
+      const googlePhoneSet = new Set(attributedPhones.google || []);
+      const microsoftPhoneSet = new Set(attributedPhones.microsoft || []);
 
       const allLeads: UnifiedLead[] = [];
 
-      // Process form leads
+      // Process form leads (ad_platform is already set in DB)
       if (formRes.ok) {
         const formData = await formRes.json();
         const formLeads = (formData.leads || []).map((lead: any) => ({
@@ -182,7 +192,7 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
         allLeads.push(...formLeads);
       }
 
-      // Process calls - deduplicate by customer
+      // Process calls - deduplicate by customer, attribute via session matching
       if (callsRes.ok) {
         const callsData = await callsRes.json();
         const calls = callsData.calls || [];
@@ -211,6 +221,16 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
           );
           const hasMissed = customerCalls.some((c: any) => c.result === 'Missed');
 
+          // Derive ad_platform: use DB value if set, otherwise use session-based attribution
+          let callPlatform = mostRecent.ad_platform;
+          if (!callPlatform || callPlatform === 'direct') {
+            if (googlePhoneSet.has(phoneNumber)) {
+              callPlatform = 'google';
+            } else if (microsoftPhoneSet.has(phoneNumber)) {
+              callPlatform = 'microsoft';
+            }
+          }
+
           allLeads.push({
             id: `call-${phoneNumber}`,
             type: 'call',
@@ -222,7 +242,7 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
             duration: customerCalls.reduce((sum: number, c: any) => sum + (c.duration || 0), 0),
             result: mostRecent.result,
             recording_id: mostRecent.recording_id,
-            ad_platform: mostRecent.ad_platform,
+            ad_platform: callPlatform,
             notes: `${customerCalls.length} total call(s)`,
           });
         });
