@@ -6,6 +6,7 @@ import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
 import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
+import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 interface Call {
   id: string;
@@ -57,9 +58,9 @@ export default function CallAnalyticsPage() {
         // First party in this session - add it
         sessionMap.set(call.session_id, call);
       } else {
-        // Prefer Inbound calls to our business number (+17209187465)
-        const isInboundToUs = call.direction === 'Inbound' && call.to_number === '+17209187465';
-        const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === '+17209187465';
+        // Prefer Inbound calls to our business number
+        const isInboundToUs = call.direction === 'Inbound' && call.to_number === BUSINESS_PHONE_NUMBER;
+        const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === BUSINESS_PHONE_NUMBER;
 
         if (isInboundToUs && !existingIsInboundToUs) {
           sessionMap.set(call.session_id, call);
@@ -114,7 +115,7 @@ export default function CallAnalyticsPage() {
 
   const groupCallsByCustomer = (calls: Call[]): CallGroup[] => {
     const groups = new Map<string, Call[]>();
-    const businessNumber = '+17209187465';
+    const businessNumber = BUSINESS_PHONE_NUMBER;
 
     // Step 1: Identify all customer numbers that have called us (inbound calls only)
     // These are the ONLY numbers we consider "customers"

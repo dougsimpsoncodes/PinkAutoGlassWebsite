@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import { useSync } from '@/contexts/SyncContext';
 import {
@@ -11,6 +11,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
+import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
+import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 
 interface GoogleAdsData {
   spend: number;
@@ -72,11 +74,48 @@ export default function GoogleAdsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
+  // Lead data — single source of truth for lead counts on this page
+  const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(true);
+
   // Get current data from cache
   const data = dataCache[dateFilter];
 
   // Check if we have ANY cached data (for showing content while loading new period)
   const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
+
+  // Filter leads to Google platform + current date range
+  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
+
+  const googleLeads = useMemo(() => {
+    return allLeads.filter(lead =>
+      lead.ad_platform === 'google' &&
+      isInDateRange(lead.created_at, dateRangeObj)
+    );
+  }, [allLeads, dateRangeObj]);
+
+  const leadCounts = useMemo(() => ({
+    total: googleLeads.length,
+    calls: googleLeads.filter(l => l.type === 'call').length,
+    forms: googleLeads.filter(l => l.type === 'form').length,
+  }), [googleLeads]);
+
+  const costPerLead = useMemo(() => {
+    if (leadCounts.total === 0) return 0;
+    return (data?.spend ?? 0) / leadCounts.total;
+  }, [leadCounts.total, data]);
+
+  const fetchLeads = useCallback(async () => {
+    try {
+      setLeadsLoading(true);
+      const leads = await fetchUnifiedLeads({ includeAttribution: true });
+      setAllLeads(leads);
+    } catch (err) {
+      console.error('Error fetching leads:', err);
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, []);
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
@@ -96,9 +135,11 @@ export default function GoogleAdsPage() {
 
   // Refresh all data when global sync triggers
   const refreshAllData = useCallback(async () => {
-    const promises = ALL_FILTERS.map(filter => fetchData(filter));
-    await Promise.all(promises);
-  }, [fetchData]);
+    await Promise.all([
+      ...ALL_FILTERS.map(filter => fetchData(filter)),
+      fetchLeads(),
+    ]);
+  }, [fetchData, fetchLeads]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -117,10 +158,13 @@ export default function GoogleAdsPage() {
     }
   };
 
-  // Initial load - fetch current filter
+  // Initial load - fetch current filter + leads
   useEffect(() => {
     setLoading(true);
-    fetchData(dateFilter).finally(() => setLoading(false));
+    Promise.all([
+      fetchData(dateFilter),
+      fetchLeads(),
+    ]).finally(() => setLoading(false));
   }, []);
 
   // Only show full-page spinner on initial load (no cached data at all)
@@ -229,10 +273,10 @@ export default function GoogleAdsPage() {
               <Users className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold text-green-600">
-              {displayData.leads.total}
+              {leadCounts.total}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {displayData.leads.calls} calls • {displayData.leads.forms} forms
+              {leadCounts.calls} calls • {leadCounts.forms} forms
             </p>
           </div>
 
@@ -243,7 +287,7 @@ export default function GoogleAdsPage() {
               <Target className="w-5 h-5 text-pink-600" />
             </div>
             <p className="text-3xl font-bold text-pink-600">
-              ${displayData.costPerLead.toFixed(2)}
+              ${costPerLead.toFixed(2)}
             </p>
             <p className="text-xs text-gray-600 mt-1">
               Primary KPI: Lower is better
@@ -252,38 +296,8 @@ export default function GoogleAdsPage() {
         </div>
       </div>
 
-      {/* Lead Attribution Breakdown */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-blue-600" />
-          Lead Attribution (Google Ads)
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Unique Callers</p>
-            <p className="text-2xl font-bold text-blue-600">{displayData.leads.calls}</p>
-            <p className="text-xs text-gray-500 mt-1">30s+ inbound calls attributed to Google</p>
-          </div>
-          <div className="bg-purple-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Form Submissions</p>
-            <p className="text-2xl font-bold text-purple-600">{displayData.leads.forms}</p>
-            <p className="text-xs text-gray-500 mt-1">Quote forms attributed to Google</p>
-          </div>
-          <div className="bg-orange-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Google Conversions</p>
-            <p className="text-2xl font-bold text-orange-600">{displayData.apiConversions}</p>
-            <p className="text-xs text-gray-500 mt-1">Conversions tracked by Google Ads API</p>
-          </div>
-        </div>
-        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-600">
-            <strong>Lead Definition:</strong> A lead is either a form submission OR a unique phone caller with a 30+ second call. Calls are attributed to Google via GCLID tracking within a 5-minute session window.
-          </p>
-        </div>
-      </div>
-
-      {/* Platform Leads Table */}
-      <PlatformLeadsTable platform="google" dateFilter={dateFilter} accentColor="pink" />
+      {/* Platform Leads Table — uses the same googleLeads as the primary metric */}
+      <PlatformLeadsTable platform="google" dateFilter={dateFilter} accentColor="pink" leads={googleLeads} leadsLoading={leadsLoading} />
 
       {/* Quick Links */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
