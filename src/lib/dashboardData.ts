@@ -66,16 +66,19 @@ export interface AttributedLeadMetrics {
     total: number;
     calls: number;
     forms: number;
+    callerPhones?: string[];
   };
   microsoft: {
     total: number;
     calls: number;
     forms: number;
+    callerPhones?: string[];
   };
   direct: {
     total: number;
     calls: number;
     forms: number;
+    callerPhones?: string[];
   };
 }
 
@@ -405,16 +408,19 @@ export async function getAttributedLeadMetrics(
       total: googleCallers.size + googleForms,
       calls: googleCallers.size,
       forms: googleForms,
+      callerPhones: Array.from(googleCallers),
     },
     microsoft: {
       total: microsoftCallers.size + microsoftForms,
       calls: microsoftCallers.size,
       forms: microsoftForms,
+      callerPhones: Array.from(microsoftCallers),
     },
     direct: {
       total: directCallers.size + directForms,
       calls: directCallers.size,
       forms: directForms,
+      callerPhones: Array.from(directCallers),
     },
   };
 }
