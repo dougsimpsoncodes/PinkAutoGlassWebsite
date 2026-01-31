@@ -23,9 +23,152 @@ import {
   PhoneOutgoing,
   PhoneMissed,
   Play,
-  Filter
+  Filter,
+  Send,
+  Loader2,
 } from 'lucide-react';
 import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
+
+// --- SMS Conversation Component (defined outside main component to prevent remounting) ---
+
+interface SMSMessage {
+  id: string;
+  message_time: string;
+  direction: string;
+  from_number: string;
+  to_number: string;
+  message_text: string;
+  message_status: string;
+}
+
+function SMSConversation({ phone }: { phone: string }) {
+  const [messages, setMessages] = useState<SMSMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchMessages = useCallback(async () => {
+    if (!phone) return;
+    try {
+      const res = await fetch(`/api/admin/sms/conversations?phone=${encodeURIComponent(phone)}`);
+      const data = await res.json();
+      if (data.ok) {
+        setMessages(data.messages || []);
+      }
+    } catch {
+      // silent — conversation section is supplementary
+    } finally {
+      setLoading(false);
+    }
+  }, [phone]);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  const handleSend = async () => {
+    if (!replyText.trim() || sending) return;
+    setSending(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/sms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: phone, message: replyText.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setReplyText('');
+        // Refresh messages to show the sent message
+        await fetchMessages();
+      } else {
+        setError(data.error || 'Failed to send');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-4 text-gray-400 text-sm">Loading messages...</div>
+    );
+  }
+
+  return (
+    <div>
+      <h3 className="font-bold text-gray-900 mb-3">SMS Conversation</h3>
+
+      {/* Message thread */}
+      <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto space-y-2">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-400 text-sm py-4">No SMS messages yet</div>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex ${msg.direction === 'Outbound' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
+                  msg.direction === 'Outbound'
+                    ? 'bg-pink-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-900'
+                }`}
+              >
+                <div>{msg.message_text}</div>
+                <div
+                  className={`text-xs mt-1 ${
+                    msg.direction === 'Outbound' ? 'text-pink-200' : 'text-gray-400'
+                  }`}
+                >
+                  {new Date(msg.message_time).toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Reply input */}
+      <div className="mt-3 flex gap-2">
+        <input
+          type="text"
+          value={replyText}
+          onChange={(e) => setReplyText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Type a reply..."
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none text-sm"
+          disabled={sending}
+        />
+        <button
+          onClick={handleSend}
+          disabled={sending || !replyText.trim()}
+          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-sm"
+        >
+          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          Send
+        </button>
+      </div>
+
+      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+    </div>
+  );
+}
 
 export default function LeadManagementDashboard() {
   // Get global sync state
@@ -652,6 +795,11 @@ export default function LeadManagementDashboard() {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* SMS Conversation */}
+              {selectedLead.phone && (
+                <SMSConversation phone={selectedLead.phone} />
               )}
 
               {/* Quick Actions */}

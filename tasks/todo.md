@@ -63,3 +63,43 @@ Add a next-day SMS follow-up to all quick quote leads regardless of lead status.
 - 15h delay from lead submission pushes all business-hours leads into TCPA quiet hours
 - `getNextSafeTime()` shifts to 9 AM MT next business day
 - Cron at 10 AM MT (0 17 UTC) runs after scheduled messages are due
+
+---
+
+## Inbound SMS Receiving + Reply Capability (Jan 31 2026)
+
+### Task
+Enable receiving customer SMS replies via RingCentral webhook + admin reply from the lead detail modal.
+
+### Completed Items
+- [x] Export `getRingCentralClient` from `sms.ts` (was module-private)
+- [x] Webhook receiver: `/api/webhook/ringcentral/sms` — validation handshake, inbound SMS storage, admin notification
+- [x] Reply endpoint: `/api/admin/sms/send` — sends SMS via RC SDK, stores outbound in `ringcentral_sms`
+- [x] Conversations endpoint: `/api/admin/sms/conversations` — per-phone thread or inbox view
+- [x] Webhook management: `/api/admin/webhook/ringcentral` — POST/GET/DELETE for RC subscriptions
+- [x] Lead modal UI: SMS conversation thread with chat bubbles + reply input
+- [x] Daily cron webhook renewal: checks subscription expiry, renews if < 2 days remaining
+- [x] Build verified: zero new type errors, full build succeeds
+
+### Files Created
+- `src/app/api/webhook/ringcentral/sms/route.ts`
+- `src/app/api/admin/sms/send/route.ts`
+- `src/app/api/admin/sms/conversations/route.ts`
+- `src/app/api/admin/webhook/ringcentral/route.ts`
+
+### Files Modified
+- `src/lib/notifications/sms.ts` — exported `getRingCentralClient`
+- `src/app/admin/dashboard/leads/page.tsx` — added SMSConversation component + imports
+- `src/app/api/cron/daily-report/route.ts` — added webhook renewal check
+
+### Prerequisites (Manual)
+- Add **SubscriptionWebhook** permission to the RingCentral app in Developer Console
+- After deploy, POST to `/api/admin/webhook/ringcentral` to create the subscription
+
+### Verification Steps
+1. Deploy to Vercel
+2. POST `/api/admin/webhook/ringcentral` to create subscription
+3. Send SMS to Pink Auto Glass number from a test phone
+4. Confirm: row in `ringcentral_sms`, admin gets forwarded SMS
+5. Open lead in admin dashboard, verify conversation shows
+6. Reply from the UI, verify customer receives it
