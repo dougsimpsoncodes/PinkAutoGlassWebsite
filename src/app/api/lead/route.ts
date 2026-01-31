@@ -3,9 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
 import { buildAttribution } from '@/lib/attribution';
-import { sendAdminEmail } from '@/lib/notifications/email';
-import { sendAdminSMS } from '@/lib/notifications/sms';
+import { sendEmail, sendAdminEmail } from '@/lib/notifications/email';
+import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
+import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 
 export async function POST(request: NextRequest) {
   try {
@@ -160,6 +161,50 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to submit quote request' },
         { status: 500 }
       );
+    }
+
+    // =============================================================================
+    // CUSTOMER AUTO-REPLY: Instant SMS + Email
+    // =============================================================================
+    const smsConsent = validatedData.smsConsent === true;
+    const hasRealEmail = validatedData.email && !validatedData.email.includes('@temp.pinkautoglass.com');
+    const dripCtx = {
+      firstName: validatedData.firstName,
+      phone: validatedData.phone,
+      vehicleYear: validatedData.vehicleYear,
+      vehicleMake: validatedData.vehicleMake,
+      vehicleModel: validatedData.vehicleModel,
+      smsConsent,
+    };
+
+    try {
+      const autoReplyPromises: Promise<boolean>[] = [];
+
+      if (smsConsent) {
+        autoReplyPromises.push(
+          sendSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
+            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
+            .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
+        );
+      }
+
+      if (hasRealEmail) {
+        autoReplyPromises.push(
+          sendEmail({
+            to: validatedData.email,
+            subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
+            html: getQuoteInstantEmail(dripCtx),
+          })
+            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
+            .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
+        );
+      }
+
+      if (autoReplyPromises.length > 0) {
+        await Promise.all(autoReplyPromises);
+      }
+    } catch (err) {
+      console.error('❌ Customer auto-reply failed for lead:', leadId, err);
     }
 
     // =============================================================================
