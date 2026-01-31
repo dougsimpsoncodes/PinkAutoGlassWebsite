@@ -85,23 +85,15 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
     result.processed++;
 
     try {
-      // Re-check: is the lead still in 'new' status?
+      // Verify lead still exists (but don't filter by status — send to all leads)
       const { data: lead, error: leadError } = await supabase
         .from('leads')
-        .select('status')
+        .select('id')
         .eq('id', msg.lead_id)
         .single();
 
       if (leadError || !lead) {
         await markSkipped(supabase, msg.id, 'lead_not_found');
-        result.skipped++;
-        continue;
-      }
-
-      if (lead.status !== 'new') {
-        // Lead was already contacted/quoted/etc. — the trigger should have cancelled,
-        // but handle the race condition where status changed between trigger and cron run.
-        await markCancelled(supabase, msg.id, `lead_status_is_${lead.status}`);
         result.skipped++;
         continue;
       }
@@ -192,13 +184,6 @@ async function markSkipped(supabase: SupabaseClient, id: string, reason: string)
   await supabase
     .from('scheduled_messages')
     .update({ status: 'skipped', failure_reason: reason })
-    .eq('id', id);
-}
-
-async function markCancelled(supabase: SupabaseClient, id: string, reason: string) {
-  await supabase
-    .from('scheduled_messages')
-    .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancelled_reason: reason })
     .eq('id', id);
 }
 

@@ -7,6 +7,7 @@ import { sendEmail, sendAdminEmail } from '@/lib/notifications/email';
 import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
 import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
+import { scheduleDripSequence } from '@/lib/drip/scheduler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -206,6 +207,18 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       console.error('❌ Customer auto-reply failed for lead:', leadId, err);
+    }
+
+    // =============================================================================
+    // DRIP SEQUENCE: Schedule next-day follow-up SMS
+    // =============================================================================
+    if (smsConsent) {
+      try {
+        const dripResult = await scheduleDripSequence(leadId, dripCtx, 'quick_quote');
+        console.log(`📅 Drip scheduled for lead ${leadId}: ${dripResult.scheduled} messages`);
+      } catch (err) {
+        console.error('❌ Drip scheduling failed for lead:', leadId, err);
+      }
     }
 
     // =============================================================================
