@@ -28,8 +28,10 @@ interface ScheduledStep {
   sequenceStep: number;
 }
 
-// --- Quick Quote: instant SMS only (sent inline in API route, no scheduled follow-ups) ---
-const QUICK_QUOTE_STEPS: ScheduledStep[] = [];
+// --- Quick Quote: instant SMS sent inline in API route, plus next-day follow-up ---
+const QUICK_QUOTE_STEPS: ScheduledStep[] = [
+  { delayHours: 15, channel: 'sms', templateKey: 'quote_followup_nextday', sequenceStep: 2 },
+];
 
 // --- Booking: no scheduled follow-ups (handled by call center) ---
 const BOOKING_STEPS: ScheduledStep[] = [];

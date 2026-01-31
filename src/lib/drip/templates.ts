@@ -25,6 +25,11 @@ export function getQuoteInstantSMS(ctx: DripTemplateContext): string {
   return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer awareness! We install windshields for the ${ctx.vehicleMake} ${ctx.vehicleModel} starting at $299. Give us a few minutes to look up your exact price and get back to you.`;
 }
 
+/** Step 2: Next-day follow-up */
+export function getQuoteFollowupNextDaySMS(ctx: DripTemplateContext): string {
+  return `Hey ${ctx.firstName}, this is Dan at Pink Auto Glass. We have a few time slots available today if you still need your windshield service. Happy to help.`;
+}
+
 // =============================================================================
 // QUICK QUOTE EMAIL TEMPLATES
 // =============================================================================
@@ -88,6 +93,8 @@ export function getQuoteInstantEmail(ctx: DripTemplateContext): string {
 
 export function renderTemplate(templateKey: string, ctx: DripTemplateContext): { body: string; subject?: string } | null {
   switch (templateKey) {
+    case 'quote_followup_nextday':
+      return { body: getQuoteFollowupNextDaySMS(ctx) };
     default:
       console.error(`❌ Unknown drip template key: ${templateKey}`);
       return null;
