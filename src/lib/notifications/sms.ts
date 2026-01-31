@@ -4,7 +4,7 @@ import { SDK } from '@ringcentral/sdk';
 let rcClient: SDK | null = null;
 let isAuthenticated = false;
 
-async function getRingCentralClient() {
+export async function getRingCentralClient() {
   if (!rcClient) {
     const clientId = process.env.RINGCENTRAL_CLIENT_ID;
     const clientSecret = process.env.RINGCENTRAL_CLIENT_SECRET;

@@ -20,6 +20,7 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchCampaignPerformance } from '@/lib/googleAds';
 import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
+import { getRingCentralClient } from '@/lib/notifications/sms';
 import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 // Types
@@ -917,6 +918,53 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Daily report sent successfully');
     console.log(`📊 Report summary: ${reportDay.phoneCalls} calls, ${reportDay.quoteRequests} quotes, ${reportDay.clickToCalls} click-calls, ${reportDay.clickToTexts} click-texts (${totalActivity} total)`);
+
+    // --- Webhook subscription renewal check (non-fatal) ---
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const renewSupabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data: subs } = await renewSupabase
+        .from('ringcentral_webhook_subscriptions')
+        .select('subscription_id, expiration_time, status')
+        .eq('status', 'Active')
+        .limit(5);
+
+      if (subs && subs.length > 0) {
+        const twoDaysFromNow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+
+        for (const sub of subs) {
+          if (sub.expiration_time && new Date(sub.expiration_time) < twoDaysFromNow) {
+            console.log(`Renewing webhook subscription ${sub.subscription_id} (expires ${sub.expiration_time})`);
+
+            const rcClient = await getRingCentralClient();
+            if (rcClient) {
+              const platform = rcClient.platform();
+              const renewResponse = await platform.put(`/restapi/v1.0/subscription/${sub.subscription_id}`, {
+                eventFilters: ['/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS'],
+                expiresIn: 604800,
+              });
+              const renewResult = await renewResponse.json();
+
+              await renewSupabase
+                .from('ringcentral_webhook_subscriptions')
+                .update({
+                  expiration_time: renewResult.expirationTime,
+                  status: renewResult.status || 'Active',
+                  last_updated: new Date().toISOString(),
+                })
+                .eq('subscription_id', sub.subscription_id);
+
+              console.log(`Webhook subscription renewed, new expiry: ${renewResult.expirationTime}`);
+            }
+          }
+        }
+      }
+    } catch (webhookErr: any) {
+      // Non-fatal — never break the daily report
+      console.warn('Webhook renewal check failed (non-fatal):', webhookErr.message);
+    }
 
     return NextResponse.json({
       success: true,
