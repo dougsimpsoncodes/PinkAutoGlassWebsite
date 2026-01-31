@@ -394,6 +394,7 @@ export async function POST(req: NextRequest) {
           to: validatedData.email,
           subject: `Booking Confirmed - ${finalReferenceNumber}`,
           html: getCustomerConfirmationEmail(bookingData),
+          leadId,
         }).then(success => {
           if (success) {
             console.log('✅ Customer email sent successfully for booking:', leadId);

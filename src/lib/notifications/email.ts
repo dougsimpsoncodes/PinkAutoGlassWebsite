@@ -5,6 +5,7 @@ export interface EmailOptions {
   subject: string;
   html: string;
   from?: string;
+  leadId?: string;
 }
 
 /**
@@ -25,11 +26,22 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       return false;
     }
 
+    // Build unsubscribe URL for List-Unsubscribe header (required by Yahoo/AOL/Gmail)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinkautoglass.com';
+    const recipient = Array.isArray(options.to) ? options.to[0] : options.to;
+    const unsubParams = new URLSearchParams({ email: recipient });
+    if (options.leadId) unsubParams.set('lead_id', options.leadId);
+    const unsubUrl = `${siteUrl}/api/unsubscribe?${unsubParams}`;
+
     const { data, error } = await resend.emails.send({
       from: options.from || `Pink Auto Glass <${fromEmail}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
+      headers: {
+        'List-Unsubscribe': `<${unsubUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
     });
 
     if (error) {
