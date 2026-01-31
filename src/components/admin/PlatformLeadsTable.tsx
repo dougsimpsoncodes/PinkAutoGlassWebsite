@@ -214,25 +214,27 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{platformLabel} Leads</h2>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className={`bg-white rounded-lg shadow-sm p-4 border-l-4 ${accentClasses.border}`}>
-            <div className="text-sm text-gray-600">Total Leads</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+        {/* Summary Stats — only shown in self-contained mode (parent already displays these) */}
+        {!hasExternalLeads && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className={`bg-white rounded-lg shadow-sm p-4 border-l-4 ${accentClasses.border}`}>
+              <div className="text-sm text-gray-600">Total Leads</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+              <div className="text-sm text-gray-600">Phone Calls</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+              <div className="text-sm text-gray-600">Form Leads</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-500">
+              <div className="text-sm text-gray-600">New Leads</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.new}</div>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-            <div className="text-sm text-gray-600">Phone Calls</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-            <div className="text-sm text-gray-600">Form Leads</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-500">
-            <div className="text-sm text-gray-600">New Leads</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.new}</div>
-          </div>
-        </div>
+        )}
 
         {/* Filters */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">

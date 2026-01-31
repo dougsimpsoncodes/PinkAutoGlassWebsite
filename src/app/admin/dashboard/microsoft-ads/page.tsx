@@ -9,6 +9,9 @@ import {
   Users,
   ExternalLink,
   RefreshCw,
+  Phone,
+  MessageSquare,
+  FileText,
 } from 'lucide-react';
 import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
 import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
@@ -96,6 +99,7 @@ export default function MicrosoftAdsPage() {
   const leadCounts = useMemo(() => ({
     total: microsoftLeads.length,
     calls: microsoftLeads.filter(l => l.type === 'call').length,
+    texts: microsoftLeads.filter(l => l.type === 'text').length,
     forms: microsoftLeads.filter(l => l.type === 'form').length,
   }), [microsoftLeads]);
 
@@ -246,49 +250,68 @@ export default function MicrosoftAdsPage() {
         </div>
       </div>
 
-      {/* Primary Metrics - Ad Spend vs Unique Leads */}
+      {/* Primary Metrics */}
       <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-300 rounded-xl p-6 mb-6 shadow-lg">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           <Users className="w-6 h-6 text-cyan-600" />
-          Primary Metric: Ad Spend vs Unique Leads
+          Microsoft Ads Performance
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {/* Total Spend */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-600">Total Ad Spend</p>
-              <DollarSign className="w-5 h-5 text-gray-400" />
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="w-4 h-4 text-gray-400" />
+              <p className="text-sm font-medium text-gray-600">Ad Spend</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900">
               ${displayData.spend.toFixed(2)}
             </p>
           </div>
 
-          {/* Unique Leads */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-600">Unique Leads</p>
-              <Users className="w-5 h-5 text-green-600" />
+          {/* Total Leads */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-4 h-4 text-green-600" />
+              <p className="text-sm font-medium text-gray-600">Total Leads</p>
             </div>
-            <p className="text-3xl font-bold text-green-600">
-              {leadCounts.total}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              {leadCounts.calls} calls • {leadCounts.forms} forms
-            </p>
+            <p className="text-2xl font-bold text-green-600">{leadCounts.total}</p>
+          </div>
+
+          {/* Click to Call */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Phone className="w-4 h-4 text-blue-600" />
+              <p className="text-sm font-medium text-gray-600">Click to Call</p>
+            </div>
+            <p className="text-2xl font-bold text-blue-600">{leadCounts.calls}</p>
+          </div>
+
+          {/* Click to Text */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare className="w-4 h-4 text-indigo-600" />
+              <p className="text-sm font-medium text-gray-600">Click to Text</p>
+            </div>
+            <p className="text-2xl font-bold text-indigo-600">{leadCounts.texts}</p>
+          </div>
+
+          {/* Form Submissions */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <FileText className="w-4 h-4 text-purple-600" />
+              <p className="text-sm font-medium text-gray-600">Form Leads</p>
+            </div>
+            <p className="text-2xl font-bold text-purple-600">{leadCounts.forms}</p>
           </div>
 
           {/* Cost Per Lead */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-cyan-300">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-cyan-600">Cost Per Lead</p>
-              <Target className="w-5 h-5 text-cyan-600" />
+          <div className="bg-white rounded-lg p-4 shadow-sm border-2 border-cyan-300">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="w-4 h-4 text-cyan-600" />
+              <p className="text-sm font-medium text-cyan-600">Cost / Lead</p>
             </div>
-            <p className="text-3xl font-bold text-cyan-600">
+            <p className="text-2xl font-bold text-cyan-600">
               ${costPerLead.toFixed(2)}
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              Primary KPI: Lower is better
             </p>
           </div>
         </div>
