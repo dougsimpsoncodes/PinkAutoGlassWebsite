@@ -22,7 +22,7 @@ interface DripTemplateContext {
 
 /** Step 1: Instant reply */
 export function getQuoteInstantSMS(ctx: DripTemplateContext): string {
-  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass! We install windshields for the ${ctx.vehicleMake} ${ctx.vehicleModel} starting at $249. Give us a few minutes to look up your exact price and get back to you.`;
+  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer awareness! We install windshields for the ${ctx.vehicleMake} ${ctx.vehicleModel} starting at $299. Give us a few minutes to look up your exact price and get back to you.`;
 }
 
 // =============================================================================
@@ -50,7 +50,7 @@ export function getQuoteInstantEmail(ctx: DripTemplateContext): string {
     <div style="padding: 40px 30px;">
       <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Hi ${ctx.firstName},</h2>
       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-        Thanks for contacting Pink Auto Glass! We install windshields for the ${ctx.vehicleMake} ${ctx.vehicleModel} starting at <strong style="color: #ec4899;">$249</strong>.
+        Thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer awareness! We install windshields for the ${ctx.vehicleMake} ${ctx.vehicleModel} starting at <strong style="color: #ec4899;">$299</strong>.
       </p>
       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 30px 0;">
         Give us a few minutes to look up your exact price and get back to you.
