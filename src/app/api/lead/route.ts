@@ -194,6 +194,7 @@ export async function POST(request: NextRequest) {
             to: validatedData.email,
             subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
             html: getQuoteInstantEmail(dripCtx),
+            leadId,
           })
             .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
             .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
