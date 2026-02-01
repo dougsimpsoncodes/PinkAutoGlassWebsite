@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter, ALL_DATE_FILTERS } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
 import { useDashboardCache } from '@/contexts/DashboardCacheContext';
+import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
+import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import {
   DollarSign,
   TrendingUp,
@@ -99,11 +101,110 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
+  // Lead data — single source of truth for all lead counts on this page
+  const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(true);
+
   // Get current data from shared cache
   const data = getCachedData(dateFilter) as UnifiedDashboardData | null;
 
   // Check if we have ANY cached data (for showing content while loading new period)
   const hasAnyCachedData = ALL_DATE_FILTERS.some(f => getCachedData(f) !== null);
+
+  // Filter leads by date range and compute per-platform counts
+  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
+
+  const filteredLeads = useMemo(() => {
+    return allLeads.filter(lead => isInDateRange(lead.created_at, dateRangeObj));
+  }, [allLeads, dateRangeObj]);
+
+  const computeLeadCounts = (leads: UnifiedLead[]) => ({
+    total: leads.length,
+    calls: leads.filter(l => l.type === 'call').length,
+    texts: leads.filter(l => l.type === 'text').length,
+    forms: leads.filter(l => l.type === 'form').length,
+    new: leads.filter(l => l.status === 'new').length,
+  });
+
+  const leadMetrics = useMemo(() => {
+    const googleLeads = filteredLeads.filter(l => l.ad_platform === 'google');
+    const microsoftLeads = filteredLeads.filter(l => l.ad_platform === 'microsoft');
+    const otherLeads = filteredLeads.filter(l => !l.ad_platform || (l.ad_platform !== 'google' && l.ad_platform !== 'microsoft'));
+
+    const total = computeLeadCounts(filteredLeads);
+    const google = computeLeadCounts(googleLeads);
+    const microsoft = computeLeadCounts(microsoftLeads);
+    const other = computeLeadCounts(otherLeads);
+
+    // Form-only counts for Lead Attribution section
+    const formLeads = filteredLeads.filter(l => l.type === 'form');
+    const formByPlatform = {
+      google: formLeads.filter(l => l.ad_platform === 'google').length,
+      microsoft: formLeads.filter(l => l.ad_platform === 'microsoft').length,
+      direct: formLeads.filter(l => !l.ad_platform || (l.ad_platform !== 'google' && l.ad_platform !== 'microsoft')).length,
+    };
+
+    return { total, google, microsoft, other, formTotal: formLeads.length, formNew: formLeads.filter(l => l.status === 'new').length, formByPlatform };
+  }, [filteredLeads]);
+
+  // Derived CPL and comparison metrics (depends on server-side spend data + client-side lead counts)
+  const derivedMetrics = useMemo(() => {
+    const googleSpend = data?.platforms.google.spend ?? 0;
+    const microsoftSpend = data?.platforms.microsoft.spend ?? 0;
+    const totalSpend = googleSpend + microsoftSpend;
+    const totalClicks = (data?.platforms.google.clicks ?? 0) + (data?.platforms.microsoft.clicks ?? 0);
+
+    const overallCpl = leadMetrics.total.total > 0 ? totalSpend / leadMetrics.total.total : 0;
+    const googleCpl = leadMetrics.google.total > 0 ? googleSpend / leadMetrics.google.total : 0;
+    const microsoftCpl = leadMetrics.microsoft.total > 0 ? microsoftSpend / leadMetrics.microsoft.total : 0;
+    const conversionRate = totalClicks > 0 ? (leadMetrics.total.total / totalClicks) * 100 : 0;
+
+    const totalLeads = leadMetrics.total.total || 1; // avoid division by zero for shares
+    const leadShare = {
+      google: (leadMetrics.google.total / totalLeads) * 100,
+      microsoft: (leadMetrics.microsoft.total / totalLeads) * 100,
+      other: (leadMetrics.other.total / totalLeads) * 100,
+    };
+
+    let winningCpl = '';
+    if (googleCpl > 0 && microsoftCpl > 0) {
+      winningCpl = googleCpl <= microsoftCpl ? 'google' : 'microsoft';
+    } else if (googleCpl > 0) {
+      winningCpl = 'google';
+    } else if (microsoftCpl > 0) {
+      winningCpl = 'microsoft';
+    }
+
+    let winningVolume = '';
+    if (leadMetrics.google.total > leadMetrics.microsoft.total) {
+      winningVolume = 'google';
+    } else if (leadMetrics.microsoft.total > leadMetrics.google.total) {
+      winningVolume = 'microsoft';
+    }
+
+    return {
+      overallCpl,
+      googleCpl,
+      microsoftCpl,
+      conversionRate,
+      leadShare,
+      cplDifference: Math.abs(googleCpl - microsoftCpl),
+      winningCpl,
+      winningVolume,
+    };
+  }, [data, leadMetrics]);
+
+  const fetchLeads = useCallback(async () => {
+    try {
+      setLeadsLoading(true);
+      const leads = await fetchUnifiedLeads({ includeAttribution: true });
+      setAllLeads(leads);
+    } catch (err) {
+      console.error('Error fetching leads:', err);
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, []);
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
@@ -122,9 +223,11 @@ export default function AdminDashboard() {
   // Fetch all time periods when sync version changes (global sync triggered)
   const refreshAllData = useCallback(async () => {
     invalidateCache(); // Clear shared cache
-    const promises = ALL_DATE_FILTERS.map(filter => fetchData(filter));
-    await Promise.all(promises);
-  }, [fetchData, invalidateCache]);
+    await Promise.all([
+      ...ALL_DATE_FILTERS.map(filter => fetchData(filter)),
+      fetchLeads(),
+    ]);
+  }, [fetchData, fetchLeads, invalidateCache]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -142,11 +245,15 @@ export default function AdminDashboard() {
     }
   };
 
-  // Initial load - fetch current filter if not cached
+  // Initial load - fetch current filter if not cached + fetch leads
   useEffect(() => {
+    const promises: Promise<any>[] = [fetchLeads()];
     if (!getCachedData(dateFilter)) {
+      promises.push(fetchData(dateFilter));
+    }
+    if (promises.length > 0) {
       setLoading(true);
-      fetchData(dateFilter).finally(() => setLoading(false));
+      Promise.all(promises).finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -214,7 +321,7 @@ export default function AdminDashboard() {
     dateRange: { start: '', end: '', display: 'Loading...', period: dateFilter },
   };
 
-  const { summary, platforms, calls, leads, comparison } = displayData;
+  const { summary, platforms, calls, comparison } = displayData;
 
   return (
     <DashboardLayout>
@@ -254,13 +361,13 @@ export default function AdminDashboard() {
             <span className="text-sm font-medium text-gray-600">Total Leads</span>
             <Target className="w-5 h-5 text-gray-400" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{summary.totalLeads}</p>
+          <p className="text-3xl font-bold text-gray-900">{leadMetrics.total.total}</p>
           <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
-            <span className="text-blue-600">Google: {platforms.google.leads.total}</span>
+            <span className="text-blue-600">Google: {leadMetrics.google.total}</span>
             <span className="text-gray-300">|</span>
-            <span className="text-cyan-600">MS: {platforms.microsoft.leads.total}</span>
+            <span className="text-cyan-600">MS: {leadMetrics.microsoft.total}</span>
             <span className="text-gray-300">|</span>
-            <span className="text-gray-600">Other: {platforms.other.leads.total}</span>
+            <span className="text-gray-600">Other: {leadMetrics.other.total}</span>
           </div>
         </div>
 
@@ -270,14 +377,14 @@ export default function AdminDashboard() {
             <span className="text-sm font-medium text-gray-600">Cost Per Lead</span>
             <TrendingDown className="w-5 h-5 text-gray-400" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{formatCurrency(summary.costPerLead)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatCurrency(derivedMetrics.overallCpl)}</p>
           <div className="mt-2 flex items-center gap-2 text-sm">
-            <span className={`${comparison.winningPlatform.cpl === 'google' ? 'text-green-600 font-medium' : 'text-blue-600'}`}>
-              G: {formatCurrency(platforms.google.costPerLead)}
+            <span className={`${derivedMetrics.winningCpl === 'google' ? 'text-green-600 font-medium' : 'text-blue-600'}`}>
+              G: {formatCurrency(derivedMetrics.googleCpl)}
             </span>
             <span className="text-gray-300">|</span>
-            <span className={`${comparison.winningPlatform.cpl === 'microsoft' ? 'text-green-600 font-medium' : 'text-cyan-600'}`}>
-              MS: {formatCurrency(platforms.microsoft.costPerLead)}
+            <span className={`${derivedMetrics.winningCpl === 'microsoft' ? 'text-green-600 font-medium' : 'text-cyan-600'}`}>
+              MS: {formatCurrency(derivedMetrics.microsoftCpl)}
             </span>
           </div>
         </div>
@@ -288,9 +395,9 @@ export default function AdminDashboard() {
             <span className="text-sm font-medium text-gray-600">Conversion Rate</span>
             <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{formatPercent(summary.conversionRate)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatPercent(derivedMetrics.conversionRate)}</p>
           <p className="mt-2 text-sm text-gray-500">
-            {formatNumber(summary.totalClicks)} clicks &rarr; {summary.totalLeads} leads
+            {formatNumber(summary.totalClicks)} clicks &rarr; {leadMetrics.total.total} leads
           </p>
         </div>
       </div>
@@ -309,7 +416,7 @@ export default function AdminDashboard() {
                 </div>
                 <span className="font-semibold text-gray-900">Google Ads</span>
               </div>
-              {comparison.winningPlatform.cpl === 'google' && (
+              {derivedMetrics.winningCpl === 'google' && (
                 <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                   Lower CPL
                 </span>
@@ -323,11 +430,11 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{platforms.google.leads.total}</p>
+                <p className="text-xl font-bold text-gray-900">{leadMetrics.google.total}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CPL</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.google.costPerLead)}</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(derivedMetrics.googleCpl)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CTR</p>
@@ -342,15 +449,15 @@ export default function AdminDashboard() {
               <div className="flex gap-4 mt-2 text-sm">
                 <span className="flex items-center gap-1">
                   <Phone className="w-4 h-4 text-green-500" />
-                  {platforms.google.leads.calls}
+                  {leadMetrics.google.calls}
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {platforms.google.leads.texts}
+                  {leadMetrics.google.texts}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4 text-purple-500" />
-                  {platforms.google.leads.forms}
+                  {leadMetrics.google.forms}
                 </span>
               </div>
             </div>
@@ -365,7 +472,7 @@ export default function AdminDashboard() {
                 </div>
                 <span className="font-semibold text-gray-900">Microsoft Ads</span>
               </div>
-              {comparison.winningPlatform.cpl === 'microsoft' && (
+              {derivedMetrics.winningCpl === 'microsoft' && (
                 <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                   Lower CPL
                 </span>
@@ -379,11 +486,11 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{platforms.microsoft.leads.total}</p>
+                <p className="text-xl font-bold text-gray-900">{leadMetrics.microsoft.total}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CPL</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.microsoft.costPerLead)}</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(derivedMetrics.microsoftCpl)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CTR</p>
@@ -398,15 +505,15 @@ export default function AdminDashboard() {
               <div className="flex gap-4 mt-2 text-sm">
                 <span className="flex items-center gap-1">
                   <Phone className="w-4 h-4 text-green-500" />
-                  {platforms.microsoft.leads.calls}
+                  {leadMetrics.microsoft.calls}
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {platforms.microsoft.leads.texts}
+                  {leadMetrics.microsoft.texts}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4 text-purple-500" />
-                  {platforms.microsoft.leads.forms}
+                  {leadMetrics.microsoft.forms}
                 </span>
               </div>
             </div>
@@ -430,7 +537,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{platforms.other.leads.total}</p>
+                <p className="text-xl font-bold text-gray-900">{leadMetrics.other.total}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CPL</p>
@@ -449,15 +556,15 @@ export default function AdminDashboard() {
               <div className="flex gap-4 mt-2 text-sm">
                 <span className="flex items-center gap-1">
                   <Phone className="w-4 h-4 text-green-500" />
-                  {platforms.other.leads.calls}
+                  {leadMetrics.other.calls}
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {platforms.other.leads.texts}
+                  {leadMetrics.other.texts}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4 text-purple-500" />
-                  {platforms.other.leads.forms}
+                  {leadMetrics.other.forms}
                 </span>
               </div>
             </div>
@@ -489,21 +596,21 @@ export default function AdminDashboard() {
           <div className="flex justify-between text-sm mb-2">
             <span className="text-gray-600">Lead Distribution</span>
             <span className="text-gray-600">
-              Google {formatPercent(comparison.leadShare.google)} | Microsoft {formatPercent(comparison.leadShare.microsoft)} | Other {formatPercent(comparison.leadShare.other)}
+              Google {formatPercent(derivedMetrics.leadShare.google)} | Microsoft {formatPercent(derivedMetrics.leadShare.microsoft)} | Other {formatPercent(derivedMetrics.leadShare.other)}
             </span>
           </div>
           <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
             <div
               className="bg-blue-500 transition-all duration-500"
-              style={{ width: `${comparison.leadShare.google}%` }}
+              style={{ width: `${derivedMetrics.leadShare.google}%` }}
             />
             <div
               className="bg-cyan-500 transition-all duration-500"
-              style={{ width: `${comparison.leadShare.microsoft}%` }}
+              style={{ width: `${derivedMetrics.leadShare.microsoft}%` }}
             />
             <div
               className="bg-gray-400 transition-all duration-500"
-              style={{ width: `${comparison.leadShare.other}%` }}
+              style={{ width: `${derivedMetrics.leadShare.other}%` }}
             />
           </div>
         </div>
@@ -570,11 +677,11 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{leads.total}</p>
+              <p className="text-2xl font-bold text-gray-900">{leadMetrics.formTotal}</p>
               <p className="text-sm text-gray-600">Total Form Leads</p>
             </div>
             <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <p className="text-2xl font-bold text-yellow-600">{leads.new}</p>
+              <p className="text-2xl font-bold text-yellow-600">{leadMetrics.formNew}</p>
               <p className="text-sm text-gray-600">New (Pending)</p>
             </div>
           </div>
@@ -584,15 +691,15 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-blue-600">Google Ads</span>
-                <span className="text-sm font-medium">{leads.byPlatform.google}</span>
+                <span className="text-sm font-medium">{leadMetrics.formByPlatform.google}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-cyan-600">Microsoft Ads</span>
-                <span className="text-sm font-medium">{leads.byPlatform.microsoft}</span>
+                <span className="text-sm font-medium">{leadMetrics.formByPlatform.microsoft}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Direct / Organic</span>
-                <span className="text-sm font-medium">{leads.byPlatform.direct}</span>
+                <span className="text-sm font-medium">{leadMetrics.formByPlatform.direct}</span>
               </div>
             </div>
           </div>
@@ -621,9 +728,9 @@ export default function AdminDashboard() {
           {/* CPL Winner */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              {comparison.winningPlatform.cpl === 'google' ? (
+              {derivedMetrics.winningCpl === 'google' ? (
                 <ArrowDownRight className="w-5 h-5 text-green-500" />
-              ) : comparison.winningPlatform.cpl === 'microsoft' ? (
+              ) : derivedMetrics.winningCpl === 'microsoft' ? (
                 <ArrowDownRight className="w-5 h-5 text-green-500" />
               ) : (
                 <Minus className="w-5 h-5 text-gray-400" />
@@ -631,10 +738,10 @@ export default function AdminDashboard() {
               <span className="font-medium text-gray-900">Best CPL</span>
             </div>
             <p className="text-sm text-gray-600">
-              {comparison.winningPlatform.cpl === 'google' ? (
-                <>Google Ads has {formatCurrency(Math.abs(comparison.cplDifference))} lower CPL</>
-              ) : comparison.winningPlatform.cpl === 'microsoft' ? (
-                <>Microsoft Ads has {formatCurrency(Math.abs(comparison.cplDifference))} lower CPL</>
+              {derivedMetrics.winningCpl === 'google' ? (
+                <>Google Ads has {formatCurrency(derivedMetrics.cplDifference)} lower CPL</>
+              ) : derivedMetrics.winningCpl === 'microsoft' ? (
+                <>Microsoft Ads has {formatCurrency(derivedMetrics.cplDifference)} lower CPL</>
               ) : (
                 <>Both platforms have similar CPL</>
               )}
@@ -671,10 +778,10 @@ export default function AdminDashboard() {
               <span className="font-medium text-gray-900">Volume Leader</span>
             </div>
             <p className="text-sm text-gray-600">
-              {comparison.winningPlatform.volume === 'google' ? (
-                <>Google Ads: {formatPercent(comparison.leadShare.google)} of leads</>
-              ) : comparison.winningPlatform.volume === 'microsoft' ? (
-                <>Microsoft Ads: {formatPercent(comparison.leadShare.microsoft)} of leads</>
+              {derivedMetrics.winningVolume === 'google' ? (
+                <>Google Ads: {formatPercent(derivedMetrics.leadShare.google)} of leads</>
+              ) : derivedMetrics.winningVolume === 'microsoft' ? (
+                <>Microsoft Ads: {formatPercent(derivedMetrics.leadShare.microsoft)} of leads</>
               ) : (
                 <>Equal lead volume from both platforms</>
               )}
