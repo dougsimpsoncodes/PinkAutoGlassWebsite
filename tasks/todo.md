@@ -130,3 +130,42 @@ Removed dead lead-counting code from API routes (now computed client-side via `f
 ### Verification
 - `npm run build` passes with no errors
 - All TypeScript types align between API routes and frontend pages
+
+---
+
+# Fix LCP Performance Issue (Core Web Vitals) — Feb 1 2026
+
+## Problem
+18 URLs shifted from "Good" to "Need improvement" on Jan 30 due to LCP > 2.5s on mobile. Lighthouse confirmed:
+- **Homepage:** LCP 3.0s (score 78)
+- **Location/service pages:** LCP 6.5-7.7s (scores 57-61)
+
+Root cause: **6,700ms element render delay** — the H1 (LCP element) couldn't paint until all JS evaluated. Tracking scripts in `<head>` used raw `<script>` tags (not Next.js `<Script>`) so they loaded as render-blocking by default.
+
+## Completed Items
+- [x] Converted all tracking scripts from raw `<script>` in `<head>` to `<Script strategy="afterInteractive">` in `<body>`
+- [x] Merged MS Consent Mode + UET into single `<Script>` block (guarantees consent loads before UET)
+- [x] Merged GA4 config into Google Ads config block (eliminates `gtag()` ordering dependency)
+- [x] Removed stale Google Fonts preconnect hints (`next/font/google` self-hosts at build time)
+- [x] Security review: no issues (all inline scripts use hardcoded strings, no user input)
+- [x] Code review: identified and fixed script ordering fragility by merging dependent script pairs
+- [x] Build verified: passes with zero errors
+- [x] Lighthouse verified (localhost, eliminates CDN variance):
+  - Homepage: Score 93, LCP 2.9s, FCP 0.9s, CLS 0, render-blocking: CSS only
+  - /locations/denver-co: Score 84, LCP 2.8s, FCP 1.0s, CLS 0, render-blocking: CSS only
+
+## File Modified
+- `src/app/layout.tsx` — script deferral, script merging, preconnect removal
+
+## Commit
+- `2495939` — `perf: defer tracking scripts to fix LCP regression (Core Web Vitals)`
+
+## Key Decisions
+- `afterInteractive` strategy chosen over `lazyOnload` because analytics events need to fire once users start interacting (form fills, calls). `lazyOnload` would delay tracking until browser is idle, risking missed conversions.
+- Merged dependent script pairs into single blocks rather than relying on Next.js DOM-order execution (an implementation detail, not a documented guarantee).
+- All analytics call sites in `src/lib/analytics.ts` already guard with `if (window.gtag)` / `if (window.uetq)` null checks, so deferred loading is safe — events before scripts load are simply skipped.
+
+## Post-Deploy Verification (Manual)
+- [ ] Monitor Google Ads conversions in real-time reports (24-48h after deploy)
+- [ ] Monitor Bing UET in Microsoft Ads dashboard (24-48h after deploy)
+- [ ] Check Core Web Vitals in Search Console (7-14 days for CrUX data to update)
