@@ -59,3 +59,6 @@ test-build.js
 assets/**/client_secret*.json
 assets/**/credentials*.json
 .env*.local
+
+# Google Search Console exports
+*.zip
