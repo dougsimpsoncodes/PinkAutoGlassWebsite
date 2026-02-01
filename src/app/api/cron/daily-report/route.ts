@@ -21,7 +21,7 @@ import { fetchCampaignPerformance } from '@/lib/googleAds';
 import { fetchAccountPerformance as fetchMicrosoftAdsPerformance } from '@/lib/microsoftAds';
 import { sendAdminEmail } from '@/lib/notifications/email';
 import { getRingCentralClient } from '@/lib/notifications/sms';
-import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
+import { MIN_CALL_DURATION_SECONDS } from '@/lib/constants';
 
 // Types
 interface DailyStats {
@@ -77,29 +77,29 @@ function formatTime(dateStr: string): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-// Deduplicate calls - only show one call per session_id
-// Logic copied from /src/app/admin/dashboard/calls/page.tsx
+// Deduplicate calls by phone number (one call per unique caller).
+// This matches the dashboard's counting model (fetchUnifiedLeads),
+// which counts unique callers rather than unique sessions.
+// Keeps the most recent call per phone number.
 function deduplicateCalls(calls: any[]): any[] {
-  const sessionMap = new Map<string, any>();
+  const callerMap = new Map<string, any>();
 
   calls.forEach(call => {
-    const existing = sessionMap.get(call.session_id);
+    const phone = call.from_number;
+    if (!phone) return;
 
+    const existing = callerMap.get(phone);
     if (!existing) {
-      // First party in this session - add it
-      sessionMap.set(call.session_id, call);
+      callerMap.set(phone, call);
     } else {
-      // Prefer Inbound calls to our business number
-      const isInboundToUs = call.direction === 'Inbound' && call.to_number === BUSINESS_PHONE_NUMBER;
-      const existingIsInboundToUs = existing.direction === 'Inbound' && existing.to_number === BUSINESS_PHONE_NUMBER;
-
-      if (isInboundToUs && !existingIsInboundToUs) {
-        sessionMap.set(call.session_id, call);
+      // Keep the most recent call
+      if (new Date(call.start_time) > new Date(existing.start_time)) {
+        callerMap.set(phone, call);
       }
     }
   });
 
-  return Array.from(sessionMap.values());
+  return Array.from(callerMap.values());
 }
 
 // Deduplicate leads - only show one lead per email/phone
@@ -196,14 +196,19 @@ async function fetchData() {
   const fourteenDaysAgoUTC = new Date(fourteenDaysAgoMT.getTime() - (mtOffset * 60000));
 
   // 1. Fetch RingCentral phone calls
+  // Counting model (aligned with dashboard / fetchUnifiedLeads):
+  //   - Inbound calls only
+  //   - Duration >= MIN_CALL_DURATION_SECONDS (30s) to exclude hangups/robocalls
+  //   - Deduplicated by from_number (one lead per unique caller)
   const { data: allCalls } = await supabase
     .from('ringcentral_calls')
     .select('*')
     .gte('start_time', fourteenDaysAgoUTC.toISOString())
     .eq('direction', 'Inbound')
+    .gte('duration', MIN_CALL_DURATION_SECONDS)
     .order('start_time', { ascending: false });
 
-  // Deduplicate calls (same logic as call analytics page)
+  // Deduplicate calls by phone number (matches dashboard counting model)
   const calls = deduplicateCalls(allCalls || []);
 
   // 2. Fetch Quick Quote form submissions (leads table)

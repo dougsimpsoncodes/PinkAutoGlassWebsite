@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchAccountPerformance, fetchSearchTerms, validateMicrosoftAdsConfig } from '@/lib/microsoftAds';
 import {
   getMountainDateRange,
-  getAttributedLeadMetrics,
   getSupabaseClient,
   DateFilter,
 } from '@/lib/dashboardData';
 
+/**
+ * Microsoft Ads API Route
+ *
+ * Provides: ad spend, clicks, impressions, CTR, top converters, wasted spend, date range.
+ * Lead counts are NOT returned — the Microsoft Ads page computes them
+ * client-side via fetchUnifiedLeads() for a single source of truth.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -16,25 +22,12 @@ export async function GET(request: NextRequest) {
     const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
     const supabase = getSupabaseClient();
 
-    // Use shared attribution function for consistent lead counting
-    // This counts: forms from leads table + unique callers (30s+ calls)
-    const attributedMetrics = await getAttributedLeadMetrics(supabase, start, end);
-
-    // Extract Microsoft-attributed leads
-    const msLeads = attributedMetrics.microsoft;
-    const totalLeads = msLeads.total;
-    const actualCalls = msLeads.calls;  // Unique callers attributed to Microsoft
-    const formSubmissions = msLeads.forms;
-
     // Fetch real data from Microsoft Ads API
     let spend = 0;
     let clicks = 0;
     let impressions = 0;
     let ctr = 0;
-    let apiConversions = 0;
-
     const config = validateMicrosoftAdsConfig();
-    console.log('Microsoft Ads config valid:', config.isValid, 'missing:', config.missingVars);
 
     if (config.isValid) {
       try {
@@ -47,8 +40,6 @@ export async function GET(request: NextRequest) {
           clicks = accountData.clicks;
           impressions = accountData.impressions;
           ctr = accountData.ctr;
-          apiConversions = accountData.conversions;
-          console.log('Microsoft Ads: Using API data - spend:', spend, 'clicks:', clicks);
         } else {
           // API returned null or zero spend - fall back to estimates
           console.log('Microsoft Ads: API returned no data, using session estimates');
@@ -99,8 +90,6 @@ export async function GET(request: NextRequest) {
       impressions = msClickCount * 60; // Estimate at ~1.67% CTR
       ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
     }
-
-    const costPerLead = totalLeads > 0 ? spend / totalLeads : 0;
 
     // Fetch search terms data if API is configured
     let topConverters: any[] = [];
@@ -162,12 +151,6 @@ export async function GET(request: NextRequest) {
       clicks,
       impressions,
       ctr,
-      leads: {
-        total: totalLeads,
-        calls: actualCalls,  // Unique callers attributed to Microsoft (30s+ calls)
-        forms: formSubmissions,  // Form submissions attributed to Microsoft
-      },
-      costPerLead,
       topConverters,
       wastedSpend,
       dateRange: {

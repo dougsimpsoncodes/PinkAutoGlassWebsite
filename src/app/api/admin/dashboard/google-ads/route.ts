@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchCampaignPerformance, fetchSearchQueryReport, validateGoogleAdsConfig } from '@/lib/googleAds';
 import {
   getMountainDateRange,
-  getAttributedLeadMetrics,
   getSupabaseClient,
   DateFilter,
 } from '@/lib/dashboardData';
 
+/**
+ * Google Ads API Route
+ *
+ * Provides: ad spend, clicks, impressions, CTR, top converters, date range.
+ * Lead counts are NOT returned — the Google Ads page computes them
+ * client-side via fetchUnifiedLeads() for a single source of truth.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -15,16 +21,6 @@ export async function GET(request: NextRequest) {
     // Use shared date range function (Mountain Time)
     const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
     const supabase = getSupabaseClient();
-
-    // Use shared attribution function for consistent lead counting
-    // This counts: forms from leads table + unique callers (30s+ calls)
-    const attributedMetrics = await getAttributedLeadMetrics(supabase, start, end);
-
-    // Extract Google-attributed leads
-    const googleLeads = attributedMetrics.google;
-    const totalLeads = googleLeads.total;
-    const actualCalls = googleLeads.calls;  // Unique callers attributed to Google
-    const formSubmissions = googleLeads.forms;
 
     // Fetch real data from Google Ads API
     let spend = 0;
@@ -38,7 +34,6 @@ export async function GET(request: NextRequest) {
       try {
         const campaignData = await fetchCampaignPerformance(startDateStr, endDateStr);
 
-        // Aggregate campaign data
         for (const row of campaignData) {
           spend += row.cost || 0;
           clicks += row.clicks || 0;
@@ -47,11 +42,8 @@ export async function GET(request: NextRequest) {
         }
 
         ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-
-        console.log('Google Ads totals:', { spend, clicks, impressions, apiConversions, ctr });
       } catch (apiError) {
         console.error('Error fetching from Google Ads API:', apiError);
-        // Fall back to estimates if API fails
         const { data: sessions } = await supabase
           .from('user_sessions')
           .select('session_id')
@@ -60,13 +52,12 @@ export async function GET(request: NextRequest) {
           .lte('started_at', end.toISOString());
 
         const clickCount = sessions?.length || 0;
-        spend = clickCount * 3.00; // Estimate at $3.00 CPC
+        spend = clickCount * 3.00;
         clicks = clickCount;
-        impressions = clickCount * 50; // Estimate at ~2% CTR
+        impressions = clickCount * 50;
         ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
       }
     } else {
-      // No API credentials - use session data as fallback
       const { data: sessions } = await supabase
         .from('user_sessions')
         .select('session_id')
@@ -75,13 +66,11 @@ export async function GET(request: NextRequest) {
         .lte('started_at', end.toISOString());
 
       const clickCount = sessions?.length || 0;
-      spend = clickCount * 3.00; // Estimate at $3.00 CPC
+      spend = clickCount * 3.00;
       clicks = clickCount;
-      impressions = clickCount * 50; // Estimate at ~2% CTR
+      impressions = clickCount * 50;
       ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
     }
-
-    const costPerLead = totalLeads > 0 ? spend / totalLeads : 0;
 
     // Fetch search terms data if API is configured
     let topConverters: any[] = [];
@@ -128,12 +117,6 @@ export async function GET(request: NextRequest) {
       clicks,
       impressions,
       ctr,
-      leads: {
-        total: totalLeads,
-        calls: actualCalls,  // Unique callers attributed to Google (30s+ calls)
-        forms: formSubmissions,  // Form submissions attributed to Google
-      },
-      costPerLead,
       apiConversions,
       topConverters,
       dateRange: {

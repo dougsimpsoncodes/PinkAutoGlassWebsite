@@ -22,12 +22,6 @@ interface GoogleAdsData {
   clicks: number;
   impressions: number;
   ctr: number;
-  leads: {
-    total: number;
-    calls: number;  // Unique callers (30s+ inbound calls)
-    forms: number;  // Form submissions
-  };
-  costPerLead: number;
   apiConversions: number;
   topConverters: {
     term: string;
@@ -204,8 +198,6 @@ export default function GoogleAdsPage() {
     clicks: 0,
     impressions: 0,
     ctr: 0,
-    leads: { total: 0, calls: 0, forms: 0 },
-    costPerLead: 0,
     apiConversions: 0,
     topConverters: [],
     dateRange: { start: '', end: '', display: 'No data available' },

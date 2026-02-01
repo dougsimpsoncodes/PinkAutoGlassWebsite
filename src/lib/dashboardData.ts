@@ -19,9 +19,6 @@ import {
   ATTRIBUTION_WINDOW_MINUTES,
 } from './constants';
 
-// Re-export for backwards compatibility
-export { MIN_CALL_DURATION_SECONDS, ATTRIBUTION_WINDOW_MINUTES };
-
 export type DateFilter = 'today' | 'yesterday' | '7days' | '30days' | 'all';
 
 export interface DateRangeResult {
@@ -32,21 +29,6 @@ export interface DateRangeResult {
   // For API queries that need YYYY-MM-DD format
   startDateStr: string;
   endDateStr: string;
-}
-
-export interface LeadMetrics {
-  total: number;           // Forms + unique qualifying callers
-  forms: number;           // Form submissions only
-  uniqueCallers: number;   // Unique phone numbers with qualifying calls
-  byStatus: {
-    new: number;
-    contacted: number;
-    quoted: number;
-    scheduled: number;
-    completed: number;
-    lost: number;
-  };
-  totalRevenue: number;
 }
 
 export interface CallMetrics {
@@ -165,75 +147,6 @@ export function getSupabaseClient(): SupabaseClient {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-}
-
-/**
- * Get lead metrics for a date range
- * Lead = form submission OR unique qualifying inbound call
- */
-export async function getLeadMetrics(
-  supabase: SupabaseClient,
-  startDate: Date,
-  endDate: Date
-): Promise<LeadMetrics> {
-  // Fetch form leads from leads table
-  const { data: formLeads } = await supabase
-    .from('leads')
-    .select('id, status, revenue_amount')
-    .gte('created_at', startDate.toISOString())
-    .lte('created_at', endDate.toISOString());
-
-  // Fetch qualifying calls (inbound, 30s+, exclude business number)
-  const { data: calls } = await supabase
-    .from('ringcentral_calls')
-    .select('call_id, from_number, duration')
-    .eq('direction', 'Inbound')
-    .neq('from_number', BUSINESS_PHONE_NUMBER)
-    .gte('duration', MIN_CALL_DURATION_SECONDS)
-    .gte('start_time', startDate.toISOString())
-    .lte('start_time', endDate.toISOString());
-
-  // Count unique callers (distinct phone numbers)
-  const uniquePhoneNumbers = new Set<string>();
-  (calls || []).forEach(call => {
-    if (call.from_number) {
-      uniquePhoneNumbers.add(call.from_number);
-    }
-  });
-
-  const forms = formLeads?.length || 0;
-  const uniqueCallers = uniquePhoneNumbers.size;
-
-  // Count by status
-  const byStatus = {
-    new: 0,
-    contacted: 0,
-    quoted: 0,
-    scheduled: 0,
-    completed: 0,
-    lost: 0,
-  };
-
-  (formLeads || []).forEach(lead => {
-    const status = lead.status as keyof typeof byStatus;
-    if (status in byStatus) {
-      byStatus[status]++;
-    }
-  });
-
-  // Calculate total revenue
-  const totalRevenue = (formLeads || []).reduce(
-    (sum, lead) => sum + (lead.revenue_amount || 0),
-    0
-  );
-
-  return {
-    total: forms + uniqueCallers,
-    forms,
-    uniqueCallers,
-    byStatus,
-    totalRevenue,
-  };
 }
 
 /**

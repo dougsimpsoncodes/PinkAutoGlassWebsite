@@ -1,5 +1,18 @@
 'use client';
 
+/**
+ * Calls Page — Operations / Call Management View
+ *
+ * This is NOT a lead-counting page. It shows all calls grouped by
+ * customer conversation thread (session_id dedup), including short
+ * calls and missed calls. This is correct for its purpose: reviewing
+ * call activity, identifying missed opportunities, and managing
+ * follow-ups.
+ *
+ * For lead counting, the main dashboard uses fetchUnifiedLeads()
+ * which applies different rules (30s+ duration, phone-number dedup).
+ */
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
