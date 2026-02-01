@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -77,13 +78,38 @@ export default function RootLayout({
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
           <link rel="manifest" href="/site.webmanifest" />
 
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        </head>
+        <body
+          className={`${inter.variable} ${poppins.variable} antialiased`}
+        >
+          <Header />
+          <main id="main-content">
+            {children}
+          </main>
+          <Footer />
+          <StickyCallBar />
+          <StickyCallbackBar />
+          <AnalyticsTracker />
+          <Suspense fallback={null}>
+            <TrackingProvider />
+          </Suspense>
+          <Analytics />
 
-          {/* Microsoft Ads UET (Universal Event Tracking) */}
-          <script
+          {/* Microsoft Ads: Consent Mode + UET (combined to guarantee ordering) */}
+          <Script
+            id="ms-ads-uet"
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
+                window.uetq=window.uetq||[];
+                window.uetq.push('consent', 'default', {
+                  'ad_storage': 'denied',
+                });
+                if (navigator.language && navigator.language.startsWith('en-US')) {
+                  window.uetq.push('consent', 'update', {
+                    'ad_storage': 'granted',
+                  });
+                }
                 (function(w,d,t,r,u)
                 {
                   var f,n,i;
@@ -104,72 +130,24 @@ export default function RootLayout({
             }}
           />
 
-          {/* Microsoft Ads Consent Mode - GDPR Compliant */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.uetq=window.uetq||[];
-                window.uetq.push('consent', 'default', {
-                  'ad_storage': 'denied',
-                });
-
-                // Auto-grant consent for US visitors (primary market)
-                // For European visitors, consent remains denied until they accept
-                if (navigator.language && navigator.language.startsWith('en-US')) {
-                  window.uetq.push('consent', 'update', {
-                    'ad_storage': 'granted',
-                  });
-                }
-              `,
-            }}
-          />
-
           {/* Google Ads Conversion Tracking */}
-          <script
-            async
+          <Script
             src="https://www.googletagmanager.com/gtag/js?id=AW-17667607828"
+            strategy="afterInteractive"
           />
-          <script
+          <Script
+            id="google-ads-config"
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', 'AW-17667607828');
+                ${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? `gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { page_path: window.location.pathname });` : ''}
               `,
             }}
           />
-
-          {/* Google Analytics */}
-          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-            <>
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-                      page_path: window.location.pathname,
-                    });
-                  `,
-                }}
-              />
-            </>
-          )}
-        </head>
-        <body
-          className={`${inter.variable} ${poppins.variable} antialiased`}
-        >
-          <Header />
-          <main id="main-content">
-            {children}
-          </main>
-          <Footer />
-          <StickyCallBar />
-          <StickyCallbackBar />
-          <AnalyticsTracker />
-          <Suspense fallback={null}>
-            <TrackingProvider />
-          </Suspense>
-          <Analytics />
         </body>
       </html>
   );
