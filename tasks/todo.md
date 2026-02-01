@@ -103,3 +103,30 @@ Enable receiving customer SMS replies via RingCentral webhook + admin reply from
 4. Confirm: row in `ringcentral_sms`, admin gets forwarded SMS
 5. Open lead in admin dashboard, verify conversation shows
 6. Reply from the UI, verify customer receives it
+
+---
+
+# Universal Lead Counting: Cleanup & Alignment
+
+## Review Summary
+
+Removed dead lead-counting code from API routes (now computed client-side via `fetchUnifiedLeads()`), aligned daily email report with dashboard counting model, and documented intentional counting differences across pages.
+
+### Phase 1: Dead Code Removal
+- [x] **unified/route.ts** — Removed `getLeadMetrics()`, `getCallMetrics()` was replaced by just `getCallMetrics()` (kept for call analytics), removed conversion_events queries, allLeads query, session-based attribution for leads, otherEvents query. Route went from ~8 DB queries to ~2 DB queries + ad API calls.
+- [x] **google-ads/route.ts** — Removed `getAttributedLeadMetrics()` call and `leads`/`costPerLead` from response.
+- [x] **microsoft-ads/route.ts** — Same cleanup as google-ads.
+- [x] **dashboardData.ts** — Removed `getLeadMetrics()` function and `LeadMetrics` interface (zero callers). Removed re-exports of `MIN_CALL_DURATION_SECONDS` and `ATTRIBUTION_WINDOW_MINUTES` (no longer imported from here).
+- [x] **Dashboard + ad pages** — Updated TypeScript interfaces and placeholder data to match simplified API responses.
+
+### Phase 2: Daily Email Alignment
+- [x] **daily-report/route.ts** — Added `MIN_CALL_DURATION_SECONDS` filter to calls query (excludes hangups/robocalls). Changed `deduplicateCalls()` from session_id dedup to from_number dedup (matches dashboard's per-caller counting).
+
+### Phase 3: Documentation
+- [x] **customerDeduplication.ts** — Added comment explaining customer vs lead counting distinction (ROI/Funnel pages).
+- [x] **calls/page.tsx** — Added comment explaining this is an operations page, not a lead-counting page.
+- [x] **constants.ts** — Added comments explaining lead vs conversion event distinction and constant purposes.
+
+### Verification
+- `npm run build` passes with no errors
+- All TypeScript types align between API routes and frontend pages

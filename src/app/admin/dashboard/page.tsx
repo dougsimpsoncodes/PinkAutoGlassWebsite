@@ -24,19 +24,15 @@ import {
 interface UnifiedDashboardData {
   summary: {
     totalSpend: number;
-    totalLeads: number;
-    costPerLead: number;
     totalClicks: number;
     totalImpressions: number;
     overallCtr: number;
-    conversionRate: number;
     totalRevenue: number;
     roas: number;
   };
   platforms: {
     google: PlatformMetrics;
     microsoft: PlatformMetrics;
-    other: PlatformMetrics;
   };
   calls: {
     total: number;
@@ -49,24 +45,10 @@ interface UnifiedDashboardData {
       direct: number;
     };
   };
-  leads: {
-    total: number;
-    new: number;
-    byPlatform: {
-      google: number;
-      microsoft: number;
-      direct: number;
-    };
-  };
   comparison: {
-    cplDifference: number;
-    ctrDifference: number;
     spendShare: { google: number; microsoft: number };
-    leadShare: { google: number; microsoft: number; other: number };
     winningPlatform: {
-      cpl: string;
       ctr: string;
-      volume: string;
     };
   };
   dateRange: {
@@ -82,13 +64,6 @@ interface PlatformMetrics {
   clicks: number;
   impressions: number;
   ctr: number;
-  leads: {
-    total: number;
-    calls: number;
-    texts: number;
-    forms: number;
-  };
-  costPerLead: number;
 }
 
 export default function AdminDashboard() {
@@ -103,7 +78,6 @@ export default function AdminDashboard() {
 
   // Lead data — single source of truth for all lead counts on this page
   const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
-  const [leadsLoading, setLeadsLoading] = useState(true);
 
   // Get current data from shared cache
   const data = getCachedData(dateFilter) as UnifiedDashboardData | null;
@@ -196,13 +170,10 @@ export default function AdminDashboard() {
 
   const fetchLeads = useCallback(async () => {
     try {
-      setLeadsLoading(true);
       const leads = await fetchUnifiedLeads({ includeAttribution: true });
       setAllLeads(leads);
     } catch (err) {
       console.error('Error fetching leads:', err);
-    } finally {
-      setLeadsLoading(false);
     }
   }, []);
 
@@ -309,15 +280,13 @@ export default function AdminDashboard() {
 
   // Use placeholder data while loading a new period
   const displayData: UnifiedDashboardData = data || {
-    summary: { totalSpend: 0, totalLeads: 0, costPerLead: 0, totalClicks: 0, totalImpressions: 0, overallCtr: 0, conversionRate: 0, totalRevenue: 0, roas: 0 },
+    summary: { totalSpend: 0, totalClicks: 0, totalImpressions: 0, overallCtr: 0, totalRevenue: 0, roas: 0 },
     platforms: {
-      google: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
-      microsoft: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
-      other: { spend: 0, clicks: 0, impressions: 0, ctr: 0, leads: { total: 0, calls: 0, texts: 0, forms: 0 }, costPerLead: 0 },
+      google: { spend: 0, clicks: 0, impressions: 0, ctr: 0 },
+      microsoft: { spend: 0, clicks: 0, impressions: 0, ctr: 0 },
     },
     calls: { total: 0, answered: 0, missed: 0, answerRate: 0, byPlatform: { google: 0, microsoft: 0, direct: 0 } },
-    leads: { total: 0, new: 0, byPlatform: { google: 0, microsoft: 0, direct: 0 } },
-    comparison: { cplDifference: 0, ctrDifference: 0, spendShare: { google: 0, microsoft: 0 }, leadShare: { google: 0, microsoft: 0, other: 0 }, winningPlatform: { cpl: '', ctr: '', volume: '' } },
+    comparison: { spendShare: { google: 0, microsoft: 0 }, winningPlatform: { ctr: '' } },
     dateRange: { start: '', end: '', display: 'Loading...', period: dateFilter },
   };
 

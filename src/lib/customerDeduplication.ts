@@ -8,6 +8,13 @@
  * - Customer calls on Monday (720-555-1234)
  * - Same customer submits form on Tuesday (720-555-1234)
  * - Result: 1 unique customer, first contact method = call
+ *
+ * NOTE: This module answers "How many unique CUSTOMERS contacted us?"
+ * which differs from the dashboard lead model (fetchUnifiedLeads) that
+ * answers "How many LEADS did we get?" A customer who calls AND submits
+ * a form is 1 customer here but 2 leads on the dashboard. This module
+ * is used by ROI and Funnel pages where revenue attribution requires
+ * per-customer first-touch tracking.
  */
 
 export interface RingCentralCall {
