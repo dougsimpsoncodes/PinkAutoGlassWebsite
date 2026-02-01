@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Insurance Windshield Claims Denver | Progressive, Geico, AAA | $0 Cost Often',
-  description: '★★★★★ We handle 100% of insurance paperwork. Progressive, Geico, State Farm, AAA, Allstate accepted. Often $0 out-of-pocket in Colorado. Direct billing. Won\'t raise your rates. Same-day service. Call (720) 918-7465!',
-  keywords: 'auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, zero deductible windshield, insurance glass replacement, aaa windshield claim',
+  title: 'Auto Glass Insurance Claims Colorado | Progressive, Geico, AAA | $0 Deductible',
+  description: '★★★★★ We handle 100% of insurance paperwork. Progressive, Geico, State Farm, AAA, Allstate accepted. $0 deductible often in Colorado. Direct billing. Won\'t raise your rates. Same-day service. Call (720) 918-7465!',
+  keywords: 'auto glass insurance claims colorado, auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, zero deductible windshield colorado, insurance glass replacement, aaa windshield claim',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims',
   },
   openGraph: {
-    title: 'Auto Glass Insurance Claims Made Easy | Pink Auto Glass',
-    description: 'We handle all insurance paperwork. Often no out-of-pocket cost in Colorado. Direct billing to your insurance.',
+    title: 'Auto Glass Insurance Claims Colorado | $0 Deductible Often',
+    description: 'We handle all insurance paperwork. $0 deductible often in Colorado. Direct billing to Progressive, Geico, State Farm, AAA & more.',
     url: 'https://pinkautoglass.com/services/insurance-claims',
     type: 'website',
   },

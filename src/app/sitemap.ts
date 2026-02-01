@@ -192,5 +192,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...pages, ...services, ...locations, ...vehicles, ...blog, ...brands];
+  // Insurance brand pages
+  const insuranceBrands = [
+    'progressive',
+    'geico',
+    'state-farm',
+    'allstate',
+    'usaa',
+    'aaa',
+    'farmers',
+    'liberty-mutual',
+    'nationwide',
+    'travelers',
+  ].map((slug) => ({
+    url: `${baseUrl}/services/insurance-claims/${slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  return [...pages, ...services, ...insuranceBrands, ...locations, ...vehicles, ...blog, ...brands];
 }
