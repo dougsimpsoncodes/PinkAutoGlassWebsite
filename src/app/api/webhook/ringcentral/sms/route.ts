@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendAdminSMS } from '@/lib/notifications/sms';
+import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const AUTO_REPLY_MESSAGE =
+  'Thanks for texting Pink Auto Glass where a portion of every sale goes to breast cancer research. Someone will get back to you quickly.';
 
 function getSupabase() {
   return createClient(
@@ -99,6 +102,50 @@ export async function POST(req: NextRequest) {
     sendAdminSMS(adminMsg).catch((err) =>
       console.error('Failed to forward inbound SMS to admin:', err)
     );
+
+    // Auto-reply: one-time greeting per phone number (24h dedup window)
+    if (fromNumber) {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('ringcentral_sms')
+        .select('*', { count: 'exact', head: true })
+        .eq('to_number', fromNumber)
+        .eq('direction', 'Outbound')
+        .ilike('message_text', 'Thanks for texting Pink Auto Glass%')
+        .gte('message_time', twentyFourHoursAgo);
+
+      if (count === 0) {
+        // Fire-and-forget: send auto-reply without blocking the webhook response
+        sendSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE })
+          .then((sent) => {
+            if (sent) {
+              console.log(`Auto-reply sent to ${fromNumber}`);
+              // Store outbound record for dedup and conversation history
+              const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';
+              supabase
+                .from('ringcentral_sms')
+                .upsert(
+                  {
+                    message_id: `auto-reply-${fromNumber}-${Date.now()}`,
+                    conversation_id: conversationId,
+                    message_time: new Date().toISOString(),
+                    direction: 'Outbound',
+                    from_number: fromNum,
+                    to_number: fromNumber,
+                    message_text: AUTO_REPLY_MESSAGE,
+                    message_status: 'Sent',
+                    read_status: 'Read',
+                  },
+                  { onConflict: 'message_id' }
+                )
+                .then(({ error: storeErr }) => {
+                  if (storeErr) console.error('Failed to store auto-reply:', storeErr.message);
+                });
+            }
+          })
+          .catch((err) => console.error('Auto-reply failed:', err));
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
