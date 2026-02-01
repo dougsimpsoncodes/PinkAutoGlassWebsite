@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Mobile Windshield Replacement Denver | Same-Day | (720) 918-7465',
-  description: '✓ Free mobile service to your Denver location ✓ Same-day appointments ✓ Insurance accepted ✓ $0 deductible often ✓ Lifetime warranty. Book in 60 seconds or call (720) 918-7465 now.',
-  keywords: 'windshield repair denver, windshield replacement denver, auto glass denver, mobile windshield service denver co, mobile windshield replacement denver',
+  title: 'Auto Glass Repair Denver CO | Mobile Windshield Replacement | (720) 918-7465',
+  description: '✓ Auto glass repair & windshield replacement in Denver CO ✓ Free mobile service ✓ Same-day appointments ✓ $0 deductible often ✓ Lifetime warranty. Book in 60 seconds or call (720) 918-7465.',
+  keywords: 'auto glass denver co, auto glass repair denver co, windshield repair denver, windshield replacement denver, auto glass denver, mobile windshield service denver co, mobile windshield replacement denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/denver-co',
   },
   openGraph: {
-    title: 'Mobile Windshield Replacement Denver | Same-Day Service',
-    description: 'Free mobile service • Same-day appointments • Insurance accepted • $0 deductible often • Call (720) 918-7465',
+    title: 'Auto Glass Repair Denver CO | Mobile Windshield Replacement',
+    description: 'Auto glass repair & windshield replacement in Denver CO. Free mobile service • Same-day • $0 deductible often • Call (720) 918-7465',
     url: 'https://pinkautoglass.com/locations/denver-co',
     type: 'website',
   },

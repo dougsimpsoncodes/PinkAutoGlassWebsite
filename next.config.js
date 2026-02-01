@@ -102,6 +102,13 @@ const nextConfig = {
 
   async redirects() {
     return [
+      // Consolidate www → non-www (301) to unify domain authority
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.pinkautoglass.com' }],
+        destination: 'https://pinkautoglass.com/:path*',
+        permanent: true,
+      },
       // Redirect old /vehicles/make/:make to canonical /vehicles/brands/:make
       {
         source: '/vehicles/make/:make',
