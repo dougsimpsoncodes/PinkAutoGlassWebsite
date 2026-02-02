@@ -169,3 +169,42 @@ Root cause: **6,700ms element render delay** — the H1 (LCP element) couldn't p
 - [ ] Monitor Google Ads conversions in real-time reports (24-48h after deploy)
 - [ ] Monitor Bing UET in Microsoft Ads dashboard (24-48h after deploy)
 - [ ] Check Core Web Vitals in Search Console (7-14 days for CrUX data to update)
+
+---
+
+# Fix: SMS Auto-Reply Broken for All Leads — Feb 2 2026
+
+## Problem
+Customer reported never receiving auto-response after submitting a lead form. Investigation revealed **all outbound SMS had been silently failing** — 18 inbound SMS received, 0 outbound ever sent.
+
+## Root Causes (Two Issues)
+
+### 1. Corrupted RingCentral Credentials (Primary)
+`RINGCENTRAL_CLIENT_ID` and `RINGCENTRAL_CLIENT_SECRET` in Vercel had `\n"` appended to their values, causing every RingCentral API authentication to fail with `OAU-156: Basic authentication header is missing or malformed`. This meant `sendSMS()` silently returned `false` on every call.
+
+### 2. Wrong FROM Phone Number
+`RINGCENTRAL_PHONE_NUMBER` was set to `+17194575397` (Doug's direct Ext 103 line) instead of `+17209187465` (the main company number customers recognize). Per RingCentral docs, sending from the main company number requires:
+- The **Fax / SMS recipient** in Auto-Receptionist settings must be set to the authenticated extension
+- The JWT must authenticate as that same extension
+
+## Completed Items
+- [x] Diagnosed: 0 outbound SMS in `ringcentral_sms` table despite 18 inbound — confirmed global send failure
+- [x] Diagnosed: `\n"` corruption on both `CLIENT_ID` and `CLIENT_SECRET` in Vercel env vars
+- [x] Fixed: Cleaned `RINGCENTRAL_CLIENT_ID` in Vercel (removed trailing `\n"`)
+- [x] Fixed: Cleaned `RINGCENTRAL_CLIENT_SECRET` in Vercel (removed trailing `\n"`)
+- [x] Fixed: Changed `RINGCENTRAL_PHONE_NUMBER` from `+17194575397` to `+17209187465` (main company number)
+- [x] Fixed: Changed **Fax / SMS recipient** in RingCentral Admin Portal (Auto-Receptionist > General Settings > Call Handling) from Dan Shikiar Ext 101 to Doug Simpson Ext 103
+- [x] Verified: SMS sends successfully from main company number `(720) 918-7465`
+- [x] Verified: Email auto-reply sends successfully via Resend
+- [x] Verified: End-to-end test — lead form submission triggers both SMS and email auto-reply
+- [x] Cleaned up: Removed all test leads and scheduled messages from database
+
+## Impact
+- **Every lead form SMS auto-reply** had been silently failing since the credentials were corrupted
+- **Every inbound text auto-reply** (one-time greeting) had been silently failing
+- **Admin SMS notifications** had been silently failing
+- Email auto-replies via Resend were unaffected (separate service, clean credentials)
+
+## Prevention
+- The `\n"` corruption pattern is documented in `.claude/CLAUDE.md` — env var values must never have literal `\n` appended
+- When setting Vercel env vars via CLI, use `printf` not `echo` to avoid trailing newlines
