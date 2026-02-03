@@ -93,7 +93,11 @@ export async function fetchUnifiedLeads(
     const formData = await formRes.json();
     const formLeads = (formData.leads || []).map((lead: any) => ({
       id: lead.id,
-      type: 'form' as const,
+      type: lead.first_contact_method === 'sms'
+        ? 'text' as const
+        : lead.first_contact_method === 'call'
+          ? 'call' as const
+          : 'form' as const,
       name: `${lead.first_name} ${lead.last_name}`,
       phone: lead.phone,
       email: lead.email,
