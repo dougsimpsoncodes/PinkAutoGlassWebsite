@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
+import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -66,6 +67,13 @@ export async function POST(req: NextRequest) {
     const messageTime = messageBody.creationTime || messageBody.lastModifiedTime || new Date().toISOString();
     const messageStatus = messageBody.messageStatus || 'Received';
     const readStatus = messageBody.readStatus || 'Unread';
+
+    // Skip messages from our own number — prevents recursive forwarding loops.
+    // sendAdminSMS() sends FROM the business number to admin extensions, which
+    // RingCentral delivers as "Inbound" on the receiving end, re-triggering this webhook.
+    if (fromNumber === BUSINESS_PHONE_NUMBER) {
+      return NextResponse.json({ ok: true });
+    }
 
     const supabase = getSupabase();
 
