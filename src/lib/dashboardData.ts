@@ -270,19 +270,23 @@ export async function getAttributedLeadMetrics(
     const latestCallTime = new Date(Math.max(...callTimes));
 
     // Fetch sessions with click IDs
+    // NOTE: Must use explicit limit to avoid PostgREST default max_rows (1000)
+    // which silently truncates results, dropping recent sessions from attribution
     const [{ data: googleSessions }, { data: msSessions }] = await Promise.all([
       supabase
         .from('user_sessions')
         .select('session_id, started_at')
         .not('gclid', 'is', null)
         .gte('started_at', earliestWindowStart.toISOString())
-        .lte('started_at', latestCallTime.toISOString()),
+        .lte('started_at', latestCallTime.toISOString())
+        .limit(10000),
       supabase
         .from('user_sessions')
         .select('session_id, started_at')
         .not('msclkid', 'is', null)
         .gte('started_at', earliestWindowStart.toISOString())
-        .lte('started_at', latestCallTime.toISOString()),
+        .lte('started_at', latestCallTime.toISOString())
+        .limit(10000),
     ]);
 
     // Match unattributed calls to sessions

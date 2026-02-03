@@ -208,3 +208,68 @@ Customer reported never receiving auto-response after submitting a lead form. In
 ## Prevention
 - The `\n"` corruption pattern is documented in `.claude/CLAUDE.md` — env var values must never have literal `\n` appended
 - When setting Vercel env vars via CLI, use `printf` not `echo` to avoid trailing newlines
+
+---
+
+# Fix: Conversion Tracking Broken Since Jan 28 — Feb 2 2026
+
+## Problem
+Zero conversion events (phone_click, text_click, form_submit) recorded since Jan 28. Dashboard showed 0 leads from Google despite 42 Google Ads visitors with gclid in sessions and 2 callers with matching Google Ads sessions.
+
+## Root Cause
+Commit `0d29c23` (Jan 28) added `fbclid: getFbclid()` to the `conversion_events` insert in `src/lib/tracking.ts:482`, but the `conversion_events` table was never given a `fbclid` column. PostgREST rejects inserts with unknown columns, so every conversion event insert silently failed. The error was caught and logged to browser console only.
+
+The `fbclid` column already existed in `user_sessions` and `page_views` (added in an earlier migration), but `conversion_events` was missed.
+
+## Completed Items
+- [x] Diagnosed: 0 conversion_events since Jan 28 despite active session and page_view tracking
+- [x] Diagnosed: `fbclid` column missing from `conversion_events` (exists in `user_sessions` and `page_views`)
+- [x] Diagnosed: `tracking.ts:482` inserts `fbclid` into `conversion_events` — fails silently on every call
+- [x] Fixed: Applied migration `add_fbclid_to_conversion_events` — added `fbclid TEXT` column
+- [x] Verified: Test insert into `conversion_events` with `fbclid` succeeds
+- [x] Verified: Security advisors show no new issues from DDL change
+
+## Analytics Investigation Summary (Feb 2)
+- **336 unique visitors** (356 sessions) — accurate, session tracking was unaffected
+- **42 Google Ads visitors** (gclid), **9 Microsoft Ads** (msclkid), **285 organic/direct**
+- **7 inbound callers** (5 qualifying at 30s+), **1 form lead** (Dan Shikiar, direct visit)
+- **3 of 5 qualifying callers** had ad sessions within 5 min: 2 Google, 1 Microsoft
+- **1.8% conversion rate** (6 leads / 336 visitors) — within normal range for auto glass
+- "0 leads from Google" was a tracking/attribution display issue, not a real zero
+
+## Impact
+- **5 days of lost conversion data** (Jan 29 – Feb 2): phone clicks, text clicks, form submissions
+- **Call attribution via phone_click matching** broken (relies on conversion_events)
+- **Google/Microsoft Ads offline conversion sync** affected (uses conversion_events)
+- Session tracking, page views, and analytics events were unaffected
+
+## Prevention
+- When adding columns to the tracking insert in `tracking.ts`, verify ALL target tables have the column — not just `user_sessions` and `page_views`, but also `conversion_events`
+
+---
+
+# Fix: Recursive SMS Forwarding Loop — Feb 2 2026
+
+## Problem
+SMS webhook handler created an exponential message cascade — 14 messages at 5:00 PM and 15 at 4:28 PM. Database had 117 recursive junk records with nested "Inbound SMS from +17209187465:" prefixes, plus 2 auto-replies the company sent to its own number.
+
+## Root Cause
+`sendAdminSMS()` in the webhook handler sends FROM the business number (+17209187465) TO admin extension numbers (+17194575397, +17196531406). RingCentral delivers these internal messages as "Inbound" on the receiving extension, re-triggering the same webhook. Each trigger generates another `sendAdminSMS()` call, creating exponential growth. Additionally, when the webhook processed messages with `fromNumber = +17209187465`, it sent an auto-reply TO the business number (the company texting itself), creating a second recursive path.
+
+## Completed Items
+- [x] Diagnosed: 117 recursive "Inbound" records from +17209187465 with nested forwarding prefixes
+- [x] Diagnosed: 2 auto-replies sent TO the business number (self-texting)
+- [x] Fixed: Added early return guard — skip processing when `fromNumber === BUSINESS_PHONE_NUMBER`
+- [x] Cleaned: Deleted 117 recursive inbound records + 2 self-reply records from `ringcentral_sms`
+- [x] Build verified: passes with zero errors
+- [x] Deployed to production
+
+## File Modified
+- `src/app/api/webhook/ringcentral/sms/route.ts` — added `BUSINESS_PHONE_NUMBER` import + guard at line 74
+
+## Commit
+- `4c3990b` — `fix: prevent recursive SMS forwarding loop in webhook handler`
+
+## Prevention
+- Any webhook that processes inbound messages AND sends outbound messages from the same number must guard against re-triggering itself
+- The `sendAdminSMS()` function sends from `RINGCENTRAL_PHONE_NUMBER` which is the same number the webhook listens on — this is inherently recursive without a guard
