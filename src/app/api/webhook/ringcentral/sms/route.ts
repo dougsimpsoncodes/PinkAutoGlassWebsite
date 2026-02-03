@@ -47,11 +47,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Only process inbound SMS
-    if (messageBody.direction !== 'Inbound') {
-      return NextResponse.json({ ok: true });
-    }
-
     const messageId = String(messageBody.id);
     const conversationId = messageBody.conversationId
       ? String(messageBody.conversationId)
@@ -68,10 +63,37 @@ export async function POST(req: NextRequest) {
     const messageStatus = messageBody.messageStatus || 'Received';
     const readStatus = messageBody.readStatus || 'Unread';
 
+    // Log all webhook events for debugging direction/routing issues
+    console.log(`RC webhook: direction=${messageBody.direction} from=${fromNumber} to=${toNumber} id=${messageId}`);
+
+    // Only process inbound SMS
+    if (messageBody.direction !== 'Inbound') {
+      return NextResponse.json({ ok: true });
+    }
+
     // Skip messages from our own number — prevents recursive forwarding loops.
     // sendAdminSMS() sends FROM the business number to admin extensions, which
     // RingCentral delivers as "Inbound" on the receiving end, re-triggering this webhook.
     if (fromNumber === BUSINESS_PHONE_NUMBER) {
+      return NextResponse.json({ ok: true });
+    }
+
+    // Only process messages sent TO our business number.
+    // When team members send outbound SMS through RingCentral, the webhook can
+    // fire with direction='Inbound' (account-level subscription). Checking the
+    // destination ensures we only auto-reply to actual customer-to-business messages.
+    if (toNumber && toNumber !== BUSINESS_PHONE_NUMBER) {
+      console.log(`Skipping SMS not addressed to business number: to=${toNumber}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    // Skip messages from team members — prevents auto-reply to internal messages.
+    // When Dan/admins send outbound SMS, the from number may be their personal
+    // phone, not the business number, so the check above doesn't catch it.
+    const adminPhonesStr = process.env.ADMIN_PHONE || '';
+    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(Boolean);
+    if (adminPhones.includes(fromNumber)) {
+      console.log(`Skipping SMS from team member: ${fromNumber}`);
       return NextResponse.json({ ok: true });
     }
 
