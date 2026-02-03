@@ -88,11 +88,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Skip messages from team members — prevents auto-reply to internal messages.
-    // When Dan/admins send outbound SMS, the from number may be their personal
-    // phone, not the business number, so the check above doesn't catch it.
-    const adminPhonesStr = process.env.ADMIN_PHONE || '';
-    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(Boolean);
-    if (adminPhones.includes(fromNumber)) {
+    // Team members can text from: personal phones (ADMIN_PHONE), RC extensions
+    // (TEAM_RC_NUMBERS), or the business number (caught above). The RC account-level
+    // webhook fires for ALL extensions, so Dan texting from his extension (+17196531406)
+    // appears as direction='Inbound' to the business number's message store.
+    const teamNumbers = [
+      ...(process.env.ADMIN_PHONE || '').split(','),
+      ...(process.env.TEAM_RC_NUMBERS || '').split(','),
+    ].map(p => p.trim()).filter(Boolean);
+    if (teamNumbers.includes(fromNumber)) {
       console.log(`Skipping SMS from team member: ${fromNumber}`);
       return NextResponse.json({ ok: true });
     }
