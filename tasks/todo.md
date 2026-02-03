@@ -273,3 +273,29 @@ SMS webhook handler created an exponential message cascade — 14 messages at 5:
 ## Prevention
 - Any webhook that processes inbound messages AND sends outbound messages from the same number must guard against re-triggering itself
 - The `sendAdminSMS()` function sends from `RINGCENTRAL_PHONE_NUMBER` which is the same number the webhook listens on — this is inherently recursive without a guard
+
+---
+
+# Auto-Create Leads from Inbound SMS — Feb 3 2026
+
+## Problem
+Inbound SMS messages were stored in `ringcentral_sms` but never created a lead in the `leads` table. SMS leads were invisible to the lead management pipeline and dashboard.
+
+## Completed Items
+- [x] DB migration: added `'sms'` to `check_first_contact_method` constraint (was `['call', 'form']`, now `['call', 'form', 'sms']`)
+- [x] SMS webhook: added lead creation after SMS storage — dedup check (same phone + sms + 24h), append to existing or insert new
+- [x] Dashboard mapping: `leadProcessing.ts` now maps `first_contact_method` to correct `UnifiedLead.type` (`'sms'` → `'text'`, `'call'` → `'call'`, `'form'`/null → `'form'`)
+- [x] TypeScript: zero new errors in modified files
+- [x] Security advisors: no new issues from DDL change
+
+## Files Modified
+- `src/app/api/webhook/ringcentral/sms/route.ts` — added lead creation + dedup logic (~45 lines)
+- `src/lib/leadProcessing.ts` — updated type mapping from hardcoded `'form'` to `first_contact_method`-based
+
+## Migration Applied
+- `add_sms_to_first_contact_method` — DROP + recreate CHECK constraint with `'sms'` added
+
+## Key Decisions
+- **24-hour dedup window**: multiple texts within 24h from the same number append to one lead's notes (separated by `---`). Texts after 24h create a new lead — assumes separate inquiry.
+- **Best-effort lead creation**: wrapped in try/catch so SMS storage (the primary purpose of the webhook) is never blocked by a lead creation failure.
+- **Notes field**: the SMS message text is stored in `notes` (the VIN, question, or whatever they sent). SMS leads won't have `first_name`, `last_name`, `email`, or vehicle fields — these are filled in when the lead is worked.

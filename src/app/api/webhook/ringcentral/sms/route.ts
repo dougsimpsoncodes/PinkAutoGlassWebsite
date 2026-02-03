@@ -104,6 +104,54 @@ export async function POST(req: NextRequest) {
       console.log(`Stored inbound SMS ${messageId} from ${fromNumber}`);
     }
 
+    // --- Create or update lead from inbound SMS ---
+    if (fromNumber) {
+      try {
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+        // Check for existing SMS lead from this number in last 24h
+        const { data: existingLead } = await supabase
+          .from('leads')
+          .select('id, notes')
+          .eq('phone_e164', fromNumber)
+          .eq('first_contact_method', 'sms')
+          .gte('created_at', twentyFourHoursAgo)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (existingLead) {
+          // Append new message to existing lead's notes
+          const updatedNotes = existingLead.notes
+            ? `${existingLead.notes}\n---\n${messageText}`
+            : messageText;
+          await supabase
+            .from('leads')
+            .update({ notes: updatedNotes })
+            .eq('id', existingLead.id);
+          console.log(`Appended SMS to existing lead ${existingLead.id}`);
+        } else {
+          // Insert new lead
+          const { error: leadError } = await supabase
+            .from('leads')
+            .insert({
+              phone_e164: fromNumber,
+              first_contact_method: 'sms',
+              status: 'new',
+              notes: messageText,
+            });
+          if (leadError) {
+            console.error('Failed to create SMS lead:', leadError.message);
+          } else {
+            console.log(`Created new SMS lead for ${fromNumber}`);
+          }
+        }
+      } catch (leadErr: any) {
+        // Non-fatal — SMS is already stored, lead creation is best-effort
+        console.error('Lead creation from SMS failed:', leadErr.message || leadErr);
+      }
+    }
+
     // Forward to admin as an SMS notification
     const preview = messageText.length > 100 ? messageText.slice(0, 100) + '...' : messageText;
     const adminMsg = `Inbound SMS from ${fromNumber}: ${preview}`;
