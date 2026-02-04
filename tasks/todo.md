@@ -299,3 +299,61 @@ Inbound SMS messages were stored in `ringcentral_sms` but never created a lead i
 - **24-hour dedup window**: multiple texts within 24h from the same number append to one lead's notes (separated by `---`). Texts after 24h create a new lead — assumes separate inquiry.
 - **Best-effort lead creation**: wrapped in try/catch so SMS storage (the primary purpose of the webhook) is never blocked by a lead creation failure.
 - **Notes field**: the SMS message text is stored in `notes` (the VIN, question, or whatever they sent). SMS leads won't have `first_name`, `last_name`, `email`, or vehicle fields — these are filled in when the lead is worked.
+
+---
+
+# Omega EDI Integration: Dynamic Pricing + Revenue Tracking — Feb 3 2026
+
+## Task
+Replace hardcoded $299 with configurable dynamic pricing, add nightly Omega sync with revenue backfill, and surface cost/profit metrics in dashboard and daily report.
+
+## Completed Items (Phases 1, 3, 4)
+
+### Phase 1: Configurable Pricing in Auto-Responses
+- [x] `src/lib/pricing.ts` — `getQuotePrice()` with tiered fallback (Omega API → cache → env var). Structured for Phase 2 wiring.
+- [x] `src/lib/drip/templates.ts` — Added `quotePrice?` to `DripTemplateContext`, replaced hardcoded `$299` in SMS and email templates with `ctx.quotePrice ?? 299`
+- [x] `src/app/api/lead/route.ts` — Pricing lookup after validation, passes `quotePrice` to drip context, writes `quote_amount` to lead (fire-and-forget)
+
+### Phase 3: Nightly Sync + Revenue Backfill
+- [x] `supabase/migrations/20260203_add_revenue_backfill.sql` — `fn_backfill_lead_revenue()` function: backfills `leads.revenue_amount`, `close_date`, `status`, `quote_amount` from matched omega_installs/quotes. Idempotent.
+- [x] `src/app/api/cron/sync-omega/route.ts` — GET endpoint with CRON_SECRET auth. Syncs last 2 days of quotes/invoices, runs matching, runs revenue backfill. Logs to omega_sync_log.
+- [x] `vercel.json` — Added cron `0 5 * * *` (10 PM Mountain Time)
+
+### Phase 4: Dashboard Revenue Reporting
+- [x] `src/app/api/admin/dashboard/unified/route.ts` — Added `omega_installs` query for parts_cost + labor_cost. Response now includes `costOfGoods`, `grossProfit`, `profitMargin` in summary.
+- [x] `src/app/api/cron/daily-report/route.ts` — Added revenue section to daily email: yesterday's jobs/revenue, 7-day running total, avg job value, lead-to-close rate.
+
+## Files Created
+- `src/lib/pricing.ts`
+- `src/app/api/cron/sync-omega/route.ts`
+- `supabase/migrations/20260203_add_revenue_backfill.sql`
+
+## Files Modified
+- `src/lib/drip/templates.ts` — dynamic price in SMS + email templates
+- `src/app/api/lead/route.ts` — pricing lookup + quote_amount write
+- `src/app/api/admin/dashboard/unified/route.ts` — cost/profit metrics
+- `src/app/api/cron/daily-report/route.ts` — revenue section in email
+- `vercel.json` — added omega sync cron
+
+## New Env Vars (optional, have defaults)
+- `PRICING_FALLBACK_AMOUNT` — default: 299
+- `PRICING_MARKUP_PERCENT` — default: 40
+
+## Not Yet Implemented (Phase 0 + Phase 2)
+- [ ] **Phase 0**: Omega API discovery — confirm parts/pricing endpoints exist
+- [ ] **Phase 2**: `getPartsByVehicle()` / `getPartsByVin()` methods in omegaEDI.ts
+- [ ] **Phase 2**: `pricing_cache` table + admin refresh endpoint
+- [ ] **Phase 2**: Wire cache + Omega API into `getQuotePrice()` lookup chain
+
+## Verification
+1. Submit quick quote form → SMS/email should show `$299` (fallback, until Omega pricing wired)
+2. Trigger manual sync: `POST /api/admin/sync/omega` → check `leads.revenue_amount` for matched installs
+3. Check daily report email → revenue section should appear when omega_installs has data
+4. Check dashboard API `/api/admin/dashboard/unified` → response should include `costOfGoods`, `grossProfit`, `profitMargin`
+
+## Key Decisions
+- Pricing lookup is non-blocking: if it fails, the lead still gets created with the template fallback ($299)
+- `quote_amount` is written via a separate fire-and-forget UPDATE (not part of fn_insert_lead RPC) to avoid modifying the critical insert path
+- Revenue backfill function is idempotent: only updates NULL fields, safe to run repeatedly
+- Cron syncs 2-day window for overlap to catch late-arriving records
+- SMS auto-reply does NOT include pricing (no structured vehicle data from free-form texts)

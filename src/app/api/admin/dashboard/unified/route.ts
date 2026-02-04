@@ -42,10 +42,11 @@ export async function GET(request: NextRequest) {
     // Use shared date range function for consistent timezone handling
     const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
 
-    // Fetch call metrics, revenue, and ad platform data in parallel
+    // Fetch call metrics, revenue, cost-of-goods, and ad platform data in parallel
     const [
       callMetrics,
       revenueResult,
+      costResult,
       googleApiData,
       microsoftApiData,
     ] = await Promise.all([
@@ -56,6 +57,13 @@ export async function GET(request: NextRequest) {
         .select('revenue_amount')
         .gte('created_at', start.toISOString())
         .lte('created_at', end.toISOString()),
+      // Cost-of-goods from omega_installs (parts + labor)
+      supabase
+        .from('omega_installs')
+        .select('parts_cost, labor_cost')
+        .gte('install_date', start.toISOString())
+        .lte('install_date', end.toISOString())
+        .eq('status', 'completed'),
       fetchGoogleAdsData(startDateStr, endDateStr),
       fetchMicrosoftAdsData(startDateStr, endDateStr, start, end),
     ]);
@@ -65,6 +73,14 @@ export async function GET(request: NextRequest) {
       (sum, l) => sum + (l.revenue_amount || 0),
       0
     );
+
+    // Calculate cost-of-goods from omega_installs
+    const costOfGoods = (costResult.data || []).reduce(
+      (sum, row) => sum + (row.parts_cost || 0) + (row.labor_cost || 0),
+      0
+    );
+    const grossProfit = totalRevenue - costOfGoods;
+    const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
     // Combined ad spend totals
     const totalSpend = googleApiData.spend + microsoftApiData.spend;
@@ -80,6 +96,9 @@ export async function GET(request: NextRequest) {
         overallCtr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
         totalRevenue,
         roas: totalSpend > 0 ? totalRevenue / totalSpend : 0,
+        costOfGoods,
+        grossProfit,
+        profitMargin,
       },
 
       platforms: {

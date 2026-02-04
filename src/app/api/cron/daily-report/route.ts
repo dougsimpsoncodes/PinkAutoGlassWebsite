@@ -316,6 +316,13 @@ async function fetchData() {
     msAdsDataByDate[yesterdayStr] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
   }
 
+  // 7. Fetch revenue data from omega_installs (yesterday + running 7-day total)
+  const { data: revenueData } = await supabase
+    .from('omega_installs')
+    .select('install_date, total_revenue, parts_cost, labor_cost')
+    .gte('install_date', fourteenDaysAgoUTC.toISOString())
+    .eq('status', 'completed');
+
   return {
     calls: calls || [],
     leads: leads || [],
@@ -323,6 +330,7 @@ async function fetchData() {
     adsDataByDate,
     msAdsDataByDate,
     campaigns: campaigns || [],
+    revenueData: revenueData || [],
   };
 }
 
@@ -552,6 +560,68 @@ function calculateTrends(dailyStats: DailyStats[]) {
   return { trends, thisWeek, lastWeek };
 }
 
+// Calculate revenue stats for the daily report
+interface RevenueStats {
+  yesterdayJobs: number;
+  yesterdayRevenue: number;
+  weeklyRevenue: number;
+  weeklyJobs: number;
+  avgJobValue: number;
+  leadToCloseRate: number; // percentage
+}
+
+function calculateRevenueStats(
+  revenueData: { install_date: string; total_revenue: number; parts_cost?: number; labor_cost?: number }[],
+  totalLeadsThisWeek: number
+): RevenueStats {
+  const mtOffset = -7 * 60;
+  const now = new Date();
+  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const mtNow = new Date(utcNow + (mtOffset * 60000));
+
+  // Yesterday in MT
+  const yesterdayMT = new Date(mtNow);
+  yesterdayMT.setDate(yesterdayMT.getDate() - 1);
+  yesterdayMT.setHours(0, 0, 0, 0);
+  const yesterdayStartUTC = new Date(yesterdayMT.getTime() - (mtOffset * 60000));
+
+  const todayMT = new Date(mtNow);
+  todayMT.setHours(0, 0, 0, 0);
+  const todayStartUTC = new Date(todayMT.getTime() - (mtOffset * 60000));
+
+  // 7 days ago in MT
+  const weekAgoMT = new Date(todayMT);
+  weekAgoMT.setDate(weekAgoMT.getDate() - 7);
+  const weekAgoUTC = new Date(weekAgoMT.getTime() - (mtOffset * 60000));
+
+  // Yesterday's jobs
+  const yesterdayJobs = revenueData.filter(r => {
+    const d = new Date(r.install_date);
+    return d >= yesterdayStartUTC && d < todayStartUTC;
+  });
+
+  const yesterdayRevenue = yesterdayJobs.reduce((sum, r) => sum + (r.total_revenue || 0), 0);
+
+  // This week's jobs (last 7 days)
+  const weeklyJobs = revenueData.filter(r => {
+    const d = new Date(r.install_date);
+    return d >= weekAgoUTC && d < todayStartUTC;
+  });
+
+  const weeklyRevenue = weeklyJobs.reduce((sum, r) => sum + (r.total_revenue || 0), 0);
+  const avgJobValue = weeklyJobs.length > 0 ? weeklyRevenue / weeklyJobs.length : 0;
+  const leadToCloseRate = totalLeadsThisWeek > 0 ? (weeklyJobs.length / totalLeadsThisWeek) * 100 : 0;
+
+  return {
+    yesterdayJobs: yesterdayJobs.length,
+    yesterdayRevenue,
+    weeklyRevenue,
+    weeklyJobs: weeklyJobs.length,
+    avgJobValue,
+    leadToCloseRate,
+  };
+}
+
 // Helper to get source label and color
 function getSourceStyle(source: Contact['source']): { label: string; color: string } {
   switch (source) {
@@ -577,7 +647,8 @@ function generateEmailHTML(
     googleAdsWorking: boolean;
     msAdsWorking: boolean;
     totalCampaigns: number;
-  }
+  },
+  revenueStats?: RevenueStats
 ): string {
   const { trends } = metrics;
 
@@ -707,6 +778,33 @@ function generateEmailHTML(
         </div>
       </div>
     </div>
+
+    ${revenueStats && (revenueStats.yesterdayJobs > 0 || revenueStats.weeklyJobs > 0) ? `
+    <!-- Revenue -->
+    <div style="padding: 0 24px 32px 24px;">
+      <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">Revenue</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="background: #ecfdf5; padding: 14px; border-radius: 8px; border-left: 4px solid #10b981;">
+          <div style="font-size: 13px; color: #065f46; margin-bottom: 2px;">Yesterday's Jobs</div>
+          <div style="font-size: 24px; font-weight: 600; color: #064e3b;">${revenueStats.yesterdayJobs}</div>
+          <div style="font-size: 13px; color: #065f46;">$${revenueStats.yesterdayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+        </div>
+        <div style="background: #ecfdf5; padding: 14px; border-radius: 8px; border-left: 4px solid #10b981;">
+          <div style="font-size: 13px; color: #065f46; margin-bottom: 2px;">7-Day Total</div>
+          <div style="font-size: 24px; font-weight: 600; color: #064e3b;">${revenueStats.weeklyJobs} jobs</div>
+          <div style="font-size: 13px; color: #065f46;">$${revenueStats.weeklyRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+        </div>
+        <div style="background: #f8f9fa; padding: 14px; border-radius: 8px;">
+          <div style="font-size: 13px; color: #666; margin-bottom: 2px;">Avg Job Value</div>
+          <div style="font-size: 24px; font-weight: 600; color: #333;">$${revenueStats.avgJobValue.toFixed(0)}</div>
+        </div>
+        <div style="background: #f8f9fa; padding: 14px; border-radius: 8px;">
+          <div style="font-size: 13px; color: #666; margin-bottom: 2px;">Lead-to-Close Rate</div>
+          <div style="font-size: 24px; font-weight: 600; color: #333;">${revenueStats.leadToCloseRate.toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
 
     ${contacts.length > 0 ? `
     <!-- Yesterday's Activity -->
@@ -902,8 +1000,16 @@ export async function GET(request: NextRequest) {
       totalCampaigns: data.campaigns.length
     };
 
+    // Calculate revenue stats from omega_installs
+    // Total leads this week = sum of all lead sources over the last 7 daily stats
+    const thisWeekStats = dailyStats.slice(Math.max(0, dailyStats.length - 7));
+    const totalLeadsThisWeek = thisWeekStats.reduce(
+      (sum, d) => sum + d.phoneCalls + d.quoteRequests + d.clickToCalls + d.clickToTexts, 0
+    );
+    const revenueStats = calculateRevenueStats(data.revenueData, totalLeadsThisWeek);
+
     // Generate HTML
-    const html = generateEmailHTML(metrics, contacts, reportDay, dataStatus);
+    const html = generateEmailHTML(metrics, contacts, reportDay, dataStatus, revenueStats);
 
     // Send email - use yesterday's date (in Mountain Time)
     const mtOffset = -7 * 60;

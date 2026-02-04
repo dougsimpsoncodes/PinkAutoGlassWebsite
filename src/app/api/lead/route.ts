@@ -8,6 +8,7 @@ import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
 import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
+import { getQuotePrice } from '@/lib/pricing';
 
 export async function POST(request: NextRequest) {
   try {
@@ -165,6 +166,31 @@ export async function POST(request: NextRequest) {
     }
 
     // =============================================================================
+    // PRICING: Look up dynamic quote price (non-blocking, fallback on failure)
+    // =============================================================================
+    let quotePrice: number | undefined;
+    try {
+      const priceResult = await getQuotePrice(
+        validatedData.vehicleYear,
+        validatedData.vehicleMake,
+        validatedData.vehicleModel,
+        validatedData.serviceType
+      );
+      quotePrice = priceResult.price;
+
+      // Write quote_amount to lead (fire-and-forget, don't block response)
+      supabase
+        .from('leads')
+        .update({ quote_amount: quotePrice })
+        .eq('id', leadId)
+        .then(({ error }) => {
+          if (error) console.error('Failed to update lead quote_amount:', error.message);
+        });
+    } catch (err) {
+      console.error('Pricing lookup failed, using template default:', err);
+    }
+
+    // =============================================================================
     // CUSTOMER AUTO-REPLY: Instant SMS + Email
     // =============================================================================
     const smsConsent = validatedData.smsConsent === true;
@@ -176,6 +202,7 @@ export async function POST(request: NextRequest) {
       vehicleMake: validatedData.vehicleMake,
       vehicleModel: validatedData.vehicleModel,
       smsConsent,
+      quotePrice,
     };
 
     try {
