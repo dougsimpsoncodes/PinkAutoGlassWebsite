@@ -135,6 +135,21 @@ export async function scheduleDripSequence(
 
   const steps = type === 'quick_quote' ? QUICK_QUOTE_STEPS : BOOKING_STEPS;
   const sequenceName = type === 'quick_quote' ? 'quick_quote_drip' : 'booking_drip';
+  const supabase = getSupabaseClient();
+
+  // Dedup: skip if this phone already has pending drip messages
+  const { data: existing } = await supabase
+    .from('scheduled_messages')
+    .select('id')
+    .eq('status', 'pending')
+    .eq('context->>phone', context.phone)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log(`⏭️ Skipping drip for lead ${leadId}: pending messages already exist for phone ${context.phone}`);
+    return { scheduled: 0, skipped: steps.length };
+  }
+
   const now = new Date();
 
   const rows = [];
@@ -177,7 +192,6 @@ export async function scheduleDripSequence(
     return { scheduled: 0, skipped };
   }
 
-  const supabase = getSupabaseClient();
   const { error } = await supabase.from('scheduled_messages').insert(rows);
 
   if (error) {
