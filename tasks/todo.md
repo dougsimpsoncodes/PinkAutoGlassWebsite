@@ -339,17 +339,42 @@ Replace hardcoded $299 with configurable dynamic pricing, add nightly Omega sync
 - `PRICING_FALLBACK_AMOUNT` — default: 299
 - `PRICING_MARKUP_PERCENT` — default: 40
 
-## Not Yet Implemented (Phase 0 + Phase 2)
-- [ ] **Phase 0**: Omega API discovery — confirm parts/pricing endpoints exist
-- [ ] **Phase 2**: `getPartsByVehicle()` / `getPartsByVin()` methods in omegaEDI.ts
-- [ ] **Phase 2**: `pricing_cache` table + admin refresh endpoint
-- [ ] **Phase 2**: Wire cache + Omega API into `getQuotePrice()` lookup chain
+### Phase 0: API Discovery
+- [x] `docs/OMEGA_EDI_API_DISCOVERY.md` — Template for user to fill in after logging into Omega portal. Documents known endpoints, checklists for parts/pricing/VIN endpoints, rate limit and auth confirmation.
+
+### Phase 2: Omega Parts/Pricing API + Cache
+- [x] `src/lib/omegaEDI.ts` — Added `OmegaPart` interface, `getPartsByVehicle()`, `getPartsByVin()`, `transformParts()`. Endpoint paths are speculative pending Phase 0 discovery.
+- [x] `supabase/migrations/20260203_create_pricing_cache.sql` — `pricing_cache` table: year/make/model/service_type unique constraint, 7-day TTL default, supplier_cost + quoted_price + markup_percent. Applied to production.
+- [x] `src/lib/pricing.ts` — Fully wired: cache lookup → Omega API (2s `Promise.race` timeout) → env var fallback. Caches Omega results on success (fire-and-forget upsert).
+- [x] `src/app/api/admin/pricing/refresh/route.ts` — Admin endpoint to pre-warm cache for top N vehicles from recent leads. Rate-limited (100ms between requests). Protected by middleware Basic Auth.
+
+## Files Created (All Phases)
+- `src/lib/pricing.ts`
+- `src/app/api/cron/sync-omega/route.ts`
+- `src/app/api/admin/pricing/refresh/route.ts`
+- `supabase/migrations/20260203_add_revenue_backfill.sql`
+- `supabase/migrations/20260203_create_pricing_cache.sql`
+- `docs/OMEGA_EDI_API_DISCOVERY.md`
+
+## Files Modified
+- `src/lib/omegaEDI.ts` — added OmegaPart interface + parts methods
+- `src/lib/drip/templates.ts` — dynamic price in SMS + email templates
+- `src/app/api/lead/route.ts` — pricing lookup + quote_amount write
+- `src/app/api/admin/dashboard/unified/route.ts` — cost/profit metrics
+- `src/app/api/cron/daily-report/route.ts` — revenue section in email
+- `vercel.json` — added omega sync cron
+
+## New Env Vars (optional, have defaults)
+- `PRICING_FALLBACK_AMOUNT` — default: 299
+- `PRICING_MARKUP_PERCENT` — default: 40
 
 ## Verification
-1. Submit quick quote form → SMS/email should show `$299` (fallback, until Omega pricing wired)
+1. Submit quick quote form → SMS/email shows `$299` (fallback until Omega parts API confirmed and responding)
 2. Trigger manual sync: `POST /api/admin/sync/omega` → check `leads.revenue_amount` for matched installs
 3. Check daily report email → revenue section should appear when omega_installs has data
 4. Check dashboard API `/api/admin/dashboard/unified` → response should include `costOfGoods`, `grossProfit`, `profitMargin`
+5. Pre-warm cache: `POST /api/admin/pricing/refresh` → populates pricing_cache from Omega API for top vehicles
+6. Complete Phase 0: fill in `docs/OMEGA_EDI_API_DISCOVERY.md` → update endpoint paths in `getPartsByVehicle()`/`getPartsByVin()` if different
 
 ## Key Decisions
 - Pricing lookup is non-blocking: if it fails, the lead still gets created with the template fallback ($299)
@@ -357,3 +382,6 @@ Replace hardcoded $299 with configurable dynamic pricing, add nightly Omega sync
 - Revenue backfill function is idempotent: only updates NULL fields, safe to run repeatedly
 - Cron syncs 2-day window for overlap to catch late-arriving records
 - SMS auto-reply does NOT include pricing (no structured vehicle data from free-form texts)
+- Parts API endpoint paths are speculative — update after Phase 0 API discovery
+- pricing_cache has RLS enabled with no policies (admin-only via service_role, which bypasses RLS)
+- Partial index on pricing_cache dropped because PostgreSQL requires IMMUTABLE functions in index predicates and NOW() isn't immutable

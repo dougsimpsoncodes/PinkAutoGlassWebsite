@@ -79,6 +79,18 @@ export interface OmegaCustomer {
   zip?: string;
 }
 
+export interface OmegaPart {
+  nags_part_number?: string;
+  description: string;
+  supplier_cost: number;   // Wholesale/supplier price
+  list_price?: number;     // MSRP/list price
+  labor_hours?: number;
+  vehicle_year?: number;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  raw_data?: any;
+}
+
 export interface OmegaSyncResult {
   success: boolean;
   recordsFetched: number;
@@ -316,6 +328,59 @@ export class OmegaEDIClient {
       city: c.city,
       state: c.state,
       zip: c.zip || c.postal_code,
+    }));
+  }
+
+  // ==========================================================================
+  // PARTS / PRICING
+  // ==========================================================================
+
+  /**
+   * Lookup parts by vehicle year/make/model.
+   * Endpoint path is speculative — update after Phase 0 API discovery.
+   */
+  async getPartsByVehicle(year: number, make: string, model: string): Promise<OmegaPart[]> {
+    const params = new URLSearchParams({
+      year: year.toString(),
+      make,
+      model,
+    });
+
+    const data = await this.request<any>(`/parts/vehicle?${params.toString()}`);
+    return this.transformParts(data, year, make, model);
+  }
+
+  /**
+   * Lookup parts by VIN.
+   * Endpoint path is speculative — update after Phase 0 API discovery.
+   */
+  async getPartsByVin(vin: string): Promise<OmegaPart[]> {
+    const data = await this.request<any>(`/parts/vin?vin=${encodeURIComponent(vin)}`);
+    return this.transformParts(data);
+  }
+
+  /**
+   * Transform Omega parts response to our internal format.
+   * Field mapping may need adjustment after API discovery.
+   */
+  private transformParts(
+    rawParts: any,
+    year?: number,
+    make?: string,
+    model?: string
+  ): OmegaPart[] {
+    const items = Array.isArray(rawParts) ? rawParts : rawParts?.parts || rawParts?.items || [];
+
+    return items.map((p: any) => ({
+      nags_part_number: p.nags_number || p.nags_part_number || p.part_number,
+      description: p.description || p.name || 'Unknown part',
+      supplier_cost: parseFloat(p.supplier_cost || p.cost || p.wholesale_price || 0),
+      list_price: p.list_price ? parseFloat(p.list_price) : undefined,
+      labor_hours: p.labor_hours ? parseFloat(p.labor_hours) : undefined,
+      vehicle_year: p.year || year,
+      vehicle_make: p.make || make,
+      vehicle_model: p.model || model,
+      raw_data: p,
     }));
   }
 
