@@ -62,3 +62,6 @@ assets/**/credentials*.json
 
 # Google Search Console exports
 *.zip
+
+# Stashed migrations (not ready for production)
+.stashed-migrations/
