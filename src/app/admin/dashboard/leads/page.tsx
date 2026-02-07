@@ -17,6 +17,7 @@ import {
   FileText,
   X,
   Check,
+  CheckCircle2,
   Clock,
   MessageSquare,
   PhoneIncoming,
@@ -167,6 +168,55 @@ function SMSConversation({ phone }: { phone: string }) {
 
       {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
     </div>
+  );
+}
+
+// --- Mark Complete Button (defined outside main component to prevent remounting) ---
+
+function MarkCompleteButton({
+  lead,
+  onComplete,
+}: {
+  lead: UnifiedLead;
+  onComplete: (lead: UnifiedLead, reviewScheduled: boolean) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+
+  const handleMarkComplete = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/leads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: lead.id, status: 'completed' }),
+      });
+      const data = await response.json();
+      if (data.ok) {
+        onComplete(data.lead, data.reviewScheduled);
+      } else {
+        alert('Failed to mark complete: ' + (data.error || 'Unknown error'));
+      }
+    } catch {
+      alert('Network error — please try again');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleMarkComplete}
+      disabled={loading}
+      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+    >
+      {loading ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        <CheckCircle2 className="w-5 h-5" />
+      )}
+      {loading ? 'Marking Complete...' : 'Mark Job Complete & Request Review'}
+    </button>
   );
 }
 
@@ -800,6 +850,27 @@ export default function LeadManagementDashboard() {
               {/* SMS Conversation */}
               {selectedLead.phone && (
                 <SMSConversation phone={selectedLead.phone} />
+              )}
+
+              {/* Mark Complete + Review Request */}
+              {selectedLead.status !== 'completed' && (
+                <MarkCompleteButton
+                  lead={selectedLead}
+                  onComplete={(_lead, reviewScheduled) => {
+                    setSelectedLead({ ...selectedLead, status: 'completed' });
+                    fetchAllLeads();
+                    if (reviewScheduled) {
+                      alert('Lead marked complete! Review request will be sent automatically.');
+                    }
+                  }}
+                />
+              )}
+              {selectedLead.status === 'completed' && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-medium">Job completed</span>
+                  <span className="text-green-600">— review request scheduled</span>
+                </div>
               )}
 
               {/* Quick Actions */}

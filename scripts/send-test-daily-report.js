@@ -120,7 +120,7 @@ function deduplicateLeads(leads) {
 
   leads.forEach(lead => {
     const email = (lead.email || '').toLowerCase();
-    const phone = (lead.phone || '').replace(/\D/g, '');
+    const phone = (lead.phone_e164 || lead.phone || '').replace(/\D/g, '');
     const key = email || phone;
 
     if (!key) {
@@ -177,7 +177,7 @@ function getTodaysContacts(calls, leads) {
       contacts.push({
         source: 'web',
         name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Anonymous',
-        phone: lead.phone || '',
+        phone: lead.phone_e164 || lead.phone || '',
         email: lead.email || '',
         vehicle: vehicleInfo,
         time: new Date(lead.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),

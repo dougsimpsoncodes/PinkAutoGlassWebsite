@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { scheduleReviewRequest } from '@/lib/drip/scheduler';
 
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
@@ -145,9 +146,33 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // Auto-schedule review request when lead is marked as completed
+    let reviewScheduled = false;
+    if (updateData.status === 'completed' && data) {
+      try {
+        const result = await scheduleReviewRequest(id, {
+          firstName: data.first_name || 'there',
+          phone: data.phone || '',
+          email: data.email || undefined,
+          vehicleYear: data.vehicle_year || 0,
+          vehicleMake: data.vehicle_make || '',
+          vehicleModel: data.vehicle_model || '',
+          smsConsent: !!data.phone, // If we have their phone from a lead, they consented to contact
+        });
+        reviewScheduled = result.scheduled > 0;
+        if (reviewScheduled) {
+          console.log(`⭐ Review request auto-scheduled for lead ${id}: ${result.scheduled} messages`);
+        }
+      } catch (err) {
+        console.error(`❌ Review request scheduling failed for lead ${id}:`, err);
+        // Don't fail the lead update — review scheduling is supplementary
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       lead: data,
+      reviewScheduled,
     });
 
   } catch (error: any) {

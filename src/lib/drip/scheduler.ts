@@ -36,6 +36,13 @@ const QUICK_QUOTE_STEPS: ScheduledStep[] = [
 // --- Booking: no scheduled follow-ups (handled by call center) ---
 const BOOKING_STEPS: ScheduledStep[] = [];
 
+// --- Review Request: sent after job marked complete ---
+const REVIEW_REQUEST_STEPS: ScheduledStep[] = [
+  { delayHours: 2, channel: 'sms', templateKey: 'review_request', sequenceStep: 1 },
+  { delayHours: 2, channel: 'email', templateKey: 'review_request_email', sequenceStep: 2 },
+  { delayHours: 72, channel: 'sms', templateKey: 'review_reminder', sequenceStep: 3 },
+];
+
 // =============================================================================
 // TIME UTILITIES
 // =============================================================================
@@ -200,6 +207,87 @@ export async function scheduleDripSequence(
   }
 
   console.log(`📅 Scheduled ${rows.length} drip messages for lead ${leadId} (${sequenceName})`);
+  return { scheduled: rows.length, skipped };
+}
+
+/**
+ * Schedule review request messages for a completed job.
+ * Triggered when lead status changes to 'completed'.
+ * Deduplicates: skips if review_request messages already exist for this lead.
+ */
+export async function scheduleReviewRequest(
+  leadId: string,
+  context: DripContext
+): Promise<{ scheduled: number; skipped: number }> {
+  const supabase = getSupabaseClient();
+  const sequenceName = 'review_request';
+
+  // Dedup: skip if this lead already has pending/sent review request messages
+  const { data: existing } = await supabase
+    .from('scheduled_messages')
+    .select('id')
+    .eq('lead_id', leadId)
+    .eq('sequence_name', sequenceName)
+    .in('status', ['pending', 'sent'])
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log(`⏭️ Skipping review request for lead ${leadId}: already scheduled/sent`);
+    return { scheduled: 0, skipped: REVIEW_REQUEST_STEPS.length };
+  }
+
+  const now = new Date();
+  const rows = [];
+  let skipped = 0;
+
+  for (const step of REVIEW_REQUEST_STEPS) {
+    // Skip SMS steps if no phone or no consent
+    if (step.channel === 'sms' && !context.smsConsent) {
+      skipped++;
+      continue;
+    }
+
+    // Skip email steps if no email
+    if (step.channel === 'email' && !context.email) {
+      skipped++;
+      continue;
+    }
+
+    const rawTime = new Date(now.getTime() + step.delayHours * 60 * 60 * 1000);
+    const scheduledFor = step.channel === 'sms' ? getNextSafeTime(rawTime) : rawTime;
+
+    rows.push({
+      lead_id: leadId,
+      scheduled_for: scheduledFor.toISOString(),
+      channel: step.channel,
+      template_key: step.templateKey,
+      sequence_name: sequenceName,
+      sequence_step: step.sequenceStep,
+      context: {
+        firstName: context.firstName,
+        phone: context.phone,
+        email: context.email || null,
+        vehicleYear: context.vehicleYear,
+        vehicleMake: context.vehicleMake,
+        vehicleModel: context.vehicleModel,
+        referenceNumber: context.referenceNumber || null,
+        smsConsent: context.smsConsent,
+      },
+    });
+  }
+
+  if (rows.length === 0) {
+    return { scheduled: 0, skipped };
+  }
+
+  const { error } = await supabase.from('scheduled_messages').insert(rows);
+
+  if (error) {
+    console.error(`❌ Failed to schedule review request for lead ${leadId}:`, error.message);
+    return { scheduled: 0, skipped };
+  }
+
+  console.log(`⭐ Scheduled ${rows.length} review request messages for lead ${leadId}`);
   return { scheduled: rows.length, skipped };
 }
 

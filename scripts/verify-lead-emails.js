@@ -164,7 +164,7 @@ async function verifyLeadEmails() {
       console.log('\n❌ LEADS MISSING ALERT EMAILS:\n');
       results.withoutEmail.forEach((lead, i) => {
         console.log(`${i + 1}. ${lead.first_name} ${lead.last_name} (${lead.email})`);
-        if (lead.phone) console.log(`   Phone: ${lead.phone}`);
+        if (lead.phone_e164 || lead.phone) console.log(`   Phone: ${lead.phone_e164 || lead.phone}`);
         console.log(`   Created: ${new Date(lead.created_at).toLocaleString()}`);
         console.log(`   Lead ID: ${lead.id}`);
         console.log('');

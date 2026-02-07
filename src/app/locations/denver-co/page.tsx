@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MapPin, Clock, Star, Shield } from 'lucide-react';
+import { Phone, MapPin, Clock, Shield } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
+import GoogleMapEmbed from '@/components/GoogleMapEmbed';
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
@@ -248,46 +250,12 @@ export default function DenverLocationPage() {
                 </ul>
               </section>
 
-              {/* Customer Testimonials */}
+              {/* Google Reviews */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
                   What Denver Customers Say
                 </h2>
-                <div className="space-y-4">
-                  {[
-                    {
-                      name: 'Sarah M.',
-                      neighborhood: 'Cherry Creek',
-                      rating: 5,
-                      text: 'They came to my office downtown and replaced my windshield while I worked. Professional, fast, and the quality is perfect. Highly recommend!'
-                    },
-                    {
-                      name: 'Mike D.',
-                      neighborhood: 'Capitol Hill',
-                      rating: 5,
-                      text: 'Got hit by a rock on I-25 during my commute. Pink Auto Glass came to my apartment the same day and had me fixed up in an hour. Great service!'
-                    },
-                    {
-                      name: 'Jessica R.',
-                      neighborhood: 'Highlands',
-                      rating: 5,
-                      text: 'After the last hailstorm, they handled everything with my insurance. Zero stress, zero deductible, and my windshield looks brand new.'
-                    }
-                  ].map((review, idx) => (
-                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400">
-                          {[...Array(review.rating)].map((_, i) => (
-                            <Star key={i} className="w-5 h-5 fill-current" />
-                          ))}
-                        </div>
-                        <span className="ml-3 text-gray-600 text-sm">• {review.neighborhood}</span>
-                      </div>
-                      <p className="text-gray-700 mb-2">"{review.text}"</p>
-                      <p className="text-gray-900 font-semibold">- {review.name}</p>
-                    </div>
-                  ))}
-                </div>
+                <GoogleReviewsWidget city="Denver" count={3} />
               </section>
 
               {/* FAQs */}
@@ -349,6 +317,12 @@ export default function DenverLocationPage() {
                       <span>Mobile Service - All Denver</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Service Area Map */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
+                  <GoogleMapEmbed city="Denver" state="CO" />
                 </div>
 
                 {/* Nearby Locations */}

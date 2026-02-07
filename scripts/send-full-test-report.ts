@@ -127,7 +127,7 @@ function deduplicateLeads(leads) {
 
   leads.forEach(lead => {
     // Use email as primary key, fallback to phone
-    const key = (lead.email || lead.phone || lead.id).toLowerCase();
+    const key = (lead.email || lead.phone_e164 || lead.phone || lead.id).toLowerCase();
     const existing = contactMap.get(key);
 
     if (!existing) {
@@ -372,7 +372,7 @@ function getTodaysContacts(calls, leads) {
       contacts.push({
         source: 'web',
         name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Anonymous',
-        phone: formatPhone(lead.phone),
+        phone: formatPhone(lead.phone_e164 || lead.phone),
         email: lead.email || '',
         vehicle: vehicleInfo,
         time: formatTime(lead.created_at),

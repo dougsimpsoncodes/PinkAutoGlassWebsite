@@ -85,7 +85,7 @@ async function checkRecentLeads() {
       console.log(`   Created: ${createdAt.toLocaleString()}`);
       console.log(`   Name: ${lead.name || 'N/A'}`);
       console.log(`   Email: ${lead.email || 'N/A'}`);
-      console.log(`   Phone: ${lead.phone || 'N/A'}`);
+      console.log(`   Phone: ${lead.phone_e164 || lead.phone || 'N/A'}`);
       console.log(`   Type: ${lead.type || lead.service_type || 'N/A'}`);
       console.log('');
     });

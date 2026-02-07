@@ -103,7 +103,7 @@ async function analyzeAttribution() {
   // Build phone -> lead map
   const leadsByPhone = {};
   (leads || []).forEach(lead => {
-    const normalized = normalizePhone(lead.phone);
+    const normalized = normalizePhone(lead.phone_e164 || lead.phone);
     if (normalized) {
       if (!leadsByPhone[normalized]) {
         leadsByPhone[normalized] = [];

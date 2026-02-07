@@ -99,7 +99,7 @@ export async function fetchUnifiedLeads(
           ? 'call' as const
           : 'form' as const,
       name: `${lead.first_name} ${lead.last_name}`,
-      phone: lead.phone,
+      phone: lead.phone_e164 || lead.phone || '',
       email: lead.email,
       created_at: lead.created_at,
       status: lead.status || 'new',

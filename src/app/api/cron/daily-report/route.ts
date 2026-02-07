@@ -108,7 +108,7 @@ function deduplicateLeads(leads: any[]): any[] {
 
   leads.forEach(lead => {
     // Use email as primary key, fallback to phone
-    const key = (lead.email || lead.phone || lead.id).toLowerCase();
+    const key = (lead.email || lead.phone_e164 || lead.phone || lead.id).toLowerCase();
     const existing = contactMap.get(key);
 
     if (!existing) {

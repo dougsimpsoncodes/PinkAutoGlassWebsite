@@ -1,387 +1,193 @@
-# Lead Auto-Responder & Drip Sequence System
+# Local SEO Enhancement Plan — Feb 7 2026
 
-## Task
-Build an in-house auto-responder using existing Resend (email) + RingCentral (SMS) with instant auto-reply and timed drip sequences.
-
-## Completed Items
-
-- [x] Database migration: `scheduled_messages` table with indexes, RLS, and auto-cancel trigger
-- [x] Time utilities: `isBusinessHours()`, `isTCPAQuietHours()`, `getNextSafeTime()` — all Mountain Time
-- [x] Drip scheduler: `scheduleDripSequence()`, `cancelDripForPhone()` for dedup
-- [x] Message templates: SMS templates for all quick-quote steps, SMS+email for booking steps
-- [x] Message processor: `processScheduledMessages()` with batch processing, retry logic, status checks
-- [x] Cron endpoint: `/api/cron/process-drip` with CRON_SECRET auth, runs every 5 minutes
-- [x] Modified `/api/lead` route: instant customer SMS + drip scheduling after lead insert
-- [x] Modified `/api/booking/submit` route: drip scheduling + phone dedup (cancels prior quote drip)
-- [x] Updated `vercel.json`: added process-drip cron schedule
-- [x] Build verified: zero type errors in new/modified files, full build succeeds
-
-## Review
-
-### Files Created
-- `supabase/migrations/20260131_create_scheduled_messages.sql`
-- `src/lib/drip/scheduler.ts`
-- `src/lib/drip/templates.ts`
-- `src/lib/drip/processor.ts`
-- `src/app/api/cron/process-drip/route.ts`
-
-### Files Modified
-- `src/app/api/lead/route.ts` — added imports, instant SMS, drip scheduling (~35 lines)
-- `src/app/api/booking/submit/route.ts` — added import, drip scheduling + dedup (~20 lines)
-- `vercel.json` — added cron entry
-
-### Key Decisions
-- `sms_consent` is NOT persisted in the leads table. It's passed into `scheduleDripSequence()` and stored in `context` JSONB on each scheduled_message row.
-- The auto-cancel trigger fires on ANY status change from 'new' (DB-level, works regardless of how status changes).
-- TCPA compliance is "shift-left": SMS scheduled_for times are pre-adjusted at scheduling time; the cron just processes whatever is due.
-- `lead_activities` logging is fire-and-forget since the table may not exist in production.
+## Overview
+Five features to deepen local SEO and turn completed jobs into a growth flywheel: review generation, GBP integration, case study pages, neighborhood pages, and blog pipeline.
 
 ---
 
-## Next-Day Follow-Up SMS (Jan 31 2026)
+## Phase 1: Review Request System (Highest ROI)
+**Why first:** Reviews are the #1 local ranking factor. You have Twilio/SMS, SendGrid/email, and a drip system already. This plugs right in.
 
-### Task
-Add a next-day SMS follow-up to all quick quote leads regardless of lead status.
+### 1a. Add "Mark Job Complete" to Admin Dashboard
+- Add a button/status dropdown on the lead detail view in admin
+- Update `leads.status` to `'completed'` (field already exists from Omega integration)
+- This is the trigger for the review request sequence
 
-### Completed Items
-- [x] Template: `getQuoteFollowupNextDaySMS(ctx)` in `templates.ts` — "Hey {name}, this is Dan at Pink Auto Glass..."
-- [x] Template resolver: added `'quote_followup_nextday'` case to `renderTemplate()`
-- [x] Scheduler: added step to `QUICK_QUOTE_STEPS` — 15h delay, SMS, sequenceStep 2
-- [x] Processor: removed lead status != 'new' filter — sends to all leads regardless of status
-- [x] Lead route: calls `scheduleDripSequence()` after instant auto-reply when smsConsent=true
-- [x] Cron: changed from `0 14 * * *` to `0 17 * * *` (10 AM MT winter / 11 AM MDT summer)
-- [x] Build verified: zero type errors in modified files
+### 1b. Review Request Drip Templates
+- **SMS (2 hours after completion):** "Hi {name}, thanks for choosing Pink Auto Glass! If you're happy with your {vehicleMake} {vehicleModel} windshield service, a Google review would mean the world to us: {reviewLink}"
+- **SMS (3 days later, if no review detected):** Gentle reminder with the link
+- **Email (2 hours after completion):** Branded HTML email with one-click Google review button
+- Uses existing `scheduled_messages` table and `processScheduledMessages()` cron
 
-### Files Modified
-- `src/lib/drip/templates.ts` — added template function + renderTemplate case
-- `src/lib/drip/scheduler.ts` — added step to QUICK_QUOTE_STEPS
-- `src/lib/drip/processor.ts` — removed status check, removed unused markCancelled
-- `src/app/api/lead/route.ts` — added import + scheduleDripSequence call
-- `vercel.json` — updated cron schedule
+### 1c. Review Request Scheduling
+- New `REVIEW_REQUEST_STEPS` in drip scheduler
+- New `scheduleReviewRequest()` function triggered when status → 'completed'
+- Reuses TCPA compliance, retry logic, dedup from existing drip system
 
-### Timing Logic
-- 15h delay from lead submission pushes all business-hours leads into TCPA quiet hours
-- `getNextSafeTime()` shifts to 9 AM MT next business day
-- Cron at 10 AM MT (0 17 UTC) runs after scheduled messages are due
+### Files to Create
+- None — extends existing drip templates, scheduler, and processor
 
----
-
-## Inbound SMS Receiving + Reply Capability (Jan 31 2026)
-
-### Task
-Enable receiving customer SMS replies via RingCentral webhook + admin reply from the lead detail modal.
-
-### Completed Items
-- [x] Export `getRingCentralClient` from `sms.ts` (was module-private)
-- [x] Webhook receiver: `/api/webhook/ringcentral/sms` — validation handshake, inbound SMS storage, admin notification
-- [x] Reply endpoint: `/api/admin/sms/send` — sends SMS via RC SDK, stores outbound in `ringcentral_sms`
-- [x] Conversations endpoint: `/api/admin/sms/conversations` — per-phone thread or inbox view
-- [x] Webhook management: `/api/admin/webhook/ringcentral` — POST/GET/DELETE for RC subscriptions
-- [x] Lead modal UI: SMS conversation thread with chat bubbles + reply input
-- [x] Daily cron webhook renewal: checks subscription expiry, renews if < 2 days remaining
-- [x] Build verified: zero new type errors, full build succeeds
-
-### Files Created
-- `src/app/api/webhook/ringcentral/sms/route.ts`
-- `src/app/api/admin/sms/send/route.ts`
-- `src/app/api/admin/sms/conversations/route.ts`
-- `src/app/api/admin/webhook/ringcentral/route.ts`
-
-### Files Modified
-- `src/lib/notifications/sms.ts` — exported `getRingCentralClient`
-- `src/app/admin/dashboard/leads/page.tsx` — added SMSConversation component + imports
-- `src/app/api/cron/daily-report/route.ts` — added webhook renewal check
-
-### Prerequisites (Manual)
-- Add **SubscriptionWebhook** permission to the RingCentral app in Developer Console
-- After deploy, POST to `/api/admin/webhook/ringcentral` to create the subscription
-
-### Verification Steps
-1. Deploy to Vercel
-2. POST `/api/admin/webhook/ringcentral` to create subscription
-3. Send SMS to Pink Auto Glass number from a test phone
-4. Confirm: row in `ringcentral_sms`, admin gets forwarded SMS
-5. Open lead in admin dashboard, verify conversation shows
-6. Reply from the UI, verify customer receives it
+### Files to Modify
+- `src/lib/drip/templates.ts` — add review request SMS + email templates
+- `src/lib/drip/scheduler.ts` — add REVIEW_REQUEST_STEPS + scheduleReviewRequest()
+- `src/app/admin/dashboard/leads/page.tsx` — add "Mark Complete" button
+- `src/app/api/admin/leads/complete/route.ts` (NEW) — API to mark lead complete + schedule review drip
 
 ---
 
-# Universal Lead Counting: Cleanup & Alignment
+## Phase 2: GBP Integration on Location Pages
+**Why:** Google Maps embed + reviews on location pages signals relevance to Google and keeps users on-site longer (engagement signals).
 
-## Review Summary
+### 2a. Google Maps Embed
+- Add responsive Google Maps iframe to each of the 44 location pages
+- Center map on each city's coordinates (already have lat/lng in schema data)
+- Consistent styling across all location pages via shared component
 
-Removed dead lead-counting code from API routes (now computed client-side via `fetchUnifiedLeads()`), aligned daily email report with dashboard counting model, and documented intentional counting differences across pages.
+### 2b. Google Reviews Display
+- Create `GoogleReviewsWidget` component showing recent reviews
+- **Approach decision (for user):**
+  - Option A: Static reviews (manually curated, no API cost, always fast)
+  - Option B: Google Places API (live reviews, costs ~$17/1000 requests, needs caching)
+  - **Recommendation:** Start static, upgrade to API later if needed
 
-### Phase 1: Dead Code Removal
-- [x] **unified/route.ts** — Removed `getLeadMetrics()`, `getCallMetrics()` was replaced by just `getCallMetrics()` (kept for call analytics), removed conversion_events queries, allLeads query, session-based attribution for leads, otherEvents query. Route went from ~8 DB queries to ~2 DB queries + ad API calls.
-- [x] **google-ads/route.ts** — Removed `getAttributedLeadMetrics()` call and `leads`/`costPerLead` from response.
-- [x] **microsoft-ads/route.ts** — Same cleanup as google-ads.
-- [x] **dashboardData.ts** — Removed `getLeadMetrics()` function and `LeadMetrics` interface (zero callers). Removed re-exports of `MIN_CALL_DURATION_SECONDS` and `ATTRIBUTION_WINDOW_MINUTES` (no longer imported from here).
-- [x] **Dashboard + ad pages** — Updated TypeScript interfaces and placeholder data to match simplified API responses.
+### 2c. GBP Info Card
+- Business hours, phone, address card on each location page
+- Uses data already in schema.ts (generateLocalBusinessSchema)
 
-### Phase 2: Daily Email Alignment
-- [x] **daily-report/route.ts** — Added `MIN_CALL_DURATION_SECONDS` filter to calls query (excludes hangups/robocalls). Changed `deduplicateCalls()` from session_id dedup to from_number dedup (matches dashboard's per-caller counting).
+### Files to Create
+- `src/components/GoogleMapEmbed.tsx`
+- `src/components/GoogleReviewsWidget.tsx`
+- `src/data/reviews.ts` (curated review data)
 
-### Phase 3: Documentation
-- [x] **customerDeduplication.ts** — Added comment explaining customer vs lead counting distinction (ROI/Funnel pages).
-- [x] **calls/page.tsx** — Added comment explaining this is an operations page, not a lead-counting page.
-- [x] **constants.ts** — Added comments explaining lead vs conversion event distinction and constant purposes.
-
-### Verification
-- `npm run build` passes with no errors
-- All TypeScript types align between API routes and frontend pages
-
----
-
-# Fix LCP Performance Issue (Core Web Vitals) — Feb 1 2026
-
-## Problem
-18 URLs shifted from "Good" to "Need improvement" on Jan 30 due to LCP > 2.5s on mobile. Lighthouse confirmed:
-- **Homepage:** LCP 3.0s (score 78)
-- **Location/service pages:** LCP 6.5-7.7s (scores 57-61)
-
-Root cause: **6,700ms element render delay** — the H1 (LCP element) couldn't paint until all JS evaluated. Tracking scripts in `<head>` used raw `<script>` tags (not Next.js `<Script>`) so they loaded as render-blocking by default.
-
-## Completed Items
-- [x] Converted all tracking scripts from raw `<script>` in `<head>` to `<Script strategy="afterInteractive">` in `<body>`
-- [x] Merged MS Consent Mode + UET into single `<Script>` block (guarantees consent loads before UET)
-- [x] Merged GA4 config into Google Ads config block (eliminates `gtag()` ordering dependency)
-- [x] Removed stale Google Fonts preconnect hints (`next/font/google` self-hosts at build time)
-- [x] Security review: no issues (all inline scripts use hardcoded strings, no user input)
-- [x] Code review: identified and fixed script ordering fragility by merging dependent script pairs
-- [x] Build verified: passes with zero errors
-- [x] Lighthouse verified (localhost, eliminates CDN variance):
-  - Homepage: Score 93, LCP 2.9s, FCP 0.9s, CLS 0, render-blocking: CSS only
-  - /locations/denver-co: Score 84, LCP 2.8s, FCP 1.0s, CLS 0, render-blocking: CSS only
-
-## File Modified
-- `src/app/layout.tsx` — script deferral, script merging, preconnect removal
-
-## Commit
-- `2495939` — `perf: defer tracking scripts to fix LCP regression (Core Web Vitals)`
-
-## Key Decisions
-- `afterInteractive` strategy chosen over `lazyOnload` because analytics events need to fire once users start interacting (form fills, calls). `lazyOnload` would delay tracking until browser is idle, risking missed conversions.
-- Merged dependent script pairs into single blocks rather than relying on Next.js DOM-order execution (an implementation detail, not a documented guarantee).
-- All analytics call sites in `src/lib/analytics.ts` already guard with `if (window.gtag)` / `if (window.uetq)` null checks, so deferred loading is safe — events before scripts load are simply skipped.
-
-## Post-Deploy Verification (Manual)
-- [ ] Monitor Google Ads conversions in real-time reports (24-48h after deploy)
-- [ ] Monitor Bing UET in Microsoft Ads dashboard (24-48h after deploy)
-- [ ] Check Core Web Vitals in Search Console (7-14 days for CrUX data to update)
+### Files to Modify
+- All 44 location page files (add components) — can be done programmatically
 
 ---
 
-# Fix: SMS Auto-Reply Broken for All Leads — Feb 2 2026
+## Phase 3: Case Study System
+**Why:** "AC repair in Aurora: fixed in 45 mins" pages rank for long-tail keywords and build trust. Real jobs → real content → real rankings.
 
-## Problem
-Customer reported never receiving auto-response after submitting a lead form. Investigation revealed **all outbound SMS had been silently failing** — 18 inbound SMS received, 0 outbound ever sent.
+### 3a. Case Study Data Structure
+- TypeScript data file: `src/data/case-studies.ts`
+- Fields: slug, title, vehicle (year/make/model), service type, city, duration, description, beforeAfter photos, customerQuote, publishDate
+- Each case study generates a page at `/case-studies/[slug]`
 
-## Root Causes (Two Issues)
+### 3b. Dynamic Case Study Pages
+- Route: `src/app/case-studies/[slug]/page.tsx`
+- Index page: `src/app/case-studies/page.tsx`
+- Schema markup: Article + LocalBusiness + Service
+- FAQ schema per case study
+- Internal links to related location + service + vehicle pages
 
-### 1. Corrupted RingCentral Credentials (Primary)
-`RINGCENTRAL_CLIENT_ID` and `RINGCENTRAL_CLIENT_SECRET` in Vercel had `\n"` appended to their values, causing every RingCentral API authentication to fail with `OAU-156: Basic authentication header is missing or malformed`. This meant `sendSMS()` silently returned `false` on every call.
+### 3c. Admin Case Study Management
+- Admin page at `/admin/dashboard/case-studies`
+- Form to create/edit case studies with all fields
+- Draft/Published status
+- Stores in Supabase `case_studies` table (new)
 
-### 2. Wrong FROM Phone Number
-`RINGCENTRAL_PHONE_NUMBER` was set to `+17194575397` (Doug's direct Ext 103 line) instead of `+17209187465` (the main company number customers recognize). Per RingCentral docs, sending from the main company number requires:
-- The **Fax / SMS recipient** in Auto-Receptionist settings must be set to the authenticated extension
-- The JWT must authenticate as that same extension
+### 3d. Sitemap + SEO Integration
+- Add case studies to `src/app/sitemap.ts`
+- Add breadcrumbs
+- Cross-link from location pages ("Recent jobs in {city}")
 
-## Completed Items
-- [x] Diagnosed: 0 outbound SMS in `ringcentral_sms` table despite 18 inbound — confirmed global send failure
-- [x] Diagnosed: `\n"` corruption on both `CLIENT_ID` and `CLIENT_SECRET` in Vercel env vars
-- [x] Fixed: Cleaned `RINGCENTRAL_CLIENT_ID` in Vercel (removed trailing `\n"`)
-- [x] Fixed: Cleaned `RINGCENTRAL_CLIENT_SECRET` in Vercel (removed trailing `\n"`)
-- [x] Fixed: Changed `RINGCENTRAL_PHONE_NUMBER` from `+17194575397` to `+17209187465` (main company number)
-- [x] Fixed: Changed **Fax / SMS recipient** in RingCentral Admin Portal (Auto-Receptionist > General Settings > Call Handling) from Dan Shikiar Ext 101 to Doug Simpson Ext 103
-- [x] Verified: SMS sends successfully from main company number `(720) 918-7465`
-- [x] Verified: Email auto-reply sends successfully via Resend
-- [x] Verified: End-to-end test — lead form submission triggers both SMS and email auto-reply
-- [x] Cleaned up: Removed all test leads and scheduled messages from database
+### Files to Create
+- `src/data/case-studies.ts` (initial data + types)
+- `src/app/case-studies/page.tsx` (index)
+- `src/app/case-studies/[slug]/page.tsx` (detail)
+- `src/app/admin/dashboard/case-studies/page.tsx` (admin)
+- `src/app/api/admin/case-studies/route.ts` (CRUD API)
+- Supabase migration for `case_studies` table
 
-## Impact
-- **Every lead form SMS auto-reply** had been silently failing since the credentials were corrupted
-- **Every inbound text auto-reply** (one-time greeting) had been silently failing
-- **Admin SMS notifications** had been silently failing
-- Email auto-replies via Resend were unaffected (separate service, clean credentials)
-
-## Prevention
-- The `\n"` corruption pattern is documented in `.claude/CLAUDE.md` — env var values must never have literal `\n` appended
-- When setting Vercel env vars via CLI, use `printf` not `echo` to avoid trailing newlines
-
----
-
-# Fix: Conversion Tracking Broken Since Jan 28 — Feb 2 2026
-
-## Problem
-Zero conversion events (phone_click, text_click, form_submit) recorded since Jan 28. Dashboard showed 0 leads from Google despite 42 Google Ads visitors with gclid in sessions and 2 callers with matching Google Ads sessions.
-
-## Root Cause
-Commit `0d29c23` (Jan 28) added `fbclid: getFbclid()` to the `conversion_events` insert in `src/lib/tracking.ts:482`, but the `conversion_events` table was never given a `fbclid` column. PostgREST rejects inserts with unknown columns, so every conversion event insert silently failed. The error was caught and logged to browser console only.
-
-The `fbclid` column already existed in `user_sessions` and `page_views` (added in an earlier migration), but `conversion_events` was missed.
-
-## Completed Items
-- [x] Diagnosed: 0 conversion_events since Jan 28 despite active session and page_view tracking
-- [x] Diagnosed: `fbclid` column missing from `conversion_events` (exists in `user_sessions` and `page_views`)
-- [x] Diagnosed: `tracking.ts:482` inserts `fbclid` into `conversion_events` — fails silently on every call
-- [x] Fixed: Applied migration `add_fbclid_to_conversion_events` — added `fbclid TEXT` column
-- [x] Verified: Test insert into `conversion_events` with `fbclid` succeeds
-- [x] Verified: Security advisors show no new issues from DDL change
-
-## Analytics Investigation Summary (Feb 2)
-- **336 unique visitors** (356 sessions) — accurate, session tracking was unaffected
-- **42 Google Ads visitors** (gclid), **9 Microsoft Ads** (msclkid), **285 organic/direct**
-- **7 inbound callers** (5 qualifying at 30s+), **1 form lead** (Dan Shikiar, direct visit)
-- **3 of 5 qualifying callers** had ad sessions within 5 min: 2 Google, 1 Microsoft
-- **1.8% conversion rate** (6 leads / 336 visitors) — within normal range for auto glass
-- "0 leads from Google" was a tracking/attribution display issue, not a real zero
-
-## Impact
-- **5 days of lost conversion data** (Jan 29 – Feb 2): phone clicks, text clicks, form submissions
-- **Call attribution via phone_click matching** broken (relies on conversion_events)
-- **Google/Microsoft Ads offline conversion sync** affected (uses conversion_events)
-- Session tracking, page views, and analytics events were unaffected
-
-## Prevention
-- When adding columns to the tracking insert in `tracking.ts`, verify ALL target tables have the column — not just `user_sessions` and `page_views`, but also `conversion_events`
+### Files to Modify
+- `src/app/sitemap.ts` — add case study URLs
+- Location pages — add "Recent jobs in {city}" section
 
 ---
 
-# Fix: Recursive SMS Forwarding Loop — Feb 2 2026
+## Phase 4: Neighborhood Pages
+**Why:** "Windshield replacement Cap Hill Denver" has less competition than "windshield replacement Denver" and captures hyper-local intent.
 
-## Problem
-SMS webhook handler created an exponential message cascade — 14 messages at 5:00 PM and 15 at 4:28 PM. Database had 117 recursive junk records with nested "Inbound SMS from +17209187465:" prefixes, plus 2 auto-replies the company sent to its own number.
+### 4a. Neighborhood Data
+- Define neighborhoods for 6 cities: Denver, Aurora, Lakewood, Colorado Springs, Fort Collins, Boulder
+- Data structure: name, slug, parentCity, coordinates, description, populationEstimate
+- Store in `src/data/neighborhoods.ts`
 
-## Root Cause
-`sendAdminSMS()` in the webhook handler sends FROM the business number (+17209187465) TO admin extension numbers (+17194575397, +17196531406). RingCentral delivers these internal messages as "Inbound" on the receiving extension, re-triggering the same webhook. Each trigger generates another `sendAdminSMS()` call, creating exponential growth. Additionally, when the webhook processed messages with `fromNumber = +17209187465`, it sent an auto-reply TO the business number (the company texting itself), creating a second recursive path.
+### 4b. Neighborhood Pages
+- Route: `src/app/locations/[city]/[neighborhood]/page.tsx`
+- Content: neighborhood-specific intro, service offerings, FAQ, map zoomed to neighborhood
+- Schema: LocalBusiness with neighborhood-level geo
+- Internal links to parent city page and service pages
 
-## Completed Items
-- [x] Diagnosed: 117 recursive "Inbound" records from +17209187465 with nested forwarding prefixes
-- [x] Diagnosed: 2 auto-replies sent TO the business number (self-texting)
-- [x] Fixed: Added early return guard — skip processing when `fromNumber === BUSINESS_PHONE_NUMBER`
-- [x] Cleaned: Deleted 117 recursive inbound records + 2 self-reply records from `ringcentral_sms`
-- [x] Build verified: passes with zero errors
-- [x] Deployed to production
+### 4c. Estimated Page Count
+- Denver: ~15 neighborhoods (Cap Hill, RiNo, Cherry Creek, LoDo, Highlands, Park Hill, Wash Park, Baker, Sunnyside, Five Points, Stapleton/Central Park, Green Valley Ranch, Montbello, etc.)
+- Aurora: ~8 (Original Aurora, Southlands, Saddle Rock, Murphy Creek, etc.)
+- Lakewood: ~6 (Belmar, Green Mountain, Bear Creek, etc.)
+- Colorado Springs: ~10 (Old Colorado City, Manitou, Briargate, etc.)
+- Fort Collins: ~6 (Old Town, Midtown, Timnath, etc.)
+- Boulder: ~5 (Pearl Street, University Hill, North Boulder, etc.)
+- **Total: ~50 new pages**
 
-## File Modified
-- `src/app/api/webhook/ringcentral/sms/route.ts` — added `BUSINESS_PHONE_NUMBER` import + guard at line 74
+### Files to Create
+- `src/data/neighborhoods.ts`
+- `src/app/locations/[city]/[neighborhood]/page.tsx`
+- Neighborhood index component for city pages
 
-## Commit
-- `4c3990b` — `fix: prevent recursive SMS forwarding loop in webhook handler`
-
-## Prevention
-- Any webhook that processes inbound messages AND sends outbound messages from the same number must guard against re-triggering itself
-- The `sendAdminSMS()` function sends from `RINGCENTRAL_PHONE_NUMBER` which is the same number the webhook listens on — this is inherently recursive without a guard
-
----
-
-# Auto-Create Leads from Inbound SMS — Feb 3 2026
-
-## Problem
-Inbound SMS messages were stored in `ringcentral_sms` but never created a lead in the `leads` table. SMS leads were invisible to the lead management pipeline and dashboard.
-
-## Completed Items
-- [x] DB migration: added `'sms'` to `check_first_contact_method` constraint (was `['call', 'form']`, now `['call', 'form', 'sms']`)
-- [x] SMS webhook: added lead creation after SMS storage — dedup check (same phone + sms + 24h), append to existing or insert new
-- [x] Dashboard mapping: `leadProcessing.ts` now maps `first_contact_method` to correct `UnifiedLead.type` (`'sms'` → `'text'`, `'call'` → `'call'`, `'form'`/null → `'form'`)
-- [x] TypeScript: zero new errors in modified files
-- [x] Security advisors: no new issues from DDL change
-
-## Files Modified
-- `src/app/api/webhook/ringcentral/sms/route.ts` — added lead creation + dedup logic (~45 lines)
-- `src/lib/leadProcessing.ts` — updated type mapping from hardcoded `'form'` to `first_contact_method`-based
-
-## Migration Applied
-- `add_sms_to_first_contact_method` — DROP + recreate CHECK constraint with `'sms'` added
-
-## Key Decisions
-- **24-hour dedup window**: multiple texts within 24h from the same number append to one lead's notes (separated by `---`). Texts after 24h create a new lead — assumes separate inquiry.
-- **Best-effort lead creation**: wrapped in try/catch so SMS storage (the primary purpose of the webhook) is never blocked by a lead creation failure.
-- **Notes field**: the SMS message text is stored in `notes` (the VIN, question, or whatever they sent). SMS leads won't have `first_name`, `last_name`, `email`, or vehicle fields — these are filled in when the lead is worked.
+### Files to Modify
+- `src/app/sitemap.ts` — add neighborhood URLs
+- City pages — add "Neighborhoods we serve" section with links
+- Schema utilities — neighborhood-level LocalBusiness schema
 
 ---
 
-# Omega EDI Integration: Dynamic Pricing + Revenue Tracking — Feb 3 2026
+## Phase 5: Blog Pipeline Enhancement
+**Why:** 12 posts is solid but 2-4/month keeps you ahead of competitors. Need to make content creation faster.
 
-## Task
-Replace hardcoded $299 with configurable dynamic pricing, add nightly Omega sync with revenue backfill, and surface cost/profit metrics in dashboard and daily report.
+### 5a. Blog Template System
+- Create reusable blog templates for common post types:
+  - "Cost of X in Colorado" template
+  - "X vs Y comparison" template
+  - "Seasonal tip" template
+  - "Vehicle-specific guide" template
+- Each template has pre-built structure, FAQ section, CTA placement
 
-## Completed Items (Phases 1, 3, 4)
+### 5b. Content Calendar (20 topics)
+- Research and plan 20 blog topics based on search volume + gaps
+- Mix of evergreen + seasonal + vehicle-specific
+- Prioritized by estimated search volume
 
-### Phase 1: Configurable Pricing in Auto-Responses
-- [x] `src/lib/pricing.ts` — `getQuotePrice()` with tiered fallback (Omega API → cache → env var). Structured for Phase 2 wiring.
-- [x] `src/lib/drip/templates.ts` — Added `quotePrice?` to `DripTemplateContext`, replaced hardcoded `$299` in SMS and email templates with `ctx.quotePrice ?? 299`
-- [x] `src/app/api/lead/route.ts` — Pricing lookup after validation, passes `quotePrice` to drip context, writes `quote_amount` to lead (fire-and-forget)
+### 5c. Streamlined Authoring
+- Currently blog posts are in a 184KB TypeScript file (`src/data/blog.ts`)
+- Consider moving to individual markdown files for easier editing
+- Or keep TS file but create a helper script for adding new posts
 
-### Phase 3: Nightly Sync + Revenue Backfill
-- [x] `supabase/migrations/20260203_add_revenue_backfill.sql` — `fn_backfill_lead_revenue()` function: backfills `leads.revenue_amount`, `close_date`, `status`, `quote_amount` from matched omega_installs/quotes. Idempotent.
-- [x] `src/app/api/cron/sync-omega/route.ts` — GET endpoint with CRON_SECRET auth. Syncs last 2 days of quotes/invoices, runs matching, runs revenue backfill. Logs to omega_sync_log.
-- [x] `vercel.json` — Added cron `0 5 * * *` (10 PM Mountain Time)
+### Files to Create
+- `src/data/blog-templates.ts` (optional — template structures)
+- Content calendar document
 
-### Phase 4: Dashboard Revenue Reporting
-- [x] `src/app/api/admin/dashboard/unified/route.ts` — Added `omega_installs` query for parts_cost + labor_cost. Response now includes `costOfGoods`, `grossProfit`, `profitMargin` in summary.
-- [x] `src/app/api/cron/daily-report/route.ts` — Added revenue section to daily email: yesterday's jobs/revenue, 7-day running total, avg job value, lead-to-close rate.
+### Files to Modify
+- `src/data/blog.ts` — add new posts as they're created
+- Potentially refactor to per-post files
 
-## Files Created
-- `src/lib/pricing.ts`
-- `src/app/api/cron/sync-omega/route.ts`
-- `supabase/migrations/20260203_add_revenue_backfill.sql`
+---
 
-## Files Modified
-- `src/lib/drip/templates.ts` — dynamic price in SMS + email templates
-- `src/app/api/lead/route.ts` — pricing lookup + quote_amount write
-- `src/app/api/admin/dashboard/unified/route.ts` — cost/profit metrics
-- `src/app/api/cron/daily-report/route.ts` — revenue section in email
-- `vercel.json` — added omega sync cron
+## Implementation Order & Effort Estimates
 
-## New Env Vars (optional, have defaults)
-- `PRICING_FALLBACK_AMOUNT` — default: 299
-- `PRICING_MARKUP_PERCENT` — default: 40
+| Phase | Feature | Effort | Dependencies |
+|-------|---------|--------|--------------|
+| **1** | Review Request System | Medium | None — extends existing drip |
+| **2** | GBP on Location Pages | Medium | None |
+| **3** | Case Study System | Large | Supabase migration |
+| **4** | Neighborhood Pages | Large | Neighborhood data research |
+| **5** | Blog Pipeline | Small | None |
 
-### Phase 0: API Discovery
-- [x] `docs/OMEGA_EDI_API_DISCOVERY.md` — Template for user to fill in after logging into Omega portal. Documents known endpoints, checklists for parts/pricing/VIN endpoints, rate limit and auth confirmation.
+**Recommended approach:** Phases 1 + 2 first (most ROI, least risk), then 3 + 4 (content expansion), then 5 (ongoing).
 
-### Phase 2: Omega Parts/Pricing API + Cache
-- [x] `src/lib/omegaEDI.ts` — Added `OmegaPart` interface, `getPartsByVehicle()`, `getPartsByVin()`, `transformParts()`. Endpoint paths are speculative pending Phase 0 discovery.
-- [x] `supabase/migrations/20260203_create_pricing_cache.sql` — `pricing_cache` table: year/make/model/service_type unique constraint, 7-day TTL default, supplier_cost + quoted_price + markup_percent. Applied to production.
-- [x] `src/lib/pricing.ts` — Fully wired: cache lookup → Omega API (2s `Promise.race` timeout) → env var fallback. Caches Omega results on success (fire-and-forget upsert).
-- [x] `src/app/api/admin/pricing/refresh/route.ts` — Admin endpoint to pre-warm cache for top N vehicles from recent leads. Rate-limited (100ms between requests). Protected by middleware Basic Auth.
+---
 
-## Files Created (All Phases)
-- `src/lib/pricing.ts`
-- `src/app/api/cron/sync-omega/route.ts`
-- `src/app/api/admin/pricing/refresh/route.ts`
-- `supabase/migrations/20260203_add_revenue_backfill.sql`
-- `supabase/migrations/20260203_create_pricing_cache.sql`
-- `docs/OMEGA_EDI_API_DISCOVERY.md`
+## What I Need From You
 
-## Files Modified
-- `src/lib/omegaEDI.ts` — added OmegaPart interface + parts methods
-- `src/lib/drip/templates.ts` — dynamic price in SMS + email templates
-- `src/app/api/lead/route.ts` — pricing lookup + quote_amount write
-- `src/app/api/admin/dashboard/unified/route.ts` — cost/profit metrics
-- `src/app/api/cron/daily-report/route.ts` — revenue section in email
-- `vercel.json` — added omega sync cron
-
-## New Env Vars (optional, have defaults)
-- `PRICING_FALLBACK_AMOUNT` — default: 299
-- `PRICING_MARKUP_PERCENT` — default: 40
-
-## Verification
-1. Submit quick quote form → SMS/email shows `$299` (fallback until Omega parts API confirmed and responding)
-2. Trigger manual sync: `POST /api/admin/sync/omega` → check `leads.revenue_amount` for matched installs
-3. Check daily report email → revenue section should appear when omega_installs has data
-4. Check dashboard API `/api/admin/dashboard/unified` → response should include `costOfGoods`, `grossProfit`, `profitMargin`
-5. Pre-warm cache: `POST /api/admin/pricing/refresh` → populates pricing_cache from Omega API for top vehicles
-6. Complete Phase 0: fill in `docs/OMEGA_EDI_API_DISCOVERY.md` → update endpoint paths in `getPartsByVehicle()`/`getPartsByVin()` if different
-
-## Key Decisions
-- Pricing lookup is non-blocking: if it fails, the lead still gets created with the template fallback ($299)
-- `quote_amount` is written via a separate fire-and-forget UPDATE (not part of fn_insert_lead RPC) to avoid modifying the critical insert path
-- Revenue backfill function is idempotent: only updates NULL fields, safe to run repeatedly
-- Cron syncs 2-day window for overlap to catch late-arriving records
-- SMS auto-reply does NOT include pricing (no structured vehicle data from free-form texts)
-- Parts API endpoint paths are speculative — update after Phase 0 API discovery
-- pricing_cache has RLS enabled with no policies (admin-only via service_role, which bypasses RLS)
-- Partial index on pricing_cache dropped because PostgreSQL requires IMMUTABLE functions in index predicates and NOW() isn't immutable
+1. **Phase 1:** Confirm the review request SMS wording — this is a brand voice decision
+2. **Phase 2:** Static reviews vs API (I recommend static to start)
+3. **Phase 3:** Sample photos/data from a real job for the first case study
+4. **Phase 4:** Verify the neighborhood lists per city (I'll research and propose, you confirm)
+5. **Phase 5:** What blog topics matter most to your business right now?
