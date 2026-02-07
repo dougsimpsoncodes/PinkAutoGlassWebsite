@@ -9,9 +9,20 @@ import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notificati
 import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
 import { getQuotePrice } from '@/lib/pricing';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 submissions per IP per 60 seconds
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateCheck = checkRateLimit(ip, 5, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rateCheck.resetIn / 1000)) } }
+      );
+    }
+
     const body = await request.json();
 
     // Transform legacy QuoteForm format to leadFormSchema format

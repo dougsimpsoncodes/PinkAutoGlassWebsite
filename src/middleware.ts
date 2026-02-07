@@ -93,7 +93,7 @@ export async function middleware(request: NextRequest) {
     // Content Security Policy - Prevent XSS attacks
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://*.google.com https://bat.bing.com https://*.bing.com https://bat.bing.net https://*.bing.net https://*.clarity.ms",
+      "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.supabase.co https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://*.google.com https://bat.bing.com https://*.bing.com https://bat.bing.net https://*.bing.net https://*.clarity.ms",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
@@ -110,7 +110,7 @@ export async function middleware(request: NextRequest) {
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 
     // X-Frame-Options - Allow Clerk iframes
-    'X-Frame-Options': 'SAMEORIGIN',
+    'X-Frame-Options': 'DENY',
 
     // X-Content-Type-Options - Prevent MIME type sniffing
     'X-Content-Type-Options': 'nosniff',
@@ -154,7 +154,7 @@ export async function middleware(request: NextRequest) {
       response.headers.set('Access-Control-Allow-Origin', origin);
     }
 
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     response.headers.set('Access-Control-Max-Age', '86400'); // 24 hours
 
