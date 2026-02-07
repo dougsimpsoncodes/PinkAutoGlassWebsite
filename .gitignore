@@ -65,3 +65,10 @@ assets/**/credentials*.json
 
 # Stashed migrations (not ready for production)
 .stashed-migrations/
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Root-level screenshots and reports
+/*.png
+/*.csv
