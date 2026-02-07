@@ -108,7 +108,8 @@ export async function POST(request: NextRequest) {
     const validatedData = validationResult.data;
 
     // Generate lead ID
-    const leadId = uuidv4();
+    let leadId = uuidv4();
+    let isDuplicate = false;
 
     // Create Supabase client with anon key (not service role)
     const supabase = createClient(
@@ -151,18 +152,53 @@ export async function POST(request: NextRequest) {
       ...attribution,
     };
 
-    // Insert lead via RPC (enforces RLS and business logic)
-    const { error: leadError } = await supabase.rpc('fn_insert_lead', {
-      p_id: leadId,
-      p_payload: payload
-    });
+    // =============================================================================
+    // DEDUP: One lead per phone number per 7 days (skip completed/lost leads)
+    // =============================================================================
+    const dedupClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    if (leadError) {
-      console.error('Lead insert failed:', leadError.message);
-      return NextResponse.json(
-        { error: 'Failed to submit quote request' },
-        { status: 500 }
-      );
+    const { data: existingLead } = await dedupClient
+      .from('leads')
+      .select('id')
+      .eq('phone_e164', validatedData.phone)
+      .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
+      .gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingLead) {
+      // Same customer within 7 days — update existing lead instead of creating duplicate
+      leadId = existingLead.id;
+      isDuplicate = true;
+      await dedupClient
+        .from('leads')
+        .update({
+          vehicle_year: validatedData.vehicleYear,
+          vehicle_make: validatedData.vehicleMake,
+          vehicle_model: validatedData.vehicleModel,
+          service_type: validatedData.serviceType,
+        })
+        .eq('id', existingLead.id);
+      console.log(`📋 Dedup: Updated existing lead ${existingLead.id} (same phone within 7 days)`);
+    } else {
+      // Insert new lead via RPC (enforces RLS and business logic)
+      const { error: leadError } = await supabase.rpc('fn_insert_lead', {
+        p_id: leadId,
+        p_payload: payload
+      });
+
+      if (leadError) {
+        console.error('Lead insert failed:', leadError.message);
+        return NextResponse.json(
+          { error: 'Failed to submit quote request' },
+          { status: 500 }
+        );
+      }
     }
 
     // =============================================================================
@@ -239,7 +275,7 @@ export async function POST(request: NextRequest) {
     // =============================================================================
     // DRIP SEQUENCE: Schedule next-day follow-up SMS
     // =============================================================================
-    if (smsConsent) {
+    if (smsConsent && !isDuplicate) {
       try {
         const dripResult = await scheduleDripSequence(leadId, dripCtx, 'quick_quote');
         console.log(`📅 Drip scheduled for lead ${leadId}: ${dripResult.scheduled} messages`);

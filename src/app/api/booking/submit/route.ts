@@ -209,7 +209,8 @@ export async function POST(req: NextRequest) {
     const validatedData = validationResult.data;
 
     // Generate lead ID
-    const leadId = uuidv4();
+    let leadId = uuidv4();
+    let isDuplicate = false;
 
     // Get Supabase client
     const client = getSupabaseClient();
@@ -292,18 +293,55 @@ export async function POST(req: NextRequest) {
       ...finalAttribution, // Immutable attribution: gclid, msclkid, ad_platform, utm_*
     };
 
-    // Insert lead using RPC with validated data + attribution
-    const { error: leadError } = await client.rpc("fn_insert_lead", {
-      p_id: leadId,
-      p_payload: leadData
-    });
+    // =============================================================================
+    // DEDUP: One lead per phone number per 7 days (skip completed/lost leads)
+    // =============================================================================
+    const dedupClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    if (leadError) {
-      console.error("Lead insert failed:", leadError.message, "Code:", leadError.code);
-      return NextResponse.json(
-        { ok: false, error: "Failed to submit booking" },
-        { status: 500 }
-      );
+    const { data: existingLead } = await dedupClient
+      .from('leads')
+      .select('id')
+      .eq('phone_e164', phone)
+      .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
+      .gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingLead) {
+      // Same customer within 7 days — update existing lead instead of creating duplicate
+      leadId = existingLead.id;
+      isDuplicate = true;
+      await dedupClient
+        .from('leads')
+        .update({
+          vehicle_year: validatedData.vehicleYear,
+          vehicle_make: validatedData.vehicleMake,
+          vehicle_model: validatedData.vehicleModel,
+          service_type: validatedData.serviceType,
+          preferred_date: validatedData.preferredDate,
+          time_window: validatedData.timeWindow,
+        })
+        .eq('id', existingLead.id);
+      console.log(`📋 Dedup: Updated existing booking lead ${existingLead.id} (same phone within 7 days)`);
+    } else {
+      // Insert new lead using RPC with validated data + attribution
+      const { error: leadError } = await client.rpc("fn_insert_lead", {
+        p_id: leadId,
+        p_payload: leadData
+      });
+
+      if (leadError) {
+        console.error("Lead insert failed:", leadError.message, "Code:", leadError.code);
+        return NextResponse.json(
+          { ok: false, error: "Failed to submit booking" },
+          { status: 500 }
+        );
+      }
     }
 
     // Get reference number using RPC

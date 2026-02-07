@@ -133,15 +133,14 @@ export async function POST(req: NextRequest) {
     // --- Create or update lead from inbound SMS ---
     if (fromNumber) {
       try {
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const seventyTwoHoursAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
 
-        // Check for existing SMS lead from this number in last 24h
+        // Check for ANY existing lead from this phone in last 72h (web form, booking, or SMS)
         const { data: existingLead } = await supabase
           .from('leads')
           .select('id, notes')
           .eq('phone_e164', fromNumber)
-          .eq('first_contact_method', 'sms')
-          .gte('created_at', twentyFourHoursAgo)
+          .gte('created_at', seventyTwoHoursAgo)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
