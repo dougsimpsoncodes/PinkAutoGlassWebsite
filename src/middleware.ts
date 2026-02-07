@@ -118,6 +118,9 @@ export async function middleware(request: NextRequest) {
     // Referrer Policy - Control referrer information
     'Referrer-Policy': 'strict-origin-when-cross-origin',
 
+    // Cross-Origin-Opener-Policy - Isolate browsing context
+    'Cross-Origin-Opener-Policy': 'same-origin',
+
     // Permissions Policy - Control browser features
     'Permissions-Policy': [
       'camera=()',
