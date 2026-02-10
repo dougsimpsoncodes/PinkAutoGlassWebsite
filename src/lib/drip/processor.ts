@@ -3,7 +3,7 @@ import { sendSMS } from '@/lib/notifications/sms';
 import { sendEmail } from '@/lib/notifications/email';
 import { renderTemplate } from './templates';
 import { isTCPAQuietHours, getNextSafeTime } from './scheduler';
-import { isExcludedPhone } from '@/lib/constants';
+import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
 
 const BATCH_SIZE = 50;
 const RETRY_BACKOFF_MINUTES = 15;
@@ -102,6 +102,13 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
       // Skip messages to team members (defense-in-depth)
       if (isExcludedPhone(msg.context.phone)) {
         await markSkipped(supabase, msg.id, 'excluded_team_member');
+        result.skipped++;
+        continue;
+      }
+
+      // Skip SMS when customer SMS is disabled (Beetexting migration)
+      if (msg.channel === 'sms' && !isCustomerSmsEnabled()) {
+        await markSkipped(supabase, msg.id, 'customer_sms_disabled');
         result.skipped++;
         continue;
       }

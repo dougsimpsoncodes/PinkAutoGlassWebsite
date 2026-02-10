@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { isExcludedPhone } from '@/lib/constants';
+import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
 
 const TIMEZONE = 'America/Denver';
 const BUSINESS_OPEN_HOUR = 7;   // 7 AM MT
@@ -170,8 +170,8 @@ export async function scheduleDripSequence(
   let skipped = 0;
 
   for (const step of steps) {
-    // Skip SMS steps if no consent
-    if (step.channel === 'sms' && !context.smsConsent) {
+    // Skip SMS steps if no consent or customer SMS is disabled
+    if (step.channel === 'sms' && (!context.smsConsent || !isCustomerSmsEnabled())) {
       skipped++;
       continue;
     }
@@ -254,8 +254,8 @@ export async function scheduleReviewRequest(
   let skipped = 0;
 
   for (const step of REVIEW_REQUEST_STEPS) {
-    // Skip SMS steps if no phone or no consent
-    if (step.channel === 'sms' && !context.smsConsent) {
+    // Skip SMS steps if no consent or customer SMS is disabled
+    if (step.channel === 'sms' && (!context.smsConsent || !isCustomerSmsEnabled())) {
       skipped++;
       continue;
     }

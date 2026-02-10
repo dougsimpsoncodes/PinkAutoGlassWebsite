@@ -23,6 +23,14 @@ export const MIN_CALL_DURATION_SECONDS = 30;
 // the call is attributed to that ad platform.
 export const ATTRIBUTION_WINDOW_MINUTES = 5;
 
+// Customer-facing SMS kill switch. Set ENABLE_CUSTOMER_SMS=false to disable all
+// automated SMS to customers (instant replies, drip follow-ups, review requests,
+// inbound auto-replies). Admin SMS notifications are NOT affected.
+// See docs/BEETEXTING_MIGRATION.md for context and re-enablement steps.
+export function isCustomerSmsEnabled(): boolean {
+  return process.env.ENABLE_CUSTOMER_SMS !== 'false';
+}
+
 // Team member personal phone numbers excluded from all auto-respond messages
 // (instant SMS/email, drip sequences, review requests, inbound SMS auto-replies).
 // Leads still get created for CRM tracking — just no automated outreach.

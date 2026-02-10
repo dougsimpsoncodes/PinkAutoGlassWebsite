@@ -1,193 +1,142 @@
-# Local SEO Enhancement Plan — Feb 7 2026
+# Temporarily Disable Customer SMS + Beetexting Migration Roadmap
 
-## Overview
-Five features to deepen local SEO and turn completed jobs into a growth flywheel: review generation, GBP integration, case study pages, neighborhood pages, and blog pipeline.
+## Problem
+RingCentral programmatic SMS doesn't appear in Beetexting (Dan's SMS management tool). This causes:
+- **Ghost messages**: Customer gets auto-reply SMS that Dan can't see in Beetexting
+- **Orphaned conversations**: Customer replies land in Beetexting with no thread context
+- **Follow-up collisions**: Drip sends "time slots available today" even if Dan already texted manually
+- **Eroded trust**: Dan looks unprepared, may re-quote at different price
 
----
+## Solution: Two-Phase Approach
 
-## Phase 1: Review Request System (Highest ROI)
-**Why first:** Reviews are the #1 local ranking factor. You have Twilio/SMS, SendGrid/email, and a drip system already. This plugs right in.
+### Phase 1: Disable Customer-Facing SMS (immediate)
+Add `ENABLE_CUSTOMER_SMS=false` env flag. Keep email autoresponders + admin notifications.
 
-### 1a. Add "Mark Job Complete" to Admin Dashboard
-- Add a button/status dropdown on the lead detail view in admin
-- Update `leads.status` to `'completed'` (field already exists from Omega integration)
-- This is the trigger for the review request sequence
-
-### 1b. Review Request Drip Templates
-- **SMS (2 hours after completion):** "Hi {name}, thanks for choosing Pink Auto Glass! If you're happy with your {vehicleMake} {vehicleModel} windshield service, a Google review would mean the world to us: {reviewLink}"
-- **SMS (3 days later, if no review detected):** Gentle reminder with the link
-- **Email (2 hours after completion):** Branded HTML email with one-click Google review button
-- Uses existing `scheduled_messages` table and `processScheduledMessages()` cron
-
-### 1c. Review Request Scheduling
-- New `REVIEW_REQUEST_STEPS` in drip scheduler
-- New `scheduleReviewRequest()` function triggered when status → 'completed'
-- Reuses TCPA compliance, retry logic, dedup from existing drip system
-
-### Files to Create
-- None — extends existing drip templates, scheduler, and processor
-
-### Files to Modify
-- `src/lib/drip/templates.ts` — add review request SMS + email templates
-- `src/lib/drip/scheduler.ts` — add REVIEW_REQUEST_STEPS + scheduleReviewRequest()
-- `src/app/admin/dashboard/leads/page.tsx` — add "Mark Complete" button
-- `src/app/api/admin/leads/complete/route.ts` (NEW) — API to mark lead complete + schedule review drip
+### Phase 2: Beetexting Integration (when Dan provides credentials)
+Route SMS through Beetexting API so messages appear in Dan's conversation threads.
 
 ---
 
-## Phase 2: GBP Integration on Location Pages
-**Why:** Google Maps embed + reviews on location pages signals relevance to Google and keeps users on-site longer (engagement signals).
+## Phase 1 — Disable Customer SMS
 
-### 2a. Google Maps Embed
-- Add responsive Google Maps iframe to each of the 44 location pages
-- Center map on each city's coordinates (already have lat/lng in schema data)
-- Consistent styling across all location pages via shared component
+### What Gets Disabled
+| Message | File | Line(s) |
+|---------|------|---------|
+| Instant SMS auto-reply (quote form) | `src/app/api/lead/route.ts` | ~266-271 |
+| Drip follow-up SMS (15h later) | `src/lib/drip/processor.ts` | ~135-136 |
+| Inbound SMS auto-reply (webhook) | `src/app/api/webhook/ringcentral/sms/route.ts` | ~199-229 |
+| Review request SMS (2h + 72h) | `src/lib/drip/scheduler.ts` | ~42-44 (REVIEW_REQUEST_STEPS) |
 
-### 2b. Google Reviews Display
-- Create `GoogleReviewsWidget` component showing recent reviews
-- **Approach decision (for user):**
-  - Option A: Static reviews (manually curated, no API cost, always fast)
-  - Option B: Google Places API (live reviews, costs ~$17/1000 requests, needs caching)
-  - **Recommendation:** Start static, upgrade to API later if needed
+### What Stays ON
+| Message | Why |
+|---------|-----|
+| Instant email auto-reply (quote form) | No conflict with Beetexting |
+| Review request email | No conflict with Beetexting |
+| Admin SMS notifications (to Dan) | Dan needs lead alerts — these go TO him, not customers |
+| Admin email notifications | Same |
+| Lead creation in database | CRM tracking unchanged |
+| Drip scheduling logic | Rows still created (marked skipped at send time) for auditability |
 
-### 2c. GBP Info Card
-- Business hours, phone, address card on each location page
-- Uses data already in schema.ts (generateLocalBusinessSchema)
+### Implementation Steps
 
-### Files to Create
-- `src/components/GoogleMapEmbed.tsx`
-- `src/components/GoogleReviewsWidget.tsx`
-- `src/data/reviews.ts` (curated review data)
+- [x] 1. Add `ENABLE_CUSTOMER_SMS` to `src/lib/constants.ts` — single boolean getter
+- [x] 2. Gate instant SMS in `src/app/api/lead/route.ts` — wrap sendSMS call with flag check
+- [x] 3. Gate drip SMS in `src/lib/drip/processor.ts` — skip SMS channel when flag is false, mark as `skipped` with reason `customer_sms_disabled`
+- [x] 4. Gate inbound auto-reply in `src/app/api/webhook/ringcentral/sms/route.ts` — skip sendSMS, keep lead creation + admin forward
+- [x] 5. Gate review request SMS scheduling in `src/lib/drip/scheduler.ts` — skip inserting SMS rows when flag is false, still insert email rows
+- [x] 6. Set `ENABLE_CUSTOMER_SMS=false` in `.env.local`
+- [ ] 7. Set `ENABLE_CUSTOMER_SMS=false` in Vercel env vars (Production + Preview) — **MANUAL: do this before deploy**
+- [x] 8. Write `docs/BEETEXTING_MIGRATION.md` with full re-enablement instructions
+- [ ] 9. Deploy and verify admin notifications still work
 
-### Files to Modify
-- All 44 location page files (add components) — can be done programmatically
-
----
-
-## Phase 3: Case Study System
-**Why:** "AC repair in Aurora: fixed in 45 mins" pages rank for long-tail keywords and build trust. Real jobs → real content → real rankings.
-
-### 3a. Case Study Data Structure
-- TypeScript data file: `src/data/case-studies.ts`
-- Fields: slug, title, vehicle (year/make/model), service type, city, duration, description, beforeAfter photos, customerQuote, publishDate
-- Each case study generates a page at `/case-studies/[slug]`
-
-### 3b. Dynamic Case Study Pages
-- Route: `src/app/case-studies/[slug]/page.tsx`
-- Index page: `src/app/case-studies/page.tsx`
-- Schema markup: Article + LocalBusiness + Service
-- FAQ schema per case study
-- Internal links to related location + service + vehicle pages
-
-### 3c. Admin Case Study Management
-- Admin page at `/admin/dashboard/case-studies`
-- Form to create/edit case studies with all fields
-- Draft/Published status
-- Stores in Supabase `case_studies` table (new)
-
-### 3d. Sitemap + SEO Integration
-- Add case studies to `src/app/sitemap.ts`
-- Add breadcrumbs
-- Cross-link from location pages ("Recent jobs in {city}")
-
-### Files to Create
-- `src/data/case-studies.ts` (initial data + types)
-- `src/app/case-studies/page.tsx` (index)
-- `src/app/case-studies/[slug]/page.tsx` (detail)
-- `src/app/admin/dashboard/case-studies/page.tsx` (admin)
-- `src/app/api/admin/case-studies/route.ts` (CRUD API)
-- Supabase migration for `case_studies` table
-
-### Files to Modify
-- `src/app/sitemap.ts` — add case study URLs
-- Location pages — add "Recent jobs in {city}" section
+### How to Re-Enable SMS Later
+1. Set `ENABLE_CUSTOMER_SMS=true` in Vercel env vars
+2. Redeploy (or wait for next deploy)
+3. That's it — no code changes needed
 
 ---
 
-## Phase 4: Neighborhood Pages
-**Why:** "Windshield replacement Cap Hill Denver" has less competition than "windshield replacement Denver" and captures hyper-local intent.
+## Phase 2 — Beetexting Integration Roadmap
 
-### 4a. Neighborhood Data
-- Define neighborhoods for 6 cities: Denver, Aurora, Lakewood, Colorado Springs, Fort Collins, Boulder
-- Data structure: name, slug, parentCity, coordinates, description, populationEstimate
-- Store in `src/data/neighborhoods.ts`
+### What We Need From Dan
 
-### 4b. Neighborhood Pages
-- Route: `src/app/locations/[city]/[neighborhood]/page.tsx`
-- Content: neighborhood-specific intro, service offerings, FAQ, map zoomed to neighborhood
-- Schema: LocalBusiness with neighborhood-level geo
-- Internal links to parent city page and service pages
+1. **Beetexting native login credentials** (username + password)
+   - Dan currently uses RingCentral SSO to access Beetexting
+   - He needs a Beetexting-native password to complete the OAuth flow
+   - Contact Beetexting support or use "Forgot Password" to create one
 
-### 4c. Estimated Page Count
-- Denver: ~15 neighborhoods (Cap Hill, RiNo, Cherry Creek, LoDo, Highlands, Park Hill, Wash Park, Baker, Sunnyside, Five Points, Stapleton/Central Park, Green Valley Ranch, Montbello, etc.)
-- Aurora: ~8 (Original Aurora, Southlands, Saddle Rock, Murphy Creek, etc.)
-- Lakewood: ~6 (Belmar, Green Mountain, Bear Creek, etc.)
-- Colorado Springs: ~10 (Old Colorado City, Manitou, Briargate, etc.)
-- Fort Collins: ~6 (Old Town, Midtown, Timnath, etc.)
-- Boulder: ~5 (Pearl Street, University Hill, North Boulder, etc.)
-- **Total: ~50 new pages**
+2. **Complete the OAuth authorization flow**
+   - Log into Beetexting in a browser (with native credentials)
+   - Visit this URL in the same browser session:
+     ```
+     https://auth.beetexting.com/oauth2/authorize/?client_id=7bbakgbke16u46sof434h6a8ev&response_type=code&redirect_uri=https://pinkautoglass.com/api/beetexting/callback&scope=https://com.beetexting.scopes/SendMessage
+     ```
+   - Click "Authorize" when prompted
+   - Page will show the refresh token — copy it
 
-### Files to Create
-- `src/data/neighborhoods.ts`
-- `src/app/locations/[city]/[neighborhood]/page.tsx`
-- Neighborhood index component for city pages
+3. **Give us the refresh token**
+   - We'll store it as `BEETEXTING_REFRESH_TOKEN` in Vercel env vars
 
-### Files to Modify
-- `src/app/sitemap.ts` — add neighborhood URLs
-- City pages — add "Neighborhoods we serve" section with links
-- Schema utilities — neighborhood-level LocalBusiness schema
+### What We Build After Getting the Refresh Token
 
----
+1. **`src/lib/notifications/beetexting.ts`** — Beetexting SMS client
+   - Token refresh logic (access tokens expire, refresh token is long-lived)
+   - `sendSMS()` function matching current interface
+   - API base: `prodapi.beetexting.com`
 
-## Phase 5: Blog Pipeline Enhancement
-**Why:** 12 posts is solid but 2-4/month keeps you ahead of competitors. Need to make content creation faster.
+2. **Swap SMS provider** — Replace RingCentral sendSMS calls with Beetexting sendSMS
+   - Or: make `sendSMS` in `sms.ts` route through Beetexting when configured
 
-### 5a. Blog Template System
-- Create reusable blog templates for common post types:
-  - "Cost of X in Colorado" template
-  - "X vs Y comparison" template
-  - "Seasonal tip" template
-  - "Vehicle-specific guide" template
-- Each template has pre-built structure, FAQ section, CTA placement
+3. **Set `ENABLE_CUSTOMER_SMS=true`** — Re-enable all SMS autoresponders
 
-### 5b. Content Calendar (20 topics)
-- Research and plan 20 blog topics based on search volume + gaps
-- Mix of evergreen + seasonal + vehicle-specific
-- Prioritized by estimated search volume
+4. **Delete `/api/beetexting/callback` route** — One-time use, no longer needed
 
-### 5c. Streamlined Authoring
-- Currently blog posts are in a 184KB TypeScript file (`src/data/blog.ts`)
-- Consider moving to individual markdown files for easier editing
-- Or keep TS file but create a helper script for adding new posts
+5. **Test end-to-end** — Submit test lead, verify SMS appears in Beetexting thread
 
-### Files to Create
-- `src/data/blog-templates.ts` (optional — template structures)
-- Content calendar document
+### Already Done (Beetexting prep)
+- [x] OAuth callback route deployed (`/api/beetexting/callback`)
+- [x] Env vars configured: `BEETEXTING_CLIENT_ID`, `BEETEXTING_CLIENT_SECRET`, `BEETEXTING_API_KEY`, `BEETEXTING_TOKEN_URL`, `BEETEXTING_REDIRECT_URI`
+- [x] API research complete: endpoint, auth flow, send scope documented
 
-### Files to Modify
-- `src/data/blog.ts` — add new posts as they're created
-- Potentially refactor to per-post files
+### Env Vars Needed (after OAuth)
+| Var | Source | When |
+|-----|--------|------|
+| `BEETEXTING_REFRESH_TOKEN` | From OAuth callback page | After Dan authorizes |
+| `ENABLE_CUSTOMER_SMS` | Set to `true` | After Beetexting sendSMS is built + tested |
 
 ---
 
-## Implementation Order & Effort Estimates
+## Risk Assessment
 
-| Phase | Feature | Effort | Dependencies |
-|-------|---------|--------|--------------|
-| **1** | Review Request System | Medium | None — extends existing drip |
-| **2** | GBP on Location Pages | Medium | None |
-| **3** | Case Study System | Large | Supabase migration |
-| **4** | Neighborhood Pages | Large | Neighborhood data research |
-| **5** | Blog Pipeline | Small | None |
-
-**Recommended approach:** Phases 1 + 2 first (most ROI, least risk), then 3 + 4 (content expansion), then 5 (ongoing).
+| Risk | Mitigation |
+|------|-----------|
+| Leads don't get any immediate acknowledgment | Email auto-reply still fires. Dan gets admin SMS alert instantly. |
+| No automated follow-up SMS | Dan manually follows up via Beetexting. Admin alert prompts him. |
+| Customers texting in hear silence | Admin SMS forward still works — Dan sees it and responds via Beetexting. |
+| Forget to re-enable SMS | This doc + `BEETEXTING_MIGRATION.md` serve as reminders. |
+| Dan doesn't update lead status in dashboard | Drip would fire anyway (but now gated). No worse than before. |
 
 ---
 
-## What I Need From You
+## Review (Feb 10 2026)
 
-1. **Phase 1:** Confirm the review request SMS wording — this is a brand voice decision
-2. **Phase 2:** Static reviews vs API (I recommend static to start)
-3. **Phase 3:** Sample photos/data from a real job for the first case study
-4. **Phase 4:** Verify the neighborhood lists per city (I'll research and propose, you confirm)
-5. **Phase 5:** What blog topics matter most to your business right now?
+### Changes Made
+- `src/lib/constants.ts`: Added `isCustomerSmsEnabled()` — reads `ENABLE_CUSTOMER_SMS` env var
+- `src/app/api/lead/route.ts`: Gated instant SMS with flag check + log message when skipped
+- `src/lib/drip/processor.ts`: SMS channel skipped at send time, marked `customer_sms_disabled`
+- `src/lib/drip/scheduler.ts`: SMS rows not inserted in both `scheduleDripSequence()` and `scheduleReviewRequest()` when flag is false
+- `src/app/api/webhook/ringcentral/sms/route.ts`: Inbound auto-reply skipped when flag is false
+- `.env.local`: Added `ENABLE_CUSTOMER_SMS=false`
+- `docs/BEETEXTING_MIGRATION.md`: Full documentation for re-enablement + Beetexting integration roadmap
+
+### Things Not Touched
+- `src/lib/notifications/sms.ts`: `sendSMS()` and `sendAdminSMS()` unchanged — admin notifications unaffected
+- `src/lib/notifications/email.ts`: Email autoresponders unchanged
+- `src/app/api/booking/submit/route.ts`: Booking form unchanged (never had customer SMS auto-reply)
+- `src/app/api/admin/leads/route.ts`: Review request trigger unchanged (scheduler handles the gating)
+- Database schema: No migrations needed
+
+### Still TODO
+- Set `ENABLE_CUSTOMER_SMS=false` in Vercel env vars before deploying
+- Deploy to production
+- Verify admin SMS notifications still work post-deploy

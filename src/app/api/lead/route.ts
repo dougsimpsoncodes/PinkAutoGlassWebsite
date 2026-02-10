@@ -10,7 +10,7 @@ import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
 import { getQuotePrice } from '@/lib/pricing';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { isExcludedPhone } from '@/lib/constants';
+import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -263,12 +263,14 @@ export async function POST(request: NextRequest) {
       try {
         const autoReplyPromises: Promise<boolean>[] = [];
 
-        if (smsConsent) {
+        if (smsConsent && isCustomerSmsEnabled()) {
           autoReplyPromises.push(
             sendSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
               .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
               .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
           );
+        } else if (smsConsent) {
+          console.log(`⏸️ Customer SMS disabled — skipping instant SMS for lead ${leadId}`);
         }
 
         if (hasRealEmail) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
-import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
+import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -196,7 +196,7 @@ export async function POST(req: NextRequest) {
         .ilike('message_text', 'Thanks for texting Pink Auto Glass%')
         .gte('message_time', twentyFourHoursAgo);
 
-      if (count === 0) {
+      if (count === 0 && isCustomerSmsEnabled()) {
         // Fire-and-forget: send auto-reply without blocking the webhook response
         sendSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE })
           .then((sent) => {
