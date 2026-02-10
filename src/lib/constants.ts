@@ -22,3 +22,20 @@ export const MIN_CALL_DURATION_SECONDS = 30;
 // If an ad click session started within this window before a call,
 // the call is attributed to that ad platform.
 export const ATTRIBUTION_WINDOW_MINUTES = 5;
+
+// Team member personal phone numbers excluded from all auto-respond messages
+// (instant SMS/email, drip sequences, review requests, inbound SMS auto-replies).
+// Leads still get created for CRM tracking — just no automated outreach.
+let _excludedPhones: Set<string> | null = null;
+
+export function isExcludedPhone(phoneE164: string): boolean {
+  if (!_excludedPhones) {
+    _excludedPhones = new Set(
+      (process.env.EXCLUDED_DRIP_PHONES || '')
+        .split(',')
+        .map(p => p.trim())
+        .filter(Boolean)
+    );
+  }
+  return _excludedPhones.has(phoneE164);
+}

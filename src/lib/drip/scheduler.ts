@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { isExcludedPhone } from '@/lib/constants';
 
 const TIMEZONE = 'America/Denver';
 const BUSINESS_OPEN_HOUR = 7;   // 7 AM MT
@@ -134,6 +135,12 @@ export async function scheduleDripSequence(
   context: DripContext,
   type: 'quick_quote' | 'booking'
 ): Promise<{ scheduled: number; skipped: number }> {
+  // Skip drips for team members
+  if (isExcludedPhone(context.phone)) {
+    console.log(`⏭️ Skipping drip for lead ${leadId}: excluded team member phone ${context.phone}`);
+    return { scheduled: 0, skipped: 0 };
+  }
+
   // No SMS consent = no drip for quick quotes (they're SMS-only)
   if (type === 'quick_quote' && !context.smsConsent) {
     console.log(`⏭️ Skipping quick_quote drip for lead ${leadId}: no SMS consent`);
@@ -219,6 +226,12 @@ export async function scheduleReviewRequest(
   leadId: string,
   context: DripContext
 ): Promise<{ scheduled: number; skipped: number }> {
+  // Skip review requests for team members
+  if (isExcludedPhone(context.phone)) {
+    console.log(`⏭️ Skipping review request for lead ${leadId}: excluded team member phone ${context.phone}`);
+    return { scheduled: 0, skipped: 0 };
+  }
+
   const supabase = getSupabaseClient();
   const sequenceName = 'review_request';
 

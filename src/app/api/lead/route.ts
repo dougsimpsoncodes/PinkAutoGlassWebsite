@@ -10,6 +10,7 @@ import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
 import { getQuotePrice } from '@/lib/pricing';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { isExcludedPhone } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -252,41 +253,49 @@ export async function POST(request: NextRequest) {
       quotePrice,
     };
 
-    try {
-      const autoReplyPromises: Promise<boolean>[] = [];
+    // Skip all auto-respond messages for team members (lead still created for CRM)
+    const isTeamMember = isExcludedPhone(validatedData.phone);
+    if (isTeamMember) {
+      console.log(`⏭️ Skipping auto-replies for team member phone ${validatedData.phone} (lead ${leadId})`);
+    }
 
-      if (smsConsent) {
-        autoReplyPromises.push(
-          sendSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
-            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
-            .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
-        );
-      }
+    if (!isTeamMember) {
+      try {
+        const autoReplyPromises: Promise<boolean>[] = [];
 
-      if (hasRealEmail) {
-        autoReplyPromises.push(
-          sendEmail({
-            to: validatedData.email,
-            subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
-            html: getQuoteInstantEmail(dripCtx),
-            leadId,
-          })
-            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
-            .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
-        );
-      }
+        if (smsConsent) {
+          autoReplyPromises.push(
+            sendSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
+              .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
+              .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
+          );
+        }
 
-      if (autoReplyPromises.length > 0) {
-        await Promise.all(autoReplyPromises);
+        if (hasRealEmail) {
+          autoReplyPromises.push(
+            sendEmail({
+              to: validatedData.email,
+              subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
+              html: getQuoteInstantEmail(dripCtx),
+              leadId,
+            })
+              .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
+              .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
+          );
+        }
+
+        if (autoReplyPromises.length > 0) {
+          await Promise.all(autoReplyPromises);
+        }
+      } catch (err) {
+        console.error('❌ Customer auto-reply failed for lead:', leadId, err);
       }
-    } catch (err) {
-      console.error('❌ Customer auto-reply failed for lead:', leadId, err);
     }
 
     // =============================================================================
     // DRIP SEQUENCE: Schedule next-day follow-up SMS
     // =============================================================================
-    if (smsConsent && !isDuplicate) {
+    if (smsConsent && !isDuplicate && !isTeamMember) {
       try {
         const dripResult = await scheduleDripSequence(leadId, dripCtx, 'quick_quote');
         console.log(`📅 Drip scheduled for lead ${leadId}: ${dripResult.scheduled} messages`);

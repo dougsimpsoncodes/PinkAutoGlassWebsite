@@ -3,6 +3,7 @@ import { sendSMS } from '@/lib/notifications/sms';
 import { sendEmail } from '@/lib/notifications/email';
 import { renderTemplate } from './templates';
 import { isTCPAQuietHours, getNextSafeTime } from './scheduler';
+import { isExcludedPhone } from '@/lib/constants';
 
 const BATCH_SIZE = 50;
 const RETRY_BACKOFF_MINUTES = 15;
@@ -94,6 +95,13 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
 
       if (leadError || !lead) {
         await markSkipped(supabase, msg.id, 'lead_not_found');
+        result.skipped++;
+        continue;
+      }
+
+      // Skip messages to team members (defense-in-depth)
+      if (isExcludedPhone(msg.context.phone)) {
+        await markSkipped(supabase, msg.id, 'excluded_team_member');
         result.skipped++;
         continue;
       }
