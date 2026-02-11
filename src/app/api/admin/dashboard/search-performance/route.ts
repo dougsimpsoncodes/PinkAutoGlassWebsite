@@ -88,7 +88,10 @@ export async function GET(req: NextRequest) {
     const mtNow = getMountainTime();
     const mtToday = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
     const startDate = new Date(mtToday);
-    startDate.setDate(startDate.getDate() - daysBack);
+    // Synced search tables can lag 1-2 days. Keep "today/yesterday" useful by
+    // automatically looking back at least 2 days for search-performance metrics.
+    const effectiveDaysBack = Math.max(daysBack, 2);
+    startDate.setDate(startDate.getDate() - effectiveDaysBack);
     const endDate = mtNow;
 
     const startDateStr = startDate.toISOString().split('T')[0];

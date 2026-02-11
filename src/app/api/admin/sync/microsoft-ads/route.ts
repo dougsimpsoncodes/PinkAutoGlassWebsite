@@ -12,6 +12,9 @@ import {
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+const UPSERT_CHUNK_SIZE = 250;
 
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
@@ -89,122 +92,100 @@ export async function POST(req: NextRequest) {
     const searchTermsData = await fetchSearchTerms(startDateStr, endDateStr);
     console.log(`Found ${searchTermsData.length} search term records`);
 
-    // Step 7: Store campaign data in database
-    let campaignNewRecords = 0;
-    let campaignUpdatedRecords = 0;
-    const campaignErrors = [];
+    // Step 7: Build upsert payloads
+    const campaignRecordsRaw = campaignData.map((record) => ({
+      date: record.date,
+      campaign_id: record.campaign_id,
+      campaign_name: record.campaign_name,
+      campaign_status: record.campaign_status,
+      impressions: record.impressions,
+      clicks: record.clicks,
+      cost_micros: record.cost_micros,
+      conversions: record.conversions,
+      conversion_value_micros: record.conversion_value_micros,
+      ctr: record.ctr,
+      average_cpc_micros: record.average_cpc_micros,
+      channel_type: record.channel_type,
+    }));
 
-    for (const record of campaignData) {
-      try {
-        const { data, error } = await supabase
-          .from('microsoft_ads_daily_performance')
-          .upsert({
-            date: record.date,
-            campaign_id: record.campaign_id,
-            campaign_name: record.campaign_name,
-            campaign_status: record.campaign_status,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            cost_micros: record.cost_micros,
-            conversions: record.conversions,
-            conversion_value_micros: record.conversion_value_micros,
-            ctr: record.ctr,
-            average_cpc_micros: record.average_cpc_micros,
-            channel_type: record.channel_type,
-          }, {
-            onConflict: 'date,campaign_id',
-          })
-          .select();
+    const keywordRecordsRaw = keywordData.map((record) => ({
+      date: record.date,
+      campaign_id: record.campaign_id,
+      campaign_name: record.campaign_name,
+      ad_group_id: record.ad_group_id,
+      ad_group_name: record.ad_group_name,
+      keyword_id: record.keyword_id,
+      keyword_text: record.keyword_text,
+      match_type: record.match_type,
+      impressions: record.impressions,
+      clicks: record.clicks,
+      cost_micros: record.cost_micros,
+      conversions: record.conversions,
+      conversion_value_micros: record.conversion_value_micros,
+      ctr: record.ctr,
+      average_cpc_micros: record.average_cpc_micros,
+      quality_score: record.quality_score,
+    }));
 
-        if (error) {
-          campaignErrors.push({ record, error: error.message });
-        } else if (data) {
-          campaignNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Microsoft Ads campaign record:', err);
-        campaignErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
+    const searchTermRecordsRaw = searchTermsData.map((record) => ({
+      date: record.date,
+      campaign_id: record.campaign_id,
+      campaign_name: record.campaign_name,
+      ad_group_id: record.ad_group_id,
+      ad_group_name: record.ad_group_name,
+      keyword_id: record.keyword_id,
+      keyword_text: record.keyword_text,
+      search_term: record.search_term,
+      match_type: record.match_type,
+      impressions: record.impressions,
+      clicks: record.clicks,
+      cost_micros: record.cost_micros,
+      conversions: record.conversions,
+    }));
 
-    // Step 8: Store keyword data in database
-    let keywordNewRecords = 0;
-    const keywordErrors = [];
+    // Remove duplicate conflict keys before upsert to avoid Postgres
+    // "ON CONFLICT DO UPDATE command cannot affect row a second time"
+    const campaignRecords = dedupeRecords(
+      campaignRecordsRaw,
+      (r) => `${r.date}|${r.campaign_id}`
+    );
+    const keywordRecords = dedupeRecords(
+      keywordRecordsRaw,
+      (r) => `${r.date}|${r.keyword_id}`
+    );
+    const searchTermRecords = dedupeRecords(
+      searchTermRecordsRaw,
+      (r) => `${r.date}|${r.campaign_id}|${r.search_term}`
+    );
 
-    for (const record of keywordData) {
-      try {
-        const { data, error } = await supabase
-          .from('microsoft_ads_keyword_performance')
-          .upsert({
-            date: record.date,
-            campaign_id: record.campaign_id,
-            campaign_name: record.campaign_name,
-            ad_group_id: record.ad_group_id,
-            ad_group_name: record.ad_group_name,
-            keyword_id: record.keyword_id,
-            keyword_text: record.keyword_text,
-            match_type: record.match_type,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            cost_micros: record.cost_micros,
-            conversions: record.conversions,
-            conversion_value_micros: record.conversion_value_micros,
-            ctr: record.ctr,
-            average_cpc_micros: record.average_cpc_micros,
-            quality_score: record.quality_score,
-          }, {
-            onConflict: 'date,keyword_id',
-          })
-          .select();
+    // Step 8: Batch upsert for speed/reliability
+    const campaignErrors: Array<{ chunk: string; error: string }> = [];
+    const keywordErrors: Array<{ chunk: string; error: string }> = [];
+    const searchTermsErrors: Array<{ chunk: string; error: string }> = [];
 
-        if (error) {
-          keywordErrors.push({ record, error: error.message });
-        } else if (data) {
-          keywordNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Microsoft Ads keyword record:', err);
-        keywordErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
+    const campaignStored = await upsertInChunks(
+      supabase,
+      'microsoft_ads_daily_performance',
+      campaignRecords,
+      'date,campaign_id',
+      campaignErrors
+    );
 
-    // Step 9: Store search terms data in database
-    let searchTermsNewRecords = 0;
-    const searchTermsErrors = [];
+    const keywordStored = await upsertInChunks(
+      supabase,
+      'microsoft_ads_keyword_performance',
+      keywordRecords,
+      'date,keyword_id',
+      keywordErrors
+    );
 
-    for (const record of searchTermsData) {
-      try {
-        const { data, error } = await supabase
-          .from('microsoft_ads_search_terms')
-          .upsert({
-            date: record.date,
-            campaign_id: record.campaign_id,
-            campaign_name: record.campaign_name,
-            ad_group_id: record.ad_group_id,
-            ad_group_name: record.ad_group_name,
-            keyword_id: record.keyword_id,
-            keyword_text: record.keyword_text,
-            search_term: record.search_term,
-            match_type: record.match_type,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            cost_micros: record.cost_micros,
-            conversions: record.conversions,
-          }, {
-            onConflict: 'date,campaign_id,search_term',
-          })
-          .select();
-
-        if (error) {
-          searchTermsErrors.push({ record, error: error.message });
-        } else if (data) {
-          searchTermsNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Microsoft Ads search term record:', err);
-        searchTermsErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
+    const searchTermsStored = await upsertInChunks(
+      supabase,
+      'microsoft_ads_search_terms',
+      searchTermRecords,
+      'date,campaign_id,search_term',
+      searchTermsErrors
+    );
 
     // Step 10: Return summary
     const summary = {
@@ -213,17 +194,17 @@ export async function POST(req: NextRequest) {
       dateRange: { start: startDateStr, end: endDateStr },
       campaigns: {
         fetched: campaignData.length,
-        stored: campaignNewRecords,
+        stored: campaignStored,
         errors: campaignErrors.length,
       },
       keywords: {
         fetched: keywordData.length,
-        stored: keywordNewRecords,
+        stored: keywordStored,
         errors: keywordErrors.length,
       },
       searchTerms: {
         fetched: searchTermsData.length,
-        stored: searchTermsNewRecords,
+        stored: searchTermsStored,
         errors: searchTermsErrors.length,
       },
     };
@@ -249,6 +230,51 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function upsertInChunks<T extends Record<string, any>>(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  table: string,
+  records: T[],
+  onConflict: string,
+  errors: Array<{ chunk: string; error: string }>
+): Promise<number> {
+  let stored = 0;
+
+  for (let i = 0; i < records.length; i += UPSERT_CHUNK_SIZE) {
+    const chunk = records.slice(i, i + UPSERT_CHUNK_SIZE);
+    const chunkLabel = `${i}-${i + chunk.length - 1}`;
+
+    try {
+      const { error } = await supabase
+        .from(table)
+        .upsert(chunk, { onConflict });
+
+      if (error) {
+        errors.push({ chunk: chunkLabel, error: error.message });
+      } else {
+        stored += chunk.length;
+      }
+    } catch (err) {
+      errors.push({
+        chunk: chunkLabel,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
+  }
+
+  return stored;
+}
+
+function dedupeRecords<T>(
+  records: T[],
+  keyFn: (record: T) => string
+): T[] {
+  const byKey = new Map<string, T>();
+  for (const record of records) {
+    byKey.set(keyFn(record), record);
+  }
+  return Array.from(byKey.values());
 }
 
 /**

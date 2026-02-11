@@ -602,6 +602,7 @@ export async function fetchCampaignPerformance(
     // Using valid column names per Microsoft Ads API documentation
     // Note: ConversionValue is not valid - use Revenue
     const columns = [
+      'TimePeriod',
       'CampaignName',     // Required dimension
       'CampaignId',
       'CampaignStatus',
@@ -618,11 +619,12 @@ export async function fetchCampaignPerformance(
       'CampaignPerformanceReportRequest',
       columns,
       { start: startDate, end: endDate },
-      'Summary'
+      'Daily'
     );
 
     // Transform to match Google Ads format for consistent database storage
     return results.map((row: any) => ({
+      date: normalizeMicrosoftDate(row.TimePeriod) || endDate,
       campaign_id: row.CampaignId,
       campaign_name: row.CampaignName,
       campaign_status: row.CampaignStatus,
@@ -660,9 +662,12 @@ export async function fetchKeywordPerformance(
     // Note: ConversionValue is not valid - use Revenue
     // Note: MatchType is not valid - use DeliveredMatchType
     const columns = [
+      'TimePeriod',
       'Keyword',            // Required dimension
       'CampaignName',
+      'CampaignId',
       'AdGroupName',
+      'AdGroupId',
       'KeywordId',
       'DeliveredMatchType', // Not MatchType
       'Impressions',
@@ -679,11 +684,14 @@ export async function fetchKeywordPerformance(
       'KeywordPerformanceReportRequest',
       columns,
       { start: startDate, end: endDate },
-      'Summary'
+      'Daily'
     );
 
     return results.map((row: any) => ({
+      date: normalizeMicrosoftDate(row.TimePeriod) || endDate,
+      campaign_id: row.CampaignId || '0',
       campaign_name: row.CampaignName,
+      ad_group_id: row.AdGroupId || '0',
       ad_group_name: row.AdGroupName,
       keyword_id: row.KeywordId,
       keyword_text: row.Keyword,
@@ -722,6 +730,7 @@ export async function fetchSearchTerms(
     // Note: MatchType is not valid - use DeliveredMatchType or BidMatchType
     // Note: KeywordId exists but Keyword is the text
     const columns = [
+      'TimePeriod',
       'SearchQuery',        // Required dimension - the actual search term
       'CampaignName',
       'CampaignId',
@@ -739,10 +748,11 @@ export async function fetchSearchTerms(
       'SearchQueryPerformanceReportRequest',
       columns,
       { start: startDate, end: endDate },
-      'Summary'  // Summary aggregation for totals
+      'Daily'
     );
 
     return results.map((row: any) => ({
+      date: normalizeMicrosoftDate(row.TimePeriod) || endDate,
       search_term: row.SearchQuery,
       campaign_name: row.CampaignName,
       campaign_id: row.CampaignId || '0',
@@ -759,6 +769,33 @@ export async function fetchSearchTerms(
     console.error('Error fetching Microsoft Ads search terms:', error);
     throw error;
   }
+}
+
+function normalizeMicrosoftDate(value: string | undefined): string | null {
+  if (!value) return null;
+
+  // Already normalized
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  // Common TimePeriod format: M/D/YYYY
+  if (value.includes('/')) {
+    const parts = value.split('/');
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+
+  return null;
 }
 
 /**

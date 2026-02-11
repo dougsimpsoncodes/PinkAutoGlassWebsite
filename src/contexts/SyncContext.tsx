@@ -24,6 +24,7 @@ const SYNC_ENDPOINTS = [
   { name: 'Google Search Console', endpoint: '/api/admin/sync/google-search-console' },
   { name: 'RingCentral', endpoint: '/api/admin/sync/ringcentral' },
 ];
+const SYNC_TIMEOUT_MS = 120000;
 
 export function SyncProvider({ children }: { children: ReactNode }) {
   const [syncing, setSyncing] = useState(false);
@@ -35,38 +36,78 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     if (syncing) return;
 
     setSyncing(true);
-    setProgress('Starting sync...');
+    setProgress(`Syncing data sources (0/${SYNC_ENDPOINTS.length})...`);
 
     try {
-      // Sync all external data sources in parallel
-      const results = await Promise.allSettled(
+      let completed = 0;
+
+      // Sync all external data sources in parallel with per-endpoint timeout.
+      const results = await Promise.all(
         SYNC_ENDPOINTS.map(async ({ name, endpoint }) => {
-          setProgress(`Syncing ${name}...`);
-          const res = await fetch(endpoint, { method: 'POST' });
-          const data = await res.json();
-          return { name, success: data.ok, data };
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+
+          try {
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              signal: controller.signal,
+              cache: 'no-store',
+            });
+
+            let data: any = null;
+            try {
+              data = await res.json();
+            } catch {
+              data = null;
+            }
+
+            const success = res.ok && !!data?.ok;
+            return { name, endpoint, success, status: res.status, data };
+          } catch (error) {
+            const isTimeout = error instanceof Error && error.name === 'AbortError';
+            return {
+              name,
+              endpoint,
+              success: false,
+              status: 0,
+              data: { ok: false, error: isTimeout ? `Timed out after ${SYNC_TIMEOUT_MS / 1000}s` : String(error) },
+            };
+          } finally {
+            clearTimeout(timeoutId);
+            completed += 1;
+            setProgress(`Syncing data sources (${completed}/${SYNC_ENDPOINTS.length})...`);
+          }
         })
       );
 
       // Log results
-      results.forEach((result, i) => {
-        const { name } = SYNC_ENDPOINTS[i];
-        if (result.status === 'fulfilled') {
-          console.log(result.value.success ? `✅ ${name}` : `❌ ${name}`);
+      results.forEach((result) => {
+        if (result.success) {
+          console.log(`✅ ${result.name}`);
         } else {
-          console.error(`❌ ${name}: ${result.reason}`);
+          console.error(`❌ ${result.name}:`, result.data?.error || `HTTP ${result.status}`);
         }
       });
 
+      const failedCount = results.filter(r => !r.success).length;
+
       setLastSyncTime(new Date());
-      setProgress('Refreshing data...');
+      if (failedCount > 0) {
+        setProgress(`Sync completed with ${failedCount} issue${failedCount > 1 ? 's' : ''}. Refreshing data...`);
+      } else {
+        setProgress('Refreshing data...');
+      }
 
       // Increment sync version to signal all pages to refresh
       setSyncVersion(v => v + 1);
 
       // Give pages time to react and fetch
       await new Promise(resolve => setTimeout(resolve, 500));
-      setProgress('');
+      if (failedCount > 0) {
+        setTimeout(() => setProgress(''), 2500);
+      } else {
+        setProgress('');
+      }
     } catch (error) {
       console.error('Global sync error:', error);
       setProgress('Sync failed');
