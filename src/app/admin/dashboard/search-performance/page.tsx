@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
-import { Download, ArrowUpDown, AlertTriangle, TrendingUp, Lightbulb, Target, DollarSign } from 'lucide-react';
+import { Download, ArrowUpDown, AlertTriangle, TrendingUp, Lightbulb, Target, DollarSign, Search, ArrowUp, FileText, Shield, Zap, ChevronUp } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -53,6 +53,15 @@ interface Insight {
   data: Record<string, any>;
 }
 
+interface SeoSuggestion {
+  category: 'striking_distance' | 'ctr_improvement' | 'content_gap' | 'quick_win' | 'defend_position';
+  priority: 'high' | 'medium' | 'low';
+  search_term: string;
+  action: string;
+  detail: string;
+  data: Record<string, any>;
+}
+
 interface SearchPerformanceData {
   dateRange: { from: string; to: string; days: number };
   summary: {
@@ -63,6 +72,7 @@ interface SearchPerformanceData {
     combined: { impressions: number; clicks: number; cost: number; leads: number };
   };
   insights: Insight[];
+  seoSuggestions: SeoSuggestion[];
   data: SearchTerm[];
 }
 
@@ -536,6 +546,103 @@ export default function SearchPerformancePage() {
             </div>
           )}
         </div>
+
+        {/* GSC Status Banner — shows when organic data is missing */}
+        {summary.organic.impressions === 0 && (
+          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+            <div>
+              <div className="font-semibold text-amber-900">Google Search Console data unavailable</div>
+              <p className="text-sm text-amber-800 mt-1">
+                Organic search data stopped syncing (GSC refresh token expired). SEO suggestions below will appear once reconnected.
+                An admin can reauthorize at <code className="bg-amber-100 px-1 rounded">/api/gsc-reauth</code>.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Section 4: SEO Suggestions */}
+        {data.seoSuggestions && data.seoSuggestions.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <Search className="w-5 h-5 text-green-600" />
+                <h3 className="text-lg font-semibold text-gray-900">SEO Suggestions</h3>
+                <span className="text-sm text-gray-500">({data.seoSuggestions.length})</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Actionable steps to improve organic rankings and traffic</p>
+            </div>
+            <div className="p-4 space-y-3">
+              {data.seoSuggestions.map((sug, idx) => (
+                <SeoSuggestionCard key={idx} suggestion={sug} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SEO Quick Tips — always show even without data */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-5 h-5 text-green-700" />
+            <h3 className="text-lg font-semibold text-green-900">SEO Ranking Playbook</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Location Pages</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Add unique content per city (neighborhoods, landmarks)</li>
+                <li>- Include city name in H1, title tag, and meta description</li>
+                <li>- Add FAQ schema with local questions</li>
+                <li>- Embed Google Map for each service area</li>
+              </ul>
+            </div>
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Content Strategy</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Blog monthly about auto glass topics (insurance, ADAS, chip repair)</li>
+                <li>- Target long-tail queries from Search Console data</li>
+                <li>- Create vehicle-specific pages for popular models</li>
+                <li>- Add before/after photos with alt text</li>
+              </ul>
+            </div>
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Technical SEO</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Ensure all pages load under 3 seconds</li>
+                <li>- Fix any broken internal links</li>
+                <li>- Add structured data (LocalBusiness, FAQ, Service)</li>
+                <li>- Submit new content to Google via Search Console</li>
+              </ul>
+            </div>
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Google Business Profile</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Post weekly updates (offers, completed jobs)</li>
+                <li>- Respond to all reviews within 24 hours</li>
+                <li>- Add photos of recent work regularly</li>
+                <li>- Keep hours, services, and description current</li>
+              </ul>
+            </div>
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Link Building</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Get listed in local directories (Yelp, BBB, Nextdoor)</li>
+                <li>- Partner with local auto dealers for referral links</li>
+                <li>- Sponsor local events for .org backlinks</li>
+                <li>- Create shareable content (cost guides, infographics)</li>
+              </ul>
+            </div>
+            <div className="bg-white/70 rounded-lg p-4">
+              <div className="font-semibold text-green-900 mb-2">Review Strategy</div>
+              <ul className="space-y-1 text-green-800">
+                <li>- Ask every completed customer for a Google review</li>
+                <li>- Target 5+ reviews per week for ranking boost</li>
+                <li>- Include service type and city in review responses</li>
+                <li>- Monitor competitor review velocity</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
@@ -599,6 +706,79 @@ function InsightCard({ insight }: { insight: Insight }) {
           </div>
           <div className="text-xs font-medium text-gray-900 truncate">{insight.search_term}</div>
           <div className="text-xs text-gray-600 mt-1">{insight.recommendation}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SeoSuggestionCard({ suggestion }: { suggestion: SeoSuggestion }) {
+  const config: Record<string, { icon: React.ReactNode; bgColor: string; borderColor: string; label: string }> = {
+    striking_distance: {
+      icon: <ArrowUp className="w-4 h-4 text-orange-600" />,
+      bgColor: 'bg-orange-50', borderColor: 'border-orange-200', label: 'Striking Distance',
+    },
+    ctr_improvement: {
+      icon: <Zap className="w-4 h-4 text-yellow-600" />,
+      bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200', label: 'CTR Improvement',
+    },
+    content_gap: {
+      icon: <FileText className="w-4 h-4 text-indigo-600" />,
+      bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', label: 'Content Gap',
+    },
+    quick_win: {
+      icon: <ChevronUp className="w-4 h-4 text-green-600" />,
+      bgColor: 'bg-green-50', borderColor: 'border-green-200', label: 'Quick Win',
+    },
+    defend_position: {
+      icon: <Shield className="w-4 h-4 text-blue-600" />,
+      bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Defend Position',
+    },
+  };
+
+  const c = config[suggestion.category] || config.content_gap;
+  const priColor = suggestion.priority === 'high' ? 'text-red-600 bg-red-50' : suggestion.priority === 'medium' ? 'text-amber-600 bg-amber-50' : 'text-gray-500 bg-gray-50';
+
+  return (
+    <div className={`${c.bgColor} border ${c.borderColor} rounded-lg p-4`}>
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5">{c.icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-gray-700">{c.label}</span>
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${priColor} uppercase`}>{suggestion.priority}</span>
+          </div>
+          <div className="text-sm font-medium text-gray-900">&ldquo;{suggestion.search_term}&rdquo;</div>
+          <div className="text-sm font-semibold text-gray-800 mt-1">{suggestion.action}</div>
+          <div className="text-xs text-gray-600 mt-1">{suggestion.detail}</div>
+          {/* Data pills */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {suggestion.data.position && (
+              <span className="text-[10px] bg-white/80 border border-gray-200 rounded px-1.5 py-0.5">
+                Position: #{typeof suggestion.data.position === 'number' ? suggestion.data.position.toFixed(1) : suggestion.data.position}
+              </span>
+            )}
+            {suggestion.data.impressions && (
+              <span className="text-[10px] bg-white/80 border border-gray-200 rounded px-1.5 py-0.5">
+                Impressions: {suggestion.data.impressions.toLocaleString()}
+              </span>
+            )}
+            {suggestion.data.clicks != null && (
+              <span className="text-[10px] bg-white/80 border border-gray-200 rounded px-1.5 py-0.5">
+                Clicks: {suggestion.data.clicks.toLocaleString()}
+              </span>
+            )}
+            {suggestion.data.ctr != null && (
+              <span className="text-[10px] bg-white/80 border border-gray-200 rounded px-1.5 py-0.5">
+                CTR: {suggestion.data.ctr}%
+              </span>
+            )}
+            {suggestion.data.pages && suggestion.data.pages.length > 0 && (
+              <span className="text-[10px] bg-white/80 border border-gray-200 rounded px-1.5 py-0.5 truncate max-w-xs">
+                Page: {suggestion.data.pages[0]}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

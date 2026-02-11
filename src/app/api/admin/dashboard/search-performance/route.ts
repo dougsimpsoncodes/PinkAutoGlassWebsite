@@ -34,6 +34,15 @@ interface Insight {
   data: Record<string, any>;
 }
 
+interface SeoSuggestion {
+  category: 'striking_distance' | 'ctr_improvement' | 'content_gap' | 'quick_win' | 'defend_position';
+  priority: 'high' | 'medium' | 'low';
+  search_term: string;
+  action: string;
+  detail: string;
+  data: Record<string, any>;
+}
+
 /**
  * GET /api/admin/dashboard/search-performance
  * Returns unified paid (Google + Microsoft) + organic search performance with insights
@@ -342,12 +351,14 @@ export async function GET(req: NextRequest) {
 
     // ─── Generate actionable insights ───
     const insights = generateInsights(combinedData);
+    const seoSuggestions = generateSeoSuggestions(combinedData);
 
     return NextResponse.json({
       ok: true,
       dateRange: { from: startDateStr, to: endDateStr, days: daysBack },
       summary,
       insights,
+      seoSuggestions,
       data: combinedData,
     });
   } catch (error: any) {
@@ -471,4 +482,91 @@ function generateInsights(data: any[]): Insight[] {
   });
 
   return insights;
+}
+
+/**
+ * Generate SEO-specific suggestions from organic search data
+ * Focuses on ranking improvements, CTR optimization, and content opportunities
+ */
+function generateSeoSuggestions(data: any[]): SeoSuggestion[] {
+  const suggestions: SeoSuggestion[] = [];
+  const organicTerms = data.filter(t => t.organic_impressions > 0);
+
+  for (const term of organicTerms) {
+    const pos = term.organic_position;
+    const imp = term.organic_impressions;
+    const clk = term.organic_clicks;
+    const ctr = imp > 0 ? (clk / imp) * 100 : 0;
+
+    // 1. Striking Distance (position 4-10) — close to top 3 where most clicks happen
+    if (pos >= 4 && pos <= 10 && imp >= 50) {
+      suggestions.push({
+        category: 'striking_distance',
+        priority: imp > 200 ? 'high' : 'medium',
+        search_term: term.search_term,
+        action: 'Improve content to push into top 3',
+        detail: `Ranking #${pos.toFixed(1)} with ${imp.toLocaleString()} impressions. Moving to top 3 could 3-5x your clicks. Add more detailed content, internal links, and ensure the page loads fast.`,
+        data: { position: pos, impressions: imp, clicks: clk, ctr: parseFloat(ctr.toFixed(1)), pages: term.organic_pages },
+      });
+    }
+
+    // 2. CTR Improvement — ranking well but low click-through rate
+    if (pos <= 5 && imp >= 100 && ctr < 3) {
+      suggestions.push({
+        category: 'ctr_improvement',
+        priority: imp > 300 ? 'high' : 'medium',
+        search_term: term.search_term,
+        action: 'Improve title tag and meta description',
+        detail: `Position #${pos.toFixed(1)} but only ${ctr.toFixed(1)}% CTR (expected 5-15%). Your title/meta description may not be compelling enough. Add your city name, a value prop, and a call to action.`,
+        data: { position: pos, impressions: imp, clicks: clk, ctr: parseFloat(ctr.toFixed(1)), pages: term.organic_pages },
+      });
+    }
+
+    // 3. Content Gaps — page 2 terms (position 11-20) with decent impressions
+    if (pos > 10 && pos <= 20 && imp >= 100) {
+      suggestions.push({
+        category: 'content_gap',
+        priority: imp > 300 ? 'high' : 'medium',
+        search_term: term.search_term,
+        action: 'Create or improve dedicated content',
+        detail: `Position #${pos.toFixed(1)} (page 2) with ${imp.toLocaleString()} impressions. Create a dedicated page or blog post targeting this term. Include it in headings, add FAQ schema, and build internal links to it.`,
+        data: { position: pos, impressions: imp, clicks: clk, pages: term.organic_pages },
+      });
+    }
+
+    // 4. Quick Wins — high impressions, decent position, already getting clicks
+    if (pos <= 3 && imp >= 200 && clk >= 10) {
+      suggestions.push({
+        category: 'quick_win',
+        priority: 'medium',
+        search_term: term.search_term,
+        action: 'Already winning — optimize for conversions',
+        detail: `Top 3 ranking with ${clk} clicks. Focus on conversion: make sure the landing page has a clear CTA, phone number, and quote form above the fold.`,
+        data: { position: pos, impressions: imp, clicks: clk, ctr: parseFloat(ctr.toFixed(1)), pages: term.organic_pages },
+      });
+    }
+
+    // 5. Defend Position — top 3 but competitors may overtake
+    if (pos >= 2 && pos <= 4 && imp >= 500) {
+      suggestions.push({
+        category: 'defend_position',
+        priority: imp > 1000 ? 'high' : 'medium',
+        search_term: term.search_term,
+        action: 'Defend this high-value ranking',
+        detail: `Position #${pos.toFixed(1)} for a high-volume term (${imp.toLocaleString()} impressions). Keep content fresh, add new sections quarterly, get more backlinks, and monitor for ranking drops.`,
+        data: { position: pos, impressions: imp, clicks: clk, pages: term.organic_pages },
+      });
+    }
+  }
+
+  // Sort by priority then by impressions
+  const priMap: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  suggestions.sort((a, b) => {
+    const priDiff = priMap[a.priority] - priMap[b.priority];
+    if (priDiff !== 0) return priDiff;
+    return (b.data.impressions || 0) - (a.data.impressions || 0);
+  });
+
+  // Cap at 15 suggestions to keep it actionable
+  return suggestions.slice(0, 15);
 }
