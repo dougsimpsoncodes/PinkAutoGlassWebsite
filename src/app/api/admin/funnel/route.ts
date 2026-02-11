@@ -66,6 +66,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
+    const startDateTime = `${startDate}T00:00:00.000Z`;
+    const endDateTime = `${endDate}T23:59:59.999Z`;
 
     console.log(`📊 Fetching funnel data for ${startDate} to ${endDate}...`);
 
@@ -108,15 +110,15 @@ export async function GET(req: NextRequest) {
         .from('ringcentral_calls')
         .select('from_number, start_time, direction, result, duration, utm_source, utm_medium, utm_campaign, ad_platform')
         .eq('direction', 'Inbound')
-        .gte('start_time', startDate)
-        .lte('start_time', endDate),
+        .gte('start_time', startDateTime)
+        .lte('start_time', endDateTime),
 
       // Form submissions with attribution
       client
         .from('leads')
         .select('phone, created_at, utm_source, utm_medium, utm_campaign, ad_platform, gclid, msclkid')
-        .gte('created_at', startDate)
-        .lte('created_at', endDate),
+        .gte('created_at', startDateTime)
+        .lte('created_at', endDateTime),
     ]);
 
     // =============================================================================

@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { fetchCampaignPerformance, validateGoogleAdsConfig } from '@/lib/googleAds';
-import { fetchAccountPerformance, validateMicrosoftAdsConfig } from '@/lib/microsoftAds';
 import { getCache, getCacheKey, CACHE_TTL, setCache } from '@/lib/cache';
 import {
   getMountainDateRange,
+  getSupabaseClient,
   getCallMetrics,
+  getPaidAdsDailyMetrics,
   DateFilter,
 } from '@/lib/dashboardData';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 /**
  * Unified Dashboard API Route
  *
- * Provides: ad spend/clicks/impressions (from ad platform APIs),
+ * Provides: ad spend/clicks/impressions (from synced DB performance tables),
  * call metrics (from getCallMetrics), revenue (from leads table),
  * and date range info.
  *
@@ -41,14 +35,14 @@ export async function GET(request: NextRequest) {
 
     // Use shared date range function for consistent timezone handling
     const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
+    const supabase = getSupabaseClient();
 
-    // Fetch call metrics, revenue, cost-of-goods, and ad platform data in parallel
+    // Fetch call metrics, revenue, cost-of-goods, and paid platform data in parallel
     const [
       callMetrics,
       revenueResult,
       costResult,
-      googleApiData,
-      microsoftApiData,
+      paidMetrics,
     ] = await Promise.all([
       getCallMetrics(supabase, start, end),
       // Lightweight revenue query (just sum revenue_amount from leads table)
@@ -64,9 +58,11 @@ export async function GET(request: NextRequest) {
         .gte('install_date', start.toISOString())
         .lte('install_date', end.toISOString())
         .eq('status', 'completed'),
-      fetchGoogleAdsData(startDateStr, endDateStr),
-      fetchMicrosoftAdsData(startDateStr, endDateStr, start, end),
+      getPaidAdsDailyMetrics(supabase, startDateStr, endDateStr),
     ]);
+
+    const googleApiData = paidMetrics.google;
+    const microsoftApiData = paidMetrics.microsoft;
 
     // Calculate revenue from leads
     const totalRevenue = (revenueResult.data || []).reduce(
@@ -156,94 +152,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-async function fetchGoogleAdsData(startDate: string, endDate: string) {
-  // Check cache first (5-min TTL for external APIs)
-  const cacheKey = `google-ads:${startDate}:${endDate}`;
-  const cached = await getCache<{ spend: number; clicks: number; impressions: number; ctr: number }>(cacheKey);
-  if (cached !== null) {
-    return cached;
-  }
-
-  let spend = 0;
-  let clicks = 0;
-  let impressions = 0;
-  let ctr = 0;
-
-  const config = validateGoogleAdsConfig();
-  if (config.isValid) {
-    try {
-      const campaignData = await fetchCampaignPerformance(startDate, endDate);
-      for (const row of campaignData) {
-        spend += row.cost || 0;
-        clicks += row.clicks || 0;
-        impressions += row.impressions || 0;
-      }
-      ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    } catch (error) {
-      console.error('Error fetching Google Ads data:', error);
-    }
-  }
-
-  const result = { spend, clicks, impressions, ctr };
-  setCache(cacheKey, result, CACHE_TTL.GOOGLE_ADS).catch(() => {});
-  return result;
-}
-
-async function fetchMicrosoftAdsData(startDate: string, endDate: string, startDateObj: Date, endDateObj: Date) {
-  // Check cache first (5-min TTL for external APIs)
-  const cacheKey = `microsoft-ads:${startDate}:${endDate}`;
-  const cached = await getCache<{ spend: number; clicks: number; impressions: number; ctr: number }>(cacheKey);
-  if (cached !== null) {
-    return cached;
-  }
-
-  let spend = 0;
-  let clicks = 0;
-  let impressions = 0;
-  let ctr = 0;
-
-  const config = validateMicrosoftAdsConfig();
-  let usedFallback = false;
-
-  if (config.isValid) {
-    try {
-      const accountData = await fetchAccountPerformance(startDate, endDate);
-
-      if (accountData && accountData.spend > 0) {
-        spend = accountData.spend;
-        clicks = accountData.clicks;
-        impressions = accountData.impressions;
-        ctr = accountData.ctr;
-      } else {
-        usedFallback = true;
-      }
-    } catch (error) {
-      console.error('Error fetching Microsoft Ads data:', error);
-      usedFallback = true;
-    }
-  } else {
-    usedFallback = true;
-  }
-
-  // Fallback to session-based estimates
-  if (usedFallback) {
-    const { data: sessions } = await supabase
-      .from('user_sessions')
-      .select('session_id')
-      .not('msclkid', 'is', null)
-      .gte('started_at', startDateObj.toISOString())
-      .lte('started_at', endDateObj.toISOString());
-
-    const msClickCount = sessions?.length || 0;
-    spend = msClickCount * 2.50;
-    clicks = msClickCount;
-    impressions = msClickCount * 60;
-    ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-  }
-
-  const result = { spend, clicks, impressions, ctr };
-  setCache(cacheKey, result, CACHE_TTL.MICROSOFT_ADS).catch(() => {});
-  return result;
 }

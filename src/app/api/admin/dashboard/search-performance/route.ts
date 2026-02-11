@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/dashboardData';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-function getSupabaseClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      }
-    }
-  );
-}
 
 // Get current time in Mountain Time (UTC-7) - business is in Denver
 function getMountainTime(): Date {
@@ -23,6 +11,47 @@ function getMountainTime(): Date {
   const mtOffset = -7 * 60;
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   return new Date(utcNow + (mtOffset * 60000));
+}
+
+function isMissingColumnError(error: any): boolean {
+  const message = String(error?.message || '').toLowerCase();
+  const details = String(error?.details || '').toLowerCase();
+  return error?.code === '42703' || message.includes('does not exist') || details.includes('does not exist');
+}
+
+async function fetchRowsWithDateFallback(
+  supabase: SupabaseClient,
+  table: string,
+  selectColumns: string,
+  startDateStr: string,
+  endDateStr: string,
+  dateColumns: string[]
+): Promise<any[]> {
+  let lastError: any = null;
+
+  for (const dateColumn of dateColumns) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectColumns)
+      .gte(dateColumn, startDateStr)
+      .lte(dateColumn, endDateStr);
+
+    if (!error) {
+      return data || [];
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      console.error(`Error fetching ${table} data (${dateColumn}):`, error);
+      return [];
+    }
+  }
+
+  if (lastError) {
+    console.error(`Error fetching ${table} data (all date columns failed):`, lastError);
+  }
+
+  return [];
 }
 
 // Insight types for actionable recommendations
@@ -59,36 +88,41 @@ export async function GET(req: NextRequest) {
     const mtNow = getMountainTime();
     const mtToday = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
     const startDate = new Date(mtToday);
-    // Cached tables (search terms, GSC queries) are 1-2 days behind — cron syncs yesterday-7d.
-    // Always go back at least 2 days so "Today" and "Yesterday" show the most recent synced data.
-    const effectiveDaysBack = Math.max(daysBack, 2);
-    startDate.setDate(startDate.getDate() - effectiveDaysBack);
+    startDate.setDate(startDate.getDate() - daysBack);
     const endDate = mtNow;
 
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
+    const startTimestamp = startDate.toISOString();
+    const endTimestamp = endDate.toISOString();
 
     // Fetch all data sources in parallel
     const [
-      { data: googlePaidData, error: googlePaidError },
-      { data: microsoftPaidData, error: microsoftPaidError },
+      googlePaidData,
+      microsoftPaidData,
       { data: organicData, error: organicError },
       { data: leadData },
       { data: callData },
       { data: textData },
     ] = await Promise.all([
       // Google Ads search terms
-      supabase
-        .from('google_ads_search_terms')
-        .select('search_term, campaign_name, impressions, clicks, cost, conversions, ctr')
-        .gte('report_date', startDateStr)
-        .lte('report_date', endDateStr),
+      fetchRowsWithDateFallback(
+        supabase,
+        'google_ads_search_terms',
+        'search_term, campaign_name, impressions, clicks, cost, conversions, ctr',
+        startDateStr,
+        endDateStr,
+        ['report_date', 'date']
+      ),
       // Microsoft Ads search terms
-      supabase
-        .from('microsoft_ads_search_terms')
-        .select('search_term, campaign_name, impressions, clicks, cost_micros, conversions')
-        .gte('report_date', startDateStr)
-        .lte('report_date', endDateStr),
+      fetchRowsWithDateFallback(
+        supabase,
+        'microsoft_ads_search_terms',
+        'search_term, campaign_name, impressions, clicks, cost_micros, conversions',
+        startDateStr,
+        endDateStr,
+        ['date', 'report_date']
+      ),
       // Google Search Console organic queries
       supabase
         .from('google_search_console_queries')
@@ -99,29 +133,27 @@ export async function GET(req: NextRequest) {
       supabase
         .from('leads')
         .select('utm_term, first_contact_method')
-        .gte('created_at', startDateStr)
-        .lte('created_at', endDateStr)
+        .gte('created_at', startTimestamp)
+        .lte('created_at', endTimestamp)
         .not('utm_term', 'is', null),
       // Call attribution (deduplicate by phone)
       supabase
         .from('ringcentral_calls')
         .select('utm_term, from_number')
         .eq('direction', 'Inbound')
-        .gte('start_time', startDateStr)
-        .lte('start_time', endDateStr)
+        .gte('start_time', startTimestamp)
+        .lte('start_time', endTimestamp)
         .not('utm_term', 'is', null),
       // Text click attribution
       supabase
         .from('conversion_events')
         .select('utm_term')
         .eq('event_type', 'text_click')
-        .gte('created_at', startDateStr)
-        .lte('created_at', endDateStr)
+        .gte('created_at', startTimestamp)
+        .lte('created_at', endTimestamp)
         .not('utm_term', 'is', null),
     ]);
 
-    if (googlePaidError) console.error('Error fetching Google paid data:', googlePaidError);
-    if (microsoftPaidError) console.error('Error fetching Microsoft paid data:', microsoftPaidError);
     if (organicError) console.error('Error fetching organic data:', organicError);
 
     // ─── Aggregate Google Paid by search term ───

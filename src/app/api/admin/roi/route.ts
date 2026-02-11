@@ -61,6 +61,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
+    const startDateTime = `${startDate}T00:00:00.000Z`;
+    const endDateTime = `${endDate}T23:59:59.999Z`;
 
     console.log(`💰 Fetching ROI data for ${startDate} to ${endDate}...`);
 
@@ -96,23 +98,23 @@ export async function GET(req: NextRequest) {
         .from('ringcentral_calls')
         .select('from_number, start_time, direction, ad_platform, utm_source, utm_medium, utm_campaign')
         .eq('direction', 'Inbound')
-        .gte('start_time', startDate)
-        .lte('start_time', endDate),
+        .gte('start_time', startDateTime)
+        .lte('start_time', endDateTime),
 
       // Form submissions
       client
         .from('leads')
         .select('phone, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid')
-        .gte('created_at', startDate)
-        .lte('created_at', endDate),
+        .gte('created_at', startDateTime)
+        .lte('created_at', endDateTime),
 
       // Leads with revenue
       client
         .from('leads')
         .select('phone, revenue_amount, ad_platform, created_at')
         .not('revenue_amount', 'is', null)
-        .gte('created_at', startDate)
-        .lte('created_at', endDate),
+        .gte('created_at', startDateTime)
+        .lte('created_at', endDateTime),
     ]);
 
     // =============================================================================

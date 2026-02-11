@@ -66,6 +66,224 @@ export interface AttributedLeadMetrics {
   };
 }
 
+export type PaidPlatform = 'google' | 'microsoft';
+
+export interface PaidPlatformMetrics {
+  spend: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  conversions: number;
+}
+
+export interface PaidAdsMetrics {
+  google: PaidPlatformMetrics;
+  microsoft: PaidPlatformMetrics;
+}
+
+export interface SearchTermConverter {
+  term: string;
+  conversions: number;
+  convRate: number;
+  cpa: number;
+  clicks: number;
+}
+
+export interface SearchTermWaste {
+  term: string;
+  clicks: number;
+  cost: number;
+  conversions: number;
+}
+
+export interface SearchTermInsights {
+  topConverters: SearchTermConverter[];
+  wastedSpend: SearchTermWaste[];
+}
+
+type DateFallbackTableConfig = {
+  dailyTable: string;
+  searchTermsTable: string;
+  dateColumns: string[];
+};
+
+const PAID_TABLES: Record<PaidPlatform, DateFallbackTableConfig> = {
+  google: {
+    dailyTable: 'google_ads_daily_performance',
+    searchTermsTable: 'google_ads_search_terms',
+    dateColumns: ['date', 'report_date'],
+  },
+  microsoft: {
+    dailyTable: 'microsoft_ads_daily_performance',
+    searchTermsTable: 'microsoft_ads_search_terms',
+    dateColumns: ['date', 'report_date'],
+  },
+};
+
+function isMissingColumnError(error: any): boolean {
+  const message = String(error?.message || '').toLowerCase();
+  const details = String(error?.details || '').toLowerCase();
+  return error?.code === '42703' || message.includes('does not exist') || details.includes('does not exist');
+}
+
+async function queryWithDateColumnFallback(
+  supabase: SupabaseClient,
+  table: string,
+  selectColumns: string,
+  startDateStr: string,
+  endDateStr: string,
+  dateColumns: string[]
+): Promise<any[]> {
+  let lastError: any = null;
+
+  for (const dateColumn of dateColumns) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectColumns)
+      .gte(dateColumn, startDateStr)
+      .lte(dateColumn, endDateStr);
+
+    if (!error) {
+      return data || [];
+    }
+
+    lastError = error;
+
+    // Try the next fallback only for missing-column errors.
+    if (!isMissingColumnError(error)) {
+      console.error(`[${table}] query failed on ${dateColumn}:`, error);
+      return [];
+    }
+  }
+
+  if (lastError) {
+    console.error(`[${table}] date filter failed for all fallback columns:`, lastError);
+  }
+
+  return [];
+}
+
+function aggregatePaidPlatformMetrics(rows: any[]): PaidPlatformMetrics {
+  const impressions = rows.reduce((sum, row) => sum + (Number(row.impressions) || 0), 0);
+  const clicks = rows.reduce((sum, row) => sum + (Number(row.clicks) || 0), 0);
+  const spend = rows.reduce((sum, row) => {
+    const cost = Number(row.cost);
+    if (Number.isFinite(cost) && cost > 0) return sum + cost;
+    return sum + ((Number(row.cost_micros) || 0) / 1000000);
+  }, 0);
+  const conversions = rows.reduce((sum, row) => sum + (Number(row.conversions) || 0), 0);
+  const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+
+  return {
+    spend: Number(spend.toFixed(2)),
+    clicks,
+    impressions,
+    ctr: Number(ctr.toFixed(2)),
+    conversions: Number(conversions.toFixed(2)),
+  };
+}
+
+/**
+ * Canonical paid-platform totals for dashboard/report APIs.
+ * Reads from synced database tables (not live ad APIs) so all admin reports
+ * are source-consistent.
+ */
+export async function getPaidPlatformDailyMetrics(
+  supabase: SupabaseClient,
+  platform: PaidPlatform,
+  startDateStr: string,
+  endDateStr: string
+): Promise<PaidPlatformMetrics> {
+  const cfg = PAID_TABLES[platform];
+  const rows = await queryWithDateColumnFallback(
+    supabase,
+    cfg.dailyTable,
+    'impressions, clicks, cost, cost_micros, conversions',
+    startDateStr,
+    endDateStr,
+    cfg.dateColumns
+  );
+
+  return aggregatePaidPlatformMetrics(rows);
+}
+
+/**
+ * Get canonical paid metrics for Google + Microsoft in one call.
+ */
+export async function getPaidAdsDailyMetrics(
+  supabase: SupabaseClient,
+  startDateStr: string,
+  endDateStr: string
+): Promise<PaidAdsMetrics> {
+  const [google, microsoft] = await Promise.all([
+    getPaidPlatformDailyMetrics(supabase, 'google', startDateStr, endDateStr),
+    getPaidPlatformDailyMetrics(supabase, 'microsoft', startDateStr, endDateStr),
+  ]);
+
+  return { google, microsoft };
+}
+
+/**
+ * Search-term insights for platform pages (top converters + wasted spend).
+ * Uses synced DB search-term tables for consistency with Search Performance.
+ */
+export async function getPaidPlatformSearchTermInsights(
+  supabase: SupabaseClient,
+  platform: PaidPlatform,
+  startDateStr: string,
+  endDateStr: string
+): Promise<SearchTermInsights> {
+  const cfg = PAID_TABLES[platform];
+  const rows = await queryWithDateColumnFallback(
+    supabase,
+    cfg.searchTermsTable,
+    'search_term, clicks, impressions, conversions, cost, cost_micros',
+    startDateStr,
+    endDateStr,
+    cfg.dateColumns
+  );
+
+  const termStats = new Map<string, { clicks: number; impressions: number; cost: number; conversions: number }>();
+
+  for (const row of rows) {
+    const term = String(row.search_term || '').trim();
+    if (!term) continue;
+
+    const existing = termStats.get(term) || { clicks: 0, impressions: 0, cost: 0, conversions: 0 };
+    const cost = Number(row.cost);
+    existing.clicks += Number(row.clicks) || 0;
+    existing.impressions += Number(row.impressions) || 0;
+    existing.cost += Number.isFinite(cost) && cost > 0 ? cost : ((Number(row.cost_micros) || 0) / 1000000);
+    existing.conversions += Number(row.conversions) || 0;
+    termStats.set(term, existing);
+  }
+
+  const topConverters: SearchTermConverter[] = Array.from(termStats.entries())
+    .filter(([, stats]) => stats.conversions > 0 && stats.clicks > 0)
+    .map(([term, stats]) => ({
+      term,
+      conversions: Number(stats.conversions.toFixed(2)),
+      convRate: Number(((stats.conversions / stats.clicks) * 100).toFixed(2)),
+      cpa: Number((stats.cost / stats.conversions).toFixed(2)),
+      clicks: stats.clicks,
+    }))
+    .sort((a, b) => b.convRate - a.convRate)
+    .slice(0, 5);
+
+  const wastedSpend: SearchTermWaste[] = Array.from(termStats.entries())
+    .filter(([, stats]) => stats.conversions === 0 && stats.clicks > 3)
+    .map(([term, stats]) => ({
+      term,
+      clicks: stats.clicks,
+      cost: Number(stats.cost.toFixed(2)),
+      conversions: 0,
+    }))
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 5);
+
+  return { topConverters, wastedSpend };
+}
+
 /**
  * Get current time in Mountain Time (UTC-7)
  * Business is located in Denver, so all date calculations use Mountain Time
