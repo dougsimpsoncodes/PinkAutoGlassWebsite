@@ -21,7 +21,7 @@ import {
   fetchDailyPerformance,
 } from '@/lib/googleSearchConsole';
 import { syncOfflineConversions, syncMicrosoftOfflineConversions } from '@/lib/offlineConversionSync';
-import { validateMicrosoftAdsConfig } from '@/lib/microsoftAds';
+import { validateMicrosoftAdsConfig, fetchSearchTerms as fetchMicrosoftSearchTerms } from '@/lib/microsoftAds';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
       },
       microsoftAds: {
+        searchTerms: { success: false, records: 0, error: null as string | null },
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
       },
       googleSearchConsole: {
@@ -459,6 +460,52 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.microsoftAds.offlineConversions.error = error.message;
       console.error('❌ Microsoft Ads offline conversion upload failed:', error.message);
+    }
+
+    // ========================================
+    // 8. Sync Microsoft Ads Search Terms
+    // ========================================
+    try {
+      const msConfigValid = validateMicrosoftAdsConfig();
+      if (msConfigValid.isValid) {
+        console.log('🔍 Syncing Microsoft Ads search terms...');
+        const searchTermData = await fetchMicrosoftSearchTerms(startDateStr, endDateStr);
+
+        let inserted = 0;
+        for (const record of searchTermData) {
+          const dbRecord = {
+            report_date: startDateStr, // Summary aggregation — use start of range
+            search_term: record.search_term,
+            campaign_name: record.campaign_name,
+            ad_group_name: record.ad_group_name || null,
+            keyword_text: record.keyword_text || null,
+            match_type: record.match_type || null,
+            impressions: record.impressions,
+            clicks: record.clicks,
+            cost_micros: record.cost_micros,
+            conversions: record.conversions,
+            sync_timestamp: new Date().toISOString(),
+          };
+
+          const { error } = await supabase
+            .from('microsoft_ads_search_terms')
+            .upsert(dbRecord, { onConflict: 'report_date,search_term,campaign_name' });
+
+          if (!error) inserted++;
+        }
+
+        results.microsoftAds.searchTerms = {
+          success: true,
+          records: inserted,
+          error: null,
+        };
+        console.log(`✅ Synced ${inserted} Microsoft Ads search term records`);
+      } else {
+        results.microsoftAds.searchTerms.error = `Missing config: ${msConfigValid.missingVars.join(', ')}`;
+      }
+    } catch (error: any) {
+      results.microsoftAds.searchTerms.error = error.message;
+      console.error('❌ Microsoft Ads search terms sync failed:', error.message);
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

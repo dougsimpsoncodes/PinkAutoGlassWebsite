@@ -1,153 +1,118 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
+import { Download, ArrowUpDown, AlertTriangle, TrendingUp, Lightbulb, Target, DollarSign } from 'lucide-react';
+
+// ─── Types ───────────────────────────────────────────────
 
 interface SearchTerm {
   search_term: string;
-  source: 'PAID' | 'ORG';
-  paid_impressions: number;
-  paid_clicks: number;
-  paid_cost: number;
-  paid_ctr: number;
-  paid_cpc: number;
-  paid_conversions: number;
-  paid_campaigns: string[];
+  sources: string[];
+  google_impressions: number;
+  google_clicks: number;
+  google_cost: number;
+  google_conversions: number;
+  google_campaigns: string[];
+  microsoft_impressions: number;
+  microsoft_clicks: number;
+  microsoft_cost: number;
+  microsoft_conversions: number;
+  microsoft_campaigns: string[];
   organic_impressions: number;
   organic_clicks: number;
-  organic_ctr: number;
   organic_position: number;
   organic_pages: string[];
+  total_impressions: number;
+  total_clicks: number;
+  total_cost: number;
   calls: number;
   quotes: number;
   texts: number;
   total_leads: number;
   cost_per_lead: number;
-  lead_conversion_rate: number;
-  total_impressions: number;
-  total_clicks: number;
+}
+
+interface PlatformSummary {
+  impressions: number;
+  clicks: number;
+  cost?: number;
+  conversions?: number;
+  leads: number;
   ctr: number;
+  costPerLead?: number;
+}
+
+interface Insight {
+  type: 'overlap' | 'coverage_gap' | 'platform_arbitrage' | 'waste' | 'top_performer';
+  severity: 'high' | 'medium' | 'low';
+  search_term: string;
+  recommendation: string;
+  data: Record<string, any>;
 }
 
 interface SearchPerformanceData {
-  dateRange: {
-    from: string;
-    to: string;
-    days: number;
-  };
+  dateRange: { from: string; to: string; days: number };
   summary: {
-    totalRows: number;
-    totalUniqueTerms: number;
-    paidRows: number;
-    organicRows: number;
-    termsInBoth: number;
-    totalPaidImpressions: number;
-    totalPaidClicks: number;
-    totalPaidCost: number;
-    totalPaidConversions: number;
-    avgPaidCTR: number;
-    avgPaidCPC: number;
-    totalOrganicImpressions: number;
-    totalOrganicClicks: number;
-    avgOrganicCTR: number;
-    totalImpressions: number;
-    totalClicks: number;
-    avgCombinedCTR: number;
-    totalCalls: number;
-    totalQuotes: number;
-    totalTexts: number;
-    totalLeads: number;
-    paidCalls: number;
-    paidQuotes: number;
-    paidTexts: number;
-    paidLeads: number;
-    organicCalls: number;
-    organicQuotes: number;
-    organicTexts: number;
-    organicLeads: number;
+    totalTerms: number;
+    google: PlatformSummary;
+    microsoft: PlatformSummary;
+    organic: PlatformSummary;
+    combined: { impressions: number; clicks: number; cost: number; leads: number };
   };
+  insights: Insight[];
   data: SearchTerm[];
 }
 
+type SortKey = 'impressions' | 'clicks' | 'cost' | 'leads' | 'cost_per_lead' | 'position';
+type SortDir = 'asc' | 'desc';
+
+// ─── Component ───────────────────────────────────────────
+
 export default function SearchPerformancePage() {
-  // Get global sync state
   const { syncVersion } = useSync();
 
-  // Cache data per time period - instant switching when cached
   const [dataCache, setDataCache] = useState<Record<DateFilter, SearchPerformanceData | null>>({
-    today: null,
-    yesterday: null,
-    '7days': null,
-    '30days': null,
-    all: null,
+    today: null, yesterday: null, '7days': null, '30days': null, all: null,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'paid' | 'organic'>('all');
-  const [syncStatus, setSyncStatus] = useState<{ message: string; success: boolean } | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'google' | 'microsoft' | 'organic'>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('impressions');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [showInsights, setShowInsights] = useState(true);
 
-  // Get current data from cache
   const data = dataCache[dateFilter];
-
-  // Check if we have ANY cached data (for showing content while loading new period)
   const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
 
-  // Convert DateFilter to days number for API
   const getDateRangeDays = (filter: DateFilter): number => {
     switch (filter) {
       case 'today': return 0;
       case 'yesterday': return 1;
       case '7days': return 7;
       case '30days': return 30;
-      case 'all': return 365; // Use 365 for "all time" in search performance
+      case 'all': return 365;
       default: return 30;
     }
   };
 
-  // Get date display string
   const getDateRangeDisplay = (): string => {
-    const today = new Date();
-    const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-    switch (dateFilter) {
-      case 'today':
-        return formatDate(today);
-      case 'yesterday': {
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        return formatDate(yesterday);
-      }
-      case '7days': {
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return `${formatDate(weekAgo)} - ${formatDate(today)}`;
-      }
-      case '30days': {
-        const monthAgo = new Date(today);
-        monthAgo.setDate(monthAgo.getDate() - 30);
-        return `${formatDate(monthAgo)} - ${formatDate(today)}`;
-      }
-      case 'all':
-        return 'All Time';
-      default:
-        return '';
+    if (data?.dateRange) {
+      if (dateFilter === 'today') return data.dateRange.to;
+      if (dateFilter === 'yesterday') return data.dateRange.from;
+      return `${data.dateRange.from} to ${data.dateRange.to}`;
     }
+    return '';
   };
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
       const days = getDateRangeDays(filter);
-      const response = await fetch(
-        `/api/admin/dashboard/search-performance?days=${days}&source=${sourceFilter}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch search performance data');
-      }
-
+      const response = await fetch(`/api/admin/dashboard/search-performance?days=${days}&minImpressions=5`);
+      if (!response.ok) throw new Error('Failed to fetch search performance data');
       const result = await response.json();
       setDataCache(prev => ({ ...prev, [filter]: result }));
       return result;
@@ -155,18 +120,16 @@ export default function SearchPerformancePage() {
       setError(err.message);
       return null;
     }
-  }, [sourceFilter]);
+  }, []);
 
-  // Subscribe to global sync events - refresh all cached data
+  // Sync refresh
   useEffect(() => {
     if (syncVersion > 0) {
-      // Clear cache and refetch current filter
       setDataCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
       fetchData(dateFilter);
     }
   }, [syncVersion]);
 
-  // Handle date filter change - use cache or fetch
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
     if (!dataCache[filter]) {
@@ -181,7 +144,68 @@ export default function SearchPerformancePage() {
     fetchData(dateFilter).finally(() => setLoading(false));
   }, []);
 
-  // Only show full-page spinner on initial load (no cached data at all)
+  // ─── Sort and filter data ───
+  const filteredData = useMemo(() => {
+    if (!data?.data) return [];
+    let filtered = data.data;
+
+    if (sourceFilter !== 'all') {
+      const sourceMap: Record<string, string> = {
+        google: 'G-Paid',
+        microsoft: 'M-Paid',
+        organic: 'Organic',
+      };
+      filtered = filtered.filter(t => t.sources.includes(sourceMap[sourceFilter]));
+    }
+
+    return [...filtered].sort((a, b) => {
+      let aVal: number, bVal: number;
+      switch (sortKey) {
+        case 'impressions': aVal = a.total_impressions; bVal = b.total_impressions; break;
+        case 'clicks': aVal = a.total_clicks; bVal = b.total_clicks; break;
+        case 'cost': aVal = a.total_cost; bVal = b.total_cost; break;
+        case 'leads': aVal = a.total_leads; bVal = b.total_leads; break;
+        case 'cost_per_lead': aVal = a.cost_per_lead; bVal = b.cost_per_lead; break;
+        case 'position': aVal = a.organic_position || 999; bVal = b.organic_position || 999; break;
+        default: aVal = a.total_impressions; bVal = b.total_impressions;
+      }
+      return sortDir === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+  }, [data, sourceFilter, sortKey, sortDir]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  // ─── CSV Export ───
+  const exportCSV = () => {
+    if (!filteredData.length) return;
+    const headers = ['Search Term', 'Sources', 'Total Impressions', 'Total Clicks', 'Total Cost',
+      'Google Imp', 'Google Clicks', 'Google Cost', 'Microsoft Imp', 'Microsoft Clicks', 'Microsoft Cost',
+      'Organic Imp', 'Organic Clicks', 'Organic Position', 'Calls', 'Quotes', 'Texts', 'Total Leads', 'Cost/Lead'];
+    const rows = filteredData.map(t => [
+      `"${t.search_term}"`, t.sources.join('+'), t.total_impressions, t.total_clicks, t.total_cost,
+      t.google_impressions, t.google_clicks, t.google_cost,
+      t.microsoft_impressions, t.microsoft_clicks, t.microsoft_cost,
+      t.organic_impressions, t.organic_clicks, t.organic_position || '',
+      t.calls, t.quotes, t.texts, t.total_leads, t.cost_per_lead,
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `search-performance-${dateFilter}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ─── Loading states ───
   if (loading && !hasAnyCachedData) {
     return (
       <DashboardLayout>
@@ -198,14 +222,11 @@ export default function SearchPerformancePage() {
   if (error && !data) {
     return (
       <DashboardLayout>
-        <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
-          Error: {error || 'No data available'}
-        </div>
+        <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">Error: {error}</div>
       </DashboardLayout>
     );
   }
 
-  // If we're loading a new period and don't have data yet, show loading state
   if (!data) {
     return (
       <DashboardLayout>
@@ -219,47 +240,18 @@ export default function SearchPerformancePage() {
     );
   }
 
-  const { summary } = data;
-
-  // Get top performers (high organic, could add paid)
-  const topPerformers = data.data
-    .filter(t => t.source === 'ORG' && t.organic_impressions > 500)
-    .sort((a, b) => b.organic_impressions - a.organic_impressions)
-    .slice(0, 5);
-
-  // Get opportunities (high organic, low/no paid)
-  // Find organic terms that don't have a corresponding paid term
-  const organicTermsSet = new Set(data.data.filter(t => t.source === 'ORG').map(t => t.search_term));
-  const paidTermsSet = new Set(data.data.filter(t => t.source === 'PAID').map(t => t.search_term));
-
-  const paidOpportunities = data.data
-    .filter(
-      t =>
-        t.source === 'ORG' &&
-        !paidTermsSet.has(t.search_term) &&
-        t.organic_impressions > 200 &&
-        t.organic_position < 10
-    )
-    .slice(0, 5);
-
-  // Get high cost terms (needs optimization)
-  const highCostTerms = data.data
-    .filter(t => t.paid_cpc > 15 && t.paid_clicks > 5)
-    .sort((a, b) => b.paid_cost - a.paid_cost)
-    .slice(0, 5);
+  const { summary, insights } = data;
 
   return (
     <DashboardLayout>
       <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
-        <div className="mb-8">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900">Search Performance</h1>
-          <p className="text-gray-600 mt-1">
-            Combined paid ads + organic search analysis
-          </p>
+          <p className="text-gray-600 mt-1">Google Paid + Microsoft Paid + Organic — unified search command center</p>
         </div>
 
-        {/* Date Filter Bar */}
+        {/* Date Filter */}
         <DateFilterBar
           dateFilter={dateFilter}
           onFilterChange={handleDateFilterChange}
@@ -267,312 +259,348 @@ export default function SearchPerformancePage() {
           color="cyan"
         />
 
-        {/* Sync Status Message */}
-        {syncStatus && (
-          <div
-            className={`p-3 rounded text-sm ${
-              syncStatus.success
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}
-          >
-            {syncStatus.success ? '✅' : '❌'} {syncStatus.message}
-          </div>
-        )}
-
-        {/* Overview Metrics - Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Google Ads (Paid) */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-4">
+        {/* Section 1: Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Google Paid */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
               <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <h3 className="text-lg font-semibold text-gray-900">Google Ads (Paid)</h3>
+              <h3 className="font-semibold text-gray-900">Google Paid</h3>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Impressions</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {summary.totalPaidImpressions.toLocaleString()}
-                </div>
+                <div className="text-gray-500">Impressions</div>
+                <div className="text-lg font-bold">{summary.google.impressions.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Clicks</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {summary.totalPaidClicks.toLocaleString()}
-                </div>
+                <div className="text-gray-500">Clicks</div>
+                <div className="text-lg font-bold">{summary.google.clicks.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Cost</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  ${summary.totalPaidCost.toLocaleString()}
-                </div>
+                <div className="text-gray-500">Spend</div>
+                <div className="text-lg font-bold">${summary.google.cost?.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Total Leads</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {summary.paidLeads}
-                </div>
+                <div className="text-gray-500">Leads</div>
+                <div className="text-lg font-bold">{summary.google.leads}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Lead Breakdown</div>
-                <div className="text-sm text-gray-600 flex gap-2">
-                  <span>📞{summary.paidCalls}</span>
-                  <span>📧{summary.paidQuotes}</span>
-                  <span>💬{summary.paidTexts}</span>
-                </div>
+                <div className="text-gray-500">CTR</div>
+                <div className="font-semibold">{summary.google.ctr}%</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Cost/Lead</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  ${summary.paidLeads > 0 ? (summary.totalPaidCost / summary.paidLeads).toFixed(2) : '0.00'}
-                </div>
+                <div className="text-gray-500">Cost/Lead</div>
+                <div className="font-semibold">${summary.google.costPerLead?.toFixed(2) || '0.00'}</div>
               </div>
             </div>
           </div>
 
-          {/* Organic Search */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <h3 className="text-lg font-semibold text-gray-900">Organic Search (Free)</h3>
+          {/* Microsoft Paid */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-3 h-3 rounded-full bg-teal-500"></div>
+              <h3 className="font-semibold text-gray-900">Microsoft Paid</h3>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Impressions</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {summary.totalOrganicImpressions.toLocaleString()}
-                </div>
+                <div className="text-gray-500">Impressions</div>
+                <div className="text-lg font-bold">{summary.microsoft.impressions.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Clicks</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {summary.totalOrganicClicks.toLocaleString()}
-                </div>
+                <div className="text-gray-500">Clicks</div>
+                <div className="text-lg font-bold">{summary.microsoft.clicks.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">CTR</div>
-                <div className="text-2xl font-bold text-gray-900">{summary.avgOrganicCTR}%</div>
+                <div className="text-gray-500">Spend</div>
+                <div className="text-lg font-bold">${summary.microsoft.cost?.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Total Leads</div>
-                <div className="text-2xl font-bold text-green-600">
-                  {summary.organicLeads}
-                </div>
+                <div className="text-gray-500">Leads</div>
+                <div className="text-lg font-bold">{summary.microsoft.leads}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Lead Breakdown</div>
-                <div className="text-sm text-gray-600 flex gap-2">
-                  <span>📞{summary.organicCalls}</span>
-                  <span>📧{summary.organicQuotes}</span>
-                  <span>💬{summary.organicTexts}</span>
-                </div>
+                <div className="text-gray-500">CTR</div>
+                <div className="font-semibold">{summary.microsoft.ctr}%</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Lead Value</div>
-                <div className="text-2xl font-bold text-green-600">
-                  ${summary.organicLeads > 0 && summary.paidLeads > 0 ?
-                    ((summary.totalPaidCost / summary.paidLeads) * summary.organicLeads).toFixed(0) :
-                    '0'}
-                </div>
+                <div className="text-gray-500">Cost/Lead</div>
+                <div className="font-semibold">${summary.microsoft.costPerLead?.toFixed(2) || '0.00'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Organic */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <h3 className="font-semibold text-gray-900">Google Organic</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="text-gray-500">Impressions</div>
+                <div className="text-lg font-bold">{summary.organic.impressions.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-gray-500">Clicks</div>
+                <div className="text-lg font-bold">{summary.organic.clicks.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-gray-500">CTR</div>
+                <div className="text-lg font-bold">{summary.organic.ctr}%</div>
+              </div>
+              <div>
+                <div className="text-gray-500">Leads</div>
+                <div className="text-lg font-bold text-green-600">{summary.organic.leads}</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Search Terms Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Search Terms Performance</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              All search terms sorted by total impressions
-            </p>
+        {/* Combined Totals Row */}
+        <div className="bg-gray-900 text-white rounded-xl p-4 flex items-center justify-between text-sm">
+          <span className="font-semibold">Combined Totals</span>
+          <div className="flex gap-6">
+            <div><span className="text-gray-400">Impressions</span> <span className="font-bold ml-1">{summary.combined.impressions.toLocaleString()}</span></div>
+            <div><span className="text-gray-400">Clicks</span> <span className="font-bold ml-1">{summary.combined.clicks.toLocaleString()}</span></div>
+            <div><span className="text-gray-400">Spend</span> <span className="font-bold ml-1">${summary.combined.cost.toLocaleString()}</span></div>
+            <div><span className="text-gray-400">Leads</span> <span className="font-bold ml-1">{summary.combined.leads}</span></div>
+            <div>
+              <span className="text-gray-400">Cost/Lead</span>
+              <span className="font-bold ml-1">
+                ${summary.combined.leads > 0 ? (summary.combined.cost / summary.combined.leads).toFixed(2) : '0.00'}
+              </span>
+            </div>
           </div>
+        </div>
+
+        {/* Section 3: Actionable Insights */}
+        {insights.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <button
+              onClick={() => setShowInsights(!showInsights)}
+              className="w-full px-6 py-4 border-b border-gray-200 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-amber-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Actionable Insights</h3>
+                <span className="text-sm text-gray-500">({insights.length})</span>
+              </div>
+              <span className="text-gray-400 text-sm">{showInsights ? 'Hide' : 'Show'}</span>
+            </button>
+            {showInsights && (
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {insights.slice(0, 10).map((insight, idx) => (
+                  <InsightCard key={idx} insight={insight} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Section 2: Unified Search Terms Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Search Terms</h3>
+              <p className="text-sm text-gray-500">{filteredData.length} terms shown</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Source Filter */}
+              <select
+                value={sourceFilter}
+                onChange={(e) => setSourceFilter(e.target.value as any)}
+                className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
+              >
+                <option value="all">All Sources</option>
+                <option value="google">Google Paid</option>
+                <option value="microsoft">Microsoft Paid</option>
+                <option value="organic">Organic</option>
+              </select>
+              {/* Export CSV */}
+              <button
+                onClick={exportCSV}
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left p-2 font-semibold text-gray-700">Search Term</th>
-                  <th className="text-center p-2 font-semibold text-gray-700">Source</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Impressions</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Clicks</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Total Leads</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Lead Breakdown</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Cost</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Cost/Lead</th>
-                  <th className="text-right p-2 font-semibold text-gray-700">Position</th>
+                  <th className="text-left p-2 font-semibold text-gray-700 min-w-[200px]">Search Term</th>
+                  <th className="text-center p-2 font-semibold text-gray-700">Sources</th>
+                  <SortHeader label="Impressions" sortKey="impressions" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Clicks" sortKey="clicks" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Cost" sortKey="cost" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Leads" sortKey="leads" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Cost/Lead" sortKey="cost_per_lead" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Org Position" sortKey="position" currentKey={sortKey} dir={sortDir} onSort={handleSort} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.data.slice(0, 50).map((term, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="p-2">
-                        <div className="font-medium text-gray-900 max-w-xs truncate">
-                          {term.search_term}
+                {filteredData.slice(0, 100).map((term, idx) => (
+                  <tr key={idx} className={`hover:bg-gray-50 ${term.sources.length > 1 ? 'bg-amber-50/30' : ''}`}>
+                    <td className="p-2">
+                      <div className="font-medium text-gray-900 max-w-xs truncate">{term.search_term}</div>
+                      {/* Show campaign names on hover/expand if needed */}
+                      {(term.google_campaigns.length > 0 || term.microsoft_campaigns.length > 0) && (
+                        <div className="text-[10px] text-gray-400 truncate mt-0.5">
+                          {[...term.google_campaigns, ...term.microsoft_campaigns].slice(0, 2).join(', ')}
                         </div>
-                        {term.paid_campaigns.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-0.5 truncate">
-                            {term.paid_campaigns[0]}
-                          </div>
+                      )}
+                    </td>
+                    <td className="p-2 text-center">
+                      <div className="flex gap-0.5 justify-center flex-wrap">
+                        {term.sources.includes('G-Paid') && (
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">G</span>
                         )}
-                      </td>
-                      <td className="p-2 text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                            term.source === 'PAID'
-                              ? 'bg-blue-100 text-blue-800'
-                              : term.source === 'ORG'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}
-                        >
-                          {term.source}
-                        </span>
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.total_impressions.toLocaleString()}
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.total_clicks.toLocaleString()}
-                      </td>
-                      <td className="p-2 text-right">
-                        <span className="font-semibold text-gray-900">
-                          {term.total_leads > 0 ? term.total_leads : '-'}
-                        </span>
-                      </td>
-                      <td className="p-2 text-right">
-                        <div className="flex gap-1 justify-end">
-                          {term.calls > 0 && (
-                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
-                              📞 {term.calls}
-                            </span>
-                          )}
-                          {term.quotes > 0 && (
-                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800">
-                              📧 {term.quotes}
-                            </span>
-                          )}
-                          {term.texts > 0 && (
-                            <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-800">
-                              💬 {term.texts}
-                            </span>
-                          )}
-                          {term.total_leads === 0 && <span className="text-gray-400">-</span>}
+                        {term.sources.includes('M-Paid') && (
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-100 text-teal-800">M</span>
+                        )}
+                        {term.sources.includes('Organic') && (
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-green-800">O</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 text-right text-gray-900">
+                      <div>{term.total_impressions.toLocaleString()}</div>
+                      {term.sources.length > 1 && (
+                        <div className="text-[10px] text-gray-400">
+                          {term.google_impressions > 0 && <span>G:{term.google_impressions.toLocaleString()} </span>}
+                          {term.microsoft_impressions > 0 && <span>M:{term.microsoft_impressions.toLocaleString()} </span>}
+                          {term.organic_impressions > 0 && <span>O:{term.organic_impressions.toLocaleString()}</span>}
                         </div>
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.paid_cost > 0 ? `$${term.paid_cost.toFixed(2)}` : '-'}
-                      </td>
-                      <td className="p-2 text-right">
-                        {term.cost_per_lead > 0 ? (
-                          <span className={`font-semibold ${
-                            term.cost_per_lead > 50 ? 'text-red-600' :
-                            term.cost_per_lead > 30 ? 'text-orange-500' :
-                            term.cost_per_lead > 0 ? 'text-green-600' :
-                            ''
-                          }`}>
-                            ${term.cost_per_lead.toFixed(2)}
-                          </span>
-                        ) : term.source === 'ORG' && term.total_leads > 0 ? (
-                          <span className="font-semibold text-green-600">Free</span>
-                        ) : '-'}
-                      </td>
-                      <td className="p-2 text-right text-gray-900">
-                        {term.organic_position > 0 ? (
-                          <span className={`font-semibold ${
-                            term.organic_position <= 3 ? 'text-green-600' :
-                            term.organic_position <= 10 ? 'text-blue-600' :
-                            'text-gray-600'
-                          }`}>
-                            #{term.organic_position.toFixed(1)}
-                          </span>
-                        ) : '-'}
-                      </td>
-                    </tr>
+                      )}
+                    </td>
+                    <td className="p-2 text-right text-gray-900">{term.total_clicks.toLocaleString()}</td>
+                    <td className="p-2 text-right text-gray-900">
+                      {term.total_cost > 0 ? (
+                        <div>
+                          ${term.total_cost.toFixed(2)}
+                          {term.google_cost > 0 && term.microsoft_cost > 0 && (
+                            <div className="text-[10px] text-gray-400">
+                              G:${term.google_cost.toFixed(2)} M:${term.microsoft_cost.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      ) : '-'}
+                    </td>
+                    <td className="p-2 text-right">
+                      {term.total_leads > 0 ? (
+                        <div>
+                          <span className="font-semibold text-gray-900">{term.total_leads}</span>
+                          <div className="flex gap-0.5 justify-end mt-0.5">
+                            {term.calls > 0 && <span className="text-[10px] text-blue-600">C:{term.calls}</span>}
+                            {term.quotes > 0 && <span className="text-[10px] text-yellow-600">Q:{term.quotes}</span>}
+                            {term.texts > 0 && <span className="text-[10px] text-green-600">T:{term.texts}</span>}
+                          </div>
+                        </div>
+                      ) : <span className="text-gray-400">-</span>}
+                    </td>
+                    <td className="p-2 text-right">
+                      {term.cost_per_lead > 0 ? (
+                        <span className={`font-semibold ${
+                          term.cost_per_lead > 50 ? 'text-red-600' :
+                          term.cost_per_lead > 30 ? 'text-orange-500' :
+                          'text-green-600'
+                        }`}>
+                          ${term.cost_per_lead.toFixed(2)}
+                        </span>
+                      ) : term.total_leads > 0 && term.total_cost === 0 ? (
+                        <span className="font-semibold text-green-600">Free</span>
+                      ) : <span className="text-gray-400">-</span>}
+                    </td>
+                    <td className="p-2 text-right">
+                      {term.organic_position > 0 ? (
+                        <span className={`font-semibold ${
+                          term.organic_position <= 3 ? 'text-green-600' :
+                          term.organic_position <= 10 ? 'text-blue-600' :
+                          'text-gray-600'
+                        }`}>
+                          #{term.organic_position.toFixed(1)}
+                        </span>
+                      ) : <span className="text-gray-400">-</span>}
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Quick Action Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Top Performers */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Top Organic Performers
-            </h4>
-            <div className="space-y-1.5">
-              {topPerformers.map((term, idx) => (
-                <div key={idx} className="text-xs">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-900 truncate flex-1">
-                      {term.search_term}
-                    </span>
-                    <span className="text-gray-600 ml-2">
-                      {term.organic_impressions.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="text-gray-500">
-                    Position {term.organic_position.toFixed(1)} • {term.organic_clicks} clicks
-                  </div>
-                </div>
-              ))}
+          {filteredData.length > 100 && (
+            <div className="text-center py-3 text-sm text-gray-500 border-t border-gray-200">
+              Showing 100 of {filteredData.length} terms. Use filters or export CSV for full data.
             </div>
-          </div>
-
-          {/* Paid Opportunities */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-              Add Paid Campaigns
-            </h4>
-            <p className="text-sm text-gray-600 mb-4">
-              High organic volume, top 10 position - add paid to dominate
-            </p>
-            <div className="space-y-1.5">
-              {paidOpportunities.map((term, idx) => (
-                <div key={idx} className="text-xs">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-900 truncate flex-1">
-                      {term.search_term}
-                    </span>
-                    <span className="text-green-600 ml-2">
-                      {term.organic_impressions.toLocaleString()} imp
-                    </span>
-                  </div>
-                  <div className="text-gray-500">
-                    Position {term.organic_position.toFixed(1)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* High Cost Terms */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-              High Cost Terms
-            </h4>
-            <p className="text-sm text-gray-600 mb-4">
-              Expensive terms - consider pausing or optimizing
-            </p>
-            <div className="space-y-1.5">
-              {highCostTerms.map((term, idx) => (
-                <div key={idx} className="text-xs">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-900 truncate flex-1">
-                      {term.search_term}
-                    </span>
-                    <span className="text-red-600 ml-2">${term.paid_cost.toFixed(2)}</span>
-                  </div>
-                  <div className="text-gray-500">
-                    ${term.paid_cpc.toFixed(2)} CPC • {term.paid_clicks} clicks
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+// ─── Sub-components ──────────────────────────────────────
+
+function SortHeader({ label, sortKey, currentKey, dir, onSort }: {
+  label: string; sortKey: SortKey; currentKey: SortKey; dir: SortDir; onSort: (k: SortKey) => void;
+}) {
+  const isActive = sortKey === currentKey;
+  return (
+    <th
+      className="text-right p-2 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 select-none"
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center justify-end gap-1">
+        {label}
+        <ArrowUpDown className={`w-3 h-3 ${isActive ? 'text-cyan-600' : 'text-gray-400'}`} />
+        {isActive && <span className="text-[9px] text-cyan-600">{dir === 'desc' ? 'v' : '^'}</span>}
+      </div>
+    </th>
+  );
+}
+
+function InsightCard({ insight }: { insight: Insight }) {
+  const config: Record<string, { icon: React.ReactNode; bgColor: string; borderColor: string; label: string }> = {
+    waste: {
+      icon: <AlertTriangle className="w-4 h-4 text-red-600" />,
+      bgColor: 'bg-red-50', borderColor: 'border-red-200', label: 'Waste',
+    },
+    top_performer: {
+      icon: <TrendingUp className="w-4 h-4 text-green-600" />,
+      bgColor: 'bg-green-50', borderColor: 'border-green-200', label: 'Top Performer',
+    },
+    platform_arbitrage: {
+      icon: <DollarSign className="w-4 h-4 text-purple-600" />,
+      bgColor: 'bg-purple-50', borderColor: 'border-purple-200', label: 'Arbitrage',
+    },
+    overlap: {
+      icon: <Target className="w-4 h-4 text-amber-600" />,
+      bgColor: 'bg-amber-50', borderColor: 'border-amber-200', label: 'Overlap',
+    },
+    coverage_gap: {
+      icon: <Lightbulb className="w-4 h-4 text-blue-600" />,
+      bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Gap',
+    },
+  };
+
+  const c = config[insight.type] || config.waste;
+  const sevColor = insight.severity === 'high' ? 'text-red-600' : insight.severity === 'medium' ? 'text-amber-600' : 'text-gray-500';
+
+  return (
+    <div className={`${c.bgColor} border ${c.borderColor} rounded-lg p-3`}>
+      <div className="flex items-start gap-2">
+        {c.icon}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-gray-700">{c.label}</span>
+            <span className={`text-[10px] font-medium ${sevColor} uppercase`}>{insight.severity}</span>
+          </div>
+          <div className="text-xs font-medium text-gray-900 truncate">{insight.search_term}</div>
+          <div className="text-xs text-gray-600 mt-1">{insight.recommendation}</div>
+        </div>
+      </div>
+    </div>
   );
 }

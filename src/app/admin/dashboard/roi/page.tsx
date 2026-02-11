@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import SyncButton from '@/components/admin/SyncButton';
 import { DollarSign, TrendingUp, TrendingDown, Users, Target } from 'lucide-react';
+import { getDateRange as getMtDateRange, getMountainTime, type DateFilter } from '@/lib/dateUtils';
 
 interface PlatformROI {
   uniqueCustomers: number;
@@ -49,33 +50,22 @@ export default function ROIDashboard() {
   }, [dateRange]);
 
   const getDateRange = () => {
-    const end = new Date();
-    const start = new Date();
-
-    switch (dateRange) {
-      case 'today':
-        start.setHours(0, 0, 0, 0);
-        break;
-      case 'yesterday':
-        start.setDate(start.getDate() - 1);
-        start.setHours(0, 0, 0, 0);
-        end.setDate(end.getDate() - 1);
-        end.setHours(23, 59, 59, 999);
-        break;
-      case '7days':
-        start.setDate(start.getDate() - 7);
-        break;
-      case '30days':
-        start.setDate(start.getDate() - 30);
-        break;
-      case '90days':
-        start.setDate(start.getDate() - 90);
-        break;
+    // Handle 90days specially since dateUtils doesn't have it
+    if (dateRange === '90days') {
+      const mtNow = getMountainTime();
+      const today = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
+      const start = new Date(today);
+      start.setDate(start.getDate() - 90);
+      return {
+        start: start.toISOString().split('T')[0],
+        end: mtNow.toISOString().split('T')[0],
+      };
     }
-
+    // Use canonical Mountain Time date range for all standard filters
+    const range = getMtDateRange(dateRange as DateFilter);
     return {
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0],
+      start: range.start.toISOString().split('T')[0],
+      end: range.end.toISOString().split('T')[0],
     };
   };
 
