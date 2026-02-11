@@ -471,29 +471,38 @@ export async function GET(request: NextRequest) {
         console.log('🔍 Syncing Microsoft Ads search terms...');
         const searchTermData = await fetchMicrosoftSearchTerms(startDateStr, endDateStr);
 
-        let inserted = 0;
-        for (const record of searchTermData) {
-          const dbRecord = {
-            date: startDateStr, // Summary aggregation — use start of range
-            search_term: record.search_term,
-            campaign_name: record.campaign_name,
-            campaign_id: '0', // Not available from search term report
-            ad_group_name: record.ad_group_name || 'Unknown',
-            ad_group_id: '0', // Not available from search term report
-            keyword_text: record.keyword_text || null,
-            match_type: record.match_type || null,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            cost_micros: record.cost_micros,
-            conversions: record.conversions,
-          };
+        // Delete existing data for this date range, then insert fresh
+        await supabase
+          .from('microsoft_ads_search_terms')
+          .delete()
+          .gte('date', startDateStr)
+          .lte('date', endDateStr);
 
+        const dbRecords = searchTermData.map(record => ({
+          date: startDateStr, // Summary aggregation — use start of range
+          search_term: record.search_term,
+          campaign_name: record.campaign_name,
+          campaign_id: '0', // Not available from search term report
+          ad_group_name: record.ad_group_name || 'Unknown',
+          ad_group_id: '0', // Not available from search term report
+          keyword_text: record.keyword_text || null,
+          match_type: record.match_type || null,
+          impressions: record.impressions,
+          clicks: record.clicks,
+          cost_micros: record.cost_micros,
+          conversions: record.conversions,
+        }));
+
+        // Batch insert in chunks of 100
+        let inserted = 0;
+        for (let i = 0; i < dbRecords.length; i += 100) {
+          const chunk = dbRecords.slice(i, i + 100);
           const { error } = await supabase
             .from('microsoft_ads_search_terms')
-            .upsert(dbRecord, { onConflict: 'date,search_term,campaign_name' });
+            .insert(chunk);
 
-          if (!error) inserted++;
-          else if (inserted === 0) console.warn('Microsoft Ads upsert error sample:', error.message);
+          if (!error) inserted += chunk.length;
+          else console.error('Microsoft Ads insert error:', error.message);
         }
 
         results.microsoftAds.searchTerms = {
