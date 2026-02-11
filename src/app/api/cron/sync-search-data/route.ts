@@ -478,20 +478,43 @@ export async function GET(request: NextRequest) {
           .gte('date', startDateStr)
           .lte('date', endDateStr);
 
-        const dbRecords = searchTermData.map(record => ({
-          date: startDateStr, // Summary aggregation — use start of range
-          search_term: record.search_term,
-          campaign_name: record.campaign_name,
-          campaign_id: '0', // Not available from search term report
-          ad_group_name: record.ad_group_name || 'Unknown',
-          ad_group_id: '0', // Not available from search term report
-          keyword_text: record.keyword_text || null,
-          match_type: record.match_type || null,
-          impressions: record.impressions,
-          clicks: record.clicks,
-          cost_micros: record.cost_micros,
-          conversions: record.conversions,
-        }));
+        // Aggregate by (date, campaign_id, search_term) to match unique constraint
+        // Same search term can appear in multiple ad groups within one campaign
+        const aggregated = new Map<string, {
+          date: string; search_term: string; campaign_name: string;
+          campaign_id: string; ad_group_name: string; ad_group_id: string;
+          keyword_text: string | null; match_type: string | null;
+          impressions: number; clicks: number; cost_micros: number; conversions: number;
+        }>();
+
+        for (const record of searchTermData) {
+          const key = `${startDateStr}|${record.campaign_id || '0'}|${record.search_term}`;
+          const existing = aggregated.get(key);
+          if (existing) {
+            existing.impressions += record.impressions;
+            existing.clicks += record.clicks;
+            existing.cost_micros += record.cost_micros;
+            existing.conversions += record.conversions;
+          } else {
+            aggregated.set(key, {
+              date: startDateStr,
+              search_term: record.search_term,
+              campaign_name: record.campaign_name,
+              campaign_id: record.campaign_id || '0',
+              ad_group_name: record.ad_group_name || 'Unknown',
+              ad_group_id: record.ad_group_id || '0',
+              keyword_text: record.keyword_text || null,
+              match_type: record.match_type || null,
+              impressions: record.impressions,
+              clicks: record.clicks,
+              cost_micros: record.cost_micros,
+              conversions: record.conversions,
+            });
+          }
+        }
+
+        const dbRecords = Array.from(aggregated.values());
+        console.log(`Microsoft Ads: ${searchTermData.length} raw → ${dbRecords.length} aggregated records`);
 
         // Batch insert in chunks of 100
         let inserted = 0;
@@ -502,7 +525,7 @@ export async function GET(request: NextRequest) {
             .insert(chunk);
 
           if (!error) inserted += chunk.length;
-          else console.error('Microsoft Ads insert error:', error.message);
+          else console.error('Microsoft Ads insert error:', error.message, error.code);
         }
 
         results.microsoftAds.searchTerms = {

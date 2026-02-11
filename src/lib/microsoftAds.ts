@@ -724,7 +724,9 @@ export async function fetchSearchTerms(
     const columns = [
       'SearchQuery',        // Required dimension - the actual search term
       'CampaignName',
+      'CampaignId',
       'AdGroupName',
+      'AdGroupId',
       'Keyword',            // The keyword text (not KeywordId for Summary)
       'DeliveredMatchType', // How the search matched (not MatchType)
       'Impressions',
@@ -743,7 +745,9 @@ export async function fetchSearchTerms(
     return results.map((row: any) => ({
       search_term: row.SearchQuery,
       campaign_name: row.CampaignName,
+      campaign_id: row.CampaignId || '0',
       ad_group_name: row.AdGroupName,
+      ad_group_id: row.AdGroupId || '0',
       keyword_text: row.Keyword,
       match_type: row.DeliveredMatchType,
       impressions: parseInt(row.Impressions) || 0,
