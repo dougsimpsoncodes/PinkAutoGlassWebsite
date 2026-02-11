@@ -50,7 +50,10 @@ export async function GET(req: NextRequest) {
     const mtNow = getMountainTime();
     const mtToday = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
     const startDate = new Date(mtToday);
-    startDate.setDate(startDate.getDate() - daysBack);
+    // Cached tables (search terms, GSC queries) are 1-2 days behind — cron syncs yesterday-7d.
+    // Always go back at least 2 days so "Today" and "Yesterday" show the most recent synced data.
+    const effectiveDaysBack = Math.max(daysBack, 2);
+    startDate.setDate(startDate.getDate() - effectiveDaysBack);
     const endDate = mtNow;
 
     const startDateStr = startDate.toISOString().split('T')[0];
