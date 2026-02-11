@@ -474,24 +474,26 @@ export async function GET(request: NextRequest) {
         let inserted = 0;
         for (const record of searchTermData) {
           const dbRecord = {
-            report_date: startDateStr, // Summary aggregation — use start of range
+            date: startDateStr, // Summary aggregation — use start of range
             search_term: record.search_term,
             campaign_name: record.campaign_name,
-            ad_group_name: record.ad_group_name || null,
+            campaign_id: '0', // Not available from search term report
+            ad_group_name: record.ad_group_name || 'Unknown',
+            ad_group_id: '0', // Not available from search term report
             keyword_text: record.keyword_text || null,
             match_type: record.match_type || null,
             impressions: record.impressions,
             clicks: record.clicks,
             cost_micros: record.cost_micros,
             conversions: record.conversions,
-            sync_timestamp: new Date().toISOString(),
           };
 
           const { error } = await supabase
             .from('microsoft_ads_search_terms')
-            .upsert(dbRecord, { onConflict: 'report_date,search_term,campaign_name' });
+            .upsert(dbRecord, { onConflict: 'date,search_term,campaign_name' });
 
           if (!error) inserted++;
+          else if (inserted === 0) console.warn('Microsoft Ads upsert error sample:', error.message);
         }
 
         results.microsoftAds.searchTerms = {
