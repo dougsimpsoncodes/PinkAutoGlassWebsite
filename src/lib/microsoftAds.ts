@@ -16,7 +16,8 @@
  * npm install @microsoft/bing-ads-api
  */
 
-// Import adm-zip at top level for proper bundling on Vercel
+import { inflateRawSync } from 'zlib';
+// adm-zip as fallback
 import AdmZip from 'adm-zip';
 
 // Microsoft Ads API configuration
@@ -283,22 +284,57 @@ async function downloadAndParseReport(downloadUrl: string): Promise<any[]> {
     }
 
     // Microsoft returns a ZIP file containing the CSV
-    const buffer = await response.arrayBuffer();
+    const buf = Buffer.from(await response.arrayBuffer());
+    console.log(`Microsoft Ads report: downloaded ${buf.length} bytes`);
     let csvText = '';
 
-    try {
-      const zip = new AdmZip(Buffer.from(buffer));
-      const zipEntries = zip.getEntries();
+    // Strategy 1: Manual ZIP extraction with Node.js built-in zlib
+    // ZIP local file header starts with PK\x03\x04
+    if (buf[0] === 0x50 && buf[1] === 0x4B && buf[2] === 0x03 && buf[3] === 0x04) {
+      try {
+        // Parse ZIP local file header
+        const compressionMethod = buf.readUInt16LE(8);
+        const compressedSize = buf.readUInt32LE(18);
+        const fileNameLen = buf.readUInt16LE(26);
+        const extraFieldLen = buf.readUInt16LE(28);
+        const dataOffset = 30 + fileNameLen + extraFieldLen;
 
-      for (const entry of zipEntries) {
-        if (entry.entryName.endsWith('.csv')) {
-          csvText = entry.getData().toString('utf8');
-          break;
+        if (compressionMethod === 8) {
+          // Deflate — use inflateRawSync
+          const compressed = buf.subarray(dataOffset, dataOffset + compressedSize);
+          csvText = inflateRawSync(compressed).toString('utf8');
+          console.log(`Microsoft Ads report: extracted CSV via inflateRawSync (${csvText.length} chars)`);
+        } else if (compressionMethod === 0) {
+          // Stored (no compression)
+          csvText = buf.subarray(dataOffset, dataOffset + compressedSize).toString('utf8');
+          console.log(`Microsoft Ads report: extracted stored CSV (${csvText.length} chars)`);
         }
+      } catch (zlibErr) {
+        console.warn('Microsoft Ads report: native ZIP extraction failed, trying adm-zip:', zlibErr);
       }
-    } catch {
-      // Not a ZIP, try as plain text
-      csvText = Buffer.from(buffer).toString('utf8');
+    }
+
+    // Strategy 2: adm-zip fallback
+    if (!csvText) {
+      try {
+        const zip = new AdmZip(buf);
+        const zipEntries = zip.getEntries();
+        for (const entry of zipEntries) {
+          if (entry.entryName.endsWith('.csv')) {
+            csvText = entry.getData().toString('utf8');
+            console.log(`Microsoft Ads report: extracted CSV via adm-zip (${csvText.length} chars)`);
+            break;
+          }
+        }
+      } catch (admErr) {
+        console.warn('Microsoft Ads report: adm-zip extraction failed:', admErr);
+      }
+    }
+
+    // Strategy 3: plain text (not a ZIP)
+    if (!csvText) {
+      csvText = buf.toString('utf8');
+      console.log(`Microsoft Ads report: treating as plain text (${csvText.length} chars)`);
     }
 
     if (!csvText) {
@@ -312,25 +348,46 @@ async function downloadAndParseReport(downloadUrl: string): Promise<any[]> {
     }
 
     const lines = csvText.trim().split('\n');
+    console.log(`Microsoft Ads report: ${lines.length} lines in CSV`);
 
     if (lines.length < 2) {
+      console.warn('Microsoft Ads report: CSV has < 2 lines, returning empty');
       return [];
     }
 
-    // Parse header
-    const headers = lines[0].split(',').map((h) => h.replace(/"/g, '').trim());
+    // Parse CSV — handle quoted fields properly
+    const parseCsvLine = (line: string): string[] => {
+      const values: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          values.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      values.push(current.trim());
+      return values;
+    };
 
-    // Parse data rows
+    const headers = parseCsvLine(lines[0]);
     const results = [];
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map((v) => v.replace(/"/g, '').trim());
+      if (!lines[i].trim()) continue;
+      const values = parseCsvLine(lines[i]);
       const row: any = {};
       for (let j = 0; j < headers.length; j++) {
-        row[headers[j]] = values[j];
+        row[headers[j]] = values[j] || '';
       }
       results.push(row);
     }
 
+    console.log(`Microsoft Ads report: parsed ${results.length} data rows`);
     return results;
   } catch (error) {
     console.error('Error downloading Microsoft Ads report:', error);
