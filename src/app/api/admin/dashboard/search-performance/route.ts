@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseClient } from '@/lib/dashboardData';
+import { getPaidAdsDailyMetrics, getSupabaseClient } from '@/lib/dashboardData';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -88,10 +88,7 @@ export async function GET(req: NextRequest) {
     const mtNow = getMountainTime();
     const mtToday = new Date(mtNow.getFullYear(), mtNow.getMonth(), mtNow.getDate());
     const startDate = new Date(mtToday);
-    // Synced search tables can lag 1-2 days. Keep "today/yesterday" useful by
-    // automatically looking back at least 2 days for search-performance metrics.
-    const effectiveDaysBack = Math.max(daysBack, 2);
-    startDate.setDate(startDate.getDate() - effectiveDaysBack);
+    startDate.setDate(startDate.getDate() - daysBack);
     const endDate = mtNow;
 
     const startDateStr = startDate.toISOString().split('T')[0];
@@ -103,6 +100,7 @@ export async function GET(req: NextRequest) {
     const [
       googlePaidData,
       microsoftPaidData,
+      paidDailyMetrics,
       { data: organicData, error: organicError },
       { data: leadData },
       { data: callData },
@@ -125,6 +123,12 @@ export async function GET(req: NextRequest) {
         startDateStr,
         endDateStr,
         ['date', 'report_date']
+      ),
+      // Paid platform daily totals (canonical source used by Google/Microsoft dashboard pages)
+      getPaidAdsDailyMetrics(
+        supabase,
+        startDateStr,
+        endDateStr
       ),
       // Google Search Console organic queries
       supabase
@@ -333,16 +337,11 @@ export async function GET(req: NextRequest) {
     combinedData.sort((a, b) => b.total_impressions - a.total_impressions);
 
     // ─── Calculate summary statistics ───
-    const totGoogleImp = combinedData.reduce((s, t) => s + t.google_impressions, 0);
-    const totGoogleClk = combinedData.reduce((s, t) => s + t.google_clicks, 0);
-    const totGoogleCost = combinedData.reduce((s, t) => s + t.google_cost, 0);
-    const totGoogleConv = combinedData.reduce((s, t) => s + t.google_conversions, 0);
+    const paidGoogle = paidDailyMetrics.google;
+    const paidMicrosoft = paidDailyMetrics.microsoft;
+
     const totGoogleLeads = combinedData.filter(t => t.sources.includes('G-Paid')).reduce((s, t) => s + t.total_leads, 0);
 
-    const totMsImp = combinedData.reduce((s, t) => s + t.microsoft_impressions, 0);
-    const totMsClk = combinedData.reduce((s, t) => s + t.microsoft_clicks, 0);
-    const totMsCost = combinedData.reduce((s, t) => s + t.microsoft_cost, 0);
-    const totMsConv = combinedData.reduce((s, t) => s + t.microsoft_conversions, 0);
     const totMsLeads = combinedData.filter(t => t.sources.includes('M-Paid') && !t.sources.includes('G-Paid')).reduce((s, t) => s + t.total_leads, 0);
 
     const totOrgImp = combinedData.reduce((s, t) => s + t.organic_impressions, 0);
@@ -353,22 +352,22 @@ export async function GET(req: NextRequest) {
       totalTerms: combinedData.length,
 
       google: {
-        impressions: totGoogleImp,
-        clicks: totGoogleClk,
-        cost: parseFloat(totGoogleCost.toFixed(2)),
-        conversions: parseFloat(totGoogleConv.toFixed(2)),
+        impressions: paidGoogle.impressions,
+        clicks: paidGoogle.clicks,
+        cost: paidGoogle.spend,
+        conversions: paidGoogle.conversions,
         leads: totGoogleLeads,
-        ctr: totGoogleImp > 0 ? parseFloat(((totGoogleClk / totGoogleImp) * 100).toFixed(2)) : 0,
-        costPerLead: totGoogleLeads > 0 ? parseFloat((totGoogleCost / totGoogleLeads).toFixed(2)) : 0,
+        ctr: paidGoogle.ctr,
+        costPerLead: totGoogleLeads > 0 ? parseFloat((paidGoogle.spend / totGoogleLeads).toFixed(2)) : 0,
       },
       microsoft: {
-        impressions: totMsImp,
-        clicks: totMsClk,
-        cost: parseFloat(totMsCost.toFixed(2)),
-        conversions: parseFloat(totMsConv.toFixed(2)),
+        impressions: paidMicrosoft.impressions,
+        clicks: paidMicrosoft.clicks,
+        cost: paidMicrosoft.spend,
+        conversions: paidMicrosoft.conversions,
         leads: totMsLeads,
-        ctr: totMsImp > 0 ? parseFloat(((totMsClk / totMsImp) * 100).toFixed(2)) : 0,
-        costPerLead: totMsLeads > 0 ? parseFloat((totMsCost / totMsLeads).toFixed(2)) : 0,
+        ctr: paidMicrosoft.ctr,
+        costPerLead: totMsLeads > 0 ? parseFloat((paidMicrosoft.spend / totMsLeads).toFixed(2)) : 0,
       },
       organic: {
         impressions: totOrgImp,
@@ -377,9 +376,9 @@ export async function GET(req: NextRequest) {
         ctr: totOrgImp > 0 ? parseFloat(((totOrgClk / totOrgImp) * 100).toFixed(2)) : 0,
       },
       combined: {
-        impressions: totGoogleImp + totMsImp + totOrgImp,
-        clicks: totGoogleClk + totMsClk + totOrgClk,
-        cost: parseFloat((totGoogleCost + totMsCost).toFixed(2)),
+        impressions: paidGoogle.impressions + paidMicrosoft.impressions + totOrgImp,
+        clicks: paidGoogle.clicks + paidMicrosoft.clicks + totOrgClk,
+        cost: parseFloat((paidGoogle.spend + paidMicrosoft.spend).toFixed(2)),
         leads: combinedData.reduce((s, t) => s + t.total_leads, 0),
       },
     };
