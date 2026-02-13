@@ -20,6 +20,20 @@ const RC_SERVER_URL = process.env.RINGCENTRAL_SERVER_URL || 'https://platform.ri
 const RC_JWT_TOKEN = process.env.RINGCENTRAL_JWT_TOKEN;
 const RC_CLIENT_ID = process.env.RINGCENTRAL_CLIENT_ID;
 const RC_CLIENT_SECRET = process.env.RINGCENTRAL_CLIENT_SECRET;
+const EXTERNAL_TIMEOUT_MS = 45000;
+const QUALIFYING_DURATION_MIN = 30; // seconds — filters out robocalls, hangups, misdials
+const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
+const BUSINESS_NUMBER = '+17209187465';
+
+/** A qualifying inbound call is 30s+, from a real customer (not blank, toll-free, or own number) */
+function isQualifyingInbound(call: { direction: string; duration: number; from_number: string }) {
+  if (call.direction !== 'Inbound') return false;
+  if (call.duration < QUALIFYING_DURATION_MIN) return false;
+  const num = call.from_number || '';
+  if (!num || num === BUSINESS_NUMBER) return false;
+  if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) return false;
+  return true;
+}
 
 // Initialize RingCentral SDK for authentication only
 function createRingCentralSDK() {
@@ -36,6 +50,23 @@ function createRingCentralSDK() {
   return rcsdk.platform();
 }
 
+async function withTimeout<T>(
+  promise: Promise<T>,
+  label: string,
+  timeoutMs: number = EXTERNAL_TIMEOUT_MS
+): Promise<T> {
+  let timeoutId: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId!);
+  }
+}
+
 export async function POST(req: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
 
@@ -47,11 +78,11 @@ export async function POST(req: NextRequest) {
 
     // Step 1: Authenticate using JWT - SDK handles token refresh automatically
     console.log('Authenticating with JWT...');
-    await platform.login({ jwt: RC_JWT_TOKEN!.trim() });
+    await withTimeout(platform.login({ jwt: RC_JWT_TOKEN!.trim() }), 'RingCentral login');
     console.log('✓ Successfully authenticated with RingCentral');
 
     // Step 2: Get the access token from the SDK
-    const authData = await platform.auth().data();
+    const authData = await withTimeout(platform.auth().data(), 'RingCentral auth token read');
     const accessToken = authData.access_token;
 
     // Step 3: Check for incremental sync - get the most recent call's start_time
@@ -84,6 +115,8 @@ export async function POST(req: NextRequest) {
     console.log(`Fetching call logs from ${dateFromISO}...`);
     console.log(`Date range: ${dateFromISO} to ${new Date().toISOString()}`);
 
+    const callLogController = new AbortController();
+    const callLogTimeout = setTimeout(() => callLogController.abort(), EXTERNAL_TIMEOUT_MS);
     const callLogResponse = await fetch(
       `${RC_SERVER_URL}/restapi/v1.0/account/~/call-log?` +
         new URLSearchParams({
@@ -95,8 +128,9 @@ export async function POST(req: NextRequest) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal: callLogController.signal,
       }
-    );
+    ).finally(() => clearTimeout(callLogTimeout));
 
     if (!callLogResponse.ok) {
       const errorText = await callLogResponse.text();
@@ -168,26 +202,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 5: Calculate summary statistics with unique caller deduplication
+    // Step 5: Calculate summary statistics with qualifying filters
     const { data: stats } = await supabase
       .from('ringcentral_calls')
       .select('direction, result, duration, from_number, start_time')
       .gte('start_time', dateFromISO);
 
     const totalCalls = stats?.length || 0;
-    const inboundCalls = stats?.filter((c) => c.direction === 'Inbound').length || 0;
+    const allInbound = stats?.filter((c) => c.direction === 'Inbound') || [];
     const outboundCalls = stats?.filter((c) => c.direction === 'Outbound').length || 0;
-    const answeredCalls = stats?.filter((c) => c.result === 'Accepted').length || 0;
-    const missedCalls = stats?.filter((c) => c.result === 'Missed').length || 0;
 
-    // Calculate unique leads: first answered inbound call per phone number in 30-day window
-    const answeredInbound = stats?.filter(
-      (c) => c.direction === 'Inbound' && c.result === 'Accepted'
-    ) || [];
+    // Qualifying = inbound, 30s+, real customer number (not blank/toll-free/own number)
+    const qualifying = (stats || []).filter(isQualifyingInbound);
+    const inboundCalls = qualifying.length;
+    const answeredCalls = qualifying.filter((c) => c.result === 'Accepted').length;
+    const missedCalls = qualifying.filter((c) => c.result === 'Missed').length;
 
-    // Group by phone number and take earliest call
+    // Unique qualifying callers: distinct phone numbers
     const uniqueLeadsMap = new Map<string, any>();
-    answeredInbound.forEach((call) => {
+    qualifying.filter((c) => c.result === 'Accepted').forEach((call) => {
       const existing = uniqueLeadsMap.get(call.from_number);
       if (!existing || new Date(call.start_time) < new Date(existing.start_time)) {
         uniqueLeadsMap.set(call.from_number, call);
@@ -197,9 +230,9 @@ export async function POST(req: NextRequest) {
     const uniqueLeads = uniqueLeadsMap.size;
 
     const avgDuration =
-      stats && stats.length > 0
+      qualifying.length > 0
         ? Math.round(
-            stats.reduce((sum, c) => sum + (c.duration || 0), 0) / stats.length
+            qualifying.reduce((sum, c) => sum + (c.duration || 0), 0) / qualifying.length
           )
         : 0;
 
@@ -219,11 +252,12 @@ export async function POST(req: NextRequest) {
       },
       statistics: {
         totalCalls,
-        inboundCalls,
+        totalInbound: allInbound.length,
+        qualifyingInbound: inboundCalls, // 30s+, real customer numbers only
         outboundCalls,
         answeredCalls,
         missedCalls,
-        uniqueLeads, // Deduplicated count
+        uniqueLeads, // Deduplicated qualifying callers
         avgDuration,
         answeredRate:
           inboundCalls > 0
@@ -269,22 +303,20 @@ export async function GET(req: NextRequest) {
       .from('ringcentral_calls')
       .select('*', { count: 'exact', head: true });
 
-    // Get calls from last 7 days with deduplication
+    // Get calls from last 7 days with qualifying filters
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const { data: recentCalls } = await supabase
       .from('ringcentral_calls')
-      .select('direction, result, from_number, start_time')
+      .select('direction, result, duration, from_number, start_time')
       .gte('start_time', sevenDaysAgo.toISOString());
 
-    // Calculate unique leads for last 7 days
-    const answeredInbound = recentCalls?.filter(
-      (c) => c.direction === 'Inbound' && c.result === 'Accepted'
-    ) || [];
+    // Apply qualifying filter: 30s+, real customer numbers
+    const qualifying = (recentCalls || []).filter(isQualifyingInbound);
 
     const uniqueLeadsMap = new Map<string, any>();
-    answeredInbound.forEach((call) => {
+    qualifying.filter((c) => c.result === 'Accepted').forEach((call) => {
       const existing = uniqueLeadsMap.get(call.from_number);
       if (!existing || new Date(call.start_time) < new Date(existing.start_time)) {
         uniqueLeadsMap.set(call.from_number, call);
@@ -297,11 +329,11 @@ export async function GET(req: NextRequest) {
       totalCallsInDatabase: count || 0,
       last7Days: {
         total: recentCalls?.length || 0,
-        inbound: recentCalls?.filter((c) => c.direction === 'Inbound').length || 0,
-        answered:
-          recentCalls?.filter((c) => c.result === 'Accepted').length || 0,
-        missed: recentCalls?.filter((c) => c.result === 'Missed').length || 0,
-        uniqueLeads: uniqueLeadsMap.size, // Deduplicated count
+        totalInbound: recentCalls?.filter((c) => c.direction === 'Inbound').length || 0,
+        qualifyingInbound: qualifying.length,
+        answered: qualifying.filter((c) => c.result === 'Accepted').length,
+        missed: qualifying.filter((c) => c.result === 'Missed').length,
+        uniqueLeads: uniqueLeadsMap.size,
       },
     });
   } catch (error: any) {

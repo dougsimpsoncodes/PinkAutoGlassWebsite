@@ -71,6 +71,17 @@ interface SearchPerformanceData {
     organic: PlatformSummary;
     combined: { impressions: number; clicks: number; cost: number; leads: number };
   };
+  gscStatus?: {
+    configured: boolean;
+    missingVars: string[];
+    lastDataDate: string | null;
+    daysSinceLastData: number | null;
+    hasOrganicDataInRange: boolean;
+    selectedRangeIsTooRecentForGsc: boolean;
+    organicFallbackDate: string | null;
+    stale: boolean;
+    warning: string | null;
+  };
   insights: Insight[];
   seoSuggestions: SeoSuggestion[];
   data: SearchTerm[];
@@ -89,7 +100,7 @@ export default function SearchPerformancePage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'google' | 'microsoft' | 'organic'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('impressions');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -269,6 +280,21 @@ export default function SearchPerformancePage() {
           color="cyan"
         />
 
+        {/* GSC Status Banner — shown above cards for visibility */}
+        {data.gscStatus?.warning && (
+          <div className={`${data.gscStatus.organicFallbackDate ? 'bg-blue-50 border-blue-300' : data.gscStatus.selectedRangeIsTooRecentForGsc ? 'bg-blue-50 border-blue-300' : 'bg-amber-50 border-amber-300'} border rounded-xl p-4 flex items-start gap-3`}>
+            <AlertTriangle className={`w-5 h-5 mt-0.5 shrink-0 ${data.gscStatus.organicFallbackDate || data.gscStatus.selectedRangeIsTooRecentForGsc ? 'text-blue-600' : 'text-amber-600'}`} />
+            <div>
+              <div className={`font-semibold ${data.gscStatus.organicFallbackDate || data.gscStatus.selectedRangeIsTooRecentForGsc ? 'text-blue-900' : 'text-amber-900'}`}>
+                {data.gscStatus.stale ? 'Google Search Console needs attention' : 'Organic data note'}
+              </div>
+              <p className={`text-sm mt-1 ${data.gscStatus.organicFallbackDate || data.gscStatus.selectedRangeIsTooRecentForGsc ? 'text-blue-800' : 'text-amber-800'}`}>
+                {data.gscStatus.warning}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Section 1: Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Google Paid */}
@@ -344,6 +370,11 @@ export default function SearchPerformancePage() {
             <div className="flex items-center gap-2 mb-3">
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
               <h3 className="font-semibold text-gray-900">Google Organic</h3>
+              {data.gscStatus?.organicFallbackDate && (
+                <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">
+                  from {data.gscStatus.organicFallbackDate}
+                </span>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -547,19 +578,7 @@ export default function SearchPerformancePage() {
           )}
         </div>
 
-        {/* GSC Status Banner — shows when organic data is missing */}
-        {summary.organic.impressions === 0 && (
-          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-            <div>
-              <div className="font-semibold text-amber-900">Google Search Console data unavailable</div>
-              <p className="text-sm text-amber-800 mt-1">
-                Organic search data stopped syncing (GSC refresh token expired). SEO suggestions below will appear once reconnected.
-                An admin can reauthorize at <code className="bg-amber-100 px-1 rounded">/api/gsc-reauth</code>.
-              </p>
-            </div>
-          </div>
-        )}
+        {/* (GSC status banner moved above overview cards) */}
 
         {/* Section 4: SEO Suggestions */}
         {data.seoSuggestions && data.seoSuggestions.length > 0 && (

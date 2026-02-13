@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPaidAdsDailyMetrics, getSupabaseClient } from '@/lib/dashboardData';
+import { validateSearchConsoleConfig } from '@/lib/googleSearchConsole';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -102,6 +103,7 @@ export async function GET(req: NextRequest) {
       microsoftPaidData,
       paidDailyMetrics,
       { data: organicData, error: organicError },
+      { data: gscDailyData, error: gscDailyError },
       { data: leadData },
       { data: callData },
       { data: textData },
@@ -136,6 +138,12 @@ export async function GET(req: NextRequest) {
         .select('query, page_url, impressions, clicks, ctr, position')
         .gte('date', startDateStr)
         .lte('date', endDateStr),
+      // GSC data freshness check
+      supabase
+        .from('google_search_console_daily_totals')
+        .select('date, updated_at')
+        .order('date', { ascending: false })
+        .limit(1),
       // Lead attribution
       supabase
         .from('leads')
@@ -162,6 +170,29 @@ export async function GET(req: NextRequest) {
     ]);
 
     if (organicError) console.error('Error fetching organic data:', organicError);
+    if (gscDailyError) console.error('Error fetching GSC freshness data:', gscDailyError);
+
+    // ─── GSC fallback: if no organic data and range is too recent, use latest available date ───
+    let effectiveOrganicData = organicData || [];
+    let organicFallbackDate: string | null = null;
+
+    const latestGscRow = (gscDailyData || [])[0] || null;
+    if (effectiveOrganicData.length === 0 && latestGscRow?.date) {
+      const gscAvailable = new Date(latestGscRow.date + 'T00:00:00');
+      if (startDate > gscAvailable) {
+        // Selected range is newer than latest GSC data — fall back to latest available date
+        const fallbackDate = latestGscRow.date;
+        const { data: fallbackOrganic, error: fallbackError } = await supabase
+          .from('google_search_console_queries')
+          .select('query, page_url, impressions, clicks, ctr, position')
+          .eq('date', fallbackDate);
+
+        if (!fallbackError && fallbackOrganic && fallbackOrganic.length > 0) {
+          effectiveOrganicData = fallbackOrganic;
+          organicFallbackDate = fallbackDate;
+        }
+      }
+    }
 
     // ─── Aggregate Google Paid by search term ───
     const googleTerms = new Map<string, {
@@ -204,7 +235,7 @@ export async function GET(req: NextRequest) {
       impressions: number; clicks: number; position_sum: number; position_count: number; pages: Set<string>;
     }>();
 
-    organicData?.forEach(row => {
+    effectiveOrganicData.forEach(row => {
       const term = row.query.toLowerCase().trim();
       if (!organicTerms.has(term)) {
         organicTerms.set(term, { impressions: 0, clicks: 0, position_sum: 0, position_count: 0, pages: new Set() });
@@ -383,6 +414,34 @@ export async function GET(req: NextRequest) {
       },
     };
 
+    const gscConfig = validateSearchConsoleConfig();
+    const latestGsc = (gscDailyData || [])[0] || null;
+    const latestGscDate = latestGsc?.date ? new Date(latestGsc.date) : null;
+
+    const gscAvailableThrough = new Date(mtToday);
+    gscAvailableThrough.setDate(gscAvailableThrough.getDate() - 3); // Typical GSC lag
+
+    const hasOrganicDataInRange = effectiveOrganicData.length > 0;
+    const selectedRangeIsTooRecentForGsc = startDate > gscAvailableThrough;
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysSinceLastData = latestGscDate
+      ? Math.floor((mtToday.getTime() - latestGscDate.getTime()) / msPerDay)
+      : null;
+    const stale = daysSinceLastData !== null && daysSinceLastData > 5;
+
+    let warning: string | null = null;
+    if (!gscConfig.isValid) {
+      warning = `Google Search Console is not fully configured (${gscConfig.missingVars.join(', ')}).`;
+    } else if (!latestGsc) {
+      warning = 'No Google Search Console data has been synced yet.';
+    } else if (stale) {
+      warning = `Google Search Console data is stale (last data date: ${latestGsc.date}, ${daysSinceLastData} days old).`;
+    } else if (organicFallbackDate) {
+      warning = `Organic data shown from ${organicFallbackDate} (most recent available — GSC typically lags 2-3 days).`;
+    } else if (!hasOrganicDataInRange && selectedRangeIsTooRecentForGsc) {
+      warning = 'Selected period is too recent for Google Search Console (data typically lags 2-3 days).';
+    }
+
     // ─── Generate actionable insights ───
     const insights = generateInsights(combinedData);
     const seoSuggestions = generateSeoSuggestions(combinedData);
@@ -391,6 +450,17 @@ export async function GET(req: NextRequest) {
       ok: true,
       dateRange: { from: startDateStr, to: endDateStr, days: daysBack },
       summary,
+      gscStatus: {
+        configured: gscConfig.isValid,
+        missingVars: gscConfig.missingVars,
+        lastDataDate: latestGsc?.date || null,
+        daysSinceLastData,
+        hasOrganicDataInRange,
+        selectedRangeIsTooRecentForGsc,
+        organicFallbackDate,
+        stale,
+        warning,
+      },
       insights,
       seoSuggestions,
       data: combinedData,

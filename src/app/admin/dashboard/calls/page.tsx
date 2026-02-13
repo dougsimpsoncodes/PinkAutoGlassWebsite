@@ -21,6 +21,19 @@ import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
 import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
+const QUALIFYING_DURATION_MIN = 30;
+const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
+
+/** A qualifying inbound call is 30s+, from a real customer (not blank, toll-free, or own number) */
+function isQualifyingInbound(call: { direction: string; duration: number; from_number: string }) {
+  if (call.direction !== 'Inbound') return false;
+  if (call.duration < QUALIFYING_DURATION_MIN) return false;
+  const num = call.from_number || '';
+  if (!num || num === BUSINESS_PHONE_NUMBER) return false;
+  if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) return false;
+  return true;
+}
+
 interface Call {
   id: string;
   call_id: string;
@@ -216,24 +229,24 @@ export default function CallAnalyticsPage() {
     });
   };
 
-  // Calculate unique callers (distinct phone numbers)
-  const inboundCalls = callsInDateRange.filter(c => c.direction === 'Inbound');
-  const uniqueCallers = new Set(inboundCalls.map(c => c.from_number)).size;
+  // Qualifying inbound: 30s+, real customer numbers (not blank/toll-free/own)
+  const qualifyingCalls = callsInDateRange.filter(isQualifyingInbound);
+  const uniqueCallers = new Set(qualifyingCalls.map(c => c.from_number)).size;
 
-  // Calculate answered unique callers (customers who got through)
-  const answeredCalls = inboundCalls.filter(c => c.result === 'Accepted' || c.result === 'Call connected');
+  // Answered qualifying callers
+  const answeredCalls = qualifyingCalls.filter(c => c.result === 'Accepted' || c.result === 'Call connected');
   const answeredUniqueCallers = new Set(answeredCalls.map(c => c.from_number)).size;
 
   const stats = {
     total: callsInDateRange.length,
-    inbound: inboundCalls.length,
+    inbound: qualifyingCalls.length, // Qualifying inbound only
     outbound: callsInDateRange.filter(c => c.direction === 'Outbound').length,
     answered: answeredCalls.length,
-    missed: callsInDateRange.filter(c => c.result === 'Missed').length,
-    uniqueCallers, // Unique phone numbers that called
-    answeredUniqueCallers, // Unique customers who got through
-    avgDuration: callsInDateRange.length > 0
-      ? Math.round(callsInDateRange.reduce((sum, c) => sum + c.duration, 0) / callsInDateRange.length)
+    missed: qualifyingCalls.filter(c => c.result === 'Missed').length,
+    uniqueCallers, // Unique qualifying phone numbers
+    answeredUniqueCallers, // Unique qualifying customers who got through
+    avgDuration: qualifyingCalls.length > 0
+      ? Math.round(qualifyingCalls.reduce((sum, c) => sum + c.duration, 0) / qualifyingCalls.length)
       : 0,
   };
 
@@ -268,9 +281,9 @@ export default function CallAnalyticsPage() {
     return callDate >= chartStartDate;
   });
 
-  // Group unique customers by day for line chart
+  // Group unique qualifying customers by day for line chart
   const customersByDay = callsForChart
-    .filter(call => call.direction === 'Inbound') // Only inbound calls
+    .filter(isQualifyingInbound) // Only qualifying inbound calls
     .reduce((acc: Record<string, Set<string>>, call) => {
       const date = new Date(call.start_time).toLocaleDateString();
       if (!acc[date]) {
@@ -387,8 +400,9 @@ export default function CallAnalyticsPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-600 mb-2">Inbound</div>
+              <div className="text-sm text-gray-600 mb-2">Qualifying Inbound</div>
               <div className="text-3xl font-bold text-gray-900">{stats.inbound}</div>
+              <div className="text-xs text-gray-400 mt-1">30s+, real callers</div>
             </div>
             <PhoneIncoming className="w-8 h-8 text-green-500" />
           </div>

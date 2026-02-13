@@ -17,6 +17,8 @@ import {
   MIN_CALL_DURATION_SECONDS,
 } from './constants';
 
+const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
+
 export interface UnifiedLead {
   id: string;
   type: 'form' | 'call' | 'text';
@@ -129,9 +131,12 @@ export async function fetchUnifiedLeads(
     const customerMap = new Map<string, any[]>();
 
     calls.forEach((call: any) => {
+      const num = call.from_number || '';
       if (
         call.direction === 'Inbound' &&
-        call.from_number !== BUSINESS_PHONE_NUMBER &&
+        num &&
+        num !== BUSINESS_PHONE_NUMBER &&
+        !TOLL_FREE_PREFIXES.some(p => num.startsWith(p)) &&
         (call.duration || 0) >= MIN_CALL_DURATION_SECONDS
       ) {
         const customerNumber = call.from_number;

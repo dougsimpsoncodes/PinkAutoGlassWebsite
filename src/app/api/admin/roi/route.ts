@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
       // RingCentral calls
       client
         .from('ringcentral_calls')
-        .select('from_number, start_time, direction, ad_platform, utm_source, utm_medium, utm_campaign')
+        .select('from_number, start_time, direction, duration, ad_platform, utm_source, utm_medium, utm_campaign')
         .eq('direction', 'Inbound')
         .gte('start_time', startDateTime)
         .lte('start_time', endDateTime),

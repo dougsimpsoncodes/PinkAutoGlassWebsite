@@ -62,6 +62,22 @@ export interface UniqueCustomer {
   }>;
 }
 
+const QUALIFYING_DURATION_MIN = 30;
+const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
+const BUSINESS_NUMBER = '+17209187465';
+
+/** A qualifying inbound call is 30s+, from a real customer (not blank, toll-free, or own number) */
+function isQualifyingInbound(call: RingCentralCall): boolean {
+  if (call.direction !== 'Inbound') return false;
+  if ((call.duration || 0) < QUALIFYING_DURATION_MIN) return false;
+  const num = call.from_number || '';
+  if (!num || num === BUSINESS_NUMBER) return false;
+  const normalized = normalizePhoneNumber(num);
+  if (!normalized || normalized === normalizePhoneNumber(BUSINESS_NUMBER)) return false;
+  if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p) || normalized.startsWith(p))) return false;
+  return true;
+}
+
 /**
  * Normalize phone number to E.164 format (or best effort)
  * Handles various formats: (720) 555-1234, 720-555-1234, +17205551234, etc.
@@ -97,10 +113,9 @@ export function deduplicateCustomers(
 ): UniqueCustomer[] {
   const customerMap = new Map<string, UniqueCustomer>();
 
-  // Process calls
+  // Process calls — only qualifying inbound (30s+, real customer numbers)
   for (const call of calls) {
-    // Only count inbound calls as customer contacts
-    if (call.direction !== 'Inbound') continue;
+    if (!isQualifyingInbound(call)) continue;
 
     const normalized = normalizePhoneNumber(call.from_number);
     if (!normalized) continue;
