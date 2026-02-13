@@ -198,21 +198,21 @@ export function DashboardCacheProvider({ children }: { children: React.ReactNode
     setPreloadStatus('idle');
   }, []);
 
-  // Auto-preload just "today" on mount (the default view)
+  // Auto-preload just "7days" on mount (the default view)
   // Other periods are fetched on-demand
   useEffect(() => {
     if (!preloadAttempted.current) {
       preloadAttempted.current = true;
-      // Preload just "today" - the most common view
+      // Preload just "7days" - the default dashboard view
       const timer = setTimeout(async () => {
         try {
-          const response = await fetch('/api/admin/dashboard/unified?period=today');
+          const response = await fetch('/api/admin/dashboard/unified?period=7days');
           if (response.ok) {
             const data = await response.json();
             const now = Date.now();
             setCache(prev => {
               const next = new Map(prev);
-              next.set('today', {
+              next.set('7days', {
                 data,
                 timestamp: now,
                 expiresAt: now + CACHE_TTL_MS,

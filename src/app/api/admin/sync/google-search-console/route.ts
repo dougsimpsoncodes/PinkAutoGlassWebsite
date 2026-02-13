@@ -12,6 +12,9 @@ import {
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+const UPSERT_CHUNK_SIZE = 250;
 
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
@@ -19,6 +22,48 @@ function getSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+async function upsertInChunks<T extends Record<string, any>>(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  table: string,
+  records: T[],
+  onConflict: string,
+  errors: Array<{ chunk: string; error: string }>
+): Promise<number> {
+  let stored = 0;
+
+  for (let i = 0; i < records.length; i += UPSERT_CHUNK_SIZE) {
+    const chunk = records.slice(i, i + UPSERT_CHUNK_SIZE);
+    const chunkLabel = `${i}-${i + chunk.length - 1}`;
+
+    try {
+      const { error } = await supabase
+        .from(table)
+        .upsert(chunk, { onConflict });
+
+      if (error) {
+        errors.push({ chunk: chunkLabel, error: error.message });
+      } else {
+        stored += chunk.length;
+      }
+    } catch (error) {
+      errors.push({
+        chunk: chunkLabel,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  return stored;
+}
+
+function dedupeRecords<T>(records: T[], keyFn: (record: T) => string): T[] {
+  const byKey = new Map<string, T>();
+  for (const record of records) {
+    byKey.set(keyFn(record), record);
+  }
+  return Array.from(byKey.values());
 }
 
 /**
@@ -79,112 +124,84 @@ export async function POST(req: NextRequest) {
 
     console.log(`Fetching Search Console data from ${startDateStr} to ${endDateStr}...`);
 
-    // Step 4: Fetch daily totals
-    const dailyData = await fetchDailyPerformance(startDateStr, endDateStr);
+    // Step 4-6: Fetch all datasets in parallel
+    const [dailyData, pageData, queryData] = await Promise.all([
+      fetchDailyPerformance(startDateStr, endDateStr),
+      fetchPagePerformance(startDateStr, endDateStr),
+      fetchQueryPerformance(startDateStr, endDateStr),
+    ]);
+
     console.log(`Found ${dailyData.length} daily performance records`);
-
-    // Step 5: Fetch page-level performance
-    const pageData = await fetchPagePerformance(startDateStr, endDateStr);
     console.log(`Found ${pageData.length} page performance records`);
-
-    // Step 6: Fetch query performance
-    const queryData = await fetchQueryPerformance(startDateStr, endDateStr);
     console.log(`Found ${queryData.length} query performance records`);
 
-    // Step 7: Store daily totals in database
-    let dailyNewRecords = 0;
-    const dailyErrors = [];
+    // Step 7: Build deduped upsert payloads
+    const dailyRecords = dedupeRecords(
+      dailyData.map((record) => ({
+        date: record.date,
+        total_impressions: record.impressions,
+        total_clicks: record.clicks,
+        average_ctr: record.ctr,
+        average_position: record.position,
+      })),
+      (r) => r.date
+    );
 
-    for (const record of dailyData) {
-      try {
-        const { data, error } = await supabase
-          .from('google_search_console_daily_totals')
-          .upsert({
-            date: record.date,
-            total_impressions: record.impressions,
-            total_clicks: record.clicks,
-            average_ctr: record.ctr,
-            average_position: record.position,
-          }, {
-            onConflict: 'date',
-          })
-          .select();
+    const pageRecords = dedupeRecords(
+      pageData.map((record) => ({
+        date: record.date,
+        page_url: record.page_url,
+        device_type: record.device_type,
+        impressions: record.impressions,
+        clicks: record.clicks,
+        ctr: record.ctr,
+        position: record.position,
+      })),
+      (r) => `${r.date}|${r.page_url}|${r.device_type}`
+    );
 
-        if (error) {
-          dailyErrors.push({ record, error: error.message });
-        } else if (data) {
-          dailyNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Search Console daily record:', err);
-        dailyErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
+    const queryRecords = dedupeRecords(
+      queryData.map((record) => ({
+        date: record.date,
+        query: record.query,
+        page_url: record.page_url,
+        device_type: record.device_type,
+        impressions: record.impressions,
+        clicks: record.clicks,
+        ctr: record.ctr,
+        position: record.position,
+      })),
+      (r) => `${r.date}|${r.query}|${r.page_url}|${r.device_type}`
+    );
 
-    // Step 8: Store page performance in database
-    let pageNewRecords = 0;
-    const pageErrors = [];
+    // Step 8: Batch upsert each table
+    const dailyErrors: Array<{ chunk: string; error: string }> = [];
+    const pageErrors: Array<{ chunk: string; error: string }> = [];
+    const queryErrors: Array<{ chunk: string; error: string }> = [];
 
-    for (const record of pageData) {
-      try {
-        const { data, error } = await supabase
-          .from('google_search_console_performance')
-          .upsert({
-            date: record.date,
-            page_url: record.page_url,
-            device_type: record.device_type,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            ctr: record.ctr,
-            position: record.position,
-          }, {
-            onConflict: 'date,page_url,device_type',
-          })
-          .select();
-
-        if (error) {
-          pageErrors.push({ record, error: error.message });
-        } else if (data) {
-          pageNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Search Console page record:', err);
-        pageErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
-
-    // Step 9: Store query performance in database
-    let queryNewRecords = 0;
-    const queryErrors = [];
-
-    for (const record of queryData) {
-      try {
-        const { data, error } = await supabase
-          .from('google_search_console_queries')
-          .upsert({
-            date: record.date,
-            query: record.query,
-            page_url: record.page_url,
-            device_type: record.device_type,
-            impressions: record.impressions,
-            clicks: record.clicks,
-            ctr: record.ctr,
-            position: record.position,
-          }, {
-            onConflict: 'date,query,page_url,device_type',
-          })
-          .select();
-
-        if (error) {
-          queryErrors.push({ record, error: error.message });
-        } else if (data) {
-          queryNewRecords++;
-        }
-      } catch (err) {
-        console.error('Error upserting Search Console query record:', err);
-        queryErrors.push({ record, error: err instanceof Error ? err.message : 'Unknown error' });
-      }
-    }
+    const [dailyStored, pageStored, queryStored] = await Promise.all([
+      upsertInChunks(
+        supabase,
+        'google_search_console_daily_totals',
+        dailyRecords,
+        'date',
+        dailyErrors
+      ),
+      upsertInChunks(
+        supabase,
+        'google_search_console_performance',
+        pageRecords,
+        'date,page_url,device_type',
+        pageErrors
+      ),
+      upsertInChunks(
+        supabase,
+        'google_search_console_queries',
+        queryRecords,
+        'date,query,page_url,device_type',
+        queryErrors
+      ),
+    ]);
 
     // Step 10: Return summary
     const summary = {
@@ -193,17 +210,17 @@ export async function POST(req: NextRequest) {
       dateRange: { start: startDateStr, end: endDateStr },
       daily: {
         fetched: dailyData.length,
-        stored: dailyNewRecords,
+        stored: dailyStored,
         errors: dailyErrors.length,
       },
       pages: {
         fetched: pageData.length,
-        stored: pageNewRecords,
+        stored: pageStored,
         errors: pageErrors.length,
       },
       queries: {
         fetched: queryData.length,
-        stored: queryNewRecords,
+        stored: queryStored,
         errors: queryErrors.length,
       },
     };

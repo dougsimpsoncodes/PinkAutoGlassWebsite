@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Customer Feedback Snapshot - V3 Action Plan</title>
+<style>
+  :root {
+    --bg: #111425;
+    --card: #1c2240;
+    --text: #f5f7ff;
+    --muted: #aeb7d8;
+    --pink: #E91E8C;
+    --blue: #60a5fa;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background:
+      linear-gradient(120deg, rgba(233,30,140,0.14), transparent 30%),
+      linear-gradient(310deg, rgba(96,165,250,0.14), transparent 28%),
+      var(--bg);
+    min-height: 100vh;
+    padding: 36px;
+  }
+  .slide {
+    max-width: 1320px;
+    margin: 0 auto;
+    background: rgba(17,20,37,0.78);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 30px;
+  }
+  .title { margin: 0; color: #ff92ca; font-size: 2.05rem; }
+  .subtitle { margin: 6px 0 20px; color: var(--muted); }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .tile {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px;
+    border-top: 3px solid var(--pink);
+  }
+  .tile .n { font-size: 1.45rem; font-weight: 800; }
+  .tile .l { font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .main { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; }
+  .panel { background: var(--card); border-radius: 14px; padding: 14px; }
+  h3 { margin: 0 0 10px; font-size: 0.95rem; color: #ff9fd1; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .scorecard { display: grid; gap: 8px; }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 120px 120px;
+    gap: 8px;
+    align-items: center;
+    padding: 9px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    font-size: 0.88rem;
+  }
+  .status { text-align: center; font-size: 0.78rem; padding: 4px 8px; border-radius: 999px; font-weight: 700; }
+  .status.good { background: rgba(74,222,128,0.2); color: var(--green); }
+  .status.mid { background: rgba(251,191,36,0.18); color: var(--amber); }
+  .status.risk { background: rgba(248,113,113,0.2); color: #fecaca; }
+
+  .roadmap { display: grid; gap: 9px; }
+  .step {
+    border-left: 4px solid var(--blue);
+    background: rgba(96,165,250,0.1);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.87rem;
+  }
+  .step strong { color: var(--blue); }
+  .owner { color: var(--muted); font-size: 0.76rem; margin-top: 4px; }
+
+  .speaker {
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 12px;
+    background: rgba(233,30,140,0.12);
+    border: 1px solid rgba(233,30,140,0.35);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 980px) {
+    body { padding: 16px; }
+    .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .main { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <section class="slide">
+    <h1 class="title">Customer Feedback -> Operating Priorities</h1>
+    <p class="subtitle">Use feedback as an execution scoreboard, not just a reputation metric</p>
+
+    <div class="strip">
+      <div class="tile"><div class="n">5.0</div><div class="l">Google Rating</div></div>
+      <div class="tile"><div class="n">~35</div><div class="l">Total Reviews</div></div>
+      <div class="tile"><div class="n">95.7%</div><div class="l">Answered Calls</div></div>
+      <div class="tile"><div class="n">10x+</div><div class="l">Review Count Gap vs Leaders</div></div>
+    </div>
+
+    <div class="main">
+      <div class="panel">
+        <h3>Feedback Scorecard (What Customers Are Saying)</h3>
+        <div class="scorecard">
+          <div class="row"><div>Technician quality and professionalism</div><div class="status good">Strong</div><div class="status good">Protect</div></div>
+          <div class="row"><div>Speed and convenience of mobile service</div><div class="status good">Strong</div><div class="status good">Promote</div></div>
+          <div class="row"><div>Quote and insurance clarity</div><div class="status mid">Mixed</div><div class="status risk">Fix Now</div></div>
+          <div class="row"><div>Arrival-time communication</div><div class="status mid">Mixed</div><div class="status risk">Fix Now</div></div>
+          <div class="row"><div>Post-service follow-up and review ask</div><div class="status risk">Weak</div><div class="status mid">Build</div></div>
+        </div>
+
+        <div class="speaker">
+          <strong>Meeting line:</strong> “Our quality signal is excellent, but we need to convert that quality into review volume and tighter customer communication to widen the competitive gap.”
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>30-Day Execution Plan</h3>
+        <div class="roadmap">
+          <div class="step"><strong>1) Standardize pre-job confirmation</strong> with price range, insurance scope, and ETA expectations.<div class="owner">Owner: Dispatch + CSR | KPI: pricing/ETA complaints down</div></div>
+          <div class="step"><strong>2) Launch same-day review workflow</strong> (SMS + email) for every completed install.<div class="owner">Owner: Ops + Marketing | KPI: review volume growth</div></div>
+          <div class="step"><strong>3) Weekly feedback tagging</strong> into 6 core themes and trend in admin dashboard.<div class="owner">Owner: Admin | KPI: recurring issue visibility</div></div>
+          <div class="step"><strong>4) Negative review SLA</strong>: public response within 1 business day, private follow-up within 24 hours.<div class="owner">Owner: Management | KPI: resolution speed + sentiment recovery</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

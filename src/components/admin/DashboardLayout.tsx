@@ -14,6 +14,7 @@ import {
   Search,
   Monitor,
   BarChart3,
+  Star,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
     { name: 'Website Analytics', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
     { name: 'Search Performance', href: '/admin/dashboard/search-performance', icon: Search },
+    { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },
   ];

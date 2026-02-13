@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Customer Feedback Snapshot - V2 Voice</title>
+<style>
+  :root {
+    --pink: #E91E8C;
+    --pink-soft: #ff8cc7;
+    --ink: #101124;
+    --panel: #1e213a;
+    --text: #f2f3f8;
+    --muted: #aeb3cc;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 82% 10%, rgba(233,30,140,0.24), transparent 36%),
+      radial-gradient(circle at 12% 88%, rgba(96,165,250,0.18), transparent 40%),
+      var(--ink);
+    min-height: 100vh;
+    padding: 32px;
+  }
+  .slide {
+    max-width: 1320px;
+    margin: 0 auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 28px;
+    background: linear-gradient(180deg, rgba(30,33,58,0.88), rgba(16,17,36,0.95));
+  }
+  .header { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 20px; }
+  .title { font-size: 2rem; color: var(--pink-soft); margin: 0; }
+  .subtitle { margin: 8px 0 0; color: var(--muted); }
+  .badge {
+    background: rgba(233,30,140,0.12);
+    border: 1px solid rgba(233,30,140,0.4);
+    color: #ffd1e9;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.84rem;
+    font-weight: 600;
+  }
+  .layout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border-radius: 14px; padding: 14px; }
+  h3 { margin: 0 0 12px; color: var(--pink-soft); font-size: 0.98rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .moments { display: grid; gap: 10px; }
+  .moment {
+    display: grid;
+    grid-template-columns: 116px 1fr 90px;
+    gap: 10px;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .stage { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bar {
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+    position: relative;
+  }
+  .fill { height: 100%; border-radius: 999px; }
+  .fill.good { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .fill.mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .fill.risk { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .score { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .quote-list { display: grid; gap: 10px; }
+  .quote {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.89rem;
+    line-height: 1.45;
+  }
+  .meta { color: var(--muted); font-size: 0.75rem; margin-top: 6px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .kpi {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .kpi .n { font-size: 1.3rem; font-weight: 800; }
+  .kpi .l { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .actions {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+  }
+  .item {
+    border-left: 4px solid var(--blue);
+    background: rgba(96,165,250,0.1);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.86rem;
+  }
+  .footer { margin-top: 10px; color: var(--muted); font-size: 0.76rem; }
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    .moment { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="header">
+      <div>
+        <h1 class="title">Customer Feedback Insights</h1>
+        <p class="subtitle">Read the customer journey by moment, then fix the friction points first</p>
+      </div>
+      <div class="badge">Competitive truth: quality is high, review volume is still the moat gap</div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <h3>Customer Journey Sentiment (Example Structure)</h3>
+        <div class="moments">
+          <div class="moment">
+            <div class="stage">Booking</div>
+            <div class="bar"><div class="fill good" style="width:88%"></div></div>
+            <div class="score">Strong</div>
+          </div>
+          <div class="moment">
+            <div class="stage">Quote Clarity</div>
+            <div class="bar"><div class="fill mid" style="width:62%"></div></div>
+            <div class="score">Mixed</div>
+          </div>
+          <div class="moment">
+            <div class="stage">Arrival ETA</div>
+            <div class="bar"><div class="fill mid" style="width:58%"></div></div>
+            <div class="score">Mixed</div>
+          </div>
+          <div class="moment">
+            <div class="stage">Work Quality</div>
+            <div class="bar"><div class="fill good" style="width:94%"></div></div>
+            <div class="score">Strong</div>
+          </div>
+          <div class="moment">
+            <div class="stage">After-Service Follow-up</div>
+            <div class="bar"><div class="fill risk" style="width:46%"></div></div>
+            <div class="score">Improve</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div class="item"><strong>Recommendation:</strong> Add a 2-step quote confirmation message before dispatch.</div>
+          <div class="item"><strong>Recommendation:</strong> Send ETA update text at “technician en route” and “15 min away”.</div>
+          <div class="item"><strong>Recommendation:</strong> Trigger post-job check-in after 24 hours to catch issues before public reviews.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Voice of Customer Snippets</h3>
+        <div class="quote-list">
+          <div class="quote">“They answered quickly, came to me, and made the process easy.”<div class="meta">Theme: speed + convenience</div></div>
+          <div class="quote">“Excellent technician and great finished result. Very professional.”<div class="meta">Theme: quality + professionalism</div></div>
+          <div class="quote">“Would’ve liked clearer communication on final price before arrival.”<div class="meta">Theme: price clarity (fixable)</div></div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi"><div class="n">5.0</div><div class="l">Current Rating</div></div>
+          <div class="kpi"><div class="n">~35</div><div class="l">Total Reviews</div></div>
+          <div class="kpi"><div class="n">95.7%</div><div class="l">Answered Calls</div></div>
+          <div class="kpi"><div class="n">10x+</div><div class="l">Review Volume Gap</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Data to focus on monthly: review growth rate, negative-review response SLA, and top recurring complaint themes.</div>
+  </section>
+</body>
+</html>

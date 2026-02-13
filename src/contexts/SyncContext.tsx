@@ -45,14 +45,24 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       const results = await Promise.all(
         SYNC_ENDPOINTS.map(async ({ name, endpoint }) => {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+          let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
           try {
-            const res = await fetch(endpoint, {
-              method: 'POST',
-              signal: controller.signal,
-              cache: 'no-store',
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              timeoutId = setTimeout(() => {
+                controller.abort();
+                reject(new Error(`Timed out after ${SYNC_TIMEOUT_MS / 1000}s`));
+              }, SYNC_TIMEOUT_MS);
             });
+
+            const res = await Promise.race([
+              fetch(endpoint, {
+                method: 'POST',
+                signal: controller.signal,
+                cache: 'no-store',
+              }),
+              timeoutPromise,
+            ]);
 
             let data: any = null;
             try {
@@ -64,7 +74,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             const success = res.ok && !!data?.ok;
             return { name, endpoint, success, status: res.status, data };
           } catch (error) {
-            const isTimeout = error instanceof Error && error.name === 'AbortError';
+            const isTimeout = error instanceof Error && (
+              error.name === 'AbortError' || error.message.includes('Timed out')
+            );
             return {
               name,
               endpoint,
@@ -73,7 +85,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
               data: { ok: false, error: isTimeout ? `Timed out after ${SYNC_TIMEOUT_MS / 1000}s` : String(error) },
             };
           } finally {
-            clearTimeout(timeoutId);
+            if (timeoutId) clearTimeout(timeoutId);
             completed += 1;
             setProgress(`Syncing data sources (${completed}/${SYNC_ENDPOINTS.length})...`);
           }

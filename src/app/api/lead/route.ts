@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
 import { buildAttribution } from '@/lib/attribution';
 import { sendEmail, sendAdminEmail } from '@/lib/notifications/email';
-import { sendAdminSMS, sendSMS } from '@/lib/notifications/sms';
+import { sendAdminSMS } from '@/lib/notifications/sms';
+import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
 import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
@@ -265,7 +266,7 @@ export async function POST(request: NextRequest) {
 
         if (smsConsent && isCustomerSmsEnabled()) {
           autoReplyPromises.push(
-            sendSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
+            sendCustomerSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
               .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
               .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
           );

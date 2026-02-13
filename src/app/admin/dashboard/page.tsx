@@ -74,7 +74,7 @@ export default function AdminDashboard() {
   const { getCachedData, setCachedData, invalidateCache } = useDashboardCache();
 
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
 
   // Lead data — single source of truth for all lead counts on this page
   const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);

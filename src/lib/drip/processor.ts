@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { sendSMS } from '@/lib/notifications/sms';
+import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { sendEmail } from '@/lib/notifications/email';
 import { renderTemplate } from './templates';
 import { isTCPAQuietHours, getNextSafeTime } from './scheduler';
@@ -140,7 +140,7 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
       // Send the message
       let success = false;
       if (msg.channel === 'sms') {
-        success = await sendSMS({ to: msg.context.phone, message: rendered.body });
+        success = await sendCustomerSMS({ to: msg.context.phone, message: rendered.body });
       } else if (msg.channel === 'email') {
         if (!msg.context.email) {
           await markSkipped(supabase, msg.id, 'no_email_address');

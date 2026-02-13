@@ -80,16 +80,15 @@ export async function POST(req: NextRequest) {
 
     console.log(`Fetching Microsoft Ads campaign data from ${startDateStr} to ${endDateStr}...`);
 
-    // Step 4: Fetch campaign performance data
-    const campaignData = await fetchCampaignPerformance(startDateStr, endDateStr);
+    // Step 4-6: Fetch all report datasets in parallel to reduce sync latency
+    const [campaignData, keywordData, searchTermsData] = await Promise.all([
+      fetchCampaignPerformance(startDateStr, endDateStr),
+      fetchKeywordPerformance(startDateStr, endDateStr),
+      fetchSearchTerms(startDateStr, endDateStr),
+    ]);
+
     console.log(`Found ${campaignData.length} campaign performance records`);
-
-    // Step 5: Fetch keyword performance data
-    const keywordData = await fetchKeywordPerformance(startDateStr, endDateStr);
     console.log(`Found ${keywordData.length} keyword performance records`);
-
-    // Step 6: Fetch search terms data
-    const searchTermsData = await fetchSearchTerms(startDateStr, endDateStr);
     console.log(`Found ${searchTermsData.length} search term records`);
 
     // Step 7: Build upsert payloads
@@ -163,29 +162,29 @@ export async function POST(req: NextRequest) {
     const keywordErrors: Array<{ chunk: string; error: string }> = [];
     const searchTermsErrors: Array<{ chunk: string; error: string }> = [];
 
-    const campaignStored = await upsertInChunks(
-      supabase,
-      'microsoft_ads_daily_performance',
-      campaignRecords,
-      'date,campaign_id',
-      campaignErrors
-    );
-
-    const keywordStored = await upsertInChunks(
-      supabase,
-      'microsoft_ads_keyword_performance',
-      keywordRecords,
-      'date,keyword_id',
-      keywordErrors
-    );
-
-    const searchTermsStored = await upsertInChunks(
-      supabase,
-      'microsoft_ads_search_terms',
-      searchTermRecords,
-      'date,campaign_id,search_term',
-      searchTermsErrors
-    );
+    const [campaignStored, keywordStored, searchTermsStored] = await Promise.all([
+      upsertInChunks(
+        supabase,
+        'microsoft_ads_daily_performance',
+        campaignRecords,
+        'date,campaign_id',
+        campaignErrors
+      ),
+      upsertInChunks(
+        supabase,
+        'microsoft_ads_keyword_performance',
+        keywordRecords,
+        'date,keyword_id',
+        keywordErrors
+      ),
+      upsertInChunks(
+        supabase,
+        'microsoft_ads_search_terms',
+        searchTermRecords,
+        'date,campaign_id,search_term',
+        searchTermsErrors
+      ),
+    ]);
 
     // Step 10: Return summary
     const summary = {

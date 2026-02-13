@@ -72,3 +72,8 @@ assets/**/credentials*.json
 # Root-level screenshots and reports
 /*.png
 /*.csv
+
+# Financial exports and temp files
+/*.xlsx
+/tmp/
+supabase/.temp/

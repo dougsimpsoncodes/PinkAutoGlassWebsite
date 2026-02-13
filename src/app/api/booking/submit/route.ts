@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/validation";
 import { buildAttribution } from "@/lib/attribution";
 import { sendEmail, sendAdminEmail } from "@/lib/notifications/email";
-import { sendSMS, sendAdminSMS } from "@/lib/notifications/sms";
+import { sendAdminSMS } from "@/lib/notifications/sms";
+import { sendCustomerSMS } from "@/lib/notifications/beetexting";
 import {
   getCustomerConfirmationEmail,
   getAdminBookingNotificationEmail,
@@ -445,7 +446,7 @@ export async function POST(req: NextRequest) {
           return false;
         }),
 
-        validatedData.smsConsent ? sendSMS({
+        validatedData.smsConsent ? sendCustomerSMS({
           to: validatedData.phone,
           message: getCustomerConfirmationSMS(bookingData),
         }).then(success => {
