@@ -93,7 +93,7 @@ module.exports = {
         'gradient-soft': 'linear-gradient(135deg, #f87171 0%, #f472b6 100%)',
         'gradient-light': 'linear-gradient(135deg, #fbc9da 0%, #fbcfe8 100%)',
         'gradient-dark': 'linear-gradient(135deg, #982748 0%, #831843 100%)',
-        'gradient-hero': 'linear-gradient(135deg, #E85A8B 0%, #ee6aa3 50%, #d946ef 100%)',
+        'gradient-hero': 'linear-gradient(135deg, #60A5FA 0%, #7CB9F0 50%, #93C5FD 100%)',
         'hero-overlay': 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%)'
       },
       fontFamily: {
