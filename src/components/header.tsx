@@ -41,13 +41,12 @@ export default function Header() {
             aria-label="Pink Auto Glass - Go to homepage"
           >
             <Image
-              src="/pink-logo-horizontal-1200x300.webp"
+              src="/pink-logo-horizontal.png"
               alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-              width={1200}
-              height={300}
+              width={972}
+              height={292}
               className="w-auto"
               style={{ height: '170px' }}
-              sizes="680px"
               priority
             />
           </Link>
@@ -76,13 +75,12 @@ export default function Header() {
               aria-label="Pink Auto Glass - Go to homepage"
             >
               <Image
-                src="/pink-logo-horizontal-1200x300.webp"
+                src="/pink-logo-horizontal.png"
                 alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-                width={1200}
-                height={300}
-                className="w-auto max-w-[960px]"
+                width={972}
+                height={292}
+                className="w-auto max-w-[972px]"
                 style={{ height: '194px' }}
-                sizes="(max-width: 1024px) 800px, 960px"
                 priority
               />
             </Link>
