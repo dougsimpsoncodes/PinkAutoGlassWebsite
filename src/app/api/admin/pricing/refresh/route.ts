@@ -15,15 +15,20 @@ import { createClient } from '@supabase/supabase-js';
 import { getOmegaClient, validateOmegaConfig } from '@/lib/omegaEDI';
 import { applyMarkup } from '@/lib/pricing';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
+  return createClient(url, key);
+}
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    const supabase = getSupabase();
     // Check Omega config
     const config = validateOmegaConfig();
     if (!config.isValid) {
