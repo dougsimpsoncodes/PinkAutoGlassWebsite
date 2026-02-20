@@ -55,13 +55,13 @@ export default function CTAButtons({
         Text Us
       </a>
 
-      {/* Quick Quote Button */}
+      {/* Book Online Button */}
       <Link
-        href="/#quote-form"
+        href="/book"
         onClick={handleBookClick}
         className="inline-flex items-center justify-center gap-2 bg-pink-600 text-white hover:bg-pink-700 font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
       >
-        💬 Get a Quick Quote
+        📱 Book Online Now
       </Link>
     </div>
   );
