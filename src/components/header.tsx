@@ -47,6 +47,7 @@ export default function Header() {
               height={292}
               className="w-auto"
               style={{ height: '170px' }}
+              sizes="566px"
               priority
             />
           </Link>
@@ -81,6 +82,7 @@ export default function Header() {
                 height={292}
                 className="w-auto max-w-[972px]"
                 style={{ height: '194px' }}
+                sizes="646px"
                 priority
               />
             </Link>
