@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'AAA Windshield Replacement | AAA Approved Shop | (720) 918-7465',
-  description: '✓ AAA approved auto repair shop ✓ We handle your AAA windshield claim ✓ Direct billing ✓ Often $0 deductible ✓ Same-day mobile service ✓ Won\'t raise rates. Call (720) 918-7465.',
+  description: 'AAA approved auto repair shop. We handle your AAA windshield claim. Direct billing. Often $0 deductible. Same-day mobile service. Won\'t raise rates. Call (720) 918-7465.',
   keywords: 'aaa windshield claim, aaa windshield replacement, aaa auto glass, aaa approved auto repair, aaa glass claims, triple aaa windshield repair',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/aaa',

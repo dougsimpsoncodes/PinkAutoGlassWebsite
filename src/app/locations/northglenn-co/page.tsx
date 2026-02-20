@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Northglenn Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Northglenn auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Northglenn neighborhoods. Call (720) 918-7465!',
+  description: 'Northglenn auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Northglenn neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair northglenn, windshield replacement northglenn, auto glass northglenn co, mobile windshield service northglenn',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/northglenn-co',

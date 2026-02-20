@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Timnath Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Timnath auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Timnath neighborhoods. Call (720) 918-7465!',
+  description: 'Timnath auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Timnath neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair timnath, windshield replacement timnath, auto glass timnath co, mobile windshield service timnath',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/timnath-co',

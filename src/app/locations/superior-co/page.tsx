@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Superior Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Superior auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Superior neighborhoods. Call (720) 918-7465!',
+  description: 'Superior auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Superior neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair superior, windshield replacement superior, auto glass superior co, mobile windshield service superior',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/superior-co',

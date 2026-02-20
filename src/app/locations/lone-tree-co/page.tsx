@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Lone Tree Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Lone Tree auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Lone Tree neighborhoods. Call (720) 918-7465!',
+  description: 'Lone Tree auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Lone Tree neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair lone tree, windshield replacement lone tree, auto glass lone tree co, mobile windshield service lone tree',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/lone-tree-co',

@@ -25,7 +25,7 @@ export function generateOrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "AutoRepair",
     "name": "Pink Auto Glass",
-    "image": "https://pinkautoglass.com/pink-logo-horizontal.png",
+    "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
     "@id": "https://pinkautoglass.com",
     "url": "https://pinkautoglass.com",
     "telephone": "+17209187465",
@@ -93,6 +93,11 @@ export function generateServiceSchema(params: {
       "serviceUrl": "https://pinkautoglass.com/book",
       "servicePhone": "+17209187465",
       "name": "Mobile and In-Shop Service"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200"
     }
   };
 
@@ -123,7 +128,7 @@ export function generateLocalBusinessSchema(params: {
     "@context": "https://schema.org",
     "@type": "AutoRepair",
     "name": `Pink Auto Glass - ${params.city}`,
-    "image": "https://pinkautoglass.com/pink-logo-horizontal.png",
+    "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
     "url": `https://pinkautoglass.com/locations/${params.city.toLowerCase().replace(/\s+/g, '-')}-${params.state.toLowerCase()}`,
     "telephone": "+17209187465",
     "priceRange": "Contact for Quote",
@@ -214,7 +219,7 @@ export function getArticleSchema(params: {
       "name": "Pink Auto Glass",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://pinkautoglass.com/pink-logo-horizontal.png"
+        "url": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp"
       }
     },
     "mainEntityOfPage": {

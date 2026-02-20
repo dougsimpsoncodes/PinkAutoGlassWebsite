@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Replacement Denver | FREE We Come To You | (720) 918-7465',
-  description: '✓ NO extra charge for mobile windshield replacement ✓ We come to your home or office ✓ Same-day available ✓ Fully equipped vans ✓ Denver, Aurora, Boulder, Fort Collins. Call (720) 918-7465.',
+  description: 'NO extra charge for mobile windshield replacement. We come to your home or office. Same-day available. Fully equipped vans. Denver, Aurora, Boulder, Fort Collins. Call (720) 918-7465.',
   keywords: 'mobile windshield replacement denver, mobile windshield repair denver, mobile windshield service denver, mobile auto glass denver, windshield replacement at home, mobile glass repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/mobile-service',

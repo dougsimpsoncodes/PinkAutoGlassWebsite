@@ -4,13 +4,13 @@ import { Phone, MapPin, Clock, Star, Shield, Users } from "lucide-react";
 import CTAButtons from "@/components/CTAButtons";
 import QuoteForm from "@/components/QuoteForm";
 import TrustSignals from "@/components/TrustSignals";
+import { combineSchemas } from "@/lib/schema";
 
 export default function Home() {
   const schemaData = {
-    "@context": "https://schema.org",
     "@type": "AutoRepair",
     "name": "Pink Auto Glass",
-    "image": "https://pinkautoglass.com/pink-logo-horizontal.png",
+    "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
     "@id": "https://pinkautoglass.com",
     "url": "https://pinkautoglass.com",
     "telephone": "+17209187465",
@@ -26,38 +26,15 @@ export default function Home() {
       "longitude": -104.9903
     },
     "areaServed": [
-      {
-        "@type": "City",
-        "name": "Denver"
-      },
-      {
-        "@type": "City",
-        "name": "Aurora"
-      },
-      {
-        "@type": "City",
-        "name": "Lakewood"
-      },
-      {
-        "@type": "City",
-        "name": "Highlands Ranch"
-      },
-      {
-        "@type": "City",
-        "name": "Boulder"
-      }
+      { "@type": "City", "name": "Denver" },
+      { "@type": "City", "name": "Aurora" },
+      { "@type": "City", "name": "Lakewood" },
+      { "@type": "City", "name": "Highlands Ranch" },
+      { "@type": "City", "name": "Boulder" }
     ],
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ],
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       "opens": "07:00",
       "closes": "19:00"
     },
@@ -65,6 +42,11 @@ export default function Home() {
       "https://www.facebook.com/pinkautoglass",
       "https://www.instagram.com/pinkautoglass"
     ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200"
+    },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Auto Glass Services",
@@ -90,7 +72,6 @@ export default function Home() {
   };
 
   const faqSchema = {
-    "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
       {
@@ -128,15 +109,13 @@ export default function Home() {
     ]
   };
 
+  const combinedSchema = combineSchemas(schemaData, faqSchema);
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
       {/* Compact Hero Section - Lead Generation Focused */}
       <div className="page-top-padding">

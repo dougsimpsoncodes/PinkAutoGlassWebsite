@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Lafayette Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Lafayette auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Lafayette neighborhoods. Call (720) 918-7465!',
+  description: 'Lafayette auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Lafayette neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair lafayette, windshield replacement lafayette, auto glass lafayette co, mobile windshield service lafayette',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/lafayette-co',

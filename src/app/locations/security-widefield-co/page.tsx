@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Security-Widefield Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Security-Widefield auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Security-Widefield neighborhoods. Call (720) 918-7465!',
+  description: 'Security-Widefield auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Security-Widefield neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair security-widefield, windshield replacement security-widefield, auto glass security-widefield co, mobile windshield service security-widefield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/security-widefield-co',

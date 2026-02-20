@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Louisville Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Louisville auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Louisville neighborhoods. Call (720) 918-7465!',
+  description: 'Louisville auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Louisville neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair louisville, windshield replacement louisville, auto glass louisville co, mobile windshield service louisville',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/louisville-co',

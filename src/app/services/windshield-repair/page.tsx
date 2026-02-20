@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Windshield Chip Repair Denver | Lifetime Warranty | Insurance Accepted | (720) 918-7465',
-  description: '★★★★★ Denver\'s fastest windshield chip repair. 30-min service. Often $0 with insurance. Serving Denver, Aurora, Boulder, Colorado Springs. Prevents cracks from spreading. Same-day mobile service. Lifetime warranty. Call now!',
+  description: 'Denver\'s fastest windshield chip repair. 30-min service. Often $0 with insurance. Serving Denver, Aurora, Boulder, Colorado Springs. Prevents cracks from spreading. Same-day mobile service. Lifetime warranty. Call now!',
   keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost, windshield repair near me, mobile windshield repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/windshield-repair',

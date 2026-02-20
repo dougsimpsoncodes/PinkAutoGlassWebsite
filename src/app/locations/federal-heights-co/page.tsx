@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Federal Heights Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Federal Heights auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Federal Heights neighborhoods. Call (720) 918-7465!',
+  description: 'Federal Heights auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Federal Heights neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair federal heights, windshield replacement federal heights, auto glass federal heights co, mobile windshield service federal heights',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/federal-heights-co',

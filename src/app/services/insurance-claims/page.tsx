@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Auto Glass Insurance Claims Colorado | Progressive, Geico, AAA | $0 Deductible',
-  description: '★★★★★ We handle 100% of insurance paperwork. Progressive, Geico, State Farm, AAA, Allstate accepted. $0 deductible often in Colorado. Direct billing. Won\'t raise your rates. Same-day service. Call (720) 918-7465!',
+  description: 'We handle 100% of insurance paperwork. Progressive, Geico, State Farm, AAA, Allstate accepted. $0 deductible often in Colorado. Direct billing. Won\'t raise your rates. Same-day service. Call (720) 918-7465!',
   keywords: 'auto glass insurance claims colorado, auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, zero deductible windshield colorado, insurance glass replacement, aaa windshield claim',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims',

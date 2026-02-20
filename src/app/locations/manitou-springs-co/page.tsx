@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Manitou Springs Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Manitou Springs auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Manitou Springs neighborhoods. Call (720) 918-7465!',
+  description: 'Manitou Springs auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Manitou Springs neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair manitou springs, windshield replacement manitou springs, auto glass manitou springs co, mobile windshield service manitou springs',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/manitou-springs-co',

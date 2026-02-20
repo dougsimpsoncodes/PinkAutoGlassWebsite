@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Erie Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Erie auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Erie neighborhoods. Call (720) 918-7465!',
+  description: 'Erie auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Erie neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair erie, windshield replacement erie, auto glass erie co, mobile windshield service erie',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/erie-co',

@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Black Forest Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Black Forest auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Black Forest neighborhoods. Call (720) 918-7465!',
+  description: 'Black Forest auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Black Forest neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair black forest, windshield replacement black forest, auto glass black forest co, mobile windshield service black forest',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/black-forest-co',

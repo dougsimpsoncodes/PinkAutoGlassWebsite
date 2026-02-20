@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Firestone Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Firestone auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Firestone neighborhoods. Call (720) 918-7465!',
+  description: 'Firestone auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Firestone neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair firestone, windshield replacement firestone, auto glass firestone co, mobile windshield service firestone',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/firestone-co',

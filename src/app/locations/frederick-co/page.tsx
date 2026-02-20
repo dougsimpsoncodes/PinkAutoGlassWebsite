@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Frederick Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Frederick auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Frederick neighborhoods. Call (720) 918-7465!',
+  description: 'Frederick auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Frederick neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair frederick, windshield replacement frederick, auto glass frederick co, mobile windshield service frederick',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/frederick-co',

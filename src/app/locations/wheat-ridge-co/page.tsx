@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Wheat Ridge Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Wheat Ridge auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Wheat Ridge neighborhoods. Call (720) 918-7465!',
+  description: 'Wheat Ridge auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Wheat Ridge neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair wheat ridge, windshield replacement wheat ridge, auto glass wheat ridge co, mobile windshield service wheat ridge',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/wheat-ridge-co',

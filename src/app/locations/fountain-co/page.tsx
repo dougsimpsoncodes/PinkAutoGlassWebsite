@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Fountain Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Fountain auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Fountain neighborhoods. Call (720) 918-7465!',
+  description: 'Fountain auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Fountain neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair fountain, windshield replacement fountain, auto glass fountain co, mobile windshield service fountain',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/fountain-co',

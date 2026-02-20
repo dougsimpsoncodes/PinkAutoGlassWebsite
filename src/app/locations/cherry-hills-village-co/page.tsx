@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Cherry Hills Village Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Cherry Hills Village auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Cherry Hills Village neighborhoods. Call (720) 918-7465!',
+  description: 'Cherry Hills Village auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Cherry Hills Village neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair cherry hills village, windshield replacement cherry hills village, auto glass cherry hills village co, mobile windshield service cherry hills village',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/cherry-hills-village-co',

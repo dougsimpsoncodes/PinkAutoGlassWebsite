@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Rock Chip Repair Denver | Windshield Chip Repair | (720) 918-7465',
-  description: '✓ Rock chip & windshield chip repair ✓ Often $0 with insurance ✓ Prevents spreading ✓ 30-minute service ✓ Mobile repair available ✓ Denver, Aurora, Boulder. Call (720) 918-7465 now.',
+  description: 'Rock chip & windshield chip repair. Often $0 with insurance. Prevents spreading. 30-minute service. Mobile repair available. Denver, Aurora, Boulder. Call (720) 918-7465 now.',
   keywords: 'rock chip repair, windshield chip repair, rock chip windshield repair, progressive rock chip repair, windshield rock chip repair denver, mobile windshield chip repair',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/rock-chip-repair',

@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Sheridan Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Sheridan auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Sheridan neighborhoods. Call (720) 918-7465!',
+  description: 'Sheridan auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Sheridan neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair sheridan, windshield replacement sheridan, auto glass sheridan co, mobile windshield service sheridan',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/sheridan-co',

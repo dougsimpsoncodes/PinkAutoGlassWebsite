@@ -9,7 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 
 export const metadata: Metadata = {
   title: 'Greenwood Village Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: '★★★★★ Greenwood Village auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Greenwood Village neighborhoods. Call (720) 918-7465!',
+  description: 'Greenwood Village auto glass repair & windshield replacement. Mobile service. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Greenwood Village neighborhoods. Call (720) 918-7465!',
   keywords: 'windshield repair greenwood village, windshield replacement greenwood village, auto glass greenwood village co, mobile windshield service greenwood village',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/greenwood-village-co',

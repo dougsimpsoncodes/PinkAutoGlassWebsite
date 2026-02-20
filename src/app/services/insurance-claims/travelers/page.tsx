@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Travelers Windshield Replacement | $0 Deductible CO | (720) 918-7465',
-  description: '✓ Travelers approved shop ✓ Often $0 deductible for glass in Colorado ✓ We file your claim ✓ Direct billing ✓ Same-day mobile service ✓ Won\'t raise rates. Call (720) 918-7465.',
+  description: 'Travelers approved shop. Often $0 deductible for glass in Colorado. We file your claim. Direct billing. Same-day mobile service. Won\'t raise rates. Call (720) 918-7465.',
   keywords: 'state farm windshield replacement, state farm glass claim, state farm auto glass, state farm windshield claim, state farm comprehensive glass coverage',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/travelers',
