@@ -1,6 +1,6 @@
 // Google Analytics and Google Ads event tracking helper
 
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+export const GA_MEASUREMENT_ID = 'G-F7WMMDK4H4';
 
 // Google Ads Conversion IDs
 export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
