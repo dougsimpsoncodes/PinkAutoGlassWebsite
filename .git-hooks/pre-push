@@ -31,15 +31,35 @@ fi
 echo "✅ Build successful"
 echo ""
 
+# Free port 3000 if occupied by a previous run
+if lsof -ti :3000 > /dev/null 2>&1; then
+    echo "   Freeing port 3000..."
+    lsof -ti :3000 | xargs kill 2>/dev/null || true
+    sleep 2
+fi
+
 # Start the server in background
 echo "🚀 Starting server..."
-npm run start > /dev/null 2>&1 &
+npm run start > /tmp/next-start.log 2>&1 &
 SERVER_PID=$!
-sleep 5
 
-# Verify server is running
-if ! curl -s http://localhost:3000 > /dev/null 2>&1; then
-    echo "❌ Server failed to start"
+# Wait for server to be fully ready (homepage + static pages)
+MAX_WAIT=30
+WAITED=0
+echo -n "   Waiting for server"
+while [ $WAITED -lt $MAX_WAIT ]; do
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/vehicles/brands/chevrolet 2>/dev/null | grep -q "200"; then
+        echo " ready! (${WAITED}s)"
+        break
+    fi
+    echo -n "."
+    sleep 1
+    ((WAITED++))
+done
+
+if [ $WAITED -ge $MAX_WAIT ]; then
+    echo " timeout!"
+    echo "❌ Server failed to start within ${MAX_WAIT}s"
     kill $SERVER_PID 2>/dev/null || true
     exit 1
 fi
