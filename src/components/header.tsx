@@ -43,11 +43,10 @@ export default function Header() {
             <Image
               src="/pink-logo-horizontal.png"
               alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-              width={972}
-              height={292}
+              width={500}
+              height={500}
               className="w-auto"
               style={{ height: '170px' }}
-              sizes="566px"
               priority
             />
           </Link>
@@ -78,11 +77,10 @@ export default function Header() {
               <Image
                 src="/pink-logo-horizontal.png"
                 alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-                width={972}
-                height={292}
-                className="w-auto max-w-[972px]"
+                width={500}
+                height={500}
+                className="w-auto"
                 style={{ height: '194px' }}
-                sizes="646px"
                 priority
               />
             </Link>
