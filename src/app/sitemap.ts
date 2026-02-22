@@ -215,8 +215,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: slug === 'phoenix-az' ? 0.9 : 0.8,
   }));
 
-  // Arizona insurance page
+  // Arizona insurance page + Phoenix landing page
   const azInsurance: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/phoenix`,
+      lastModified: new Date('2026-02-22'),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
     {
       url: `${baseUrl}/services/insurance-claims/arizona`,
       lastModified: new Date('2026-02-22'),
