@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Buckeye AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Buckeye AZ — fastest-growing US city. Same-day mobile service. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Buckeye AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Buckeye AZ — fastest-growing US city. Same-day mobile service. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement buckeye az, windshield repair buckeye, auto glass buckeye az, zero deductible windshield buckeye arizona, sundance buckeye windshield, festival ranch auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/buckeye-az',

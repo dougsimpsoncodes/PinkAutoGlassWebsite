@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Queen Creek AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Queen Creek AZ. Same-day mobile service to Pecan Creek, Hastings Farms & all Queen Creek. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Queen Creek AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Queen Creek AZ. Same-day mobile service to Pecan Creek, Hastings Farms & all Queen Creek. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement queen creek az, windshield repair queen creek, auto glass queen creek az, zero deductible windshield queen creek arizona, hastings farms windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/queen-creek-az',

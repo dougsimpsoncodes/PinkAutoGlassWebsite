@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Tempe AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Tempe AZ. Same-day mobile service near ASU, Mill Avenue & all Tempe. Arizona ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Tempe AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Tempe AZ. Same-day mobile service near ASU, Mill Avenue & all Tempe. Arizona ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement tempe az, windshield repair tempe, auto glass tempe az, zero deductible windshield tempe, asu area windshield, mobile auto glass tempe arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/tempe-az',

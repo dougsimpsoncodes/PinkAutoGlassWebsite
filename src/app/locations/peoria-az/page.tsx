@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Peoria AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Peoria AZ. Same-day mobile service to Vistancia, Lake Pleasant & all Peoria. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Peoria AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Peoria AZ. Same-day mobile service to Vistancia, Lake Pleasant & all Peoria. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement peoria az, windshield repair peoria, auto glass peoria az, zero deductible windshield peoria, vistancia windshield, mobile auto glass peoria arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/peoria-az',

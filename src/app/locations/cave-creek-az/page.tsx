@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Cave Creek AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Cave Creek AZ. Same-day mobile service to Cave Creek Town Center, Carefree & all area. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Cave Creek AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Cave Creek AZ. Same-day mobile service to Cave Creek Town Center, Carefree & all area. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement cave creek az, windshield repair cave creek, auto glass cave creek az, zero deductible windshield cave creek, carefree windshield, tatum ranch auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/cave-creek-az',

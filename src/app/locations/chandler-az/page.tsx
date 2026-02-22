@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Chandler AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Chandler AZ. Same-day mobile service to Ocotillo, Fulton Ranch & all Chandler. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Chandler AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Chandler AZ. Same-day mobile service to Ocotillo, Fulton Ranch & all Chandler. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement chandler az, windshield repair chandler, auto glass chandler az, zero deductible windshield chandler, ocotillo windshield, mobile auto glass chandler arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/chandler-az',

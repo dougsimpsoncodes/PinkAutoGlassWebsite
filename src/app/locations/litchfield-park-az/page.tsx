@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Litchfield Park AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Litchfield Park AZ. Same-day mobile service near Wigwam Resort, Luke AFB corridor & all Litchfield Park. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Litchfield Park AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Litchfield Park AZ. Same-day mobile service near Wigwam Resort, Luke AFB corridor & all Litchfield Park. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement litchfield park az, windshield repair litchfield park, auto glass litchfield park az, zero deductible windshield litchfield park arizona, wigwam resort area auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/litchfield-park-az',

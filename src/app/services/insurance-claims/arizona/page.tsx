@@ -9,7 +9,7 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 
 export const metadata: Metadata = {
   title: 'Arizona Windshield Insurance Claims | $0 Deductible | ARS 20-264 | Pink Auto Glass',
-  description: 'Arizona law (ARS 20-264) means your windshield replacement costs $0. ARS 20-263 protects your rates. ARS 20-469 means you choose your shop — not Safelite. We handle all paperwork. Call (720) 918-7465!',
+  description: 'Arizona law (ARS 20-264) means your windshield replacement costs $0. ARS 20-263 protects your rates. ARS 20-469 means you choose your shop — not Safelite. We handle all paperwork. Call (480) 712-7465!',
   keywords: 'arizona windshield insurance claims, ARS 20-264 zero deductible arizona, arizona glass coverage law, $0 windshield arizona, ARS 20-263 no rate increase, ARS 20-469 choose your shop, phoenix windshield insurance',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/arizona',
@@ -217,7 +217,7 @@ export default function ArizonaInsuranceClaimsPage() {
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     {[
-                      { num: '1', title: 'Call Us First', desc: 'The fastest option. Call Pink Auto Glass at (720) 918-7465 and give us your insurance company name and policy number. We verify coverage on your behalf — for free, no obligation.' },
+                      { num: '1', title: 'Call Us First', desc: 'The fastest option. Call Pink Auto Glass at (480) 712-7465 and give us your insurance company name and policy number. We verify coverage on your behalf — for free, no obligation.' },
                       { num: '2', title: 'Check Your Declarations Page', desc: 'Your declarations page (the first page of your policy) lists all coverages. Look for "Comprehensive Glass," "Full Glass," or "Glass Endorsement" — any of these indicate zero-deductible coverage.' },
                       { num: '3', title: 'Check Your Insurance App', desc: 'Most major insurers (State Farm, Geico, Progressive, USAA) have apps that show your coverage details. Look under Comprehensive coverage for glass-related entries.' },
                       { num: '4', title: 'Call Your Insurer Directly', desc: 'Ask: "Do I have zero-deductible glass coverage under ARS 20-264?" The specific statute reference helps clarify what you\'re asking about.' },
@@ -275,7 +275,7 @@ export default function ArizonaInsuranceClaimsPage() {
                   ))}
                 </div>
                 <p className="text-gray-600 mt-4 text-center">
-                  Don't see your insurer? <a href="tel:+17209187465" className="text-orange-600 hover:underline font-semibold">Call us</a> — we work with all carriers.
+                  Don't see your insurer? <a href="tel:+14807127465" className="text-orange-600 hover:underline font-semibold">Call us</a> — we work with all carriers.
                 </p>
               </section>
 
@@ -329,14 +329,14 @@ export default function ArizonaInsuranceClaimsPage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Start Your AZ Claim</h3>
                   <div className="space-y-3">
                     <a
-                      href="tel:+17209187465"
+                      href="tel:+14807127465"
                       className="flex items-center justify-center w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
                     >
                       <Phone className="w-5 h-5 mr-2" />
-                      Call (720) 918-7465
+                      Call (480) 712-7465
                     </a>
                     <a
-                      href="sms:+17209187465"
+                      href="sms:+14807127465"
                       className="flex items-center justify-center w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
                     >
                       <MessageSquare className="w-5 h-5 mr-2" />

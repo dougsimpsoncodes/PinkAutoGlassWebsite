@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Mesa AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Mesa AZ. Same-day mobile service to Dobson Ranch, Eastmark & all Mesa. Arizona ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Mesa AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Mesa AZ. Same-day mobile service to Dobson Ranch, Eastmark & all Mesa. Arizona ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement mesa az, windshield repair mesa, auto glass mesa az, zero deductible windshield mesa, dobson ranch windshield, mobile auto glass mesa arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/mesa-az',

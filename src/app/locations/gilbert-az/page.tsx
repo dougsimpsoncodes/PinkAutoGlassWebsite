@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Gilbert AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Gilbert AZ. Same-day mobile service to Heritage District, Power Ranch & all Gilbert. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Gilbert AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Gilbert AZ. Same-day mobile service to Heritage District, Power Ranch & all Gilbert. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement gilbert az, windshield repair gilbert, auto glass gilbert az, zero deductible windshield gilbert, power ranch windshield, mobile auto glass gilbert arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/gilbert-az',

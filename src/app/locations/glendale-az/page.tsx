@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Glendale AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Glendale AZ. Same-day mobile service to Westgate, Arrowhead & all Glendale. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Glendale AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Glendale AZ. Same-day mobile service to Westgate, Arrowhead & all Glendale. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement glendale az, windshield repair glendale, auto glass glendale az, zero deductible windshield glendale, westgate windshield, mobile auto glass glendale arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/glendale-az',

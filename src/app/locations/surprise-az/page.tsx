@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Surprise AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Surprise AZ. Same-day mobile service to Sun City Grand, Marley Park & all Surprise. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Surprise AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Surprise AZ. Same-day mobile service to Sun City Grand, Marley Park & all Surprise. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement surprise az, windshield repair surprise, auto glass surprise az, zero deductible windshield surprise, sun city grand windshield, mobile auto glass surprise arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/surprise-az',

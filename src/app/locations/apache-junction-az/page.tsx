@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Apache Junction AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Apache Junction AZ. Same-day mobile service near Superstition Mountains & all AJ. ARS 20-264 means $0 out of pocket. Call (720) 918-7465!',
+  title: 'Windshield Replacement Apache Junction AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Apache Junction AZ. Same-day mobile service near Superstition Mountains & all AJ. ARS 20-264 means $0 out of pocket. Call (480) 712-7465!',
   keywords: 'windshield replacement apache junction az, windshield repair apache junction, auto glass apache junction, zero deductible windshield apache junction, gold canyon windshield, US-60 auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/apache-junction-az',

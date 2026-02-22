@@ -8,8 +8,8 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Phoenix AZ | Auto Glass Repair | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Phoenix AZ. Same-day mobile service. Arizona law (ARS 20-264) means $0 out of pocket with comprehensive coverage. We handle all paperwork. Call (720) 918-7465!',
+  title: 'Windshield Replacement Phoenix AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
+  description: 'Windshield replacement & auto glass repair in Phoenix AZ. Same-day mobile service. Arizona law (ARS 20-264) means $0 out of pocket with comprehensive coverage. We handle all paperwork. Call (480) 712-7465!',
   keywords: 'windshield replacement phoenix az, windshield repair phoenix, auto glass phoenix az, zero deductible windshield phoenix, ARS 20-264 arizona, mobile windshield phoenix',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/phoenix-az',
