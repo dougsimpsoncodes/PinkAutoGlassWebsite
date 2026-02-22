@@ -49,7 +49,17 @@ export default function InsuranceClaimsPage() {
     { name: 'Insurance Claims', url: 'https://pinkautoglass.com/services/insurance-claims' }
   ]);
 
-  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema);
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Auto Glass Insurance Claims Colorado | $0 Deductible",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".answer-first", "h1"]
+    }
+  };
+
+  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema, webPageSchema);
 
   return (
     <>
@@ -58,7 +68,7 @@ export default function InsuranceClaimsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-green-50 page-top-padding">
+      <article className="min-h-screen bg-gradient-to-b from-white to-green-50 page-top-padding">
         <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -69,8 +79,8 @@ export default function InsuranceClaimsPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Auto Glass Insurance Claims Made Easy
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-teal-100">
-                We Handle All Paperwork • Often Zero Deductible • Direct Billing • All Major Insurers
+              <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
+                Filing an auto glass insurance claim in Colorado is simple when Pink Auto Glass handles it for you. We take care of 100% of the paperwork, verify your coverage, and bill your insurance company directly so you never have to call your insurer or chase down claim numbers. Most Colorado drivers with comprehensive coverage pay zero dollars out of pocket for windshield repair or replacement because Colorado law CRS 10-4-613 requires insurers to offer zero-deductible glass coverage. We work with every major provider including State Farm, Geico, Progressive, Allstate, USAA, Farmers, Liberty Mutual, Nationwide, AAA, and Travelers. Glass claims are classified as no-fault comprehensive claims, which means filing one will not raise your insurance rates. From the moment you contact us to the completion of your service, we keep you informed of your coverage, your cost, and your timeline. Same-day appointments are available across the Denver Front Range.
               </p>
               <CTAButtons source="insurance-claims" />
             </div>
@@ -90,6 +100,13 @@ export default function InsuranceClaimsPage() {
               { label: 'Insurance Claims', href: '/services/insurance-claims' }
             ]}
           />
+        </div>
+
+        {/* Timestamp */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <time dateTime="2026-02-22" className="text-sm text-gray-500">
+            Updated February 22, 2026
+          </time>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -374,7 +391,7 @@ export default function InsuranceClaimsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </>
   );
 }

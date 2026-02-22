@@ -9,6 +9,11 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'Google-Extended', allow: '/' },
       { userAgent: 'Applebot-Extended', allow: '/' },
       { userAgent: 'PerplexityBot', allow: '/' },
+      { userAgent: 'OAI-SearchBot', allow: '/' },
+      { userAgent: 'ClaudeBot', allow: '/' },
+      { userAgent: 'Claude-SearchBot', allow: '/' },
+      { userAgent: 'Bytespider', allow: '/' },
+      { userAgent: 'meta-externalagent', allow: '/' },
     ],
     sitemap: 'https://pinkautoglass.com/sitemap.xml',
   }

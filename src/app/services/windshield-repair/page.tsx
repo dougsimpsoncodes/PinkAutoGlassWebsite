@@ -49,7 +49,17 @@ export default function WindshieldRepairPage() {
     { name: 'Windshield Repair', url: 'https://pinkautoglass.com/services/windshield-repair' }
   ]);
 
-  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema);
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Windshield Chip Repair Denver | Lifetime Warranty",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".answer-first", "h1"]
+    }
+  };
+
+  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema, webPageSchema);
 
   return (
     <>
@@ -58,7 +68,7 @@ export default function WindshieldRepairPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
+      <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero */}
         <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,8 +76,8 @@ export default function WindshieldRepairPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Fast Windshield Chip Repair in Denver
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-green-100">
-                30-Minute Service • Often Covered by Insurance • Prevents Spreading
+              <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
+                Windshield chip repair in Denver takes about 30 minutes and most Colorado drivers pay nothing out of pocket. Under Colorado comprehensive insurance policies, windshield repair is typically covered with zero deductible, meaning your insurer pays the full cost. Pink Auto Glass offers same-day mobile chip repair across the entire Front Range. We come to your home, office, or wherever you are with our fully equipped mobile units. Our technicians inject advanced resin into the damaged area using vacuum and pressure cycles, then cure it under UV light to restore up to 90 percent of your windshield's original strength. Repairing a chip early prevents it from spreading into a long crack that would require a full replacement. Colorado's dramatic temperature swings between day and night can turn a small rock chip into an irreparable crack within days. Every repair is backed by our lifetime warranty on workmanship, and we handle all insurance paperwork so you can focus on your day.
               </p>
               <CTAButtons source="windshield-repair" />
             </div>
@@ -87,6 +97,13 @@ export default function WindshieldRepairPage() {
               { label: 'Windshield Repair', href: '/services/windshield-repair' }
             ]}
           />
+        </div>
+
+        {/* Timestamp */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <time dateTime="2026-02-22" className="text-sm text-gray-500">
+            Updated February 22, 2026
+          </time>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -389,7 +406,7 @@ export default function WindshieldRepairPage() {
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </>
   );
 }

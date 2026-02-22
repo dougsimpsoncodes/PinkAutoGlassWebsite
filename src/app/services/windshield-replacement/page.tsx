@@ -73,7 +73,17 @@ export default function WindshieldReplacementPage() {
     { name: 'Windshield Replacement', url: 'https://pinkautoglass.com/services/windshield-replacement' }
   ]);
 
-  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema);
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Windshield Replacement Denver | Same-Day Mobile Service",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".answer-first", "h1"]
+    }
+  };
+
+  const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema, webPageSchema);
 
   return (
     <>
@@ -83,7 +93,7 @@ export default function WindshieldReplacementPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
-      <div className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
+      <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,8 +101,8 @@ export default function WindshieldReplacementPage() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Professional Windshield Replacement in Denver
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                OEM Quality Glass • Same-Day Service • Lifetime Warranty
+              <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
+                Windshield replacement in Denver typically costs between $250 and $900 depending on your vehicle make, model, and whether ADAS calibration is needed. However, most Colorado drivers pay nothing out of pocket because Colorado law CRS 10-4-613 requires all auto insurers to offer zero-deductible comprehensive glass coverage. At Pink Auto Glass, we handle 100% of the insurance paperwork and bill your insurer directly. Our certified technicians use OEM-quality glass that meets or exceeds factory specifications, and every installation includes a lifetime warranty on workmanship and leaks. We offer same-day mobile service across the entire Denver Front Range, meaning we come to your home, office, or wherever is most convenient. If your vehicle is 2018 or newer, we also perform ADAS camera calibration on-site at no extra charge. From the moment you call to the final quality check, the entire process takes about 60 to 90 minutes.
               </p>
               <CTAButtons source="windshield-replacement" />
             </div>
@@ -114,6 +124,13 @@ export default function WindshieldReplacementPage() {
               { label: 'Windshield Replacement', href: '/services/windshield-replacement' }
             ]}
           />
+        </div>
+
+        {/* Timestamp */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <time dateTime="2026-02-22" className="text-sm text-gray-500">
+            Updated February 22, 2026
+          </time>
         </div>
 
         {/* Main Content */}
@@ -527,7 +544,7 @@ export default function WindshieldReplacementPage() {
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </>
   );
 }

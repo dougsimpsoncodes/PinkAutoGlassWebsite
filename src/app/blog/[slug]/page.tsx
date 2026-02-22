@@ -140,12 +140,20 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
     { label: post.title, href: `/blog/${post.slug}` }
   ];
 
-  const articleSchema = getArticleSchema({
+  const articleSchemaBase = getArticleSchema({
     headline: post.title,
     description: post.excerpt,
     datePublished: post.publishDate,
     author: post.author,
   });
+
+  const articleSchema = {
+    ...articleSchemaBase,
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".answer-first", "h1"]
+    }
+  };
 
   const breadcrumbSchema = getBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
@@ -186,7 +194,9 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>{new Date(post.publishDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <time dateTime={post.publishDate}>
+                      Published {new Date(post.publishDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </time>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5" />
@@ -206,7 +216,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto">
               {/* Excerpt */}
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed font-medium">
+              <p className="answer-first text-xl text-gray-600 mb-8 leading-relaxed font-medium">
                 {post.excerpt}
               </p>
 
