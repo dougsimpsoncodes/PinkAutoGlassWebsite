@@ -121,6 +121,35 @@ export default function BlogPage() {
           <CTAButtons source="blog-index-cta" />
         </div>
       </section>
+
+      {/* Popular Locations */}
+      <section className="container mx-auto px-4 pb-16">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Popular Service Locations</h2>
+          <p className="text-gray-700 mb-6">
+            We provide mobile auto glass service across Colorado. Start with these popular areas:
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { name: 'Broomfield', slug: 'broomfield-co' },
+              { name: 'Littleton', slug: 'littleton-co' },
+              { name: 'Longmont', slug: 'longmont-co' },
+              { name: 'Evergreen', slug: 'evergreen-co' },
+              { name: 'Golden', slug: 'golden-co' },
+              { name: 'Denver', slug: 'denver-co' },
+            ].map((location) => (
+              <Link
+                key={location.slug}
+                href={`/locations/${location.slug}`}
+                className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 transition-colors"
+              >
+                <span className="font-medium">{location.name}</span>
+                <span className="text-pink-600 font-semibold">View →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -201,6 +201,37 @@ export default function VehiclesPage() {
           </section>
 
           {/* Browse by Make */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Popular Vehicle Brands</h2>
+            <p className="text-lg text-gray-700 mb-6">
+              Jump straight to the most searched brands:
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {[
+                { name: 'Ford', slug: 'ford' },
+                { name: 'Tesla', slug: 'tesla' },
+                { name: 'Toyota', slug: 'toyota' },
+                { name: 'Chevrolet', slug: 'chevrolet' },
+                { name: 'Nissan', slug: 'nissan' },
+                { name: 'Jeep', slug: 'jeep' },
+                { name: 'Subaru', slug: 'subaru' },
+                { name: 'GMC', slug: 'gmc' },
+                { name: 'Ram', slug: 'ram' },
+                { name: 'Mazda', slug: 'mazda' },
+              ].map((brand) => (
+                <Link
+                  key={brand.slug}
+                  href={`/vehicles/brands/${brand.slug}`}
+                  className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-3 hover:shadow-md transition-shadow"
+                >
+                  <span className="font-semibold text-gray-900">{brand.name}</span>
+                  <span className="text-blue-600 font-semibold">View →</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Browse by Make */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">
               Browse by Vehicle Make

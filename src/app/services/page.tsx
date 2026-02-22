@@ -616,6 +616,48 @@ export default function ServicesPage() {
             </div>
           </section>
 
+          {/* Featured Guides */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">Featured Guides</h2>
+            <p className="text-lg text-gray-700 mb-8 text-center max-w-3xl mx-auto">
+              Helpful, in-depth answers to common questions about repair, replacement, ADAS calibration, and insurance.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                {
+                  title: 'ADAS Calibration Complete Guide',
+                  description: 'Why calibration matters, what to expect, and how long it takes.',
+                  slug: 'adas-calibration-complete-guide-windshield-replacement',
+                },
+                {
+                  title: 'Windshield Repair vs. Replacement',
+                  description: 'How to decide which service you need and why timing matters.',
+                  slug: 'windshield-repair-vs-replacement-when-to-choose',
+                },
+                {
+                  title: 'Windshield Replacement Cost in Colorado',
+                  description: 'Insurance coverage, deductible details, and what impacts pricing.',
+                  slug: 'windshield-replacement-cost-colorado-insurance-guide',
+                },
+                {
+                  title: 'Prevent Winter Chips from Becoming Cracks',
+                  description: 'Colorado cold-weather tips to protect your glass.',
+                  slug: 'winter-colorado-prevent-chips-becoming-cracks',
+                },
+              ].map((guide) => (
+                <Link
+                  key={guide.slug}
+                  href={`/blog/${guide.slug}`}
+                  className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{guide.title}</h3>
+                  <p className="text-gray-700 mb-4">{guide.description}</p>
+                  <div className="text-pink-600 font-semibold">Read Guide →</div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
           {/* FAQs */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
@@ -645,6 +687,11 @@ export default function ServicesPage() {
                     { name: 'Aurora', slug: 'aurora-co' },
                     { name: 'Lakewood', slug: 'lakewood-co' },
                     { name: 'Boulder', slug: 'boulder-co' },
+                    { name: 'Broomfield', slug: 'broomfield-co' },
+                    { name: 'Littleton', slug: 'littleton-co' },
+                    { name: 'Longmont', slug: 'longmont-co' },
+                    { name: 'Evergreen', slug: 'evergreen-co' },
+                    { name: 'Golden', slug: 'golden-co' },
                     { name: 'Highlands Ranch', slug: 'highlands-ranch-co' },
                     { name: 'Thornton', slug: 'thornton-co' },
                     { name: 'Arvada', slug: 'arvada-co' },

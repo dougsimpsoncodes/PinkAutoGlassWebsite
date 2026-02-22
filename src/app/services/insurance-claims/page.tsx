@@ -218,6 +218,77 @@ export default function InsuranceClaimsPage() {
                 </p>
                 <CTAButtons source="insurance-claims" />
               </section>
+
+              <section className="bg-white rounded-xl p-8 border border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Insurance Providers We Handle</h2>
+                <p className="text-gray-700 mb-6">
+                  Choose your insurer below to see claim tips, coverage notes, and what to expect.
+                </p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {[
+                    { name: 'Progressive', slug: 'progressive' },
+                    { name: 'Geico', slug: 'geico' },
+                    { name: 'State Farm', slug: 'state-farm' },
+                    { name: 'Allstate', slug: 'allstate' },
+                    { name: 'USAA', slug: 'usaa' },
+                    { name: 'AAA', slug: 'aaa' },
+                    { name: 'Farmers', slug: 'farmers' },
+                    { name: 'Liberty Mutual', slug: 'liberty-mutual' },
+                    { name: 'Nationwide', slug: 'nationwide' },
+                    { name: 'Travelers', slug: 'travelers' },
+                  ].map((insurer) => (
+                    <Link
+                      key={insurer.slug}
+                      href={`/services/insurance-claims/${insurer.slug}`}
+                      className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 transition-colors"
+                    >
+                      <span className="font-medium">{insurer.name}</span>
+                      <span className="text-teal-700 font-semibold">Learn More →</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-xl p-8 border border-blue-200">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Insurance & Coverage Guides</h2>
+                <p className="text-gray-700 mb-6">
+                  Deeper answers on coverage, costs, and what to do next if you have glass damage.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      title: 'Windshield Replacement Cost in Colorado',
+                      description: 'Insurance coverage, deductible details, and what impacts pricing.',
+                      slug: 'windshield-replacement-cost-colorado-insurance-guide',
+                    },
+                    {
+                      title: 'Windshield Repair vs. Replacement',
+                      description: 'How to decide which service you need and why timing matters.',
+                      slug: 'windshield-repair-vs-replacement-when-to-choose',
+                    },
+                    {
+                      title: 'ADAS Calibration Complete Guide',
+                      description: 'Why calibration matters after replacement and what to expect.',
+                      slug: 'adas-calibration-complete-guide-windshield-replacement',
+                    },
+                    {
+                      title: 'Prevent Winter Chips from Becoming Cracks',
+                      description: 'Colorado cold-weather tips to protect your glass.',
+                      slug: 'winter-colorado-prevent-chips-becoming-cracks',
+                    },
+                  ].map((guide) => (
+                    <Link
+                      key={guide.slug}
+                      href={`/blog/${guide.slug}`}
+                      className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow"
+                    >
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{guide.title}</h3>
+                      <p className="text-sm text-gray-700 mb-3">{guide.description}</p>
+                      <div className="text-teal-700 font-semibold text-sm">Read Guide →</div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             </div>
 
             <div className="lg:col-span-1">

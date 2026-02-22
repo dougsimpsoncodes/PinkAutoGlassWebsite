@@ -143,6 +143,17 @@ const nextConfig = {
         destination: 'https://pinkautoglass.com/:path*',
         permanent: true,
       },
+      // Blog topic consolidation - redirect older posts to newer canonicals
+      {
+        source: '/blog/windshield-repair-vs-replacement-decision-guide',
+        destination: '/blog/windshield-repair-vs-replacement-when-to-choose',
+        permanent: true,
+      },
+      {
+        source: '/blog/windshield-replacement-cost-guide-colorado',
+        destination: '/blog/windshield-replacement-cost-colorado-insurance-guide',
+        permanent: true,
+      },
       // Redirect old /vehicles/make/:make to canonical /vehicles/brands/:make
       {
         source: '/vehicles/make/:make',

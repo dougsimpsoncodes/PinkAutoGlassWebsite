@@ -191,12 +191,19 @@ export default function LocationsPage() {
       neighborhoods: '6+ neighborhoods',
       responseTime: 'Same-day'
     },
+    {
+      name: 'Golden',
+      slug: 'golden-co',
+      description: 'Historic mountain town west of Denver',
+      neighborhoods: '6+ neighborhoods',
+      responseTime: 'Same-day'
+    },
   ];
 
   const faqs = [
     {
       question: 'How far will you travel for mobile service?',
-      answer: 'We provide mobile service throughout Colorado including all Denver metro cities (Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Littleton, Englewood, Commerce City, Brighton, Broomfield), Northern Front Range (Fort Collins, Loveland, Greeley, Longmont, Windsor), Southern Colorado (Colorado Springs), and mountain communities (Evergreen). If you\'re within our service area, there\'s no extra charge for mobile service in metro areas. Call us to confirm coverage in your specific location.'
+      answer: 'We provide mobile service throughout Colorado including all Denver metro cities (Denver, Aurora, Lakewood, Boulder, Arvada, Thornton, Westminster, Highlands Ranch, Parker, Centennial, Littleton, Englewood, Commerce City, Brighton, Broomfield), Northern Front Range (Fort Collins, Loveland, Greeley, Longmont, Windsor), Southern Colorado (Colorado Springs), and mountain communities (Evergreen, Golden). If you\'re within our service area, there\'s no extra charge for mobile service in metro areas. Call us to confirm coverage in your specific location.'
     },
     {
       question: 'Do you charge extra for mobile service?',
