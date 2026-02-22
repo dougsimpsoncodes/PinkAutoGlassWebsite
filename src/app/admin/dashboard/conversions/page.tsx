@@ -239,7 +239,19 @@ export default function ConversionsPage() {
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold ${
                       stat.source === 'google' ? 'bg-blue-500' :
                       stat.source === 'facebook' ? 'bg-blue-600' :
-                      stat.source === 'direct' ? 'bg-gray-500' : 'bg-pink-500'
+                      stat.source === 'direct' ? 'bg-gray-500' :
+                      stat.source === 'windshieldcostcalculator' ? 'bg-teal-500' :
+                      stat.source === 'windshielddenver' ? 'bg-sky-500' :
+                      stat.source === 'chiprepairdenver' ? 'bg-orange-500' :
+                      stat.source === 'chiprepairboulder' ? 'bg-emerald-500' :
+                      stat.source === 'aurorawindshield' ? 'bg-violet-500' :
+                      stat.source === 'mobilewindshielddenver' ? 'bg-cyan-500' :
+                      stat.source === 'cheapestwindshield' ? 'bg-lime-500' :
+                      stat.source === 'newwindshieldcost' ? 'bg-slate-500' :
+                      stat.source === 'getawindshieldquote' ? 'bg-rose-500' :
+                      stat.source === 'newwindshieldnearme' ? 'bg-amber-500' :
+                      stat.source === 'windshieldpricecompare' ? 'bg-indigo-500' :
+                      'bg-pink-500'
                     }`}>
                       {stat.source.charAt(0).toUpperCase()}
                     </div>
