@@ -186,6 +186,45 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  // Arizona location pages
+  const azLocations = [
+    'phoenix-az',
+    'scottsdale-az',
+    'tempe-az',
+    'mesa-az',
+    'chandler-az',
+    'gilbert-az',
+    'glendale-az',
+    'peoria-az',
+    'surprise-az',
+    'goodyear-az',
+    'avondale-az',
+    'buckeye-az',
+    'fountain-hills-az',
+    'queen-creek-az',
+    'apache-junction-az',
+    'cave-creek-az',
+    'maricopa-az',
+    'el-mirage-az',
+    'litchfield-park-az',
+    'ahwatukee-az',
+  ].map((slug) => ({
+    url: `${baseUrl}/locations/${slug}`,
+    lastModified: new Date('2026-02-22'),
+    changeFrequency: 'weekly' as const,
+    priority: slug === 'phoenix-az' ? 0.9 : 0.8,
+  }));
+
+  // Arizona insurance page
+  const azInsurance: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/services/insurance-claims/arizona`,
+      lastModified: new Date('2026-02-22'),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+  ];
+
   // Insurance brand pages
   const insuranceBrands = [
     'progressive',
@@ -205,5 +244,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...pages, ...services, ...insuranceBrands, ...locations, ...vehicles, ...blog, ...brands];
+  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...locations, ...azLocations, ...vehicles, ...blog, ...brands];
 }

@@ -7,15 +7,15 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
-  description: 'Mobile windshield repair and replacement throughout Colorado. Serving Denver, Aurora, Boulder, Lakewood and 22 cities statewide. We come to you - no extra charge. Call (720) 918-7465.',
-  keywords: 'windshield repair locations colorado, mobile auto glass denver metro, windshield replacement near me, auto glass service areas colorado',
+  title: 'Mobile Windshield Service Locations Colorado & Arizona | Pink Auto Glass',
+  description: 'Mobile windshield repair and replacement throughout Colorado and Arizona. Serving Denver metro, Phoenix metro, and 40+ cities. We come to you — no extra charge. Call (720) 918-7465.',
+  keywords: 'windshield repair locations colorado arizona, mobile auto glass denver phoenix metro, windshield replacement near me, auto glass service areas colorado arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations',
   },
   openGraph: {
-    title: 'Mobile Windshield Service Locations Colorado | Pink Auto Glass',
-    description: 'We come to you anywhere in Denver metro. Mobile windshield service with no extra charge.',
+    title: 'Mobile Windshield Service Locations Colorado & Arizona | Pink Auto Glass',
+    description: 'We come to you anywhere in Denver or Phoenix metro. Mobile windshield service with no extra charge. Now serving Arizona!',
     url: 'https://pinkautoglass.com/locations',
     type: 'website',
   },
@@ -200,6 +200,29 @@ export default function LocationsPage() {
     },
   ];
 
+  const azLocations = [
+    { name: 'Phoenix', slug: 'phoenix-az', state: 'AZ', description: "Arizona's capital and largest city", neighborhoods: '15+ neighborhoods', responseTime: 'Same-day', popular: true },
+    { name: 'Scottsdale', slug: 'scottsdale-az', state: 'AZ', description: 'Luxury destination & tech hub', neighborhoods: '12+ neighborhoods', responseTime: 'Same-day', popular: true },
+    { name: 'Mesa', slug: 'mesa-az', state: 'AZ', description: "Arizona's 3rd largest city", neighborhoods: '10+ neighborhoods', responseTime: 'Same-day', popular: true },
+    { name: 'Chandler', slug: 'chandler-az', state: 'AZ', description: 'Southeast Valley tech corridor', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Gilbert', slug: 'gilbert-az', state: 'AZ', description: 'Fastest-growing East Valley suburb', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Tempe', slug: 'tempe-az', state: 'AZ', description: 'Home of ASU, central Valley', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Glendale', slug: 'glendale-az', state: 'AZ', description: 'West Valley entertainment hub', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Peoria', slug: 'peoria-az', state: 'AZ', description: 'NW Valley growing community', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Surprise', slug: 'surprise-az', state: 'AZ', description: 'NW Valley retirement & families', neighborhoods: '8+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Goodyear', slug: 'goodyear-az', state: 'AZ', description: 'West Valley near Luke AFB', neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Avondale', slug: 'avondale-az', state: 'AZ', description: 'West Valley, near Raceway', neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Buckeye', slug: 'buckeye-az', state: 'AZ', description: "USA's fastest-growing city", neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Fountain Hills', slug: 'fountain-hills-az', state: 'AZ', description: 'Scenic mountain community', neighborhoods: '4+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Queen Creek', slug: 'queen-creek-az', state: 'AZ', description: 'SE Valley growing suburb', neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Apache Junction', slug: 'apache-junction-az', state: 'AZ', description: 'East Valley gateway community', neighborhoods: '4+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Cave Creek', slug: 'cave-creek-az', state: 'AZ', description: 'North Scottsdale desert community', neighborhoods: '4+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Maricopa', slug: 'maricopa-az', state: 'AZ', description: 'South Valley commuter city', neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'El Mirage', slug: 'el-mirage-az', state: 'AZ', description: 'West Valley small city', neighborhoods: '4+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Litchfield Park', slug: 'litchfield-park-az', state: 'AZ', description: 'West Valley historic resort town', neighborhoods: '4+ neighborhoods', responseTime: 'Same-day' },
+    { name: 'Ahwatukee', slug: 'ahwatukee-az', state: 'AZ', description: 'South Phoenix foothills community', neighborhoods: '6+ neighborhoods', responseTime: 'Same-day' },
+  ];
+
   const faqs = [
     {
       question: 'How far will you travel for mobile service?',
@@ -251,12 +274,16 @@ export default function LocationsPage() {
               <div className="flex items-center justify-center mb-4">
                 <MapPin className="w-12 h-12 mr-3" />
                 <h1 className="text-4xl md:text-5xl font-bold">
-                  Mobile Windshield Service Throughout Colorado
+                  Mobile Windshield Service in Colorado & Arizona
                 </h1>
               </div>
-              <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-                We come to you anywhere in the Denver metro area • Same-day appointments • No extra charge for mobile service
+              <p className="text-xl md:text-2xl mb-4 text-blue-100 max-w-3xl mx-auto">
+                We come to you anywhere in the Denver metro or Phoenix metro • Same-day appointments • No extra charge for mobile service
               </p>
+              <div className="inline-block bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm mb-6">
+                Now Serving Arizona! Phoenix Metro — 20 Cities
+              </div>
+              <br />
               <CTAButtons source="locations-hub-hero" />
             </div>
           </div>
@@ -279,14 +306,18 @@ export default function LocationsPage() {
           {/* Intro Section */}
           <section className="mb-16 text-center max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              Professional Windshield Service Across Denver Metro
+              Professional Windshield Service Across Two States
             </h2>
             <p className="text-lg text-gray-700 mb-4">
-              Pink Auto Glass brings expert windshield repair and replacement directly to you. Our fully equipped mobile units serve 22 cities throughout Colorado, from Denver metro to Fort Collins, Colorado Springs, and mountain communities, providing the same quality service you'd receive at a shop—right at your home, office, or any convenient location.
+              Pink Auto Glass brings expert windshield repair and replacement directly to you across Colorado and Arizona. Our fully equipped mobile units serve 22 cities throughout Colorado and 20 cities in the Phoenix metro area, providing the same quality service you'd receive at a shop — right at your home, office, or any convenient location.
             </p>
-            <p className="text-lg text-gray-700">
-              Whether you're in downtown Denver, the suburbs of Aurora, or anywhere in between, we come to you with OEM-quality glass, certified technicians, and all the equipment needed for windshield replacement and ADAS calibration.
+            <p className="text-lg text-gray-700 mb-4">
+              Colorado drivers benefit from the state's zero-deductible glass coverage requirements. Arizona drivers are protected by three powerful laws: ARS 20-264 (zero-deductible mandate), ARS 20-263 (no rate increase), and ARS 20-469 (right to choose your shop).
             </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left mt-6">
+              <p className="text-orange-800 font-semibold mb-1">Now Serving Phoenix Metro, Arizona</p>
+              <p className="text-orange-700 text-sm">Arizona law (ARS 20-264) means most drivers pay $0 for windshield replacement. We serve all 20 Phoenix metro cities with same-day mobile service. <Link href="/services/insurance-claims/arizona" className="underline font-semibold">Learn about Arizona glass coverage →</Link></p>
+            </div>
           </section>
 
           {/* Coverage Map Visual */}
@@ -306,8 +337,8 @@ export default function LocationsPage() {
                     <div className="flex items-center mb-2">
                       <MapPin className="w-8 h-8 text-blue-600 mr-3" />
                       <div>
-                        <div className="text-3xl font-bold text-gray-900">22</div>
-                        <div className="text-gray-600">Cities Served</div>
+                        <div className="text-3xl font-bold text-gray-900">42+</div>
+                        <div className="text-gray-600">Cities Served (CO + AZ)</div>
                       </div>
                     </div>
                   </div>
@@ -316,7 +347,7 @@ export default function LocationsPage() {
                     <div className="flex items-center mb-2">
                       <Car className="w-8 h-8 text-purple-600 mr-3" />
                       <div>
-                        <div className="text-3xl font-bold text-gray-900">200+</div>
+                        <div className="text-3xl font-bold text-gray-900">400+</div>
                         <div className="text-gray-600">Neighborhoods</div>
                       </div>
                     </div>
@@ -372,44 +403,100 @@ export default function LocationsPage() {
               Click on your city below for neighborhood-specific coverage, local customer testimonials, and city-specific service information.
             </p>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {locations.map((location) => (
-                <Link
-                  key={location.slug}
-                  href={`/locations/${location.slug}`}
-                  className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-pink-400 overflow-hidden"
-                >
-                  <div className={`p-6 ${location.popular ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-gradient-to-r from-blue-500 to-blue-600'} text-white`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-2xl font-bold">{location.name}</h3>
-                      <MapPin className="w-6 h-6" />
-                    </div>
-                    <p className="text-sm opacity-90">{location.description}</p>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{location.neighborhoods} covered</span>
+            {/* Colorado Cities */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold mr-3">Colorado</span>
+                Denver Metro & Front Range
+              </h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {locations.map((location) => (
+                  <Link
+                    key={location.slug}
+                    href={`/locations/${location.slug}`}
+                    className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-pink-400 overflow-hidden"
+                  >
+                    <div className={`p-6 ${location.popular ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-gradient-to-r from-blue-500 to-blue-600'} text-white`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold">{location.name}</h3>
+                        <MapPin className="w-6 h-6" />
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{location.responseTime} service</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Car className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>Mobile service available</span>
-                      </div>
+                      <p className="text-sm opacity-90">{location.description}</p>
                     </div>
 
-                    <div className="flex items-center text-pink-600 font-semibold group-hover:text-pink-700">
-                      View {location.name} Details
-                      <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                    <div className="p-6">
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                          <span>{location.neighborhoods} covered</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                          <span>{location.responseTime} service</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Car className="w-4 h-4 mr-2 text-gray-400" />
+                          <span>Mobile service available</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center text-pink-600 font-semibold group-hover:text-pink-700">
+                        View {location.name} Details
+                        <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Arizona Cities */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center flex-wrap gap-3">
+                <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">Arizona — New!</span>
+                Phoenix Metro
+                <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">$0 Out of Pocket — ARS 20-264</span>
+              </h3>
+              <p className="text-gray-600 mb-6 ml-1">Arizona law means most Phoenix metro drivers pay nothing for windshield replacement. <Link href="/services/insurance-claims/arizona" className="text-orange-600 hover:underline font-semibold">Learn how →</Link></p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {azLocations.map((location) => (
+                  <Link
+                    key={location.slug}
+                    href={`/locations/${location.slug}`}
+                    className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-orange-400 overflow-hidden"
+                  >
+                    <div className={`p-6 ${location.popular ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold">{location.name}</h3>
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <p className="text-sm opacity-90">{location.description}</p>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                          <span>{location.neighborhoods} covered</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                          <span>{location.responseTime} service</span>
+                        </div>
+                        <div className="flex items-center text-sm text-orange-600 font-semibold">
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          <span>$0 with ARS 20-264 coverage</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center text-orange-600 font-semibold group-hover:text-orange-700">
+                        View {location.name} Details
+                        <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -601,11 +688,11 @@ export default function LocationsPage() {
               Ready to Schedule Mobile Service?
             </h2>
             <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-              Same-day appointments available throughout Denver metro. We come to you—no extra charge.
+              Same-day appointments available throughout Denver metro and Phoenix metro. We come to you — no extra charge.
             </p>
             <CTAButtons source="locations-hub-bottom" />
             <p className="mt-6 text-sm text-blue-100">
-              Serving 22 cities statewide including Denver, Aurora, Fort Collins, Colorado Springs, Boulder, and more
+              Serving 40+ cities in Colorado and Arizona including Denver, Aurora, Phoenix, Scottsdale, Mesa, and more
             </p>
           </section>
         </div>
