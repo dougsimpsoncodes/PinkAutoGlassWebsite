@@ -184,7 +184,7 @@ export default function PhoenixPage() {
                   href="tel:+14807127465"
                   className="bg-pink-800 hover:bg-pink-900 border-2 border-white/30 text-white font-bold py-4 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
                 >
-                  📞 (480) 712-7465
+                  📞 Call Now
                 </a>
               </div>
 
@@ -440,7 +440,7 @@ export default function PhoenixPage() {
                 className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
               >
                 <Phone className="w-5 h-5" />
-                Call (480) 712-7465 — Same-Day Service
+                Call Now — Same-Day Service
               </a>
             </div>
           </div>
@@ -625,7 +625,7 @@ export default function PhoenixPage() {
               href="tel:+14807127465"
               className="bg-pink-800 hover:bg-pink-900 border-2 border-white/30 text-white font-bold py-4 px-10 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
             >
-              📞 Call (480) 712-7465
+              📞 Call Now
             </a>
           </div>
 

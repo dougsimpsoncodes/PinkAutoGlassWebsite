@@ -2,6 +2,7 @@
 
 import { Phone, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { trackPhoneClick, trackTextClick } from '@/lib/tracking';
 import { trackBookingClick } from '@/lib/analytics';
 
@@ -16,8 +17,10 @@ export default function CTAButtons({
   layout = 'horizontal',
   showDiscount = true
 }: CTAButtonsProps) {
-  const phoneNumber = '7209187465';
-  const displayPhone = '(720) 918-7465';
+  const pathname = usePathname();
+  const isArizona = pathname.includes('/phoenix') || pathname.includes('-az');
+  const phoneNumber = isArizona ? '4807127465' : '7209187465';
+  const displayPhone = isArizona ? '(480) 712-7465' : '(720) 918-7465';
 
   const handlePhoneClick = () => {
     trackPhoneClick(source, `Call Now`, `+1${phoneNumber}`);
