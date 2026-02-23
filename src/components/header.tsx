@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Phone } from "lucide-react"
@@ -8,6 +9,10 @@ import { cn } from "@/lib/utils"
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const pathname = usePathname()
+  const isArizona = pathname.includes("/phoenix") || pathname.includes("-az")
+  const phone = isArizona ? "(480) 712-7465" : "(720) 918-7465"
+  const tel = isArizona ? "tel:+14807127465" : "tel:+17209187465"
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,12 +58,12 @@ export default function Header() {
 
           {/* Phone Number - Below logo on mobile */}
           <a
-            href="tel:+17209187465"
+            href={tel}
             className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors text-[22px]"
             aria-label="Call Pink Auto Glass"
           >
             <Phone className="w-6 h-6" />
-            <span className="font-medium">(720) 918-7465</span>
+            <span className="font-medium">{phone}</span>
           </a>
         </nav>
 
@@ -89,12 +94,12 @@ export default function Header() {
           {/* CTA Section (Right) */}
           <div className="flex items-center space-x-4">
             <a
-              href="tel:+17209187465"
+              href={tel}
               className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"
               aria-label="Call Pink Auto Glass"
             >
               <Phone className="w-4 h-4" />
-              <span className="font-medium">(720) 918-7465</span>
+              <span className="font-medium">{phone}</span>
             </a>
           </div>
         </nav>
