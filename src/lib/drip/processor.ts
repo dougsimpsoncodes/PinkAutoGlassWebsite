@@ -62,14 +62,17 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
     errors: [],
   };
 
-  // Fetch pending messages where scheduled_for <= now
+  // Atomically claim pending messages by setting status='processing'.
+  // This prevents duplicate sends when two cron runs overlap — only one
+  // process can transition a row from 'pending' to 'processing' at a time.
   const { data: messages, error: fetchError } = await supabase
     .from('scheduled_messages')
-    .select('*')
+    .update({ status: 'processing' })
     .eq('status', 'pending')
     .lte('scheduled_for', new Date().toISOString())
     .order('scheduled_for', { ascending: true })
-    .limit(BATCH_SIZE);
+    .limit(BATCH_SIZE)
+    .select();
 
   if (fetchError) {
     result.errors.push(`Fetch error: ${fetchError.message}`);
@@ -212,14 +215,14 @@ async function markFailed(supabase: SupabaseClient, id: string, reason: string) 
 async function retryLater(supabase: SupabaseClient, id: string, retryCount: number, retryAt: Date) {
   await supabase
     .from('scheduled_messages')
-    .update({ retry_count: retryCount, scheduled_for: retryAt.toISOString() })
+    .update({ status: 'pending', retry_count: retryCount, scheduled_for: retryAt.toISOString() })
     .eq('id', id);
 }
 
 async function reschedule(supabase: SupabaseClient, id: string, newTime: Date) {
   await supabase
     .from('scheduled_messages')
-    .update({ scheduled_for: newTime.toISOString() })
+    .update({ status: 'pending', scheduled_for: newTime.toISOString() })
     .eq('id', id);
 }
 
