@@ -29,6 +29,15 @@ const pressReleases = [
     market: "Phoenix",
     blogPost: "/blog/arizona-windshield-replacement-law",
   },
+  {
+    title: "Arizona's Zero-Deductible Windshield Law: What Phoenix Drivers Need to Know Before Filing a Claim",
+    publication: "PRLog",
+    date: "February 24, 2026",
+    url: "https://www.prlog.org/13129284-arizonas-zero-deductible-windshield-law-what-phoenix-drivers-need-to-know-before-filing-claim.html",
+    summary: "Three Arizona statutes — ARS § 20-264, 20-263, and 20-469 — guarantee free windshield replacement, protect rates, and give drivers the right to choose any shop. Pink Auto Glass covers all 20 Phoenix metro cities same day.",
+    market: "Phoenix",
+    blogPost: "/blog/arizona-windshield-replacement-law",
+  },
 ];
 
 export default function PressPage() {

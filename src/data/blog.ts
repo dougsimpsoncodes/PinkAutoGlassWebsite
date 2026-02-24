@@ -3058,7 +3058,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'This report was also distributed as a press release via OpenPR. Read the full release: https://www.openpr.com/news/4402503/2025-phoenix-auto-glass-market-report-arizona-s'
+        content: 'This report was also distributed as press releases via OpenPR and PRLog. Read the full releases: https://www.openpr.com/news/4402503/2025-phoenix-auto-glass-market-report-arizona-s and https://www.prlog.org/13129284-arizonas-zero-deductible-windshield-law-what-phoenix-drivers-need-to-know-before-filing-claim.html'
       }
     ]
   },
