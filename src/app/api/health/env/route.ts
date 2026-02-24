@@ -22,8 +22,6 @@ export async function GET() {
   const envStatus = requiredEnvVars.map((key) => ({
     key,
     loaded: !!process.env[key],
-    // Show first 10 chars for debugging (never show full secrets)
-    preview: process.env[key] ? `${process.env[key]?.substring(0, 10)}...` : 'MISSING',
   }));
 
   const allLoaded = envStatus.every((env) => env.loaded);

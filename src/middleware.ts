@@ -16,9 +16,10 @@ export async function middleware(request: NextRequest) {
   // Check if this is an admin route
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
+  const isHealthApi = request.nextUrl.pathname.startsWith('/api/health');
 
   // Protect admin routes with HTTP Basic Auth
-  if (isAdminRoute || isAdminApi) {
+  if (isAdminRoute || isAdminApi || isHealthApi) {
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
