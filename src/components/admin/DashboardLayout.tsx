@@ -15,6 +15,7 @@ import {
   Monitor,
   BarChart3,
   Star,
+  Upload,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -41,6 +42,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },
+    { name: 'Invoice Upload', href: '/admin/dashboard/uploads', icon: Upload },
   ];
 
   return (
