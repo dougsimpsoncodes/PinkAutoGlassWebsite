@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -131,46 +131,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     // Parse each image in parallel
     const parsePromises = files.map(async (file): Promise<ParsedInvoice> => {
       try {
         const bytes = await file.arrayBuffer();
         const base64 = Buffer.from(bytes).toString('base64');
-        const mediaType = file.type as 'image/jpeg' | 'image/png' | 'image/webp';
 
-        const message = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'image',
-                  source: {
-                    type: 'base64',
-                    media_type: mediaType,
-                    data: base64,
-                  },
-                },
-                {
-                  type: 'text',
-                  text: EXTRACT_PROMPT,
-                },
-              ],
-            },
-          ],
-        });
+        const result = await model.generateContent([
+          { inlineData: { mimeType: file.type, data: base64 } },
+          EXTRACT_PROMPT,
+        ]);
 
-        const raw = message.content[0].type === 'text'
-          ? message.content[0].text
-          : '';
+        const raw = result.response.text();
 
-        // Strip markdown code fences if Claude wraps the JSON
+        // Strip markdown code fences if model wraps the JSON
         const responseText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
         const parsed = JSON.parse(responseText);
