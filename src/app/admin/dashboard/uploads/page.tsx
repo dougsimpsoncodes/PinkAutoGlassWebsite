@@ -250,11 +250,18 @@ export default function UploadsPage() {
                         </td>
                         <td className="px-4 py-3">
                           {inv.parse_error
-                            ? <span className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />Failed</span>
+                            ? <span className="text-xs text-red-600 flex items-center gap-1" title={inv.parse_error}><AlertCircle className="w-3 h-3" />Failed</span>
                             : <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Ready</span>
                           }
                         </td>
                       </tr>
+                      {inv.parse_error && (
+                        <tr key={`${i}-error`} className="bg-red-50">
+                          <td colSpan={8} className="px-8 py-2 text-xs text-red-600">
+                            Error: {inv.parse_error}
+                          </td>
+                        </tr>
+                      )}
                       {expandedRows.has(i) && !inv.parse_error && (
                         <tr key={`${i}-expanded`} className="bg-gray-50">
                           <td colSpan={8} className="px-8 py-4">

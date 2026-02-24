@@ -166,9 +166,12 @@ export async function POST(request: NextRequest) {
           ],
         });
 
-        const responseText = message.content[0].type === 'text'
+        const raw = message.content[0].type === 'text'
           ? message.content[0].text
           : '';
+
+        // Strip markdown code fences if Claude wraps the JSON
+        const responseText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
         const parsed = JSON.parse(responseText);
         return { ...parsed, source_filename: file.name };
