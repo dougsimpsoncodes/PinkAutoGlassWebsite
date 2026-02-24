@@ -321,6 +321,15 @@ export async function POST(request: NextRequest) {
       serviceType: validatedData.serviceType,
     };
 
+    // Skip admin notifications for team member test submissions
+    if (isTeamMember) {
+      console.log(`⏭️ Skipping admin notifications for team member phone ${validatedData.phone} (lead ${leadId})`);
+      return NextResponse.json(
+        { success: true, message: 'Quote request received! We\'ll contact you within 5 minutes.', leadId },
+        { status: 200 }
+      );
+    }
+
     // Send admin notifications (MUST await to prevent Vercel from killing the async operation)
     console.log('📧 Attempting to send admin notifications for lead:', leadId);
     try {
