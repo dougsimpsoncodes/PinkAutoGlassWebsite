@@ -143,6 +143,15 @@ export async function POST(request: NextRequest) {
       .order('updated_at', { ascending: false })
       .limit(50);
 
+    // Get matched jobs from this upload for reporting
+    const { data: matchedJobs } = await supabase
+      .from('omega_installs')
+      .select('invoice_number, customer_name, customer_phone, total_revenue, match_confidence')
+      .like('omega_invoice_id', 'upload_%')
+      .not('matched_lead_id', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(50);
+
     console.log(`Invoice import complete: ${results.imported} imported, ${matched} total matched leads`);
 
     return NextResponse.json({
@@ -150,6 +159,7 @@ export async function POST(request: NextRequest) {
       imported: results.imported,
       skipped: results.skipped,
       matched,
+      matchedJobs: matchedJobs || [],
       unmatched: unmatched || [],
       errors: results.errors,
     });

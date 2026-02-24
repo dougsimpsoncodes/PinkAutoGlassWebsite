@@ -11,6 +11,7 @@ interface ImportResults {
   imported: number;
   skipped: number;
   matched: number;
+  matchedJobs: { invoice_number: string; customer_name: string; customer_phone: string; total_revenue: number; match_confidence: string }[];
   unmatched: { invoice_number: string; customer_name: string; customer_phone: string; total_revenue: number }[];
   errors: string[];
 }
@@ -356,12 +357,52 @@ export default function UploadsPage() {
               </div>
             </div>
 
+            {/* Matched jobs */}
+            {results.matchedJobs?.length > 0 && (
+              <div className="bg-white rounded-xl border border-green-200 overflow-hidden">
+                <div className="px-6 py-4 bg-green-50 border-b border-green-200">
+                  <h3 className="font-semibold text-green-800">Matched Jobs</h3>
+                  <p className="text-sm text-green-600 mt-0.5">These jobs were linked to an existing lead</p>
+                </div>
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Job #</th>
+                      <th className="px-4 py-3 text-left">Customer</th>
+                      <th className="px-4 py-3 text-left">Phone</th>
+                      <th className="px-4 py-3 text-left">Match</th>
+                      <th className="px-4 py-3 text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {results.matchedJobs.map((job, i) => (
+                      <tr key={i}>
+                        <td className="px-4 py-3 font-medium">{job.invoice_number}</td>
+                        <td className="px-4 py-3 text-gray-700">{job.customer_name}</td>
+                        <td className="px-4 py-3 text-gray-500">{job.customer_phone || '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                            job.match_confidence === 'exact'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {job.match_confidence}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium">${job.total_revenue?.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             {/* Unmatched jobs */}
             {results.unmatched.length > 0 && (
               <div className="bg-white rounded-xl border border-orange-200 overflow-hidden">
                 <div className="px-6 py-4 bg-orange-50 border-b border-orange-200">
                   <h3 className="font-semibold text-orange-800">Unmatched Jobs</h3>
-                  <p className="text-sm text-orange-600 mt-0.5">These jobs have no matching lead — phone number not found in system</p>
+                  <p className="text-sm text-orange-600 mt-0.5">These jobs have no matching lead — no phone, email, or name match found</p>
                 </div>
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
