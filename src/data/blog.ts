@@ -2833,6 +2833,230 @@ export const blogPosts: BlogPost[] = [
         content: 'Don\'t let a chip become a crack. Pink Auto Glass handles your insurance claim from start to finish — most Colorado drivers pay $0 out of pocket. Call (720) 918-7465 or book online for same-day mobile service. We come to you anywhere in Colorado. Get your free quote now!'
       }
     ]
+  },
+  {
+    slug: 'arizona-windshield-replacement-law',
+    title: 'Arizona Windshield Replacement Law: $0 Out of Pocket for Phoenix Drivers',
+    excerpt: 'Arizona law (ARS § 20-264) requires insurers to replace your windshield with zero deductible if you have comprehensive coverage. Here is exactly what the law guarantees, how to use it, and how Phoenix drivers can get same-day mobile service at no cost.',
+    publishDate: '2026-02-23',
+    readTime: 9,
+    author: 'Dan Shikiar',
+    category: 'Insurance',
+    tags: ['arizona', 'phoenix', 'windshield replacement', 'zero deductible', 'ARS 20-264', 'insurance', 'mobile service'],
+    relatedServices: ['windshield-replacement', 'insurance-claims'],
+    relatedLocations: ['phoenix-az', 'scottsdale-az', 'mesa-az', 'chandler-az', 'gilbert-az', 'tempe-az', 'glendale-az', 'peoria-az'],
+    content: [
+      {
+        type: 'heading',
+        level: 2,
+        content: 'What Arizona Law Actually Requires'
+      },
+      {
+        type: 'paragraph',
+        content: 'Most states treat windshield replacement as a standard insurance claim subject to your deductible. Arizona is different. Three statutes specifically protect Arizona drivers and give them rights that most policyholders never use.'
+      },
+      {
+        type: 'heading',
+        level: 3,
+        content: 'ARS § 20-264: Zero Deductible Required'
+      },
+      {
+        type: 'paragraph',
+        content: 'Arizona Revised Statutes § 20-264 requires every insurer offering comprehensive auto coverage in Arizona to include full glass replacement coverage with no deductible applied. This is not optional for the insurer. If you carry comprehensive coverage, your insurer must pay 100% of the windshield replacement cost. You pay nothing.'
+      },
+      {
+        type: 'heading',
+        level: 3,
+        content: 'ARS § 20-263: Your Rates Cannot Be Raised'
+      },
+      {
+        type: 'paragraph',
+        content: 'Arizona Revised Statutes § 20-263 prohibits insurers from raising your premium or canceling your policy solely because you filed a comprehensive glass claim. Glass claims are classified as no-fault events under Arizona law. Using this benefit cannot hurt your insurance record or your rates.'
+      },
+      {
+        type: 'heading',
+        level: 3,
+        content: 'ARS § 20-469: You Choose the Shop'
+      },
+      {
+        type: 'paragraph',
+        content: 'Arizona Revised Statutes § 20-469 gives every driver the legal right to choose any licensed auto glass provider. Your insurer cannot require you to use a specific shop such as Safelite or another preferred vendor. If a claims adjuster pressures you toward a particular company, that may constitute a violation of Arizona law. The choice is yours.'
+      },
+      {
+        type: 'cta',
+        content: 'Ready to use your Arizona coverage? Pink Auto Glass handles everything — insurance verification, paperwork, and same-day mobile service across all 20 Phoenix metro cities.'
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Who Qualifies for Zero-Deductible Windshield Replacement in Arizona'
+      },
+      {
+        type: 'paragraph',
+        content: 'The zero-deductible benefit applies to any Arizona driver who carries comprehensive auto insurance coverage. Comprehensive coverage is the policy type that covers damage from events other than collisions — including rock chips, hail, debris, and cracking from heat. If your policy includes comprehensive, Arizona law entitles you to free windshield replacement.'
+      },
+      {
+        type: 'list',
+        content: [
+          'You have comprehensive auto coverage — the benefit applies automatically under ARS § 20-264',
+          'You have liability-only coverage — windshield damage is not covered; you pay out of pocket',
+          'You have collision-only coverage — windshield damage from non-collision events is not covered',
+          'You are unsure what coverage you have — call your insurer or call us and we will verify it for you at no charge'
+        ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Why Phoenix Windshields Crack Faster Than Almost Anywhere in the U.S.'
+      },
+      {
+        type: 'paragraph',
+        content: 'Phoenix sits at the intersection of conditions that are uniquely destructive to automotive glass. Understanding why helps explain why the Arizona legislature passed such strong consumer protections on glass coverage in the first place.'
+      },
+      {
+        type: 'list',
+        content: [
+          'Extreme heat (115°F+): Thermal expansion turns a small rock chip into a full crack within 24 to 48 hours during summer. Glass contracts overnight when temperatures drop 40°F, finishing the crack.',
+          'Monsoon season (July–September): Flying gravel, hail, and sand-laden haboobs hit windshields at highway speeds. Haboob particulate also causes micro-abrasion that weakens glass over time.',
+          'Interstate truck traffic: Phoenix sits at a major freight crossroads. I-10, US-60, and I-17 carry heavy semi traffic that constantly kicks up gravel and road debris — a leading cause of chips in Maricopa County.',
+          'Rapid construction growth: New developments in Buckeye, Queen Creek, Gilbert, and Surprise mean miles of unpaved caliche roads adjacent to finished highways. Dust and loose aggregate from active construction sites reach windshields across the Valley.'
+        ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'How the Zero-Deductible Process Works: Step by Step'
+      },
+      {
+        type: 'paragraph',
+        content: 'The process is simpler than most drivers expect. A reputable mobile auto glass company handles every step directly with your insurer. Here is exactly what happens:'
+      },
+      {
+        type: 'list',
+        content: [
+          'Step 1 — Call or book online: Provide your vehicle year, make, and model. A VIN number allows faster insurance verification.',
+          'Step 2 — Coverage verification: Pink Auto Glass contacts your insurer, confirms your comprehensive coverage, and verifies zero-deductible eligibility under ARS § 20-264. You are told your exact cost before any work begins.',
+          'Step 3 — Schedule mobile service: A certified technician is dispatched to your home, office, or any location in the Phoenix metro area. Same-day service is available if you call before noon.',
+          'Step 4 — OEM-quality installation: Your windshield is replaced using OEM-quality glass. If your vehicle requires ADAS calibration (most 2018+ models), it is performed on-site and included at no additional charge.',
+          'Step 5 — Direct insurance billing: Pink Auto Glass bills your insurer directly. You sign off on the completed work. Zero out-of-pocket cost. Done.'
+        ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'What to Look for in a Phoenix Auto Glass Provider'
+      },
+      {
+        type: 'paragraph',
+        content: 'Not all auto glass shops handle Arizona insurance claims the same way. Here is what separates providers that make the process effortless from those that create frustration.'
+      },
+      {
+        type: 'list',
+        content: [
+          'Insurance-direct billing: The shop should call your insurer for you and bill them directly. You should never be asked to pay upfront and wait for reimbursement.',
+          'ADAS calibration included: If your vehicle has lane departure warning, automatic braking, or adaptive cruise control, ADAS recalibration is required after windshield replacement. Confirm it is included — not an add-on.',
+          'Mobile service across all of Maricopa County: Many local shops serve only one or two cities. A true Phoenix metro provider should cover all 20 cities without a travel surcharge.',
+          'Same-day availability: Phoenix heat turns chips into cracks overnight. Same-day service protects you from escalating damage.',
+          'OEM-quality glass with lifetime warranty: Inferior glass fails faster in Phoenix heat. Ask specifically for OEM or equivalent-spec glass and confirm the warranty covers leaks and defects.'
+        ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Pink Auto Glass Phoenix Metro Service Area'
+      },
+      {
+        type: 'paragraph',
+        content: 'Pink Auto Glass provides mobile windshield repair and replacement across all 20 Phoenix metro cities in Maricopa County. Technicians are dispatched directly to the customer\'s location — no shop visit required.'
+      },
+      {
+        type: 'list',
+        content: [
+          'Phoenix', 'Scottsdale', 'Tempe', 'Mesa', 'Chandler', 'Gilbert',
+          'Glendale', 'Peoria', 'Surprise', 'Goodyear', 'Avondale', 'Buckeye',
+          'Fountain Hills', 'Queen Creek', 'Apache Junction', 'Cave Creek',
+          'Maricopa', 'El Mirage', 'Litchfield Park', 'Ahwatukee'
+        ]
+      },
+      {
+        type: 'paragraph',
+        content: 'Service is available 7 days a week. Same-day appointments are available for calls received before noon. All work is backed by a lifetime warranty.'
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Which Insurance Companies Cover Windshield Replacement in Arizona'
+      },
+      {
+        type: 'paragraph',
+        content: 'Every insurer offering comprehensive auto coverage in Arizona is legally required to include zero-deductible glass replacement under ARS § 20-264. Pink Auto Glass works directly with all major carriers serving the Phoenix area:'
+      },
+      {
+        type: 'list',
+        content: [
+          'State Farm', 'GEICO', 'Progressive', 'Allstate', 'Farmers',
+          'USAA', 'Liberty Mutual', 'Nationwide', 'AAA', 'Travelers'
+        ]
+      },
+      {
+        type: 'paragraph',
+        content: 'Pink Auto Glass handles all insurer communication directly. You do not need to call your insurance company before booking — the shop verifies coverage as part of the scheduling process.'
+      },
+      {
+        type: 'faq',
+        content: [
+          {
+            question: 'Does Arizona law really require $0 deductible windshield replacement?',
+            answer: 'Yes. Arizona Revised Statutes § 20-264 requires every insurer offering comprehensive auto coverage in Arizona to include full glass coverage with no deductible applied. This is a legal requirement, not an optional benefit. If you have comprehensive coverage, your windshield replacement is $0 out of pocket.'
+          },
+          {
+            question: 'Will my insurance rates go up if I use this benefit?',
+            answer: 'No. ARS § 20-263 specifically prohibits insurers from raising your premium or canceling your policy solely because you filed a comprehensive glass claim. Arizona classifies glass claims as no-fault events. Filing a windshield claim cannot hurt your rates under Arizona law.'
+          },
+          {
+            question: 'Can my insurer force me to use Safelite?',
+            answer: 'No. ARS § 20-469 gives every Arizona driver the legal right to choose any licensed auto glass shop. Your insurer cannot require you to use a preferred vendor. If a claims representative pushes you toward a specific shop, politely reference ARS § 20-469 — or call Pink Auto Glass at (480) 712-7465 and we will handle the conversation with your insurer directly.'
+          },
+          {
+            question: 'What if I only have liability insurance?',
+            answer: 'The zero-deductible benefit only applies to comprehensive coverage. Liability-only policies do not cover windshield damage from rock chips, heat, or debris. If you are unsure what coverage you have, check your insurance card or call your insurer. Adding comprehensive coverage to an existing policy is typically inexpensive and immediately activates the ARS § 20-264 glass benefit.'
+          },
+          {
+            question: 'How long does mobile windshield replacement take in Phoenix?',
+            answer: 'Standard windshield replacement takes 60 to 90 minutes. If your vehicle requires ADAS calibration — most 2018 and newer vehicles do — add another 30 to 60 minutes. Pink Auto Glass performs ADAS calibration on-site, included at no charge. Total service time is typically 90 minutes to 2.5 hours depending on your vehicle.'
+          },
+          {
+            question: 'Is ADAS calibration really included at no charge?',
+            answer: 'Yes. Pink Auto Glass includes ADAS calibration at no additional cost when your vehicle requires it. Many shops charge $150 to $400 for this separately. Because Arizona law makes the entire windshield replacement $0 to you, we include calibration as part of the complete service — there are no hidden add-ons.'
+          },
+          {
+            question: 'How quickly can a Phoenix chip turn into a crack?',
+            answer: 'In Phoenix summer temperatures, a quarter-sized chip can become a full crack in 24 to 48 hours. Daytime heat causes the glass to expand; the cooler overnight temperatures cause it to contract. This thermal cycling puts stress on any existing damage. A chip repair takes 30 minutes and is covered $0 by insurance — delaying it risks requiring a full replacement, which takes longer even though it is also $0.'
+          },
+          {
+            question: 'Do you serve all 20 Phoenix metro cities?',
+            answer: 'Yes. Pink Auto Glass serves all 20 Maricopa County cities: Phoenix, Scottsdale, Tempe, Mesa, Chandler, Gilbert, Glendale, Peoria, Surprise, Goodyear, Avondale, Buckeye, Fountain Hills, Queen Creek, Apache Junction, Cave Creek, Maricopa, El Mirage, Litchfield Park, and Ahwatukee. Mobile service is available 7 days a week with no travel surcharge anywhere in the Valley.'
+          }
+        ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Bottom Line: You Have Already Paid for This Coverage'
+      },
+      {
+        type: 'paragraph',
+        content: 'Every month you pay your comprehensive insurance premium, you are paying for the Arizona glass benefit. ARS § 20-264 means your insurer owes you a free windshield replacement. ARS § 20-263 means using it cannot raise your rates. ARS § 20-469 means you choose who does the work.'
+      },
+      {
+        type: 'paragraph',
+        content: 'The only thing left to do is book. Pink Auto Glass handles the insurance verification, the paperwork, and the mobile service — coming directly to your home or office anywhere across the Phoenix metro area, typically the same day you call.'
+      },
+      {
+        type: 'cta',
+        content: 'Book same-day mobile windshield replacement across all of Phoenix metro. $0 out of pocket with comprehensive insurance. Pink Auto Glass handles everything — insurance verification, paperwork, and certified installation at your location.'
+      }
+    ]
   }
 ];
 

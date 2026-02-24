@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
-  const isArizona = pathname.includes("/phoenix") || pathname.includes("-az")
+  const isArizona = pathname.includes("/phoenix") || pathname.includes("-az") || pathname.includes("/arizona")
   const phone = isArizona ? "(480) 712-7465" : "(720) 918-7465"
   const tel = isArizona ? "tel:+14807127465" : "tel:+17209187465"
 

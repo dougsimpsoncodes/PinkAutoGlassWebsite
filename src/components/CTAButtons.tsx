@@ -18,7 +18,7 @@ export default function CTAButtons({
   showDiscount = true
 }: CTAButtonsProps) {
   const pathname = usePathname();
-  const isArizona = pathname.includes('/phoenix') || pathname.includes('-az');
+  const isArizona = pathname.includes('/phoenix') || pathname.includes('-az') || pathname.includes('/arizona');
   const phoneNumber = isArizona ? '4807127465' : '7209187465';
   const displayPhone = isArizona ? '(480) 712-7465' : '(720) 918-7465';
 
