@@ -254,51 +254,46 @@ export async function POST(request: NextRequest) {
       quotePrice,
     };
 
-    // Skip all auto-respond messages for team members (lead still created for CRM)
+    // Team member flag — suppresses internal notifications only, not customer comms
     const isTeamMember = isExcludedPhone(validatedData.phone);
-    if (isTeamMember) {
-      console.log(`⏭️ Skipping auto-replies for team member phone ${validatedData.phone} (lead ${leadId})`);
-    }
 
-    if (!isTeamMember) {
-      try {
-        const autoReplyPromises: Promise<boolean>[] = [];
+    try {
+      const autoReplyPromises: Promise<boolean>[] = [];
 
-        if (smsConsent && isCustomerSmsEnabled()) {
-          autoReplyPromises.push(
-            sendCustomerSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
-              .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
-              .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
-          );
-        } else if (smsConsent) {
-          console.log(`⏸️ Customer SMS disabled — skipping instant SMS for lead ${leadId}`);
-        }
-
-        if (hasRealEmail) {
-          autoReplyPromises.push(
-            sendEmail({
-              to: validatedData.email,
-              subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
-              html: getQuoteInstantEmail(dripCtx),
-              leadId,
-            })
-              .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
-              .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
-          );
-        }
-
-        if (autoReplyPromises.length > 0) {
-          await Promise.all(autoReplyPromises);
-        }
-      } catch (err) {
-        console.error('❌ Customer auto-reply failed for lead:', leadId, err);
+      if (smsConsent && isCustomerSmsEnabled()) {
+        autoReplyPromises.push(
+          sendCustomerSMS({ to: validatedData.phone, message: getQuoteInstantSMS(dripCtx) })
+            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant SMS for lead ${leadId}`); return ok; })
+            .catch(err => { console.error('❌ Customer instant SMS exception:', leadId, err); return false; })
+        );
+      } else if (smsConsent) {
+        console.log(`⏸️ Customer SMS disabled — skipping instant SMS for lead ${leadId}`);
       }
+
+      if (hasRealEmail) {
+        autoReplyPromises.push(
+          sendEmail({
+            to: validatedData.email,
+            subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
+            html: getQuoteInstantEmail(dripCtx),
+            leadId,
+          })
+            .then(ok => { console.log(`${ok ? '✅' : '❌'} Customer instant email for lead ${leadId}`); return ok; })
+            .catch(err => { console.error('❌ Customer instant email exception:', leadId, err); return false; })
+        );
+      }
+
+      if (autoReplyPromises.length > 0) {
+        await Promise.all(autoReplyPromises);
+      }
+    } catch (err) {
+      console.error('❌ Customer auto-reply failed for lead:', leadId, err);
     }
 
     // =============================================================================
     // DRIP SEQUENCE: Schedule next-day follow-up SMS
     // =============================================================================
-    if (smsConsent && !isDuplicate && !isTeamMember) {
+    if (smsConsent && !isDuplicate) {
       try {
         const dripResult = await scheduleDripSequence(leadId, dripCtx, 'quick_quote');
         console.log(`📅 Drip scheduled for lead ${leadId}: ${dripResult.scheduled} messages`);
@@ -321,16 +316,11 @@ export async function POST(request: NextRequest) {
       serviceType: validatedData.serviceType,
     };
 
-    // Skip admin notifications for team member test submissions
+    // Send admin notifications (MUST await to prevent Vercel from killing the async operation)
+    // Skip for team member phones — test submissions should not trigger internal alerts
     if (isTeamMember) {
       console.log(`⏭️ Skipping admin notifications for team member phone ${validatedData.phone} (lead ${leadId})`);
-      return NextResponse.json(
-        { success: true, message: 'Quote request received! We\'ll contact you within 5 minutes.', leadId },
-        { status: 200 }
-      );
-    }
-
-    // Send admin notifications (MUST await to prevent Vercel from killing the async operation)
+    } else {
     console.log('📧 Attempting to send admin notifications for lead:', leadId);
     try {
       const results = await Promise.all([
@@ -368,6 +358,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('❌ Quote notification batch failed for lead:', leadId, err);
     }
+    } // end !isTeamMember admin notifications
 
     return NextResponse.json(
       {
