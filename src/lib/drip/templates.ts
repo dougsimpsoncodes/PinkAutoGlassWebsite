@@ -23,7 +23,7 @@ interface DripTemplateContext {
 
 /** Step 1: Instant reply */
 export function getQuoteInstantSMS(ctx: DripTemplateContext): string {
-  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We got your request for your ${ctx.vehicleMake} ${ctx.vehicleModel} and Dan will be in touch shortly.`;
+  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for your ${ctx.vehicleMake} ${ctx.vehicleModel} and one of our team members will be in touch shortly.`;
 }
 
 /** Step 2: Next-day follow-up */
