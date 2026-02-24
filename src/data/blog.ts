@@ -3236,6 +3236,10 @@ export const blogPosts: BlogPost[] = [
       {
         type: 'cta',
         content: 'Same-day mobile windshield repair and replacement across all of Denver metro. Most customers pay $0 with comprehensive insurance. Pink Auto Glass handles everything and comes to your location. Call (720) 918-7465 or book online now.'
+      },
+      {
+        type: 'paragraph',
+        content: 'This report was also distributed as a press release via PRLog. Read the full release: https://www.prlog.org/13129267-colorados-worst-snowpack-on-record-means-dangerous-spring-for-denver-drivers.html'
       }
     ]
   }
