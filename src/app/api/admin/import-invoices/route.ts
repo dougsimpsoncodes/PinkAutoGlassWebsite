@@ -117,9 +117,14 @@ export async function POST(request: NextRequest) {
       if (matchError) {
         console.error('Lead matching failed:', matchError.message);
       } else {
+        // Count only from this batch of uploaded invoice IDs
+        const uploadIds = invoices
+          .filter(inv => !inv.parse_error && inv.job_number)
+          .map(inv => `upload_${inv.job_number}`);
         const { count } = await supabase
           .from('omega_installs')
           .select('id', { count: 'exact', head: true })
+          .in('omega_invoice_id', uploadIds)
           .not('matched_lead_id', 'is', null);
         matched = count || 0;
       }
@@ -134,23 +139,25 @@ export async function POST(request: NextRequest) {
       console.error('fn_backfill_lead_revenue error:', err.message);
     }
 
-    // Get unmatched jobs from this upload for reporting
+    const batchIds = invoices
+      .filter(inv => !inv.parse_error && inv.job_number)
+      .map(inv => `upload_${inv.job_number}`);
+
+    // Get unmatched jobs from this batch
     const { data: unmatched } = await supabase
       .from('omega_installs')
       .select('invoice_number, customer_name, customer_phone, total_revenue')
-      .like('omega_invoice_id', 'upload_%')
+      .in('omega_invoice_id', batchIds)
       .is('matched_lead_id', null)
-      .order('updated_at', { ascending: false })
-      .limit(50);
+      .order('updated_at', { ascending: false });
 
-    // Get matched jobs from this upload for reporting
+    // Get matched jobs from this batch
     const { data: matchedJobs } = await supabase
       .from('omega_installs')
       .select('invoice_number, customer_name, customer_phone, total_revenue, match_confidence')
-      .like('omega_invoice_id', 'upload_%')
+      .in('omega_invoice_id', batchIds)
       .not('matched_lead_id', 'is', null)
-      .order('updated_at', { ascending: false })
-      .limit(50);
+      .order('updated_at', { ascending: false });
 
     console.log(`Invoice import complete: ${results.imported} imported, ${matched} total matched leads`);
 
