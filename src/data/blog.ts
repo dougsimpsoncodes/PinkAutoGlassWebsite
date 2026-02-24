@@ -3055,6 +3055,10 @@ export const blogPosts: BlogPost[] = [
       {
         type: 'cta',
         content: 'Book same-day mobile windshield replacement across all of Phoenix metro. $0 out of pocket with comprehensive insurance. Pink Auto Glass handles everything — insurance verification, paperwork, and certified installation at your location.'
+      },
+      {
+        type: 'paragraph',
+        content: 'This report was also distributed as a press release via OpenPR. Read the full release: https://www.openpr.com/news/4402503/2025-phoenix-auto-glass-market-report-arizona-s'
       }
     ]
   },
