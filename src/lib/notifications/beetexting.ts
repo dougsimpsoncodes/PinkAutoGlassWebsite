@@ -1,4 +1,4 @@
-import { SMSOptions } from './sms';
+import { SMSOptions, sendSMS as sendViaRingCentral } from './sms';
 
 // --- Token cache ---
 let cachedToken: string | null = null;
@@ -87,9 +87,11 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
   const fromNumber = process.env.BEETEXTING_FROM_NUMBER;
   const apiKey = process.env.BEETEXTING_API_KEY;
 
+  // Fall back to RingCentral if Beetexting is not configured.
+  // This allows SMS to function while Beetexting OAuth is pending.
   if (!agentEmail || !fromNumber || !apiKey) {
-    console.error('❌ Beetexting send config missing (BEETEXTING_AGENT_EMAIL, BEETEXTING_FROM_NUMBER, or BEETEXTING_API_KEY)');
-    return false;
+    console.log('⚠️ Beetexting not configured — falling back to RingCentral');
+    return sendViaRingCentral(options);
   }
 
   const accessToken = await getAccessToken();
