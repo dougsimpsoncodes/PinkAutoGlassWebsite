@@ -133,7 +133,11 @@ export async function POST(request: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // Use JSON mode to force Gemini to always return valid JSON
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: { responseMimeType: 'application/json' },
+    });
 
     // Parse each image in parallel
     const parsePromises = files.map(async (file): Promise<ParsedInvoice> => {
@@ -146,17 +150,7 @@ export async function POST(request: NextRequest) {
           EXTRACT_PROMPT,
         ]);
 
-        const raw = result.response.text();
-
-        // Strip markdown code fences if model wraps the JSON
-        let responseText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-
-        // Extract just the JSON object if there's surrounding text
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) responseText = jsonMatch[0];
-
-        // Use jsonrepair to fix any malformed JSON from the model
-        const parsed = JSON.parse(jsonrepair(responseText));
+        const parsed = JSON.parse(result.response.text());
         return { ...parsed, source_filename: file.name };
 
       } catch (err: any) {
