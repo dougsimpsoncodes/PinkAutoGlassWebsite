@@ -148,7 +148,16 @@ export async function POST(request: NextRequest) {
         const raw = result.response.text();
 
         // Strip markdown code fences if model wraps the JSON
-        const responseText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        let responseText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+        // Extract just the JSON object if there's surrounding text
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) responseText = jsonMatch[0];
+
+        // Fix common Gemini JSON issues: single-quoted keys/values → double-quoted
+        responseText = responseText
+          .replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3')  // single-quoted keys
+          .replace(/:\s*'([^']*)'/g, ': "$1"');               // single-quoted values
 
         const parsed = JSON.parse(responseText);
         return { ...parsed, source_filename: file.name };
