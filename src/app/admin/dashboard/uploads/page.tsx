@@ -40,7 +40,6 @@ export default function UploadsPage() {
     if (e.target.files) {
       const selected = Array.from(e.target.files);
       setFiles(prev => [...prev, ...selected].slice(0, 5));
-      e.target.value = '';
     }
   };
 
