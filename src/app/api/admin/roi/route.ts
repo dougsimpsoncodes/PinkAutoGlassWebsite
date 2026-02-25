@@ -104,14 +104,14 @@ export async function GET(req: NextRequest) {
       // Form submissions
       client
         .from('leads')
-        .select('phone, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid')
+        .select('phone_e164, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid')
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
 
       // Leads with revenue
       client
         .from('leads')
-        .select('phone, revenue_amount, ad_platform, created_at')
+        .select('phone_e164, revenue_amount, ad_platform, created_at')
         .not('revenue_amount', 'is', null)
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
@@ -132,7 +132,9 @@ export async function GET(req: NextRequest) {
     // =============================================================================
 
     const calls: RingCentralCall[] = callsResult.status === 'fulfilled' ? (callsResult.value.data || []) : [];
-    const forms: FormLead[] = formsResult.status === 'fulfilled' ? (formsResult.value.data || []) : [];
+    const forms: FormLead[] = formsResult.status === 'fulfilled'
+      ? (formsResult.value.data || []).map((row: any) => ({ ...row, phone: row.phone_e164 }))
+      : [];
 
     const allUniqueCustomers = deduplicateCustomers(calls, forms);
 
