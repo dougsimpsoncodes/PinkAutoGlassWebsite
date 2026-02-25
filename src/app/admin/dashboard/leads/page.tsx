@@ -27,6 +27,9 @@ import {
   Filter,
   Send,
   Loader2,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
 
@@ -234,6 +237,8 @@ export default function LeadManagementDashboard() {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [sortColumn, setSortColumn] = useState<string>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Get date range using Mountain Time (consistent with server-side)
   const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
@@ -328,6 +333,37 @@ export default function LeadManagementDashboard() {
 
     return true;
   });
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection(column === 'date' ? 'desc' : 'asc');
+    }
+  };
+
+  const sortedLeads = [...filteredLeads].sort((a, b) => {
+    let aVal: string | number, bVal: string | number;
+    switch (sortColumn) {
+      case 'type':    aVal = a.type;    bVal = b.type;    break;
+      case 'name':    aVal = a.name?.toLowerCase() || '';  bVal = b.name?.toLowerCase() || ''; break;
+      case 'date':    aVal = new Date(a.created_at).getTime(); bVal = new Date(b.created_at).getTime(); break;
+      case 'status':  aVal = a.status;  bVal = b.status;  break;
+      case 'revenue': aVal = a.revenue_amount || 0; bVal = b.revenue_amount || 0; break;
+      default: return 0;
+    }
+    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortColumn !== column) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
+    return sortDirection === 'asc'
+      ? <ChevronUp className="w-3.5 h-3.5 ml-1 inline" />
+      : <ChevronDown className="w-3.5 h-3.5 ml-1 inline" />;
+  };
 
   const statusOptions = [
     { value: 'all', label: 'All', color: 'gray' },
@@ -501,24 +537,34 @@ export default function LeadManagementDashboard() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / Phone</th>
+                <th onClick={() => handleSort('type')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Type<SortIcon column="type" />
+                </th>
+                <th onClick={() => handleSort('name')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Name / Phone<SortIcon column="name" />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                <th onClick={() => handleSort('date')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Date<SortIcon column="date" />
+                </th>
+                <th onClick={() => handleSort('status')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Status<SortIcon column="status" />
+                </th>
+                <th onClick={() => handleSort('revenue')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Revenue<SortIcon column="revenue" />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredLeads.length === 0 ? (
+              {sortedLeads.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     No leads found
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map(lead => (
+                sortedLeads.map(lead => (
                   <tr key={lead.id} className="hover:bg-gray-50">
                     {/* Type */}
                     <td className="px-4 py-4">
