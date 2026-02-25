@@ -17,7 +17,6 @@ import {
   Star,
   Upload,
   TrendingUp,
-  Filter,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -44,8 +43,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },
-    { name: 'ROI', href: '/admin/dashboard/roi', icon: TrendingUp },
-    { name: 'Marketing Funnel', href: '/admin/dashboard/funnel', icon: Filter },
+    { name: 'Ad Performance', href: '/admin/dashboard/roi', icon: TrendingUp },
     { name: 'Invoice Upload', href: '/admin/dashboard/uploads', icon: Upload },
   ];
 

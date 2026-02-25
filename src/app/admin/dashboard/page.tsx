@@ -78,6 +78,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
 
+  // Gross revenue from omega_installs (all time, not date-filtered)
+  const [grossRevenue, setGrossRevenue] = useState<{ grossRevenue: number; attributionRate: number; invoiceCount: number } | null>(null);
+
   // Lead data — single source of truth for all lead counts on this page
   const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
 
@@ -213,6 +216,18 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  const fetchGrossRevenue = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/total-revenue');
+      if (res.ok) {
+        const json = await res.json();
+        setGrossRevenue(json);
+      }
+    } catch (err) {
+      console.error('Error fetching gross revenue:', err);
+    }
+  }, []);
+
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
       const res = await fetch(`/api/admin/dashboard/unified?period=${filter}`);
@@ -233,8 +248,9 @@ export default function AdminDashboard() {
     await Promise.all([
       ...ALL_DATE_FILTERS.map(filter => fetchData(filter)),
       fetchLeads(),
+      fetchGrossRevenue(),
     ]);
-  }, [fetchData, fetchLeads, invalidateCache]);
+  }, [fetchData, fetchLeads, fetchGrossRevenue, invalidateCache]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -252,9 +268,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // Initial load - fetch current filter if not cached + fetch leads
+  // Initial load - fetch current filter if not cached + fetch leads + gross revenue
   useEffect(() => {
-    const promises: Promise<any>[] = [fetchLeads()];
+    const promises: Promise<any>[] = [fetchLeads(), fetchGrossRevenue()];
     if (!getCachedData(dateFilter)) {
       promises.push(fetchData(dateFilter));
     }
@@ -349,14 +365,22 @@ export default function AdminDashboard() {
         {/* Revenue */}
         <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium opacity-90">Revenue</span>
+            <span className="text-sm font-medium opacity-90">Gross Revenue</span>
             <DollarSign className="w-5 h-5 opacity-70" />
           </div>
-          <p className="text-3xl font-bold">{formatCurrency(leadMetrics.totalRevenue)}</p>
-          <div className="mt-2 flex items-center gap-2 text-sm opacity-80">
-            <span>G: {formatCurrency(leadMetrics.googleRevenue)}</span>
-            <span>|</span>
-            <span>MS: {formatCurrency(leadMetrics.microsoftRevenue)}</span>
+          <p className="text-3xl font-bold">
+            {grossRevenue ? formatCurrency(grossRevenue.grossRevenue) : '—'}
+          </p>
+          <p className="mt-1 text-xs opacity-75">
+            {grossRevenue ? `${grossRevenue.invoiceCount} invoices (all time)` : 'Loading...'}
+          </p>
+          <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-80">
+            <span>Attributed: {formatCurrency(leadMetrics.totalRevenue)}</span>
+            {grossRevenue && grossRevenue.grossRevenue > 0 && (
+              <span className="ml-1 opacity-70">
+                ({grossRevenue.attributionRate}%)
+              </span>
+            )}
           </div>
         </div>
 
