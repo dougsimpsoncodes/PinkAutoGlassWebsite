@@ -82,14 +82,14 @@ export async function GET(req: NextRequest) {
       // Google Ads cost
       client
         .from('google_ads_daily_performance')
-        .select('cost_micros')
+        .select('cost')
         .gte('date', startDate)
         .lte('date', endDate),
 
       // Microsoft Ads cost
       client
         .from('microsoft_ads_daily_performance')
-        .select('cost_micros')
+        .select('cost')
         .gte('date', startDate)
         .lte('date', endDate),
 
@@ -122,12 +122,10 @@ export async function GET(req: NextRequest) {
     // =============================================================================
 
     const googleAdsData = googleAdsResult.status === 'fulfilled' ? googleAdsResult.value.data : [];
-    const googleCostMicros = googleAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
-    const googleCost = googleCostMicros / 1000000;
+    const googleCost = googleAdsData?.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
 
     const microsoftAdsData = microsoftAdsResult.status === 'fulfilled' ? microsoftAdsResult.value.data : [];
-    const microsoftCostMicros = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.cost_micros || 0), 0) || 0;
-    const microsoftCost = microsoftCostMicros / 1000000;
+    const microsoftCost = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
 
     // =============================================================================
     // DEDUPLICATE CUSTOMERS

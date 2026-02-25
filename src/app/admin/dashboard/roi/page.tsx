@@ -241,7 +241,7 @@ export default function ROIDashboard() {
             {paidPlatforms.map(platform => {
               const metrics = data.platforms[platform.key as keyof typeof data.platforms];
 
-              if (metrics.cost === 0 && metrics.revenue === 0) {
+              if (metrics.uniqueCustomers === 0 && metrics.cost === 0) {
                 return null;
               }
 
