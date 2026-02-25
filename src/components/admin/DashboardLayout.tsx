@@ -18,9 +18,6 @@ import {
   Upload,
   TrendingUp,
   Filter,
-  Globe,
-  MousePointerClick,
-  FileText,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -42,16 +39,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Leads', href: '/admin/dashboard/leads', icon: Users },
     { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
-    { name: 'Website Analytics', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
+    { name: 'Website & Traffic', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
     { name: 'Search Performance', href: '/admin/dashboard/search-performance', icon: Search },
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },
     { name: 'ROI', href: '/admin/dashboard/roi', icon: TrendingUp },
     { name: 'Marketing Funnel', href: '/admin/dashboard/funnel', icon: Filter },
-    { name: 'Traffic Sources', href: '/admin/dashboard/traffic', icon: Globe },
-    { name: 'Conversions', href: '/admin/dashboard/conversions', icon: MousePointerClick },
-    { name: 'Pages', href: '/admin/dashboard/pages', icon: FileText },
     { name: 'Invoice Upload', href: '/admin/dashboard/uploads', icon: Upload },
   ];
 
