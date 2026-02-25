@@ -33,6 +33,13 @@ import {
 } from 'lucide-react';
 import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
 
+function SortIcon({ column, sortColumn, sortDirection }: { column: string; sortColumn: string; sortDirection: 'asc' | 'desc' }) {
+  if (sortColumn !== column) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
+  return sortDirection === 'asc'
+    ? <ChevronUp className="w-3.5 h-3.5 ml-1 inline" />
+    : <ChevronDown className="w-3.5 h-3.5 ml-1 inline" />;
+}
+
 // --- SMS Conversation Component (defined outside main component to prevent remounting) ---
 
 interface SMSMessage {
@@ -358,13 +365,6 @@ export default function LeadManagementDashboard() {
     return 0;
   });
 
-  const SortIcon = ({ column }: { column: string }) => {
-    if (sortColumn !== column) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
-    return sortDirection === 'asc'
-      ? <ChevronUp className="w-3.5 h-3.5 ml-1 inline" />
-      : <ChevronDown className="w-3.5 h-3.5 ml-1 inline" />;
-  };
-
   const statusOptions = [
     { value: 'all', label: 'All', color: 'gray' },
     { value: 'new', label: 'New', color: 'blue' },
@@ -538,20 +538,20 @@ export default function LeadManagementDashboard() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th onClick={() => handleSort('type')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
-                  Type<SortIcon column="type" />
+                  Type<SortIcon column="type" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th onClick={() => handleSort('name')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
-                  Name / Phone<SortIcon column="name" />
+                  Name / Phone<SortIcon column="name" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 <th onClick={() => handleSort('date')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
-                  Date<SortIcon column="date" />
+                  Date<SortIcon column="date" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th onClick={() => handleSort('status')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
-                  Status<SortIcon column="status" />
+                  Status<SortIcon column="status" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th onClick={() => handleSort('revenue')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
-                  Revenue<SortIcon column="revenue" />
+                  Revenue<SortIcon column="revenue" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
