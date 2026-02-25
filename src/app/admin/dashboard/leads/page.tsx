@@ -357,6 +357,7 @@ export default function LeadManagementDashboard() {
       case 'name':    aVal = a.name?.toLowerCase() || '';  bVal = b.name?.toLowerCase() || ''; break;
       case 'date':    aVal = new Date(a.created_at).getTime(); bVal = new Date(b.created_at).getTime(); break;
       case 'status':  aVal = a.status;  bVal = b.status;  break;
+      case 'vehicle': aVal = a.vehicle_make?.toLowerCase() || ''; bVal = b.vehicle_make?.toLowerCase() || ''; break;
       case 'revenue': aVal = a.revenue_amount || 0; bVal = b.revenue_amount || 0; break;
       default: return 0;
     }
@@ -544,6 +545,9 @@ export default function LeadManagementDashboard() {
                   Name / Phone<SortIcon column="name" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                <th onClick={() => handleSort('vehicle')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Vehicle<SortIcon column="vehicle" sortColumn={sortColumn} sortDirection={sortDirection} />
+                </th>
                 <th onClick={() => handleSort('date')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
                   Date<SortIcon column="date" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
@@ -559,7 +563,7 @@ export default function LeadManagementDashboard() {
             <tbody className="divide-y divide-gray-200">
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     No leads found
                   </td>
                 </tr>
@@ -585,14 +589,6 @@ export default function LeadManagementDashboard() {
 
                     {/* Details */}
                     <td className="px-4 py-4">
-                      {lead.type === 'form' && (
-                        <div className="text-sm text-gray-600">
-                          {lead.vehicle_year} {lead.vehicle_make} {lead.vehicle_model}
-                          {lead.service_type && (
-                            <span className="ml-2 text-xs text-gray-500">({lead.service_type})</span>
-                          )}
-                        </div>
-                      )}
                       {lead.type === 'call' && (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           {lead.result === 'Accepted' || lead.result === 'Call connected' ? (
@@ -611,6 +607,14 @@ export default function LeadManagementDashboard() {
                       {lead.notes && lead.type === 'call' && (
                         <div className="text-xs text-gray-400 mt-1">{lead.notes}</div>
                       )}
+                    </td>
+
+                    {/* Vehicle */}
+                    <td className="px-4 py-4 text-sm text-gray-600">
+                      {lead.type === 'form' && (lead.vehicle_year || lead.vehicle_make || lead.vehicle_model)
+                        ? `${lead.vehicle_year ?? ''} ${lead.vehicle_make ?? ''} ${lead.vehicle_model ?? ''}`.trim()
+                        : <span className="text-gray-300">—</span>
+                      }
                     </td>
 
                     {/* Date */}
