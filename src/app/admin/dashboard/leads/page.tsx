@@ -506,13 +506,14 @@ export default function LeadManagementDashboard() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     No leads found
                   </td>
                 </tr>
@@ -582,6 +583,14 @@ export default function LeadManagementDashboard() {
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(lead.status)}-100 text-${getStatusColor(lead.status)}-800`}>
                         {lead.status}
                       </span>
+                    </td>
+
+                    {/* Revenue */}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {lead.revenue_amount
+                        ? <span className="text-green-600 font-semibold">${lead.revenue_amount.toLocaleString()}</span>
+                        : <span className="text-gray-300">—</span>
+                      }
                     </td>
 
                     {/* Actions */}
