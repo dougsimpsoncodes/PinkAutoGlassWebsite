@@ -1,23 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getMountainDateRange, type DateFilter } from '@/lib/dashboardData';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * GET /api/admin/total-revenue
+ * GET /api/admin/total-revenue?period=7days
  *
- * Returns gross revenue from all uploaded invoices (omega_installs)
- * alongside attributed revenue (leads matched to invoices).
+ * Returns gross revenue from uploaded invoices (omega_installs)
+ * alongside attributed revenue (leads matched to invoices),
+ * filtered by the selected date period.
  *
- * Response:
- * {
- *   grossRevenue: 61669.60,       // SUM(omega_installs.total_revenue) — all invoices
- *   attributedRevenue: 12400.00,  // SUM(leads.revenue_amount) — attributed to a lead
- *   invoiceCount: 48,             // total omega_installs records
- *   attributedLeadCount: 9,       // leads with revenue_amount set
- *   attributionRate: 14.6         // % of invoices matched to a lead (by revenue $)
- * }
+ * Query params:
+ *   period: today | yesterday | 7days | 30days | all (default: all)
  */
 
 function getSupabaseClient() {
@@ -27,21 +23,30 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const period = (searchParams.get('period') || 'all') as DateFilter;
+
     const client = getSupabaseClient();
 
-    const [grossResult, attributedResult] = await Promise.all([
-      // All invoices, regardless of attribution
-      client
-        .from('omega_installs')
-        .select('total_revenue'),
+    // Build date-filtered queries
+    let grossQuery = client.from('omega_installs').select('total_revenue');
+    let attributedQuery = client.from('leads').select('revenue_amount').not('revenue_amount', 'is', null);
 
-      // Leads that have been matched to invoices
-      client
-        .from('leads')
-        .select('revenue_amount')
-        .not('revenue_amount', 'is', null),
+    if (period !== 'all') {
+      const { start, end } = getMountainDateRange(period);
+      grossQuery = grossQuery
+        .gte('install_date', start.toISOString())
+        .lte('install_date', end.toISOString());
+      attributedQuery = attributedQuery
+        .gte('created_at', start.toISOString())
+        .lte('created_at', end.toISOString());
+    }
+
+    const [grossResult, attributedResult] = await Promise.all([
+      grossQuery,
+      attributedQuery,
     ]);
 
     const grossRevenue = (grossResult.data || []).reduce(

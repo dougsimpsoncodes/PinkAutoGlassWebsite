@@ -78,7 +78,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
 
-  // Gross revenue from omega_installs (all time, not date-filtered)
+  // Gross revenue from omega_installs (date-filtered to match selected period)
   const [grossRevenue, setGrossRevenue] = useState<{ grossRevenue: number; attributionRate: number; invoiceCount: number } | null>(null);
 
   // Lead data — single source of truth for all lead counts on this page
@@ -216,9 +216,9 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  const fetchGrossRevenue = useCallback(async () => {
+  const fetchGrossRevenue = useCallback(async (filter: DateFilter) => {
     try {
-      const res = await fetch('/api/admin/total-revenue');
+      const res = await fetch(`/api/admin/total-revenue?period=${filter}`);
       if (res.ok) {
         const json = await res.json();
         setGrossRevenue(json);
@@ -248,9 +248,9 @@ export default function AdminDashboard() {
     await Promise.all([
       ...ALL_DATE_FILTERS.map(filter => fetchData(filter)),
       fetchLeads(),
-      fetchGrossRevenue(),
+      fetchGrossRevenue(dateFilter),
     ]);
-  }, [fetchData, fetchLeads, fetchGrossRevenue, invalidateCache]);
+  }, [fetchData, fetchLeads, fetchGrossRevenue, invalidateCache, dateFilter]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -262,6 +262,7 @@ export default function AdminDashboard() {
   // When changing date filter, use cached data or fetch if not available
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
+    fetchGrossRevenue(filter);
     if (!getCachedData(filter)) {
       setLoading(true);
       fetchData(filter).finally(() => setLoading(false));
@@ -270,7 +271,7 @@ export default function AdminDashboard() {
 
   // Initial load - fetch current filter if not cached + fetch leads + gross revenue
   useEffect(() => {
-    const promises: Promise<any>[] = [fetchLeads(), fetchGrossRevenue()];
+    const promises: Promise<any>[] = [fetchLeads(), fetchGrossRevenue(dateFilter)];
     if (!getCachedData(dateFilter)) {
       promises.push(fetchData(dateFilter));
     }
@@ -372,7 +373,7 @@ export default function AdminDashboard() {
             {grossRevenue ? formatCurrency(grossRevenue.grossRevenue) : '—'}
           </p>
           <p className="mt-1 text-xs opacity-75">
-            {grossRevenue ? `${grossRevenue.invoiceCount} invoices (all time)` : 'Loading...'}
+            {grossRevenue ? `${grossRevenue.invoiceCount} invoices` : 'Loading...'}
           </p>
           <div className="mt-2 pt-2 border-t border-white/20 text-xs opacity-80">
             <span>Attributed: {formatCurrency(leadMetrics.totalRevenue)}</span>
