@@ -12,6 +12,7 @@ import {
   Phone,
   MessageSquare,
   FileText,
+  TrendingUp,
 } from 'lucide-react';
 import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
 import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
@@ -102,6 +103,16 @@ export default function GoogleAdsPage() {
     if (leadCounts.total === 0) return 0;
     return (data?.spend ?? 0) / leadCounts.total;
   }, [leadCounts.total, data]);
+
+  const revenue = useMemo(() => {
+    return googleLeads.reduce((sum, lead) => sum + (lead.revenue_amount || 0), 0);
+  }, [googleLeads]);
+
+  const roi = useMemo(() => {
+    const spend = data?.spend ?? 0;
+    if (spend === 0) return null;
+    return revenue / spend;
+  }, [revenue, data]);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -250,8 +261,10 @@ export default function GoogleAdsPage() {
           <Users className="w-6 h-6 text-pink-600" />
           Google Ads Performance
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {/* Total Spend */}
+
+        {/* Row 1: Financial KPIs (most actionable) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {/* Ad Spend */}
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="w-4 h-4 text-gray-400" />
@@ -262,40 +275,34 @@ export default function GoogleAdsPage() {
             </p>
           </div>
 
-          {/* Total Leads */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          {/* Revenue */}
+          <div className="bg-white rounded-lg p-4 shadow-sm border-2 border-green-300">
             <div className="flex items-center gap-2 mb-1">
-              <Users className="w-4 h-4 text-green-600" />
-              <p className="text-sm font-medium text-gray-600">Total Leads</p>
+              <DollarSign className="w-4 h-4 text-green-600" />
+              <p className="text-sm font-medium text-green-700">Revenue</p>
             </div>
-            <p className="text-2xl font-bold text-green-600">{leadCounts.total}</p>
+            <p className="text-2xl font-bold text-green-600">
+              ${revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+            {revenue === 0 && <p className="text-xs text-gray-400 mt-1">From closed invoices</p>}
           </div>
 
-          {/* Click to Call */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          {/* ROI */}
+          <div className={`bg-white rounded-lg p-4 shadow-sm border-2 ${roi === null ? 'border-gray-200' : roi >= 3 ? 'border-green-500' : roi >= 1 ? 'border-yellow-400' : 'border-red-400'}`}>
             <div className="flex items-center gap-2 mb-1">
-              <Phone className="w-4 h-4 text-blue-600" />
-              <p className="text-sm font-medium text-gray-600">Click to Call</p>
+              <TrendingUp className={`w-4 h-4 ${roi === null ? 'text-gray-400' : roi >= 1 ? 'text-green-600' : 'text-red-500'}`} />
+              <p className={`text-sm font-medium ${roi === null ? 'text-gray-600' : roi >= 1 ? 'text-green-700' : 'text-red-600'}`}>ROI</p>
             </div>
-            <p className="text-2xl font-bold text-blue-600">{leadCounts.calls}</p>
-          </div>
-
-          {/* Click to Text */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <MessageSquare className="w-4 h-4 text-indigo-600" />
-              <p className="text-sm font-medium text-gray-600">Click to Text</p>
-            </div>
-            <p className="text-2xl font-bold text-indigo-600">{leadCounts.texts}</p>
-          </div>
-
-          {/* Form Submissions */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="w-4 h-4 text-purple-600" />
-              <p className="text-sm font-medium text-gray-600">Form Leads</p>
-            </div>
-            <p className="text-2xl font-bold text-purple-600">{leadCounts.forms}</p>
+            {roi === null ? (
+              <p className="text-2xl font-bold text-gray-400">—</p>
+            ) : (
+              <>
+                <p className={`text-2xl font-bold ${roi >= 3 ? 'text-green-600' : roi >= 1 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  {roi.toFixed(1)}x
+                </p>
+                <p className="text-xs text-gray-500 mt-1">${roi.toFixed(2)} per $1 spent</p>
+              </>
+            )}
           </div>
 
           {/* Cost Per Lead */}
@@ -307,6 +314,45 @@ export default function GoogleAdsPage() {
             <p className="text-2xl font-bold text-pink-600">
               ${costPerLead.toFixed(2)}
             </p>
+          </div>
+        </div>
+
+        {/* Row 2: Lead Breakdown */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Total Leads */}
+          <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-4 h-4 text-green-600" />
+              <p className="text-sm font-medium text-gray-600">Total Leads</p>
+            </div>
+            <p className="text-xl font-bold text-green-600">{leadCounts.total}</p>
+          </div>
+
+          {/* Click to Call */}
+          <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Phone className="w-4 h-4 text-blue-600" />
+              <p className="text-sm font-medium text-gray-600">Click to Call</p>
+            </div>
+            <p className="text-xl font-bold text-blue-600">{leadCounts.calls}</p>
+          </div>
+
+          {/* Click to Text */}
+          <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare className="w-4 h-4 text-indigo-600" />
+              <p className="text-sm font-medium text-gray-600">Click to Text</p>
+            </div>
+            <p className="text-xl font-bold text-indigo-600">{leadCounts.texts}</p>
+          </div>
+
+          {/* Form Submissions */}
+          <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <FileText className="w-4 h-4 text-purple-600" />
+              <p className="text-sm font-medium text-gray-600">Form Leads</p>
+            </div>
+            <p className="text-xl font-bold text-purple-600">{leadCounts.forms}</p>
           </div>
         </div>
       </div>
