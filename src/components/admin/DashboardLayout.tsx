@@ -16,6 +16,11 @@ import {
   BarChart3,
   Star,
   Upload,
+  TrendingUp,
+  Filter,
+  Globe,
+  MousePointerClick,
+  FileText,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -42,6 +47,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },
+    { name: 'ROI', href: '/admin/dashboard/roi', icon: TrendingUp },
+    { name: 'Marketing Funnel', href: '/admin/dashboard/funnel', icon: Filter },
+    { name: 'Traffic Sources', href: '/admin/dashboard/traffic', icon: Globe },
+    { name: 'Conversions', href: '/admin/dashboard/conversions', icon: MousePointerClick },
+    { name: 'Pages', href: '/admin/dashboard/pages', icon: FileText },
     { name: 'Invoice Upload', href: '/admin/dashboard/uploads', icon: Upload },
   ];
 
