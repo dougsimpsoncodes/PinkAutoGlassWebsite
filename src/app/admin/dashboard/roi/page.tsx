@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import SyncButton from '@/components/admin/SyncButton';
-import { DollarSign, TrendingUp, TrendingDown, Users, Target } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Target } from 'lucide-react';
 import { getDateRange as getMtDateRange, getMountainTime, type DateFilter } from '@/lib/dateUtils';
 
 interface PlatformROI {
@@ -118,8 +118,6 @@ export default function ROIDashboard() {
     { key: 'direct', name: 'Direct/Unknown', color: 'gray', icon: '⚪' },
   ];
 
-  const paidPlatforms = platforms.filter(p => ['google_ads', 'microsoft_ads'].includes(p.key));
-
   return (
     <DashboardLayout>
       {/* Header */}
@@ -219,78 +217,7 @@ export default function ROIDashboard() {
         </div>
       </div>
 
-      {/* Platform Comparison */}
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Platform ROI Comparison</h2>
-
-      {/* Paid Platforms Comparison Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Customers</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ad Spend</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Profit</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cost/Customer</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue/Customer</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">ROI</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {paidPlatforms.map(platform => {
-              const metrics = data.platforms[platform.key as keyof typeof data.platforms];
-
-              if (metrics.uniqueCustomers === 0 && metrics.cost === 0) {
-                return null;
-              }
-
-              return (
-                <tr key={platform.key} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{platform.icon}</span>
-                      <span className="font-medium text-gray-900">{platform.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-gray-900">
-                    {metrics.uniqueCustomers}
-                  </td>
-                  <td className="px-6 py-4 text-right text-gray-900">
-                    ${metrics.cost.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right text-gray-900">
-                    ${metrics.revenue.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={metrics.profit >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                      ${metrics.profit.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right text-gray-900">
-                    ${metrics.costPerCustomer.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-right text-gray-900">
-                    ${metrics.revenuePerCustomer.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <span className={`font-bold ${metrics.roi >= 1 ? 'text-green-600' : 'text-red-600'}`}>
-                        {metrics.roi.toFixed(2)}x
-                      </span>
-                      {metrics.roi >= 1 ? (
-                        <TrendingUp className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4 text-red-600" />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Platform Breakdown</h2>
 
       {/* Individual Platform Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
