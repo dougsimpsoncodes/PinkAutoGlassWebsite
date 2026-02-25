@@ -32,13 +32,24 @@ export default function UploadsPage() {
     setDragging(false);
     const dropped = Array.from(e.dataTransfer.files).filter(f =>
       ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(f.type)
-    ).slice(0, 5);
-    setFiles(dropped);
+    );
+    setFiles(prev => {
+      const combined = [...prev, ...dropped];
+      const unique = combined.filter((f, i) => combined.findIndex(x => x.name === f.name) === i);
+      return unique.slice(0, 5);
+    });
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files).slice(0, 5));
+      const selected = Array.from(e.target.files);
+      setFiles(prev => {
+        const combined = [...prev, ...selected];
+        const unique = combined.filter((f, i) => combined.findIndex(x => x.name === f.name) === i);
+        return unique.slice(0, 5);
+      });
+      // Reset input so same file can be re-added if needed
+      e.target.value = '';
     }
   };
 
