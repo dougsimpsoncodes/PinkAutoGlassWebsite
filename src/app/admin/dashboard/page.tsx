@@ -7,6 +7,7 @@ import { useSync } from '@/contexts/SyncContext';
 import { useDashboardCache } from '@/contexts/DashboardCacheContext';
 import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
 import { getDateRange, isInDateRange } from '@/lib/dateUtils';
+import Link from 'next/link';
 import {
   DollarSign,
   TrendingUp,
@@ -19,6 +20,7 @@ import {
   Minus,
   Target,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 
 interface UnifiedDashboardData {
@@ -110,6 +112,15 @@ export default function AdminDashboard() {
     const microsoft = computeLeadCounts(microsoftLeads);
     const other = computeLeadCounts(otherLeads);
 
+    // Revenue by platform (from matched invoices)
+    const googleRevenue = googleLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0);
+    const microsoftRevenue = microsoftLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0);
+    const otherRevenue = otherLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0);
+    const totalRevenue = filteredLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0);
+
+    // New leads needing follow-up
+    const newLeads = filteredLeads.filter(l => l.status === 'new');
+
     // Form-only counts for Lead Attribution section
     const formLeads = filteredLeads.filter(l => l.type === 'form');
     const formByPlatform = {
@@ -118,7 +129,14 @@ export default function AdminDashboard() {
       direct: formLeads.filter(l => !l.ad_platform || (l.ad_platform !== 'google' && l.ad_platform !== 'microsoft')).length,
     };
 
-    return { total, google, microsoft, other, formTotal: formLeads.length, formNew: formLeads.filter(l => l.status === 'new').length, formByPlatform };
+    return {
+      total, google, microsoft, other,
+      googleRevenue, microsoftRevenue, otherRevenue, totalRevenue,
+      newLeads: newLeads.length,
+      formTotal: formLeads.length,
+      formNew: formLeads.filter(l => l.status === 'new').length,
+      formByPlatform,
+    };
   }, [filteredLeads]);
 
   // Derived CPL and comparison metrics (depends on server-side spend data + client-side lead counts)
@@ -156,6 +174,20 @@ export default function AdminDashboard() {
       winningVolume = 'microsoft';
     }
 
+    const googleROI = googleSpend > 0 ? leadMetrics.googleRevenue / googleSpend : null;
+    const microsoftROI = microsoftSpend > 0 ? leadMetrics.microsoftRevenue / microsoftSpend : null;
+    const overallROI = totalSpend > 0 ? leadMetrics.totalRevenue / totalSpend : null;
+
+    // Which platform has better ROI
+    let winningROI = '';
+    if (googleROI !== null && microsoftROI !== null) {
+      winningROI = googleROI >= microsoftROI ? 'google' : 'microsoft';
+    } else if (googleROI !== null) {
+      winningROI = 'google';
+    } else if (microsoftROI !== null) {
+      winningROI = 'microsoft';
+    }
+
     return {
       overallCpl,
       googleCpl,
@@ -165,6 +197,10 @@ export default function AdminDashboard() {
       cplDifference: Math.abs(googleCpl - microsoftCpl),
       winningCpl,
       winningVolume,
+      googleROI,
+      microsoftROI,
+      overallROI,
+      winningROI,
     };
   }, [data, leadMetrics]);
 
@@ -295,7 +331,7 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600 mt-1">Unified view of all advertising performance</p>
       </div>
@@ -308,76 +344,88 @@ export default function AdminDashboard() {
         color="pink"
       />
 
-      {/* Key KPIs - Hero Section */}
+      {/* ── HERO: Revenue & ROI first ── */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Revenue */}
+        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium opacity-90">Revenue</span>
+            <DollarSign className="w-5 h-5 opacity-70" />
+          </div>
+          <p className="text-3xl font-bold">{formatCurrency(leadMetrics.totalRevenue)}</p>
+          <div className="mt-2 flex items-center gap-2 text-sm opacity-80">
+            <span>G: {formatCurrency(leadMetrics.googleRevenue)}</span>
+            <span>|</span>
+            <span>MS: {formatCurrency(leadMetrics.microsoftRevenue)}</span>
+          </div>
+        </div>
+
+        {/* Overall ROI */}
+        <div className={`rounded-xl shadow-sm p-6 ${
+          derivedMetrics.overallROI === null
+            ? 'bg-white'
+            : derivedMetrics.overallROI >= 3
+              ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400'
+              : derivedMetrics.overallROI >= 1
+                ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400'
+                : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-400'
+        }`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">Overall ROI</span>
+            <TrendingUp className={`w-5 h-5 ${derivedMetrics.overallROI !== null && derivedMetrics.overallROI >= 1 ? 'text-green-500' : 'text-gray-400'}`} />
+          </div>
+          {derivedMetrics.overallROI === null ? (
+            <p className="text-3xl font-bold text-gray-400">—</p>
+          ) : (
+            <>
+              <p className={`text-3xl font-bold ${derivedMetrics.overallROI >= 3 ? 'text-green-700' : derivedMetrics.overallROI >= 1 ? 'text-yellow-700' : 'text-red-700'}`}>
+                {derivedMetrics.overallROI.toFixed(1)}x
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                {derivedMetrics.winningROI === 'google' ? 'Google leads on ROI' : derivedMetrics.winningROI === 'microsoft' ? 'Microsoft leads on ROI' : ''}
+              </p>
+            </>
+          )}
+        </div>
+
         {/* Total Spend */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">Total Ad Spend</span>
-            <DollarSign className="w-5 h-5 text-gray-400" />
+            <Target className="w-5 h-5 text-gray-400" />
           </div>
           <p className="text-3xl font-bold text-gray-900">{formatCurrency(summary.totalSpend)}</p>
           <div className="mt-2 flex items-center gap-2 text-sm">
-            <span className="text-blue-600">Google: {formatCurrency(platforms.google.spend)}</span>
+            <span className="text-blue-600">G: {formatCurrency(platforms.google.spend)}</span>
             <span className="text-gray-300">|</span>
             <span className="text-cyan-600">MS: {formatCurrency(platforms.microsoft.spend)}</span>
           </div>
         </div>
 
-        {/* Total Leads */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Total Leads</span>
-            <Target className="w-5 h-5 text-gray-400" />
+        {/* New Leads Needing Follow-up */}
+        <Link href="/admin/dashboard/leads" className="block">
+          <div className={`rounded-xl shadow-sm p-6 h-full transition-colors cursor-pointer ${leadMetrics.newLeads > 0 ? 'bg-amber-50 border-2 border-amber-400 hover:bg-amber-100' : 'bg-white hover:bg-gray-50'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-600">New Leads</span>
+              <AlertCircle className={`w-5 h-5 ${leadMetrics.newLeads > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
+            </div>
+            <p className={`text-3xl font-bold ${leadMetrics.newLeads > 0 ? 'text-amber-700' : 'text-gray-900'}`}>
+              {leadMetrics.newLeads}
+            </p>
+            <p className="mt-2 text-sm text-gray-500">
+              {leadMetrics.newLeads > 0 ? 'Need follow-up → click to view' : `${leadMetrics.total.total} total leads`}
+            </p>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{leadMetrics.total.total}</p>
-          <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
-            <span className="text-blue-600">Google: {leadMetrics.google.total}</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-cyan-600">MS: {leadMetrics.microsoft.total}</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-600">Other: {leadMetrics.other.total}</span>
-          </div>
-        </div>
-
-        {/* Cost Per Lead */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Cost Per Lead</span>
-            <TrendingDown className="w-5 h-5 text-gray-400" />
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{formatCurrency(derivedMetrics.overallCpl)}</p>
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            <span className={`${derivedMetrics.winningCpl === 'google' ? 'text-green-600 font-medium' : 'text-blue-600'}`}>
-              G: {formatCurrency(derivedMetrics.googleCpl)}
-            </span>
-            <span className="text-gray-300">|</span>
-            <span className={`${derivedMetrics.winningCpl === 'microsoft' ? 'text-green-600 font-medium' : 'text-cyan-600'}`}>
-              MS: {formatCurrency(derivedMetrics.microsoftCpl)}
-            </span>
-          </div>
-        </div>
-
-        {/* Conversion Rate */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Conversion Rate</span>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{formatPercent(derivedMetrics.conversionRate)}</p>
-          <p className="mt-2 text-sm text-gray-500">
-            {formatNumber(summary.totalClicks)} clicks &rarr; {leadMetrics.total.total} leads
-          </p>
-        </div>
+        </Link>
       </div>
 
-      {/* Platform Comparison */}
+      {/* ── PLATFORM HEAD-TO-HEAD ── */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Platform Comparison</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Google Ads Card */}
-          <div className="border-2 border-blue-100 rounded-xl p-6">
+          <div className={`border-2 rounded-xl p-6 ${derivedMetrics.winningROI === 'google' ? 'border-green-400 bg-green-50/30' : 'border-blue-100'}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -385,55 +433,63 @@ export default function AdminDashboard() {
                 </div>
                 <span className="font-semibold text-gray-900">Google Ads</span>
               </div>
-              {derivedMetrics.winningCpl === 'google' && (
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                  Lower CPL
-                </span>
-              )}
+              <div className="flex gap-2">
+                {derivedMetrics.winningROI === 'google' && (
+                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Best ROI</span>
+                )}
+                {derivedMetrics.winningCpl === 'google' && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Lower CPL</span>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Revenue + ROI row — most important */}
+            <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Revenue</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(leadMetrics.googleRevenue)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">ROI</p>
+                {derivedMetrics.googleROI === null ? (
+                  <p className="text-2xl font-bold text-gray-400">—</p>
+                ) : (
+                  <p className={`text-2xl font-bold ${derivedMetrics.googleROI >= 3 ? 'text-green-600' : derivedMetrics.googleROI >= 1 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {derivedMetrics.googleROI.toFixed(1)}x
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Supporting metrics */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-sm text-gray-600">Spend</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.google.spend)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatCurrency(platforms.google.spend)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{leadMetrics.google.total}</p>
+                <p className="text-lg font-semibold text-gray-900">{leadMetrics.google.total}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CPL</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(derivedMetrics.googleCpl)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatCurrency(derivedMetrics.googleCpl)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CTR</p>
-                <p className="text-xl font-bold text-gray-900">{formatPercent(platforms.google.ctr)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatPercent(platforms.google.ctr)}</p>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Lead Breakdown</span>
-              </div>
-              <div className="flex gap-4 mt-2 text-sm">
-                <span className="flex items-center gap-1">
-                  <Phone className="w-4 h-4 text-green-500" />
-                  {leadMetrics.google.calls}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {leadMetrics.google.texts}
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4 text-purple-500" />
-                  {leadMetrics.google.forms}
-                </span>
-              </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-green-500" />{leadMetrics.google.calls}</span>
+              <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5 text-blue-500" />{leadMetrics.google.texts}</span>
+              <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-purple-500" />{leadMetrics.google.forms}</span>
             </div>
           </div>
 
           {/* Microsoft Ads Card */}
-          <div className="border-2 border-cyan-100 rounded-xl p-6">
+          <div className={`border-2 rounded-xl p-6 ${derivedMetrics.winningROI === 'microsoft' ? 'border-green-400 bg-green-50/30' : 'border-cyan-100'}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
@@ -441,160 +497,97 @@ export default function AdminDashboard() {
                 </div>
                 <span className="font-semibold text-gray-900">Microsoft Ads</span>
               </div>
-              {derivedMetrics.winningCpl === 'microsoft' && (
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                  Lower CPL
-                </span>
-              )}
+              <div className="flex gap-2">
+                {derivedMetrics.winningROI === 'microsoft' && (
+                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Best ROI</span>
+                )}
+                {derivedMetrics.winningCpl === 'microsoft' && (
+                  <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">Lower CPL</span>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Revenue + ROI row — most important */}
+            <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Revenue</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(leadMetrics.microsoftRevenue)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">ROI</p>
+                {derivedMetrics.microsoftROI === null ? (
+                  <p className="text-2xl font-bold text-gray-400">—</p>
+                ) : (
+                  <p className={`text-2xl font-bold ${derivedMetrics.microsoftROI >= 3 ? 'text-green-600' : derivedMetrics.microsoftROI >= 1 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {derivedMetrics.microsoftROI.toFixed(1)}x
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Supporting metrics */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-sm text-gray-600">Spend</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(platforms.microsoft.spend)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatCurrency(platforms.microsoft.spend)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{leadMetrics.microsoft.total}</p>
+                <p className="text-lg font-semibold text-gray-900">{leadMetrics.microsoft.total}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CPL</p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(derivedMetrics.microsoftCpl)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatCurrency(derivedMetrics.microsoftCpl)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">CTR</p>
-                <p className="text-xl font-bold text-gray-900">{formatPercent(platforms.microsoft.ctr)}</p>
+                <p className="text-lg font-semibold text-gray-900">{formatPercent(platforms.microsoft.ctr)}</p>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Lead Breakdown</span>
-              </div>
-              <div className="flex gap-4 mt-2 text-sm">
-                <span className="flex items-center gap-1">
-                  <Phone className="w-4 h-4 text-green-500" />
-                  {leadMetrics.microsoft.calls}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {leadMetrics.microsoft.texts}
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4 text-purple-500" />
-                  {leadMetrics.microsoft.forms}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Other/Unattributed Card */}
-          <div className="border-2 border-gray-200 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-gray-600" />
-                </div>
-                <span className="font-semibold text-gray-900">Other / Direct</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600">Spend</p>
-                <p className="text-xl font-bold text-gray-400">N/A</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Leads</p>
-                <p className="text-xl font-bold text-gray-900">{leadMetrics.other.total}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">CPL</p>
-                <p className="text-xl font-bold text-gray-400">N/A</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">CTR</p>
-                <p className="text-xl font-bold text-gray-400">N/A</p>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Lead Breakdown</span>
-              </div>
-              <div className="flex gap-4 mt-2 text-sm">
-                <span className="flex items-center gap-1">
-                  <Phone className="w-4 h-4 text-green-500" />
-                  {leadMetrics.other.calls}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
-                  {leadMetrics.other.texts}
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4 text-purple-500" />
-                  {leadMetrics.other.forms}
-                </span>
-              </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-green-500" />{leadMetrics.microsoft.calls}</span>
+              <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5 text-blue-500" />{leadMetrics.microsoft.texts}</span>
+              <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-purple-500" />{leadMetrics.microsoft.forms}</span>
             </div>
           </div>
         </div>
 
-        {/* Spend Share Bar */}
-        <div className="mt-6">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600">Spend Distribution</span>
-            <span className="text-gray-600">
-              Google {formatPercent(comparison.spendShare.google)} | Microsoft {formatPercent(comparison.spendShare.microsoft)}
-            </span>
+        {/* Distribution bars */}
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Spend Distribution</span>
+              <span className="text-gray-500">Google {formatPercent(comparison.spendShare.google)} | Microsoft {formatPercent(comparison.spendShare.microsoft)}</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden flex">
+              <div className="bg-blue-500 transition-all duration-500" style={{ width: `${comparison.spendShare.google}%` }} />
+              <div className="bg-cyan-500 transition-all duration-500" style={{ width: `${comparison.spendShare.microsoft}%` }} />
+            </div>
           </div>
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
-            <div
-              className="bg-blue-500 transition-all duration-500"
-              style={{ width: `${comparison.spendShare.google}%` }}
-            />
-            <div
-              className="bg-cyan-500 transition-all duration-500"
-              style={{ width: `${comparison.spendShare.microsoft}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Lead Share Bar */}
-        <div className="mt-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600">Lead Distribution</span>
-            <span className="text-gray-600">
-              Google {formatPercent(derivedMetrics.leadShare.google)} | Microsoft {formatPercent(derivedMetrics.leadShare.microsoft)} | Other {formatPercent(derivedMetrics.leadShare.other)}
-            </span>
-          </div>
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
-            <div
-              className="bg-blue-500 transition-all duration-500"
-              style={{ width: `${derivedMetrics.leadShare.google}%` }}
-            />
-            <div
-              className="bg-cyan-500 transition-all duration-500"
-              style={{ width: `${derivedMetrics.leadShare.microsoft}%` }}
-            />
-            <div
-              className="bg-gray-400 transition-all duration-500"
-              style={{ width: `${derivedMetrics.leadShare.other}%` }}
-            />
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Lead Distribution</span>
+              <span className="text-gray-500">Google {formatPercent(derivedMetrics.leadShare.google)} | Microsoft {formatPercent(derivedMetrics.leadShare.microsoft)} | Other {formatPercent(derivedMetrics.leadShare.other)}</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden flex">
+              <div className="bg-blue-500 transition-all duration-500" style={{ width: `${derivedMetrics.leadShare.google}%` }} />
+              <div className="bg-cyan-500 transition-all duration-500" style={{ width: `${derivedMetrics.leadShare.microsoft}%` }} />
+              <div className="bg-gray-400 transition-all duration-500" style={{ width: `${derivedMetrics.leadShare.other}%` }} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Call & Lead Attribution */}
+      {/* ── OPERATIONS: Calls + Leads ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Call Analytics */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Call Analytics</h2>
-
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-gray-900">{calls.total}</p>
-              <p className="text-sm text-gray-600">Total Calls</p>
+              <p className="text-sm text-gray-600">Total</p>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">{calls.answered}</p>
@@ -605,7 +598,6 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600">Missed</p>
             </div>
           </div>
-
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Answer Rate</span>
@@ -620,137 +612,85 @@ export default function AdminDashboard() {
               />
             </div>
           </div>
-
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-600 mb-2">Calls by Source</p>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-blue-600">Google Ads</span>
-                <span className="text-sm font-medium">{calls.byPlatform.google}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-cyan-600">Microsoft Ads</span>
-                <span className="text-sm font-medium">{calls.byPlatform.microsoft}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Direct / Organic</span>
-                <span className="text-sm font-medium">{calls.byPlatform.direct}</span>
-              </div>
-            </div>
+          <div className="pt-4 border-t border-gray-100 space-y-2">
+            <p className="text-sm text-gray-600 mb-2">By Source</p>
+            <div className="flex justify-between"><span className="text-sm text-blue-600">Google Ads</span><span className="text-sm font-medium">{calls.byPlatform.google}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-cyan-600">Microsoft Ads</span><span className="text-sm font-medium">{calls.byPlatform.microsoft}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-gray-600">Direct / Organic</span><span className="text-sm font-medium">{calls.byPlatform.direct}</span></div>
           </div>
         </div>
 
         {/* Lead Attribution */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Lead Attribution</h2>
-
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{leadMetrics.formTotal}</p>
-              <p className="text-sm text-gray-600">Total Form Leads</p>
+              <p className="text-2xl font-bold text-gray-900">{leadMetrics.total.total}</p>
+              <p className="text-sm text-gray-600">Total Leads</p>
             </div>
-            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <p className="text-2xl font-bold text-yellow-600">{leadMetrics.formNew}</p>
-              <p className="text-sm text-gray-600">New (Pending)</p>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-600 mb-2">Leads by Source</p>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-blue-600">Google Ads</span>
-                <span className="text-sm font-medium">{leadMetrics.formByPlatform.google}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-cyan-600">Microsoft Ads</span>
-                <span className="text-sm font-medium">{leadMetrics.formByPlatform.microsoft}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Direct / Organic</span>
-                <span className="text-sm font-medium">{leadMetrics.formByPlatform.direct}</span>
-              </div>
+            <div className={`text-center p-3 rounded-lg ${leadMetrics.newLeads > 0 ? 'bg-amber-50' : 'bg-gray-50'}`}>
+              <p className={`text-2xl font-bold ${leadMetrics.newLeads > 0 ? 'text-amber-600' : 'text-gray-900'}`}>{leadMetrics.newLeads}</p>
+              <p className="text-sm text-gray-600">New / Pending</p>
             </div>
           </div>
-
-          {/* Revenue & ROAS */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Revenue</span>
-              <span className="text-lg font-bold text-green-600">{formatCurrency(summary.totalRevenue)}</span>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <span className="text-sm text-gray-600">ROAS</span>
-              <span className={`text-lg font-bold ${summary.roas >= 1 ? 'text-green-600' : 'text-red-600'}`}>
-                {summary.roas.toFixed(2)}x
-              </span>
-            </div>
+          <div className="pt-4 border-t border-gray-100 space-y-2">
+            <p className="text-sm text-gray-600 mb-2">By Source</p>
+            <div className="flex justify-between"><span className="text-sm text-blue-600">Google Ads</span><span className="text-sm font-medium">{leadMetrics.google.total}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-cyan-600">Microsoft Ads</span><span className="text-sm font-medium">{leadMetrics.microsoft.total}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-gray-600">Direct / Organic</span><span className="text-sm font-medium">{leadMetrics.other.total}</span></div>
           </div>
         </div>
       </div>
 
-      {/* Performance Insights */}
+      {/* ── INSIGHTS ── */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Insights</h2>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* ROI Winner */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className={`w-5 h-5 ${derivedMetrics.winningROI ? 'text-green-500' : 'text-gray-400'}`} />
+              <span className="font-medium text-gray-900">Best ROI</span>
+            </div>
+            <p className="text-sm text-gray-600">
+              {derivedMetrics.winningROI === 'google' ? (
+                <>Google Ads: {derivedMetrics.googleROI?.toFixed(1)}x vs Microsoft: {derivedMetrics.microsoftROI?.toFixed(1) ?? '—'}x</>
+              ) : derivedMetrics.winningROI === 'microsoft' ? (
+                <>Microsoft Ads: {derivedMetrics.microsoftROI?.toFixed(1)}x vs Google: {derivedMetrics.googleROI?.toFixed(1) ?? '—'}x</>
+              ) : (
+                <>No spend data to compare ROI</>
+              )}
+            </p>
+          </div>
+
           {/* CPL Winner */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              {derivedMetrics.winningCpl === 'google' ? (
-                <ArrowDownRight className="w-5 h-5 text-green-500" />
-              ) : derivedMetrics.winningCpl === 'microsoft' ? (
-                <ArrowDownRight className="w-5 h-5 text-green-500" />
-              ) : (
-                <Minus className="w-5 h-5 text-gray-400" />
-              )}
+              {derivedMetrics.winningCpl ? <ArrowDownRight className="w-5 h-5 text-green-500" /> : <Minus className="w-5 h-5 text-gray-400" />}
               <span className="font-medium text-gray-900">Best CPL</span>
             </div>
             <p className="text-sm text-gray-600">
               {derivedMetrics.winningCpl === 'google' ? (
-                <>Google Ads has {formatCurrency(derivedMetrics.cplDifference)} lower CPL</>
+                <>Google Ads: {formatCurrency(derivedMetrics.googleCpl)} — {formatCurrency(derivedMetrics.cplDifference)} cheaper</>
               ) : derivedMetrics.winningCpl === 'microsoft' ? (
-                <>Microsoft Ads has {formatCurrency(derivedMetrics.cplDifference)} lower CPL</>
+                <>Microsoft Ads: {formatCurrency(derivedMetrics.microsoftCpl)} — {formatCurrency(derivedMetrics.cplDifference)} cheaper</>
               ) : (
                 <>Both platforms have similar CPL</>
               )}
             </p>
           </div>
 
-          {/* CTR Winner */}
+          {/* CTR + Volume */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              {comparison.winningPlatform.ctr === 'google' ? (
-                <ArrowUpRight className="w-5 h-5 text-green-500" />
-              ) : comparison.winningPlatform.ctr === 'microsoft' ? (
-                <ArrowUpRight className="w-5 h-5 text-green-500" />
-              ) : (
-                <Minus className="w-5 h-5 text-gray-400" />
-              )}
-              <span className="font-medium text-gray-900">Best CTR</span>
-            </div>
-            <p className="text-sm text-gray-600">
-              {comparison.winningPlatform.ctr === 'google' ? (
-                <>Google Ads: {formatPercent(platforms.google.ctr)} CTR</>
-              ) : comparison.winningPlatform.ctr === 'microsoft' ? (
-                <>Microsoft Ads: {formatPercent(platforms.microsoft.ctr)} CTR</>
-              ) : (
-                <>Both platforms have similar CTR</>
-              )}
-            </p>
-          </div>
-
-          {/* Volume Leader */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <ArrowUpRight className="w-5 h-5 text-blue-500" />
               <span className="font-medium text-gray-900">Volume Leader</span>
             </div>
             <p className="text-sm text-gray-600">
               {derivedMetrics.winningVolume === 'google' ? (
-                <>Google Ads: {formatPercent(derivedMetrics.leadShare.google)} of leads</>
+                <>Google Ads: {formatPercent(derivedMetrics.leadShare.google)} of all leads</>
               ) : derivedMetrics.winningVolume === 'microsoft' ? (
-                <>Microsoft Ads: {formatPercent(derivedMetrics.leadShare.microsoft)} of leads</>
+                <>Microsoft Ads: {formatPercent(derivedMetrics.leadShare.microsoft)} of all leads</>
               ) : (
                 <>Equal lead volume from both platforms</>
               )}
