@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { jsonrepair } from 'jsonrepair';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -154,12 +155,8 @@ export async function POST(request: NextRequest) {
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) responseText = jsonMatch[0];
 
-        // Fix common Gemini JSON issues: single-quoted keys/values → double-quoted
-        responseText = responseText
-          .replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3')  // single-quoted keys
-          .replace(/:\s*'([^']*)'/g, ': "$1"');               // single-quoted values
-
-        const parsed = JSON.parse(responseText);
+        // Use jsonrepair to fix any malformed JSON from the model
+        const parsed = JSON.parse(jsonrepair(responseText));
         return { ...parsed, source_filename: file.name };
 
       } catch (err: any) {
