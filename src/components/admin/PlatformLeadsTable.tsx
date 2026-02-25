@@ -303,13 +303,14 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-600 uppercase tracking-wider">Revenue</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       No {platformLabel} leads found for this period
                     </td>
                   </tr>
@@ -370,6 +371,15 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-${getStatusColor(lead.status)}-100 text-${getStatusColor(lead.status)}-800`}>
                           {lead.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {lead.revenue_amount ? (
+                          <span className="text-sm font-semibold text-green-600">
+                            ${lead.revenue_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-300">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
