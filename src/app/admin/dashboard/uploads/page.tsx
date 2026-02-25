@@ -49,18 +49,20 @@ export default function UploadsPage() {
     setParseError('');
 
     try {
-      const formData = new FormData();
-      files.forEach(f => formData.append('files', f));
+      // Send one file at a time to stay under Vercel's 4.5MB body limit
+      const allInvoices = await Promise.all(files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('files', file);
+        const res = await fetch('/api/admin/parse-invoice', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Parse failed');
+        return data.invoices[0];
+      }));
 
-      const res = await fetch('/api/admin/parse-invoice', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Parse failed');
-
-      setInvoices(data.invoices);
+      setInvoices(allInvoices);
       setStep('preview');
     } catch (err: any) {
       setParseError(err.message);
