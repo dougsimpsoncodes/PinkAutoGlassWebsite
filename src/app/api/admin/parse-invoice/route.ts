@@ -150,7 +150,13 @@ export async function POST(request: NextRequest) {
           EXTRACT_PROMPT,
         ]);
 
-        const parsed = JSON.parse(result.response.text());
+        const rawText = result.response.text();
+        let parsed: any;
+        try {
+          parsed = JSON.parse(rawText);
+        } catch {
+          parsed = JSON.parse(jsonrepair(rawText));
+        }
         return { ...parsed, source_filename: file.name };
 
       } catch (err: any) {
