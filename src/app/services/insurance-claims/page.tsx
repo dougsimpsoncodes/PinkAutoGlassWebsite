@@ -80,7 +80,7 @@ export default function InsuranceClaimsPage() {
                 Auto Glass Insurance Claims Made Easy
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Filing an auto glass insurance claim in Colorado is simple when Pink Auto Glass handles it for you. We take care of 100% of the paperwork, verify your coverage, and bill your insurance company directly so you never have to call your insurer or chase down claim numbers. Most Colorado drivers with comprehensive coverage pay zero dollars out of pocket for windshield repair or replacement because Colorado law CRS 10-4-613 requires insurers to offer zero-deductible glass coverage. We work with every major provider including State Farm, Geico, Progressive, Allstate, USAA, Farmers, Liberty Mutual, Nationwide, AAA, and Travelers. Glass claims are classified as no-fault comprehensive claims, which means filing one will not raise your insurance rates. From the moment you contact us to the completion of your service, we keep you informed of your coverage, your cost, and your timeline. Same-day appointments are available across the Denver Front Range.
+                Most Colorado drivers pay $0. Under state law, your insurer must offer zero-deductible glass coverage — we verify it, file your claim, and bill them directly. Your rates won't go up.
               </p>
               <CTAButtons source="insurance-claims" />
             </div>
@@ -152,14 +152,10 @@ export default function InsuranceClaimsPage() {
                   Insurance Claims Should Be Easy - And They Are
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Dealing with insurance doesn't have to be frustrating. At Pink Auto Glass, we handle 100% of the insurance paperwork for you. We'll verify your coverage, assist with filing your claim, communicate with your insurer, and bill them directly. You just approve the work - we take care of everything else.
+                  Give us your policy number — we call your insurer, confirm your zero-deductible coverage, file the claim, and bill them directly. You just approve the work.
                 </p>
 
                 <AboveFoldCTA location="service-insurance-claims" />
-
-                <p className="text-lg text-gray-700 mb-4">
-                  In Colorado, most comprehensive policies cover windshield repair and replacement for the price of your deductible. We'll tell you the exact amount before we start work - no surprises.
-                </p>
               </section>
 
 

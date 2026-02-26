@@ -80,7 +80,7 @@ export default function AllstatePage() {
                 Allstate Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, Allstate comprehensive coverage pays for windshield replacement in Colorado. Allstate processes Glass Only claims separately from collision claims — meaning your Safe Driving Bonus is not affected. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We bill Allstate directly so you never have to call them. Same-day mobile service available across the Denver Front Range.
+                Yes — most Allstate drivers in Colorado qualify for zero-deductible windshield replacement. Glass Only claims don't affect your Safe Driving Bonus — we bill Allstate directly and your rates won't go up.
               </p>
               <CTAButtons source="insurance-allstate" />
             </div>
@@ -123,7 +123,7 @@ export default function AllstatePage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Allstate in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. Many Allstate policyholders qualify for $0 out of pocket on windshield replacement. Allstate's Glass Only claim type is processed separately from collision — it does not count as an at-fault incident or affect your bonus. We verify your coverage before any work begins.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Most Allstate policyholders qualify — Glass Only claims are no-fault and don't touch your Safe Driving Bonus.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

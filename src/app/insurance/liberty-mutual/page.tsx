@@ -80,7 +80,7 @@ export default function LibertyMutualPage() {
                 Liberty Mutual Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, Liberty Mutual comprehensive coverage pays for windshield replacement in Colorado. Liberty Mutual also owns Safeco — if you have either brand, the same Colorado zero-deductible law applies. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. RightTrack program participants are not affected by glass claims. We bill Liberty Mutual directly — you don't call them. Same-day mobile service available across the Front Range.
+                Yes — most Liberty Mutual drivers in Colorado qualify for zero-deductible windshield replacement. RightTrack scores are unaffected by glass claims — we bill Liberty Mutual directly.
               </p>
               <CTAButtons source="insurance-liberty-mutual" />
             </div>
@@ -123,7 +123,7 @@ export default function LibertyMutualPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Liberty Mutual in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. Many Liberty Mutual policyholders in Colorado qualify for $0 out of pocket on windshield replacement. Glass claims are no-fault comprehensive — they do not affect your RightTrack score, rate, or renewal. We verify your exact coverage before any work begins.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Most Liberty Mutual policyholders qualify — glass claims won't affect your RightTrack score, rate, or renewal.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

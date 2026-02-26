@@ -80,7 +80,7 @@ export default function AAAPage() {
                 AAA Windshield Claim Colorado — How to File &amp; Get $0 Service
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, AAA comprehensive auto insurance covers windshield replacement in Colorado. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. AAA glass claims go through your underwriting carrier — CSAA Insurance Group or the Interinsurance Exchange — not your roadside membership. We bill AAA directly so you never have to call them. Same-day mobile service available across the Front Range.
+                Yes — most AAA policyholders in Colorado qualify for zero-deductible windshield replacement. Claims go through your underwriting carrier, not your roadside membership — we handle it all and bill AAA directly.
               </p>
               <CTAButtons source="insurance-aaa" />
             </div>
@@ -123,7 +123,7 @@ export default function AAAPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with AAA in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. Many AAA policyholders in Colorado qualify for $0 out of pocket on windshield replacement. We verify your exact deductible before starting any work — no surprises.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Most AAA policyholders qualify — we verify your coverage and confirm your cost before we start.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

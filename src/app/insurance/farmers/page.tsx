@@ -80,7 +80,7 @@ export default function FarmersPage() {
                 Farmers Insurance Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, Farmers comprehensive coverage pays for windshield replacement in Colorado. Farmers offers a Glass Only claim type that does not affect your rates. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We bill Farmers directly — you don't need to call your agent or the claims line yourself. Same-day mobile service available across the Denver Front Range.
+                Yes — most Farmers drivers in Colorado qualify for zero-deductible windshield replacement. Glass Only claims are no-fault and don't affect your rates — we bill Farmers directly.
               </p>
               <CTAButtons source="insurance-farmers" />
             </div>
@@ -123,7 +123,7 @@ export default function FarmersPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Farmers in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. Many Farmers policyholders in Colorado qualify for $0 out of pocket on windshield replacement. Glass claims are no-fault comprehensive — they do not count against your record or affect your rate. We verify your coverage before any work begins.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Most Farmers policyholders qualify — glass claims are no-fault and won't count against your record.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

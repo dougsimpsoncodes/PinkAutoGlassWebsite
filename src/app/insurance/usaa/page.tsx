@@ -80,7 +80,7 @@ export default function USAAPage() {
                 USAA Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, USAA comprehensive coverage pays for windshield replacement in Colorado. USAA serves military members and their families — a significant portion of Colorado's population given Fort Carson, Peterson Space Force Base, Buckley SFB, and Schriever SFB. Under Colorado law (CRS 10-4-613), USAA members may qualify for $0 out of pocket. We bill USAA directly and provide mobile service to any location, on or off base. Same-day appointments available.
+                Yes — most USAA members in Colorado qualify for zero-deductible windshield replacement. We provide mobile service on or off base and bill USAA directly — no calls needed.
               </p>
               <CTAButtons source="insurance-usaa" />
             </div>
@@ -123,7 +123,7 @@ export default function USAAPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with USAA in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. USAA members in Colorado are entitled to this protection — many qualify for $0 out of pocket on windshield replacement. USAA is known for fast claims processing. We verify your coverage before any work begins and handle everything so you can focus on what matters.
+                Colorado law requires insurers to offer zero-deductible glass coverage. USAA members are entitled to this protection — and USAA is known for fast, hassle-free claims.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

@@ -81,7 +81,7 @@ export default function ProgressivePage() {
                 Does Progressive Cover Windshield Replacement in Colorado?
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes — Progressive comprehensive coverage pays for windshield replacement in Colorado. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. Progressive also offers an optional Glass Deductible Waiver (Glass Buyback) that eliminates your deductible entirely. We bill Progressive directly — you don't call them. Same-day service available across the Denver Front Range.
+                Yes — most Progressive drivers in Colorado qualify for zero-deductible windshield replacement. We verify your coverage, file the claim, and bill Progressive directly. Your rates won't go up.
               </p>
               <CTAButtons source="insurance-progressive" />
             </div>
@@ -126,7 +126,7 @@ export default function ProgressivePage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Progressive in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurance companies to offer zero-deductible glass coverage to policyholders. Many Progressive drivers qualify for $0 out of pocket on windshield replacement. If you have Progressive's optional Glass Deductible Waiver (Glass Buyback), your deductible is eliminated outright. We verify your exact coverage before starting any work — no surprises.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Many Progressive drivers pay $0 — and if you have the Glass Deductible Waiver, it's eliminated outright. We confirm your exact cost before we start.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

@@ -80,7 +80,7 @@ export default function SafecoPage() {
                 Safeco Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, Safeco comprehensive coverage pays for windshield replacement in Colorado. Safeco is owned by Liberty Mutual and is a top insurer in Colorado. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We bill Safeco directly — you don't have to call them. Same-day mobile service available across the Denver Front Range.
+                Yes — most Safeco policyholders in Colorado qualify for zero-deductible windshield replacement. Safeco is owned by Liberty Mutual — the same zero-deductible law applies and we bill them directly.
               </p>
               <CTAButtons source="insurance-safeco" />
             </div>
@@ -123,7 +123,7 @@ export default function SafecoPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Safeco in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. Many Safeco policyholders in Colorado qualify for $0 out of pocket on windshield replacement. Glass claims are no-fault comprehensive — they do not affect your rate or renewal. We verify your exact coverage before any work begins.
+                Colorado law requires insurers to offer zero-deductible glass coverage. Most Safeco policyholders qualify — glass claims are no-fault and won't affect your rate or renewal.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />

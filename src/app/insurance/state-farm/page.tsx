@@ -80,7 +80,7 @@ export default function StateFarmPage() {
                 State Farm Windshield Replacement Colorado
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Yes, State Farm comprehensive coverage pays for windshield replacement in Colorado. State Farm is the #1 auto insurer in Colorado and offers a Glass Only claim type that does not affect your rates. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We bill State Farm directly — you don't need to call your agent or the claims line. Same-day mobile service available across the Front Range.
+                Yes — most State Farm drivers in Colorado qualify for zero-deductible windshield replacement. Glass Only claims don't affect your rates, and we bill State Farm directly — no calls needed.
               </p>
               <CTAButtons source="insurance-state-farm" />
             </div>
@@ -123,7 +123,7 @@ export default function StateFarmPage() {
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with State Farm in Colorado</h2>
               <p className="text-blue-800 text-lg">
-                Colorado Revised Statute 10-4-613 requires insurers to offer zero-deductible glass coverage. As Colorado's largest auto insurer, State Farm is fully familiar with this law. Many State Farm policyholders qualify for $0 out of pocket on windshield replacement. Glass Only claims do not affect your rate — they are treated as no-fault comprehensive. We verify your exact coverage before starting any work.
+                Colorado law requires insurers to offer zero-deductible glass coverage. As Colorado's largest insurer, State Farm knows this law well — most policyholders qualify.
               </p>
               <div className="mt-4 flex items-center text-blue-900 font-semibold">
                 <DollarSign className="w-5 h-5 mr-2" />
