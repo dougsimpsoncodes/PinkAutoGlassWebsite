@@ -64,6 +64,13 @@ export async function POST(request: NextRequest) {
       transformedBody.serviceType = 'repair';
     }
 
+    // Default vehicle fields for insurance-only forms (carrier + phone, no vehicle collected)
+    if (!transformedBody.vehicleYear) {
+      transformedBody.vehicleYear = 2000;
+      transformedBody.vehicleMake = 'Unknown';
+      transformedBody.vehicleModel = 'Unknown';
+    }
+
     // Default consents to true if smsConsent checkbox was checked (legacy behavior)
     if (body.smsConsent === true && !transformedBody.privacyAcknowledgment) {
       transformedBody.smsConsent = true;
