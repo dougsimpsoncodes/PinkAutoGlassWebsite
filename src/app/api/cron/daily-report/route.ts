@@ -211,15 +211,15 @@ async function fetchData() {
   // Deduplicate calls by phone number (matches dashboard counting model)
   const calls = deduplicateCalls(allCalls || []);
 
-  // 2. Fetch Quick Quote form submissions (leads table)
+  // 2. Fetch Quick Quote form submissions (leads table) — exclude test leads via DB flag
   const { data: allLeads } = await supabase
     .from('leads')
     .select('*')
+    .eq('is_test', false)
     .gte('created_at', fourteenDaysAgoUTC.toISOString())
     .order('created_at', { ascending: false });
 
-  const filteredLeads = filterTestLeads(allLeads || []);
-  const leads = deduplicateLeads(filteredLeads);
+  const leads = deduplicateLeads(allLeads || []);
 
   // 3 & 4. Fetch conversion events (click-to-call and click-to-text)
   const { data: allConversionEvents } = await supabase

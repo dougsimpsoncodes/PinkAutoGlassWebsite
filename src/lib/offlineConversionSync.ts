@@ -33,6 +33,8 @@ import {
 import {
   ATTRIBUTION_WINDOW_MINUTES,
   MIN_CALL_DURATION_SECONDS,
+  isExcludedPhone,
+  isTestPhone,
 } from './constants';
 
 // Default conversion value for phone calls
@@ -148,12 +150,19 @@ async function findAttributableCalls(
     return [];
   }
 
-  console.log(`📞 Found ${calls.length} calls to check for Google Ads attribution`);
+  // Filter out test/internal phone numbers — never upload these as real conversions
+  const realCalls = calls.filter(
+    (call: any) => !isExcludedPhone(call.from_number || '') && !isTestPhone(call.from_number || '')
+  );
+  if (realCalls.length < calls.length) {
+    console.log(`🧪 Filtered ${calls.length - realCalls.length} test call(s) from Google Ads conversion upload`);
+  }
+  console.log(`📞 Found ${realCalls.length} calls to check for Google Ads attribution`);
 
   const attributedCalls: AttributedCall[] = [];
   const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
-  for (const call of calls) {
+  for (const call of realCalls) {
     const callTime = new Date(call.start_time);
     const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
@@ -432,12 +441,19 @@ async function findMicrosoftAttributableCalls(
     return [];
   }
 
-  console.log(`📞 Found ${calls.length} calls to check for Microsoft Ads attribution`);
+  // Filter out test/internal phone numbers — never upload these as real conversions
+  const realCallsMs = calls.filter(
+    (call: any) => !isExcludedPhone(call.from_number || '') && !isTestPhone(call.from_number || '')
+  );
+  if (realCallsMs.length < calls.length) {
+    console.log(`🧪 Filtered ${calls.length - realCallsMs.length} test call(s) from Microsoft Ads conversion upload`);
+  }
+  console.log(`📞 Found ${realCallsMs.length} calls to check for Microsoft Ads attribution`);
 
   const attributedCalls: MicrosoftAttributedCall[] = [];
   const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
-  for (const call of calls) {
+  for (const call of realCallsMs) {
     const callTime = new Date(call.start_time);
     const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
