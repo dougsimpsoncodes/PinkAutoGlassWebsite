@@ -161,6 +161,7 @@ export async function POST(request: NextRequest) {
       referralCode: validatedData.referralCode || null,
       clientId: body.clientId || null,
       sessionId: body.sessionId || null,
+      insuranceCarrier: validatedData.insuranceCarrier || null,
       // Spread immutable attribution (gclid, msclkid, ad_platform, utm_*)
       ...attribution,
     };

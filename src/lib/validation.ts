@@ -93,6 +93,7 @@ export const leadFormSchema = z.object({
   privacyAcknowledgment: z.boolean().default(false), // Optional for quick quotes
   website: z.string().max(0).optional().default(''), // Honeypot
   formStartTime: z.number().optional(), // Timestamp validation
+  insuranceCarrier: z.string().trim().max(50).optional(), // Captured on insurance pages
 });
 
 export const bookingFormSchema = z.object({
