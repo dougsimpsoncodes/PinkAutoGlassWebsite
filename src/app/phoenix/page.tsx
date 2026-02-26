@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Phone, MapPin, Clock, Shield, CheckCircle, AlertTriangle } from "lucide-react";
+import PhoenixClickTracker from "@/components/PhoenixClickTracker";
 
 export const metadata: Metadata = {
   title: "Phoenix Windshield Replacement | $0 Out of Pocket | Mobile Service | (480) 712-7465",
@@ -683,6 +684,7 @@ export default function PhoenixPage() {
           </div>
         </div>
       </section>
+      <PhoenixClickTracker />
     </>
   );
 }

@@ -27,9 +27,14 @@ const CARRIERS = [
 interface InsuranceQuoteFormProps {
   carrier?: string; // Pre-select carrier if on a carrier-specific page
   source?: string;
+  market?: 'colorado' | 'arizona';
 }
 
-export default function InsuranceQuoteForm({ carrier, source = 'insurance_page' }: InsuranceQuoteFormProps) {
+export default function InsuranceQuoteForm({ carrier, source = 'insurance_page', market = 'colorado' }: InsuranceQuoteFormProps) {
+  const isArizona = market === 'arizona';
+  const phoneE164 = isArizona ? '+14807127465' : '+17209187465';
+  const displayPhone = isArizona ? '(480) 712-7465' : '(720) 918-7465';
+  const stateLabel = isArizona ? 'Arizona' : 'Colorado';
   const router = useRouter();
   const [formStarted, setFormStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,10 +97,10 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page' 
         trackFormSubmission(source, { leadId: data.leadId });
         router.push('/thank-you');
       } else {
-        alert('Something went wrong. Please call us at (720) 918-7465');
+        alert(`Something went wrong. Please call us at ${displayPhone}`);
       }
     } catch {
-      alert('Something went wrong. Please call us at (720) 918-7465');
+      alert(`Something went wrong. Please call us at ${displayPhone}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +112,7 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page' 
       <div className="flex items-center gap-2 mb-4">
         <CheckCircle className="w-5 h-5 text-teal-600 shrink-0" />
         <p className="text-sm font-medium text-teal-700">
-          Most Colorado drivers pay <strong>$0 out of pocket</strong>
+          Most {stateLabel} drivers pay <strong>$0 out of pocket</strong>
         </p>
       </div>
 
@@ -184,11 +189,11 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page' 
       <div className="mt-5 pt-5 border-t border-gray-100 text-center">
         <p className="text-sm text-gray-500 mb-2">Prefer to call?</p>
         <a
-          href="tel:+17209187465"
+          href={`tel:${phoneE164}`}
           className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-800 transition-colors"
         >
           <Phone className="w-4 h-4" />
-          (720) 918-7465
+          {displayPhone}
         </a>
       </div>
     </div>

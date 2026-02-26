@@ -118,7 +118,7 @@ export default function ArizonaInsuranceClaimsPage() {
                 Arizona law (ARS 20-264) requires insurers to offer zero-deductible glass coverage — most Phoenix drivers already have it. Your rates can't go up (ARS 20-263), and you choose your shop (ARS 20-469). We handle your entire claim. You pay $0.
               </p>
               <div className="max-w-md mx-auto mt-6">
-                <InsuranceQuoteForm source="az-insurance-hub" />
+                <InsuranceQuoteForm source="az-insurance-hub" market="arizona" />
               </div>
             </div>
           </div>
@@ -323,7 +323,7 @@ export default function ArizonaInsuranceClaimsPage() {
 
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
-                <InsuranceQuoteForm source="az-insurance-sidebar" />
+                <InsuranceQuoteForm source="az-insurance-sidebar" market="arizona" />
 
                 <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Arizona Glass Laws</h3>
