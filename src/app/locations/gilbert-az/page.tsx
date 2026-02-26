@@ -98,11 +98,11 @@ export default function GilbertLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Gilbert Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Gilbert has transformed from a small farming community into one of the fastest-growing cities in the United States — and that growth means construction everywhere. From the beloved Heritage District's restaurants and shops to the master-planned communities of Power Ranch, Agritopia, and Morrison Ranch, Gilbert is a family-friendly suburb dealing with one unavoidable side effect of rapid development: construction vehicles and rock chips. The US-60/Loop 202 interchange at the north end of Gilbert adds freeway chip exposure to the mix.
+                  We bring $0 mobile windshield service to Gilbert — from the Heritage District to Power Ranch, Agritopia, and Morrison Ranch.
                 </p>
                 <AboveFoldCTA location="location-gilbert-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Most Gilbert residents qualify for $0 windshield replacement under Arizona's ARS 20-264. Your rates won't go up (ARS 20-263). You choose your shop (ARS 20-469). Pink Auto Glass comes to you, handles everything, and gets your glass replaced the same day.
+                  Arizona law means most Gilbert drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function GilbertLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Constant New Construction:</strong> Gilbert adds thousands of new homes and commercial buildings each year. Construction trucks are omnipresent in developing neighborhoods like Finley Farms, Shamrock Estates, and Val Vista Lakes. Gravel loads fall off trucks on local streets daily.</span>
+                      <span><strong>Constant New Construction:</strong> Gilbert adds thousands of new homes and commercial buildings each year.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>US-60/Loop 202 Convergence:</strong> The northern edge of Gilbert sees heavy freeway traffic from both the Superstition Freeway and San Tan Freeway. Commuters in Power Ranch, Morrison Ranch, and Lyons Gate who commute north face daily rock chip exposure.</span>
+                      <span><strong>US-60/Loop 202 Convergence:</strong> The northern edge of Gilbert sees heavy freeway traffic from both the Superstition Freeway and San Tan Freeway.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Agricultural Legacy Roads:</strong> Gilbert's farming heritage means many local roads were built for farm equipment and have loose shoulders that push gravel onto pavement. Roads near Agritopia and the former agricultural lands to the south have this issue.</span>
+                      <span><strong>Agricultural Legacy Roads:</strong> Gilbert's farming heritage means many local roads were built for farm equipment and have loose shoulders that push gravel onto pavement.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Summer Heat Chip Expansion:</strong> Like all of Phoenix metro, Gilbert's summer temperatures exceed 110°F regularly. New residents moving from northern states are often surprised how quickly a small chip becomes a full crack in Arizona summer heat.</span>
+                      <span><strong>Summer Heat Chip Expansion:</strong> Like all of Phoenix metro, Gilbert's summer temperatures exceed 110°F regularly.</span>
                     </li>
                   </ul>
                 </div>

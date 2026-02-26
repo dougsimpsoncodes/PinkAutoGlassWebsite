@@ -386,9 +386,7 @@ export default function PhoenixPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Extreme Heat (115°F+)</h3>
                   <p className="text-gray-700 text-sm">
-                    Phoenix summer temperatures cause glass to expand and contract rapidly.
-                    A small chip from I-10 gravel can become a full crack overnight when
-                    temperatures swing 40°F between day and night.
+                    A small chip can become a full crack overnight as Phoenix temperatures swing 40°F between day and night.
                   </p>
                 </div>
               </div>
@@ -398,9 +396,7 @@ export default function PhoenixPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Monsoon Season Debris</h3>
                   <p className="text-gray-700 text-sm">
-                    July–September monsoons bring flying debris, hail, and sand-laden haboobs
-                    that hit windshields at highway speeds. Haboob particulate causes micro-abrasion
-                    that weakens glass over time.
+                    July–September monsoons bring hail, flying debris, and haboobs that hit windshields at highway speeds.
                   </p>
                 </div>
               </div>
@@ -410,9 +406,7 @@ export default function PhoenixPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">I-10 & US-60 Truck Traffic</h3>
                   <p className="text-gray-700 text-sm">
-                    Phoenix sits at a major interstate crossroads. Heavy semi traffic on I-10,
-                    US-60, and I-17 constantly kicks up gravel and road debris — a leading cause
-                    of windshield chips in Maricopa County.
+                    Heavy semis on I-10, US-60, and I-17 constantly kick up gravel — the leading cause of windshield chips in Maricopa County.
                   </p>
                 </div>
               </div>
@@ -422,9 +416,7 @@ export default function PhoenixPage() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Caliche Roads & Construction</h3>
                   <p className="text-gray-700 text-sm">
-                    Rapid growth in Buckeye, Queen Creek, and Gilbert means miles of
-                    unpaved caliche roads adjacent to new developments. Dust and loose gravel
-                    from construction sites add to windshield wear across the Valley.
+                    Rapid growth in Buckeye, Queen Creek, and Gilbert means miles of unpaved caliche roads and construction debris across the Valley.
                   </p>
                 </div>
               </div>

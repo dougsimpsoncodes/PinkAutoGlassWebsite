@@ -98,11 +98,11 @@ export default function GoodyearLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Goodyear Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Goodyear sits on the western edge of the Phoenix metro, bordered by Luke Air Force Base to the north and the Estrella Mountain Regional Park to the south. Master-planned communities like Estrella Mountain Ranch and Verrado have attracted thousands of families to Goodyear's wide-open western landscape. The I-10 west corridor carries heavy freight traffic between Phoenix and California, and Goodyear Ballpark draws spring training crowds each February. With so much new construction, the I-10, and Luke AFB operations, windshield damage is a constant reality.
+                  We bring $0 mobile windshield service to Goodyear — the I-10 west corridor carries heavy California freight traffic past Estrella Mountain Ranch and Verrado.
                 </p>
                 <AboveFoldCTA location="location-goodyear-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona law protects Goodyear drivers. ARS 20-264 means $0 out of pocket with comprehensive coverage. ARS 20-263 means no rate increase. ARS 20-469 means you choose your shop. We come to Estrella Mountain Ranch, Verrado, or anywhere in Goodyear and handle your entire insurance claim.
+                  Arizona law means most Goodyear drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function GoodyearLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 West California Freight Corridor:</strong> The I-10 between Phoenix and Los Angeles is one of the most heavily traveled freight corridors in the US. Trucks hauling cargo to and from California pass through Goodyear daily at high speeds, creating constant chip exposure.</span>
+                      <span><strong>I-10 West California Freight Corridor:</strong> The I-10 between Phoenix and Los Angeles is one of the most heavily traveled freight corridors in the US.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Luke AFB Heavy Vehicle Traffic:</strong> Luke Air Force Base operations generate significant heavy vehicle traffic on Litchfield Road, Dysart Road, and other west Goodyear corridors. Defense contractor deliveries and military equipment transport add to chip risk.</span>
+                      <span><strong>Luke AFB Heavy Vehicle Traffic:</strong> Luke Air Force Base operations generate significant heavy vehicle traffic on Litchfield Road, Dysart Road, and other west Goodyear corridors.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Estrella Mountain Road Access:</strong> Roads accessing Estrella Mountain Regional Park and the hiking/biking trails transition from suburban pavement to gravel access roads. Desert caliche migrates onto suburban streets in the Estrella Mountain Ranch area.</span>
+                      <span><strong>Estrella Mountain Road Access:</strong> Roads accessing Estrella Mountain Regional Park and the hiking/biking trails transition from suburban pavement to gravel access roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Verrado New Home Construction:</strong> Verrado continues to expand with new home phases. Active construction zones throughout the development mean constant gravel truck traffic on local streets.</span>
+                      <span><strong>Verrado New Home Construction:</strong> Verrado continues to expand with new home phases.</span>
                     </li>
                   </ul>
                 </div>

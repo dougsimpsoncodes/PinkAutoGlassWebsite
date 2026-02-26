@@ -98,11 +98,11 @@ export default function AhwatukeeLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Ahwatukee Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Ahwatukee is Phoenix's southernmost suburb — often called "The Village" — nestled between South Mountain Park to the north and Maricopa County's southern boundary. A distinctly affluent, family-oriented community, Ahwatukee attracts professionals who commute north on I-10 and I-17 to downtown Phoenix and Tempe. The I-10 south corridor through Ahwatukee carries heavy truck traffic between Phoenix and Tucson, making rock chips a regular occurrence for daily commuters. South Mountain Park's access roads also bring desert material onto suburban streets.
+                  We offer same-day mobile service throughout Ahwatukee Foothills and Club West — right along the I-10 South Mountain corridor — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-ahwatukee-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Ahwatukee drivers with comprehensive coverage. ARS 20-263 means no rate increases. ARS 20-469 means you choose your shop. We come to your Ahwatukee Foothills home or any community in Ahwatukee and handle your entire insurance claim.
+                  Arizona law means most Ahwatukee drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function AhwatukeeLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 South Phoenix-Tucson Corridor:</strong> The I-10 through Ahwatukee is the primary route between Phoenix and Tucson. Commercial freight, construction materials, and agricultural products move through this corridor constantly. Commuters entering I-10 from Ahwatukee face high-speed truck exposure daily.</span>
+                      <span><strong>I-10 South Phoenix-Tucson Corridor:</strong> The I-10 through Ahwatukee is the primary route between Phoenix and Tucson.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>South Mountain Park Access Roads:</strong> Ahwatukee borders the 16,000-acre South Mountain Park, the largest municipal park in the US. Hikers, mountain bikers, and park visitors travel roads through Ahwatukee that occasionally pass desert terrain access points, bringing loose rock and desert material back to paved streets.</span>
+                      <span><strong>South Mountain Park Access Roads:</strong> Ahwatukee borders the 16,000-acre South Mountain Park, the largest municipal park in the US.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Foothills Elevation and Heat:</strong> Ahwatukee's slight elevation along the South Mountain foothills doesn't provide much temperature relief. Summer temperatures still exceed 110°F, creating chip expansion conditions as severe as any part of the Phoenix metro.</span>
+                      <span><strong>Foothills Elevation and Heat:</strong> Ahwatukee's slight elevation along the South Mountain foothills doesn't provide much temperature relief from summer heat exceeding 110°F.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Maricopa Commuter Traffic:</strong> As one of the first Phoenix-proper exits coming north from Maricopa on I-10, Ahwatukee interchanges concentrate heavy commuter traffic from the growing Maricopa community — adding to rock chip exposure in the local I-10 corridor.</span>
+                      <span><strong>Maricopa Commuter Traffic:</strong> As one of the first Phoenix-proper exits coming north from Maricopa on I-10, Ahwatukee interchanges concentrate heavy commuter traffic from the growing Maricopa community.</span>
                     </li>
                   </ul>
                 </div>

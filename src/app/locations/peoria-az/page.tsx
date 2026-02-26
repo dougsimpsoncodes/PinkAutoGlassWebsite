@@ -98,11 +98,11 @@ export default function PeoriaLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Peoria Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Peoria stretches from the developed Arrowhead commercial corridor all the way north to Lake Pleasant Regional Park, encompassing some of the Phoenix metro's most scenic and fastest-growing terrain. Peoria Sports Complex draws spring training fans each year, P83 Entertainment District is a gathering hub, and communities like Vistancia and Westwing represent some of the NW Valley's newest residential growth. With this growth comes construction traffic, and with Lake Pleasant comes roads that transition from pristine pavement to gravel paths that bring debris back to city streets.
+                  We bring $0 mobile windshield service to Peoria — from Arrowhead to Vistancia and the gravel access roads near Lake Pleasant Regional Park.
                 </p>
                 <AboveFoldCTA location="location-peoria-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Peoria drivers with comprehensive insurance qualify for $0 windshield replacement under Arizona's ARS 20-264. ARS 20-263 means no rate increases. ARS 20-469 means you choose the shop. We come to you anywhere in Peoria and handle your entire claim so you don't have to.
+                  Arizona law means most Peoria drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function PeoriaLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Lake Pleasant Road Access:</strong> State Route 74 and other access roads to Lake Pleasant transition between paved roads and areas with loose gravel and caliche. Boat trailers, ATVs, and recreational vehicles frequent these routes, kicking up debris.</span>
+                      <span><strong>Lake Pleasant Road Access:</strong> State Route 74 and other access roads to Lake Pleasant transition between paved roads and areas with loose gravel and caliche.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Vistancia & Westwing Development:</strong> Peoria's northern communities represent active new construction zones. Gravel trucks, earth movers, and construction equipment operate on partially-paved roads throughout these developments year-round.</span>
+                      <span><strong>Vistancia & Westwing Development:</strong> Peoria's northern communities represent active new construction zones.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 101 and Northern Extensions:</strong> The Loop 101 corridor through Peoria carries significant commercial truck traffic. The planned and ongoing Loop 303 corridor improvements in the area also generate construction debris and road equipment traffic.</span>
+                      <span><strong>Loop 101 and Northern Extensions:</strong> The Loop 101 corridor through Peoria carries significant commercial truck traffic.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Desert Edge Dust and Sand:</strong> Peoria's northern neighborhoods border open desert. Monsoon-season haboobs regularly deposit sand and small rocks on suburban roads, and steady desert winds keep road shoulders stocked with loose material.</span>
+                      <span><strong>Desert Edge Dust and Sand:</strong> Peoria's northern neighborhoods border open desert.</span>
                     </li>
                   </ul>
                 </div>

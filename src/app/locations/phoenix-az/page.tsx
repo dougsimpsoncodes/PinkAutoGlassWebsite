@@ -98,11 +98,11 @@ export default function PhoenixLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Phoenix Drivers Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Phoenix is the 5th largest city in the United States and Arizona's state capital — a 517-square-mile metro where I-10 and I-17 carry massive commercial truck traffic daily. Between the extreme summer heat pushing 115°F, monsoon debris season from July through September, and constant freeway rock chips from truck traffic along the I-10/I-17 corridor and Sky Harbor Airport approaches, Phoenix drivers face some of the harshest windshield conditions in the country. The good news: Arizona law protects you.
+                  We offer same-day mobile service anywhere in Phoenix — from Arcadia to Laveen to the I-10/I-17 corridor — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-phoenix-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Under ARS 20-264, Arizona requires insurers to offer zero-deductible glass coverage. Under ARS 20-263, filing a glass claim cannot raise your rates. Under ARS 20-469, you have the legal right to choose your own shop — you don't have to use Safelite no matter what your insurer says. Pink Auto Glass handles 100% of the insurance paperwork and brings mobile service directly to your home or office anywhere in Phoenix metro.
+                  Arizona law means most Phoenix drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,27 +110,27 @@ export default function PhoenixLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Extreme Summer Heat (115°F+):</strong> Thermal expansion causes existing chips to spread rapidly. A chip that looks minor in April can crack across your entire windshield by June. Act immediately — chip repairs are free with coverage, full replacements cost more and take longer.</span>
+                      <span><strong>Extreme Summer Heat (115°F+):</strong> Thermal expansion causes existing chips to spread rapidly.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 & I-17 Truck Traffic:</strong> The I-10/I-17 corridor through Phoenix carries constant commercial freight to and from California, Texas, and northern Arizona. High-speed trucks kick up gravel and debris that hits windshields at freeway speeds — the leading cause of windshield damage in Phoenix.</span>
+                      <span><strong>I-10 & I-17 Truck Traffic:</strong> The I-10/I-17 corridor through Phoenix carries constant commercial freight to and from California, Texas, and northern Arizona.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Monsoon Season (July–September):</strong> Arizona's monsoon season brings sudden haboobs, flying debris, hail, and dramatic temperature drops. The combination of 110°F afternoon heat followed by a sudden 80°F storm creates thermal shock that can crack already-stressed glass.</span>
+                      <span><strong>Monsoon Season (July–September):</strong> Arizona's monsoon season brings sudden haboobs, flying debris, hail, and dramatic temperature drops.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Sky Harbor Airport Corridor:</strong> Heavy airport-related traffic on the I-10 and SR-143 creates constant rock chip exposure. Rental car return areas, shuttle routes, and the Phoenix Sky Harbor itself generate heavy vehicle traffic daily.</span>
+                      <span><strong>Sky Harbor Airport Corridor:</strong> Heavy airport-related traffic on the I-10 and SR-143 creates constant rock chip exposure.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Caliche Dust & Desert Sand:</strong> Phoenix's desert environment means caliche dust and sand act as constant abrasives on glass surfaces, weakening the surface over time and making chips more likely to crack.</span>
+                      <span><strong>Caliche Dust & Desert Sand:</strong> Phoenix's desert environment means caliche dust and sand act as constant abrasives on glass surfaces.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>West Valley Construction:</strong> Rapid growth in Laveen, Deer Valley, and North Phoenix means constant construction vehicle traffic on local roads — gravel trucks, concrete mixers, and dump trucks that drop debris on residential streets.</span>
+                      <span><strong>West Valley Construction:</strong> Rapid growth in Laveen, Deer Valley, and North Phoenix means constant construction vehicle traffic on local roads.</span>
                     </li>
                   </ul>
                 </div>

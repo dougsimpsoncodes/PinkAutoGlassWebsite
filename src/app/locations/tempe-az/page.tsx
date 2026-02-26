@@ -98,11 +98,11 @@ export default function TempeLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Tempe Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Tempe sits at the geographic center of the Phoenix metro — and at the center of some of Arizona's most windshield-damaging road conditions. Home to Arizona State University's main campus, Mill Avenue's vibrant district, and the massive I-10/US-60 interchange, Tempe sees enormous daily traffic volumes. Light rail construction and ongoing infrastructure projects add construction debris to the mix. Tempe is compact but busy — perfect for mobile windshield service that comes to you.
+                  We bring $0 mobile windshield service to Tempe — including the I-10/US-60 interchange corridor and ASU campus area.
                 </p>
                 <AboveFoldCTA location="location-tempe-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Whether you're a student, faculty, or longtime Tempe resident, Arizona's glass laws protect you. ARS 20-264 means $0 out of pocket with comprehensive coverage. ARS 20-263 means no rate increase. ARS 20-469 means you choose your shop — not whoever your insurer recommends. We come to you, handle your insurance, and get you back on the road fast.
+                  Arizona law means most Tempe drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,23 +110,23 @@ export default function TempeLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10/US-60 Interchange:</strong> This massive interchange is one of the highest-traffic road junctions in Arizona. Thousands of commercial trucks pass through daily, and at freeway speeds, road debris hits with tremendous force. Rock chips here often cause chips that require immediate repair.</span>
+                      <span><strong>I-10/US-60 Interchange:</strong> This massive interchange is one of the highest-traffic road junctions in Arizona.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Light Rail Construction Debris:</strong> Ongoing expansion of Valley Metro light rail brings construction vehicles, gravel trucks, and road work to Tempe streets regularly. Construction zones create concentrated debris hazards for passing vehicles.</span>
+                      <span><strong>Light Rail Construction Debris:</strong> Ongoing expansion of Valley Metro light rail brings construction vehicles, gravel trucks, and road work to Tempe streets regularly.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>ASU Commuter Congestion:</strong> Tempe's 75,000+ ASU student and faculty population means stop-and-go traffic near campus that increases exposure to rock chips from other vehicles. Tempe Marketplace and nearby commercial areas also create traffic congestion.</span>
+                      <span><strong>ASU Commuter Congestion:</strong> Tempe's 75,000+ ASU student and faculty population means stop-and-go traffic near campus that increases exposure to rock chips from other vehicles.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Monsoon Season Flash Flooding:</strong> Tempe's flat terrain makes it susceptible to monsoon-season flooding and the associated flying debris. Haboobs moving through the Phoenix metro frequently originate from the south and east, hitting Tempe first.</span>
+                      <span><strong>Monsoon Season Flash Flooding:</strong> Tempe's flat terrain makes it susceptible to monsoon-season flooding and the associated flying debris.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Extreme Summer Heat:</strong> Tempe's urban density and large commercial parking areas create heat islands. Vehicles left in parking lots at Tempe Marketplace or near Mill Avenue in summer can experience glass temperatures that accelerate chip expansion.</span>
+                      <span><strong>Extreme Summer Heat:</strong> Tempe's urban density and large commercial parking areas create heat islands.</span>
                     </li>
                   </ul>
                 </div>

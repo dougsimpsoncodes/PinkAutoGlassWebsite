@@ -98,11 +98,11 @@ export default function FountainHillsLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Fountain Hills Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Fountain Hills is one of the Phoenix metro's most scenic communities — built around its famous world-record fountain and set against the McDowell Mountains. The town attracts affluent residents who value high-quality service, and many drive luxury vehicles with advanced ADAS systems. The trade-off for Fountain Hills' spectacular desert setting is the road environment: SR-87, Shea Boulevard, and the network of desert roads near McDowell Mountain Regional Park create consistent chip exposure for residents who commute to Scottsdale and Phoenix daily.
+                  We offer same-day mobile service throughout Fountain Hills — including gated communities at Eagle Mountain and Firerock — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-fountain-hills-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Fountain Hills drivers. ARS 20-263 means no rate increases. ARS 20-469 means you choose your shop. We service all vehicles including ADAS-equipped luxury models, and we come directly to your Fountain Hills home or gated community.
+                  Arizona law means most Fountain Hills drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function FountainHillsLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>SR-87 Desert Highway:</strong> The Beeline Highway carries commercial truck traffic and runs through rugged desert terrain where loose rock and gravel from hillsides frequently lands on the roadway. Commutes to and from Fountain Hills on SR-87 are consistently chip-prone.</span>
+                      <span><strong>SR-87 Desert Highway:</strong> The Beeline Highway carries commercial truck traffic and runs through rugged desert terrain where loose rock and gravel from hillsides frequently lands on the roadway.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Shea Boulevard Gravel Shoulders:</strong> Shea Boulevard through the McDowell Mountain area has limited shoulders that accumulate desert debris. High-speed traffic on Shea turns loose material into windshield hazards.</span>
+                      <span><strong>Shea Boulevard Gravel Shoulders:</strong> Shea Boulevard through the McDowell Mountain area has limited shoulders that accumulate desert debris.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Desert Preserve Access Roads:</strong> Residents and visitors accessing McDowell Mountain Regional Park and nearby desert preserves travel roads that transition to gravel or caliche surfaces, bringing desert material back to paved roads.</span>
+                      <span><strong>Desert Preserve Access Roads:</strong> Residents accessing McDowell Mountain Regional Park travel roads that transition to gravel or caliche surfaces.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Luxury Vehicle ADAS Complexity:</strong> Many Fountain Hills residents drive vehicles with windshield-mounted ADAS cameras (Audi, BMW, Mercedes, Tesla, Range Rover). These require proper recalibration after windshield replacement — we perform this service on-site.</span>
+                      <span><strong>Luxury Vehicle ADAS Complexity:</strong> Many Fountain Hills residents drive vehicles with windshield-mounted ADAS cameras (Audi, BMW, Mercedes, Tesla, Range Rover) that require proper recalibration after windshield replacement.</span>
                     </li>
                   </ul>
                 </div>

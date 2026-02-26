@@ -98,11 +98,11 @@ export default function ApacheJunctionLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Apache Junction Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Apache Junction is the gateway to the Superstition Mountains and the legendary Lost Dutchman Mine country. Straddling the border between Maricopa and Pinal counties, AJ is a community where outdoor recreation, desert living, and US-60 freeway commuting intersect. The US-60 (Superstition Freeway) carries heavy commercial traffic through town, and Gold Canyon to the east offers scenic desert living with roads that regularly bring loose rock and gravel onto suburban streets. The area's strong ATV and off-road culture means dusty, debris-laden roads are part of daily life.
+                  We offer same-day mobile service throughout Apache Junction and Gold Canyon — and Arizona law means most drivers pay $0 out of pocket regardless of their deductible.
                 </p>
                 <AboveFoldCTA location="location-apache-junction-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Apache Junction drivers with comprehensive coverage. ARS 20-263 protects your rates. ARS 20-469 lets you choose your shop. We provide same-day mobile service throughout Apache Junction and Gold Canyon.
+                  Arizona law means most Apache Junction drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function ApacheJunctionLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>US-60 Superstition Freeway Through Town:</strong> The US-60 passes directly through Apache Junction carrying constant commercial truck and freeway traffic. For residents who commute west toward Mesa and Phoenix on the 60, rock chip exposure is a daily reality.</span>
+                      <span><strong>US-60 Superstition Freeway Through Town:</strong> The US-60 passes directly through Apache Junction carrying constant commercial truck and freeway traffic.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Superstition Mountains Desert Roads:</strong> Roads accessing the Superstition Wilderness, Lost Dutchman State Park, and surrounding desert terrain are partially unpaved and frequently traveled. Desert rock and caliche migrate onto Apache Junction's paved residential streets consistently.</span>
+                      <span><strong>Superstition Mountains Desert Roads:</strong> Roads accessing the Superstition Wilderness and Lost Dutchman State Park are partially unpaved and frequently traveled.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>ATV and Off-Road Culture:</strong> Apache Junction has one of Arizona's most active off-road communities. ATVs, side-by-sides, and off-road vehicles regularly use local roads to access desert terrain, tracking sand and gravel back onto paved surfaces.</span>
+                      <span><strong>ATV and Off-Road Culture:</strong> Apache Junction has one of Arizona's most active off-road communities, where ATVs and side-by-sides regularly track sand and gravel onto paved roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Gold Canyon Scenic Road Trade-offs:</strong> Gold Canyon's beautiful desert roads near the Superstition Mountains are scenic but rough on glass. Loose rock from mountain terrain frequently ends up on roadways through this area.</span>
+                      <span><strong>Gold Canyon Scenic Road Trade-offs:</strong> Gold Canyon's beautiful desert roads near the Superstition Mountains are scenic but rough on glass.</span>
                     </li>
                   </ul>
                 </div>

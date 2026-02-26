@@ -98,11 +98,11 @@ export default function MesaLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Mesa Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Mesa is Arizona's third-largest city, spanning 140 square miles from the tech corridors near Tempe to the wide-open spaces of East Mesa and the Superstition Mountain foothills. The US-60 (Superstition Freeway) cuts through the heart of Mesa carrying enormous commercial truck traffic, making rock chips a daily reality for Mesa commuters. With Eastmark's booming growth, Las Sendas' desert roads, and the ongoing tech corridor expansion near the Chandler border, Mesa drivers need fast, reliable windshield service.
+                  We bring $0 mobile windshield service to Mesa — the US-60 Superstition Freeway creates constant rock chip exposure for commuters from Dobson Ranch to Eastmark.
                 </p>
                 <AboveFoldCTA location="location-mesa-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona law is on your side. ARS 20-264 means $0 out of pocket for most Mesa drivers with comprehensive coverage. ARS 20-263 means your rates won't go up. ARS 20-469 means you choose the shop — no matter what your insurer says. Pink Auto Glass comes to you anywhere in Mesa, handles your claim, and gets your windshield replaced the same day.
+                  Arizona law means most Mesa drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,23 +110,23 @@ export default function MesaLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>US-60 Superstition Freeway Truck Traffic:</strong> The US-60 is the primary commercial freight route through Mesa. Heavy trucks hauling to and from the East Valley kick up rocks constantly. Residents near Dobson Ranch, Superstition Springs, and Red Mountain are most exposed.</span>
+                      <span><strong>US-60 Superstition Freeway Truck Traffic:</strong> The US-60 is the primary commercial freight route through Mesa.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Eastmark & East Mesa New Construction:</strong> Mesa's eastern growth corridor is one of the fastest-developing areas in Arizona. Construction trucks, gravel haulers, and unfinished roads create daily chip hazards for residents in Eastmark, Las Sendas, and new east Mesa developments.</span>
+                      <span><strong>Eastmark & East Mesa New Construction:</strong> Mesa's eastern growth corridor is one of the fastest-developing areas in Arizona.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Superstition Mountain Desert Roads:</strong> Roads near the Superstition Wilderness area to the east of Mesa carry ATV traffic, off-road vehicles, and hikers that track sand and gravel onto paved roads. Desert gravel on suburban streets is a persistent chip cause.</span>
+                      <span><strong>Superstition Mountain Desert Roads:</strong> Roads near the Superstition Wilderness area to the east of Mesa carry ATV traffic, off-road vehicles, and hikers that track sand and gravel onto paved roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Tech Corridor & Industrial Traffic:</strong> Mesa's growing tech corridor near the Chandler border adds delivery trucks, semi-trucks, and commercial vehicles to local road systems. The Mesa Gateway Airport area also sees significant cargo and service vehicle traffic.</span>
+                      <span><strong>Tech Corridor & Industrial Traffic:</strong> Mesa's growing tech corridor near the Chandler border adds delivery trucks, semi-trucks, and commercial vehicles to local road systems.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Summer Heat Acceleration:</strong> Mesa's inland location away from Phoenix's urban core can produce slightly higher summer temperatures. Chips that would hold in spring become cracks within weeks of monsoon season heat spikes.</span>
+                      <span><strong>Summer Heat Acceleration:</strong> Mesa's inland location away from Phoenix's urban core can produce slightly higher summer temperatures.</span>
                     </li>
                   </ul>
                 </div>

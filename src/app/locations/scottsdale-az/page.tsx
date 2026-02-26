@@ -98,11 +98,11 @@ export default function ScottsdaleLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Scottsdale Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Scottsdale is home to some of Arizona's most discerning drivers — and some of its most glass-damaging roads. From the luxury resorts and high-end dealerships of Old Town to the executive communities of DC Ranch and Troon, Scottsdale residents often drive premium vehicles that deserve premium service. Whether you're driving a BMW, Mercedes, Tesla, or Range Rover, we bring OEM-quality glass and mobile service directly to you.
+                  We bring $0 mobile windshield service directly to Scottsdale — from Old Town to DC Ranch and Troon.
                 </p>
                 <AboveFoldCTA location="location-scottsdale-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona law means most Scottsdale drivers pay $0 for windshield replacement. Under ARS 20-264, insurers must offer zero-deductible glass coverage. Under ARS 20-263, filing doesn't raise your rates. Under ARS 20-469, you pick the shop — not Safelite, not whoever your insurer recommends. We handle every aspect of your insurance claim so you can focus on your day.
+                  Arizona law means most Scottsdale drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function ScottsdaleLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 101 High-Speed Traffic:</strong> The Pima Freeway (Loop 101) through Scottsdale carries constant truck traffic between Phoenix and the East Valley. Rock chips from Loop 101 are the number-one cause of windshield damage for Scottsdale residents in Kierland, Gainey Ranch, and McCormick Ranch.</span>
+                      <span><strong>Loop 101 High-Speed Traffic:</strong> The Pima Freeway (Loop 101) through Scottsdale carries constant truck traffic between Phoenix and the East Valley.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>McDowell Sonoran Preserve Roads:</strong> Access roads to the preserve and surrounding desert communities kick up caliche dust and loose gravel constantly. Residents of Troon, Pinnacle Peak, and North Scottsdale deal with this year-round.</span>
+                      <span><strong>McDowell Sonoran Preserve Roads:</strong> Access roads to the preserve and surrounding desert communities kick up caliche dust and loose gravel constantly.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Luxury Vehicle ADAS Systems:</strong> Modern luxury vehicles (BMW, Mercedes, Tesla, Audi) have ADAS cameras and sensors mounted to the windshield. Proper recalibration after replacement is essential — we perform complete calibration on-site.</span>
+                      <span><strong>Luxury Vehicle ADAS Systems:</strong> Modern luxury vehicles (BMW, Mercedes, Tesla, Audi) have ADAS cameras and sensors mounted to the windshield.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Summer Thermal Stress:</strong> Scottsdale's intense sun reflects off resort and commercial glass, creating localized heat zones that accelerate chip expansion. Vehicles parked in resort parking lots or on asphalt in 115°F heat are especially vulnerable.</span>
+                      <span><strong>Summer Thermal Stress:</strong> Scottsdale's intense sun reflects off resort and commercial glass, creating localized heat zones that accelerate chip expansion.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>

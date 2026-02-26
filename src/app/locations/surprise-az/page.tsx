@@ -98,11 +98,11 @@ export default function SurpriseLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Surprise Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Surprise has transformed from a small farming community into one of the fastest-growing cities in the West Valley, blending one of Arizona's largest active-adult retirement communities (Sun City Grand) with young families moving into Marley Park, Stonebrook, and West Point. Surprise Stadium draws spring training fans each February, and the ongoing West Valley expansion — including Loop 303 construction — brings constant road equipment and debris to Bell Road and surrounding areas.
+                  We bring $0 mobile windshield service to Surprise — including Sun City Grand, Marley Park, and the Bell Road corridor where Loop 303 construction traffic is constant.
                 </p>
                 <AboveFoldCTA location="location-surprise-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's laws are especially meaningful for Surprise's large retirement community. ARS 20-264 means $0 out of pocket. ARS 20-263 means no rate increase. ARS 20-469 means you choose the shop — not whoever your insurer recommends. We provide mobile service directly to your home in Sun City Grand or anywhere else in Surprise.
+                  Arizona law means most Surprise drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function SurpriseLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Bell Road Commercial Corridor:</strong> Bell Road is the primary east-west commercial spine of the West Valley. Commercial truck deliveries, construction vehicles, and high-volume retail traffic create constant chip exposure for daily Surprise drivers.</span>
+                      <span><strong>Bell Road Commercial Corridor:</strong> Bell Road is the primary east-west commercial spine of the West Valley.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 303 Construction:</strong> The ongoing Loop 303 expansion through the West Valley brings massive construction equipment, gravel trucks, and road work to Surprise roads. Residents near construction zones see elevated chip rates during active work periods.</span>
+                      <span><strong>Loop 303 Construction:</strong> The ongoing Loop 303 expansion through the West Valley brings massive construction equipment, gravel trucks, and road work to Surprise roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Desert Edge Roads:</strong> Surprise's western edge borders open desert. Roads near Tierra Encantada, Surprise Farms, and the western boundary transition from paved suburban streets to caliche-edged roads that deposit loose material on commuter routes.</span>
+                      <span><strong>Desert Edge Roads:</strong> Surprise's western edge borders open desert.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Golf Cart Road Crossings:</strong> Sun City Grand's extensive golf cart network crosses public streets at multiple points. Golf carts occasionally kick up road debris at these intersections, and the volume of low-speed electric vehicle traffic concentrates road grit at crossings.</span>
+                      <span><strong>Golf Cart Road Crossings:</strong> Sun City Grand's extensive golf cart network crosses public streets at multiple points.</span>
                     </li>
                   </ul>
                 </div>

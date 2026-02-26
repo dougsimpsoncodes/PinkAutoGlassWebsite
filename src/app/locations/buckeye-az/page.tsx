@@ -98,11 +98,11 @@ export default function BuckeyeLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Buckeye Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Buckeye has earned the title of America's fastest-growing city — and that explosive growth means construction is the defining feature of daily life here. From the massive Sundance community to Tartesso in the far west, Festival Ranch, and Victory at Verrado, Buckeye is building at a pace that makes road debris a constant hazard. The I-10 west corridor runs along Buckeye's south edge, carrying freight traffic between Phoenix and California. New residents moving to Buckeye from other states often don't know about Arizona's glass coverage laws.
+                  We offer same-day mobile service to Sundance, Tartesso, Festival Ranch, and every Buckeye community — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-buckeye-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Buckeye drivers with comprehensive coverage. ARS 20-263 means your rates are protected. ARS 20-469 means you choose your shop. We come to your new home in any Buckeye community and handle your entire insurance claim.
+                  Arizona law means most Buckeye drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,15 +110,15 @@ export default function BuckeyeLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Massive New Home Construction Everywhere:</strong> Buckeye's development pace is unmatched in Arizona. Construction vehicles — particularly gravel trucks and concrete mixers — are active on local streets throughout developing neighborhoods. Many Buckeye roads are still partially unpaved in newer sections.</span>
+                      <span><strong>Massive New Home Construction Everywhere:</strong> Buckeye's development pace is unmatched in Arizona.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 Far West Freight Traffic:</strong> The I-10 through Buckeye carries some of the heaviest freight loads in the state. This is the artery where 18-wheelers from California enter the Phoenix metro — and their speed and load mean significant chip risk for commuters entering the freeway from Buckeye exits.</span>
+                      <span><strong>I-10 Far West Freight Traffic:</strong> The I-10 through Buckeye carries some of the heaviest freight loads in the state.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Desert Open Space Proximity:</strong> Buckeye borders vast open desert to the west and south. Desert winds bring loose caliche, sand, and small rocks onto suburban roads throughout the city. Far western developments like Tartesso have the highest exposure to desert debris.</span>
+                      <span><strong>Desert Open Space Proximity:</strong> Buckeye borders vast open desert to the west and south, where desert winds bring loose caliche and rock onto suburban roads.</span>
                     </li>
                   </ul>
                 </div>

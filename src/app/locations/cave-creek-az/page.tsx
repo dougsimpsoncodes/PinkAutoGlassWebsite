@@ -98,11 +98,11 @@ export default function CaveCreekLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Cave Creek Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Cave Creek and neighboring Carefree offer a unique lifestyle that blends upscale desert living with rural charm. Known for its Western-themed Town Center, active equestrian community, and dramatic desert scenery, Cave Creek attracts residents who appreciate both rugged outdoor living and quality services. The trade-off is a road environment that's genuinely harsh on windshields — caliche-edged roads, horse trailer traffic, and desert access routes mean chips are an occupational hazard of life in the high desert north of Phoenix.
+                  We offer same-day mobile service to Cave Creek properties and Carefree — including equestrian ranches along Cave Creek Road — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-cave-creek-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Cave Creek drivers with comprehensive coverage. ARS 20-263 protects your rates. ARS 20-469 means you choose your shop. We service luxury vehicles and daily drivers alike, and come directly to your Cave Creek property.
+                  Arizona law means most Cave Creek drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function CaveCreekLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Caliche Dust and Desert Roads:</strong> Cave Creek's roads are surrounded by native desert. Caliche dust, loose rock, and desert gravel migrate onto paved roads constantly, especially after monsoon rains that erode road shoulders and wash material across pavement.</span>
+                      <span><strong>Caliche Dust and Desert Roads:</strong> Cave Creek's roads are surrounded by native desert, where caliche dust, loose rock, and desert gravel migrate onto pavement constantly.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Equestrian Traffic:</strong> Horse trailers, equestrian equipment haulers, and agricultural vehicles are a common sight on Cave Creek roads. These vehicles travel between properties and the desert, bringing loose material back to paved roads.</span>
+                      <span><strong>Equestrian Traffic:</strong> Horse trailers, equestrian equipment haulers, and agricultural vehicles are a common sight on Cave Creek roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>SR-74 Carefree Highway:</strong> The Carefree Highway (SR-74) connects Cave Creek to the I-17 and US-60 systems. It runs through open desert terrain where loose rock from adjacent hillsides regularly deposits on the roadway.</span>
+                      <span><strong>SR-74 Carefree Highway:</strong> The Carefree Highway (SR-74) runs through open desert terrain where loose rock from adjacent hillsides regularly deposits on the roadway.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Tatum Ranch Suburban Transition:</strong> Tatum Ranch sits at the edge of the Cave Creek area, where suburban Phoenix-area roads transition to more rural conditions. This transition zone accumulates debris from both directions.</span>
+                      <span><strong>Tatum Ranch Suburban Transition:</strong> Tatum Ranch sits at the edge of the Cave Creek area, where suburban Phoenix roads transition to rural conditions.</span>
                     </li>
                   </ul>
                 </div>

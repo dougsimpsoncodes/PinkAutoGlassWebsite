@@ -98,11 +98,11 @@ export default function QueenCreekLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Queen Creek Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Queen Creek occupies a unique position in the Phoenix metro — a rapidly growing family suburb that still borders active agricultural land. The Pecan Festival and equestrian heritage define Queen Creek's community character, but so does the practical reality of farm roads and new construction sharing space with suburban commuters. Ellsworth Road and Rittenhouse Road have become major arteries for families commuting to Gilbert, Chandler, and Mesa, while the surrounding agricultural land brings loose soil and gravel to suburban streets year-round.
+                  We offer same-day mobile service throughout Queen Creek — from Pecan Creek to Hastings Farms — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-queen-creek-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Queen Creek drivers with comprehensive coverage. ARS 20-263 means no rate increases. ARS 20-469 means you choose your shop. We provide same-day mobile service throughout Queen Creek and handle your entire insurance claim.
+                  Arizona law means most Queen Creek drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function QueenCreekLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Agricultural Road Debris:</strong> Farm equipment, irrigation vehicles, and harvest machinery regularly travel roads between residential neighborhoods and active agricultural parcels. These vehicles bring loose soil, gravel, and organic debris onto suburban commuter routes.</span>
+                      <span><strong>Agricultural Road Debris:</strong> Farm equipment, irrigation vehicles, and harvest machinery regularly travel roads between residential neighborhoods and active agricultural parcels.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Ellsworth/I-60 Corridor Growth:</strong> The Ellsworth Road corridor has become a primary development artery for SE Valley growth. Construction trucks building new phases of Pecan Creek, Cortina, and Hastings Farms are constant on local roads.</span>
+                      <span><strong>Ellsworth/I-60 Corridor Growth:</strong> The Ellsworth Road corridor has become a primary development artery for SE Valley growth.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Unpaved Road Transitions:</strong> Queen Creek still has numerous unpaved roads between communities. Drivers transitioning between paved suburban streets and dirt access roads bring loose material back onto pavement constantly.</span>
+                      <span><strong>Unpaved Road Transitions:</strong> Queen Creek still has numerous unpaved roads between communities.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Summer Heat and Wind:</strong> Queen Creek's inland SE Valley location sees intense summer heat. Monsoon season brings dust storms from the southeast that deposit fine sand and rock chips on vehicle glass throughout the area.</span>
+                      <span><strong>Summer Heat and Wind:</strong> Queen Creek's inland SE Valley location sees intense summer heat and monsoon dust storms from the southeast.</span>
                     </li>
                   </ul>
                 </div>

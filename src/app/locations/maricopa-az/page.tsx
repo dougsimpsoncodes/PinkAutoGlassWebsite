@@ -98,11 +98,11 @@ export default function MaricopaLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Maricopa Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Maricopa is one of Arizona's most rapidly growing cities — a planned community 35 miles south of downtown Phoenix that has attracted tens of thousands of families seeking more space and lower housing costs. The trade-off is the SR-347 commute, one of Arizona's most notorious daily drives. This desert highway connects Maricopa to the Phoenix metro through open terrain where windshield chips are almost unavoidable for regular commuters. Maricopa's continued growth also means constant new construction on local roads throughout Province, Rancho El Dorado, and other neighborhoods.
+                  We offer same-day mobile service to your Maricopa home — no SR-347 drive required — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-maricopa-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 applies to Maricopa residents just like anywhere in the state. Most Maricopa drivers with comprehensive coverage qualify for $0 windshield replacement. ARS 20-263 means no rate increases. ARS 20-469 means you choose your shop. Mobile service means we come to you — no need to drive a cracked windshield back up SR-347.
+                  Arizona law means most Maricopa drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function MaricopaLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>SR-347 Daily Commute:</strong> SR-347 is a 35-mile desert highway with limited median barriers and gravel shoulders. Thousands of daily commuters make this drive through open desert terrain where wind-blown rock and road debris regularly hits windshields at commuter speeds.</span>
+                      <span><strong>SR-347 Daily Commute:</strong> SR-347 is a 35-mile desert highway with limited median barriers and gravel shoulders.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Gila River Indian Community Corridor:</strong> SR-347 passes through the Gila River Indian Community, an area with minimal road maintenance funding. Gravel shoulders and desert road conditions are more pronounced through this stretch than on typical Phoenix metro freeways.</span>
+                      <span><strong>Gila River Indian Community Corridor:</strong> SR-347 passes through the Gila River Indian Community, where gravel shoulders and desert road conditions are more pronounced than on typical Phoenix metro freeways.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Active New Development:</strong> Maricopa continues to expand rapidly. Construction activity in new home phases throughout Province, Homestead, and Santa Rosa Springs brings gravel trucks and construction equipment to local roads year-round.</span>
+                      <span><strong>Active New Development:</strong> Maricopa continues to expand rapidly, with construction activity throughout Province, Homestead, and Santa Rosa Springs bringing gravel trucks to local roads year-round.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Desert Sand and Monsoon Haboobs:</strong> Maricopa sits in open desert with limited wind protection. Monsoon haboobs from the southeast are intense and frequent. Sand and small rock deposited on roads after storms create post-storm chip hazards.</span>
+                      <span><strong>Desert Sand and Monsoon Haboobs:</strong> Maricopa sits in open desert with limited wind protection, where intense monsoon haboobs from the southeast deposit sand and rock on roads.</span>
                     </li>
                   </ul>
                 </div>

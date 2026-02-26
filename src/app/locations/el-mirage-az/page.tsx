@@ -98,11 +98,11 @@ export default function ElMirageLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why El Mirage Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  El Mirage is a small, established West Valley community bordered by Sun City and Youngtown — communities that collectively form one of Arizona's largest concentrations of older residents. El Mirage itself is home to a working-class community that values straightforward, affordable service. Grand Avenue (US-60) cuts through the heart of the area, carrying the West Valley's commercial freight traffic past El Mirage daily. The combination of an older road infrastructure and heavy truck traffic makes windshield damage a regular occurrence for El Mirage residents.
+                  We offer same-day mobile service throughout El Mirage — including the Grand Avenue corridor — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-el-mirage-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 makes windshield replacement free for most El Mirage drivers with comprehensive coverage. ARS 20-263 protects your rates. ARS 20-469 means you choose the shop. We provide same-day mobile service throughout El Mirage and handle your entire insurance claim at no charge.
+                  Arizona law means most El Mirage drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,15 +110,15 @@ export default function ElMirageLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Grand Avenue Commercial Corridor:</strong> US-60 (Grand Avenue) is a historic commercial road that predates the Phoenix freeway system. Its older pavement and rougher surface conditions, combined with constant commercial truck traffic, make it one of the West Valley's most chip-intensive driving corridors.</span>
+                      <span><strong>Grand Avenue Commercial Corridor:</strong> US-60 (Grand Avenue) is a historic commercial road that predates the Phoenix freeway system.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Industrial Area Traffic:</strong> El Mirage borders industrial and commercial zones that generate heavy vehicle activity on local roads. Delivery vehicles and commercial equipment move through El Mirage regularly, adding to debris on residential streets.</span>
+                      <span><strong>Industrial Area Traffic:</strong> El Mirage borders industrial and commercial zones that generate heavy vehicle activity on local roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Older Road Infrastructure:</strong> El Mirage's established community means older road surfaces that have accumulated more cracks and rough patches than newer suburban developments. Older pavement throws more debris into traffic lanes.</span>
+                      <span><strong>Older Road Infrastructure:</strong> El Mirage's established community means older road surfaces with more cracks and rough patches than newer suburban developments.</span>
                     </li>
                   </ul>
                 </div>

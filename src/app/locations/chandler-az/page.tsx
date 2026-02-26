@@ -98,11 +98,11 @@ export default function ChandlerLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Chandler Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Chandler is the Southeast Valley's technology and business hub — home to Intel's massive fabrication facility, Wells Fargo's Chandler campus, PayPal, and dozens of major employers. With rapid residential growth in Ocotillo, Fulton Ranch, and Sun Lakes, Chandler is one of the Phoenix metro's most dynamic and fastest-growing cities. The Loop 202 (San Tan Freeway) and I-10 carry significant commercial traffic through and around Chandler, creating constant windshield chip exposure for commuters and residents.
+                  We bring $0 mobile windshield service to Chandler — the Loop 202 San Tan Freeway carries heavy commercial traffic past Ocotillo, Fulton Ranch, and the Intel campus.
                 </p>
                 <AboveFoldCTA location="location-chandler-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona law makes windshield replacement simple and cost-free for most Chandler drivers. ARS 20-264 requires insurers to offer zero-deductible coverage. ARS 20-263 protects your rates. ARS 20-469 gives you the right to choose your shop. We come to your home in Ocotillo, your desk at the Intel campus, or anywhere in Chandler — and handle your entire claim.
+                  Arizona law means most Chandler drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function ChandlerLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 202 San Tan Freeway Traffic:</strong> The 202 connects Chandler's tech corridor to the broader Phoenix metro and carries heavy commercial freight. Daily chip exposure for commuters on the 202 is among the highest in the East Valley.</span>
+                      <span><strong>Loop 202 San Tan Freeway Traffic:</strong> The 202 connects Chandler's tech corridor to the broader Phoenix metro and carries heavy commercial freight.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Intel & Tech Campus Truck Traffic:</strong> Intel's Arizona fab complex and supporting semiconductor supply chain generate constant heavy truck traffic on Chandler roads. Industrial deliveries to the Intel and TSMC campuses add to chip risk near these facilities.</span>
+                      <span><strong>Intel & Tech Campus Truck Traffic:</strong> Intel's Arizona fab complex and supporting semiconductor supply chain generate constant heavy truck traffic on Chandler roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>New Residential Construction:</strong> Chandler's growth means active construction throughout Layton Lakes, Pecos Road corridor, and other developing areas. Construction vehicles — especially concrete mixers and dump trucks — are constant chip sources.</span>
+                      <span><strong>New Residential Construction:</strong> Chandler's growth means active construction throughout Layton Lakes, Pecos Road corridor, and other developing areas.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Ocotillo & Sun Lakes Desert Roads:</strong> The Ocotillo and Sun Lakes communities sit near the desert edge where caliche dust and gravel blow onto paved roads. Residents near the Gila River Indian Community border deal with unpaved road debris year-round.</span>
+                      <span><strong>Ocotillo & Sun Lakes Desert Roads:</strong> The Ocotillo and Sun Lakes communities sit near the desert edge where caliche dust and gravel blow onto paved roads.</span>
                     </li>
                   </ul>
                 </div>

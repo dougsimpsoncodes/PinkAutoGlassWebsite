@@ -98,11 +98,11 @@ export default function LitchfieldParkLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Litchfield Park Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Litchfield Park is one of the West Valley's most distinctive communities — a planned city built around the historic Wigwam Resort, originally developed by Goodyear Tire and Rubber Company as an executive retreat in the 1920s. Today, Litchfield Park is a desirable, master-planned community nestled between Goodyear and the Luke AFB corridor. Loop 303 construction and the I-10 freight corridor create ongoing windshield chip exposure for residents, while the community's affinity for quality service makes Pink Auto Glass's mobile approach a natural fit.
+                  We offer same-day mobile service throughout Litchfield Park — near the Wigwam Resort and Luke AFB corridor — and Arizona law means most drivers pay $0 out of pocket.
                 </p>
                 <AboveFoldCTA location="location-litchfield-park-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's ARS 20-264 means $0 out of pocket for most Litchfield Park drivers with comprehensive coverage. ARS 20-263 means no rate increases. ARS 20-469 means you choose your shop. We come directly to your Litchfield Park home and handle your entire insurance claim.
+                  Arizona law means most Litchfield Park drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,15 +110,15 @@ export default function LitchfieldParkLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 303 Expansion Traffic:</strong> The Loop 303 corridor west of Litchfield Park is undergoing major expansion. Construction equipment, road graders, and material trucks are active in the area, bringing road debris to Litchfield Road and surrounding routes.</span>
+                      <span><strong>Loop 303 Expansion Traffic:</strong> The Loop 303 corridor west of Litchfield Park is undergoing major expansion.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Luke AFB Approach Corridors:</strong> Litchfield Road and Dysart Road serve as approach corridors for Luke Air Force Base. Military and contractor vehicle traffic on these routes contributes to debris on suburban roads near Litchfield Park.</span>
+                      <span><strong>Luke AFB Approach Corridors:</strong> Litchfield Road and Dysart Road serve as approach corridors for Luke Air Force Base.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 West Valley Access:</strong> Residents accessing I-10 from Litchfield Park travel through high-traffic corridors where commercial truck traffic is heavy. The I-10 west California freight route passes within a few miles of Litchfield Park.</span>
+                      <span><strong>I-10 West Valley Access:</strong> Residents accessing I-10 from Litchfield Park travel through high-traffic corridors where commercial truck traffic is heavy.</span>
                     </li>
                   </ul>
                 </div>

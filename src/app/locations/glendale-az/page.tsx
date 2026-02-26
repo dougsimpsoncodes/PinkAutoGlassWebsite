@@ -98,11 +98,11 @@ export default function GlendaleLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Glendale Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Glendale is the West Valley's entertainment and sports hub — home to State Farm Stadium (where the Cardinals play and Super Bowls are held), Westgate Entertainment District, and the historic downtown Catlin Court antique district. Glendale sits at the intersection of I-17 and Loop 101, two of Phoenix's busiest freeways, putting residents in the path of constant commercial truck traffic. The I-17 corridor to Flagstaff is especially hard on windshields with its heavy aggregate and freight trucks.
+                  We bring $0 mobile windshield service to Glendale — the I-17 Black Canyon Freeway runs through town carrying heavy freight traffic from Phoenix to Flagstaff.
                 </p>
                 <AboveFoldCTA location="location-glendale-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Most Glendale drivers with comprehensive insurance qualify for $0 windshield replacement under Arizona's ARS 20-264. Your rates are protected by ARS 20-263. You pick your shop under ARS 20-469. We handle 100% of your insurance claim and come to your home, office, or anywhere in Glendale.
+                  Arizona law means most Glendale drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,19 +110,19 @@ export default function GlendaleLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-17 Black Canyon Freeway:</strong> Arizona's primary north-south corridor passes through Glendale carrying heavy freight, construction materials, and aggregate trucks destined for Phoenix metro construction sites. Rock chip exposure on I-17 is among the highest in the metro.</span>
+                      <span><strong>I-17 Black Canyon Freeway:</strong> Arizona's primary north-south corridor passes through Glendale carrying heavy freight, construction materials, and aggregate trucks destined for Phoenix metro construction sites.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Loop 101 Event Traffic:</strong> On Cardinals game days and Westgate concerts, Loop 101 experiences massive traffic surges that back up onto local Glendale roads. Bumper-to-bumper traffic in these conditions doesn't eliminate chip risk — idling behind trucks actually concentrates it.</span>
+                      <span><strong>Loop 101 Event Traffic:</strong> On Cardinals game days and Westgate concerts, Loop 101 experiences massive traffic surges that back up onto local Glendale roads.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Arrowhead & Northwest Development:</strong> The Arrowhead area and northwest Glendale are actively developing. New road construction and expansion projects mean frequent gravel and debris on local roads near Thunderbird, Maryland Avenue, and the Loop 101 corridor.</span>
+                      <span><strong>Arrowhead & Northwest Development:</strong> The Arrowhead area and northwest Glendale are actively developing.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Sahuaro Ranch Desert Proximity:</strong> The Sahuaro Ranch area borders desert open space. Wind-driven caliche and desert sand migrate onto paved roads, creating an abrasive environment that weakens windshield surfaces over time.</span>
+                      <span><strong>Sahuaro Ranch Desert Proximity:</strong> The Sahuaro Ranch area borders desert open space.</span>
                     </li>
                   </ul>
                 </div>

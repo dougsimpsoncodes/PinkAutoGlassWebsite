@@ -98,11 +98,11 @@ export default function AvondaleLocationPage() {
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Avondale Residents Choose Pink Auto Glass</h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Avondale is a working West Valley community best known for Phoenix International Raceway — home to two NASCAR Cup Series races each year. Located just off I-10 west, Avondale residents deal with the freight corridor that connects Phoenix to California, with constant commercial truck traffic on the freeway and local arterials. Garden Lakes, Coldwater Springs, and Rancho Santa Fe are established residential communities where families deserve fast, affordable windshield service without the hassle of insurance paperwork.
+                  We bring $0 mobile windshield service to Avondale — located just off I-10 west near Phoenix International Raceway, where California freight traffic runs constantly.
                 </p>
                 <AboveFoldCTA location="location-avondale-az" />
                 <p className="text-lg text-gray-700 mb-4">
-                  Arizona's laws mean most Avondale drivers pay nothing for windshield replacement. ARS 20-264 mandates zero-deductible glass coverage. ARS 20-263 protects your rates. ARS 20-469 lets you choose your shop. We handle every aspect of your claim and come directly to you.
+                  Arizona law means most Avondale drivers pay $0 — zero-deductible coverage is required, your rates can't go up, and you choose the shop.
                 </p>
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
@@ -110,15 +110,15 @@ export default function AvondaleLocationPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>I-10 West California Freight Corridor:</strong> Avondale sits directly on the I-10, Arizona's primary route to California. Freight trucks running between Los Angeles and Phoenix pass through constantly, creating significant chip exposure for Avondale commuters.</span>
+                      <span><strong>I-10 West California Freight Corridor:</strong> Avondale sits directly on the I-10, Arizona's primary route to California.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Phoenix International Raceway Event Traffic:</strong> Race events concentrate thousands of vehicles in and around the Avondale area. Post-race freeway traffic disperses over hours, increasing truck and vehicle density on I-10 and local roads.</span>
+                      <span><strong>Phoenix International Raceway Event Traffic:</strong> Race events concentrate thousands of vehicles in and around the Avondale area.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-pink-600 font-bold mr-2">•</span>
-                      <span><strong>Industrial Area Road Traffic:</strong> Avondale borders industrial and manufacturing zones that generate heavy vehicle traffic on Van Buren Street and McDowell Road. Delivery trucks, forklifts, and commercial vehicles on these corridors create debris on local roads.</span>
+                      <span><strong>Industrial Area Road Traffic:</strong> Avondale borders industrial and manufacturing zones that generate heavy vehicle traffic on Van Buren Street and McDowell Road.</span>
                     </li>
                   </ul>
                 </div>
