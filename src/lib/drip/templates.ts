@@ -23,7 +23,10 @@ interface DripTemplateContext {
 
 /** Step 1: Instant reply */
 export function getQuoteInstantSMS(ctx: DripTemplateContext): string {
-  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for your ${ctx.vehicleMake} ${ctx.vehicleModel} and one of our team members will be in touch shortly.`;
+  const vehicleRef = ctx.vehicleMake && ctx.vehicleMake !== 'Unknown'
+    ? `your ${ctx.vehicleMake} ${ctx.vehicleModel}`
+    : 'your windshield service';
+  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for ${vehicleRef} and one of our team members will be in touch shortly.`;
 }
 
 /** Step 2: Next-day follow-up */
@@ -49,14 +52,14 @@ export function getQuoteInstantEmail(ctx: DripTemplateContext): string {
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); padding: 40px 20px; text-align: center;">
       <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Thanks for Contacting Us!</h1>
-      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}</p>
+      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">${ctx.vehicleMake && ctx.vehicleMake !== 'Unknown' ? `${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}` : 'Windshield Service'}</p>
     </div>
 
     <!-- Content -->
     <div style="padding: 40px 30px;">
       <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Hi ${ctx.firstName},</h2>
       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-        Thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for your ${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel} and one of our team members will be in touch shortly.
+        Thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for ${ctx.vehicleMake && ctx.vehicleMake !== 'Unknown' ? `your ${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}` : 'your windshield service'} and one of our team members will be in touch shortly.
       </p>
 
       <!-- CTA -->
