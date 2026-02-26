@@ -298,6 +298,7 @@ export async function POST(request: NextRequest) {
           const { data: leads, error: leadsError } = await supabase
             .from('leads')
             .select('id')
+            .eq('is_test', false)
             .gte('created_at', range.start)
             .lte('created_at', range.end);
 

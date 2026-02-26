@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Build date-filtered queries
     let grossQuery = client.from('omega_installs').select('total_revenue');
-    let attributedQuery = client.from('leads').select('revenue_amount').not('revenue_amount', 'is', null);
+    let attributedQuery = client.from('leads').select('revenue_amount').eq('is_test', false).not('revenue_amount', 'is', null);
 
     if (period !== 'all') {
       const { start, end } = getMountainDateRange(period);

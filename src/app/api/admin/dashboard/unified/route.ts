@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       supabase
         .from('leads')
         .select('revenue_amount')
+        .eq('is_test', false)
         .gte('created_at', start.toISOString())
         .lte('created_at', end.toISOString()),
       // Cost-of-goods from omega_installs (parts + labor)

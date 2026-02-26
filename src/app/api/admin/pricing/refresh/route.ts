@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     const { data: topVehicles, error: queryError } = await supabase
       .from('leads')
       .select('vehicle_year, vehicle_make, vehicle_model')
+      .eq('is_test', false)
       .gte('created_at', ninetyDaysAgo)
       .not('vehicle_year', 'is', null)
       .not('vehicle_make', 'is', null)

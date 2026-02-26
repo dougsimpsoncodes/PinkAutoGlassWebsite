@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
     let query = client
       .from('leads')
       .select('*', { count: 'exact' })
+      .eq('is_test', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

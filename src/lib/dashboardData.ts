@@ -444,6 +444,7 @@ export async function getAttributedLeadMetrics(
   const { data: formLeads } = await supabase
     .from('leads')
     .select('id, ad_platform')
+    .eq('is_test', false)
     .gte('created_at', startDate.toISOString())
     .lte('created_at', endDate.toISOString());
 

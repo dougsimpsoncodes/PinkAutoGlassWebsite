@@ -33,7 +33,7 @@ export function isCustomerSmsEnabled(): boolean {
 
 // Team member personal phone numbers excluded from all auto-respond messages
 // (instant SMS/email, drip sequences, review requests, inbound SMS auto-replies).
-// Leads still get created for CRM tracking — just no automated outreach.
+// Leads ARE saved to DB but tagged is_test=true — excluded from all attribution/reporting.
 let _excludedPhones: Set<string> | null = null;
 
 export function isExcludedPhone(phoneE164: string): boolean {
@@ -46,4 +46,21 @@ export function isExcludedPhone(phoneE164: string): boolean {
     );
   }
   return _excludedPhones.has(phoneE164);
+}
+
+// Test phone numbers: receive full customer comms (SMS, email, drip) but are
+// tagged is_test=true in the DB and excluded from all attribution/reporting.
+// Use for internal team members who need to test the full customer experience.
+let _testPhones: Set<string> | null = null;
+
+export function isTestPhone(phoneE164: string): boolean {
+  if (!_testPhones) {
+    _testPhones = new Set(
+      (process.env.TEST_PHONES || '')
+        .split(',')
+        .map(p => p.trim())
+        .filter(Boolean)
+    );
+  }
+  return _testPhones.has(phoneE164);
 }

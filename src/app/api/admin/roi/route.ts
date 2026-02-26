@@ -105,6 +105,7 @@ export async function GET(req: NextRequest) {
       client
         .from('leads')
         .select('phone_e164, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid')
+        .eq('is_test', false)
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
 
@@ -112,6 +113,7 @@ export async function GET(req: NextRequest) {
       client
         .from('leads')
         .select('phone_e164, revenue_amount, ad_platform, created_at')
+        .eq('is_test', false)
         .not('revenue_amount', 'is', null)
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),

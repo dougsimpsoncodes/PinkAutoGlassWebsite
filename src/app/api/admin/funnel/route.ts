@@ -117,6 +117,7 @@ export async function GET(req: NextRequest) {
       client
         .from('leads')
         .select('phone, created_at, utm_source, utm_medium, utm_campaign, ad_platform, gclid, msclkid')
+        .eq('is_test', false)
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
     ]);

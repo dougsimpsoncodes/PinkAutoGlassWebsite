@@ -11,7 +11,7 @@ import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';
 import { getQuotePrice } from '@/lib/pricing';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
+import { isExcludedPhone, isCustomerSmsEnabled, isTestPhone } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -169,6 +169,8 @@ export async function POST(request: NextRequest) {
       clientId: body.clientId || null,
       sessionId: body.sessionId || null,
       insuranceCarrier: validatedData.insuranceCarrier || null,
+      // Mark as test if phone is in EXCLUDED_DRIP_PHONES or TEST_PHONES
+      isTest: isExcludedPhone(validatedData.phone) || isTestPhone(validatedData.phone),
       // Spread immutable attribution (gclid, msclkid, ad_platform, utm_*)
       ...attribution,
     };

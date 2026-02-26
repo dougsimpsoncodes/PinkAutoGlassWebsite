@@ -148,6 +148,7 @@ export async function GET(req: NextRequest) {
       supabase
         .from('leads')
         .select('utm_term, first_contact_method')
+        .eq('is_test', false)
         .gte('created_at', startTimestamp)
         .lte('created_at', endTimestamp)
         .not('utm_term', 'is', null),
