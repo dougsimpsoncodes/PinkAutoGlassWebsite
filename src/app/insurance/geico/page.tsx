@@ -4,6 +4,7 @@ import { CheckCircle, Shield, DollarSign, ChevronRight } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
@@ -92,6 +93,13 @@ export default function GeicoPage() {
           </div>
         </section>
 
+        {/* Mobile form */}
+        <section className="lg:hidden bg-gray-50 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <InsuranceQuoteForm carrier="Geico" source="insurance-geico" />
+          </div>
+        </section>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
@@ -109,7 +117,8 @@ export default function GeicoPage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mt-6">
-          <div className="space-y-12">
+          <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-10 lg:items-start">
+            <div className="space-y-12">
 
             <section className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
               <h2 className="text-2xl font-bold text-blue-900 mb-3">$0 Out of Pocket with Geico in Colorado</h2>
@@ -210,6 +219,14 @@ export default function GeicoPage() {
               </div>
             </section>
 
+            </div>
+
+            {/* Sticky sidebar form */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <InsuranceQuoteForm carrier="Geico" source="insurance-geico" />
+              </div>
+            </aside>
           </div>
         </div>
       </article>
