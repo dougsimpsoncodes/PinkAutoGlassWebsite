@@ -39,15 +39,61 @@ if (!API_KEY) throw new Error('RESEND_API_KEY required');
 
 ---
 
-## NEVER ADD `\n` TO .env FILES
+## NEVER ADD `\n` TO .env FILES — ROOT CAUSE & PREVENTION
 
-Literal `\n` at end of values corrupts API keys, causing silent auth failures.
+### Why it happens
+
+Three things combine to create this bug every time:
+
+1. **`echo` adds a trailing newline** — `echo "value"` outputs `value\n`. When piped to `vercel env add`, Vercel stores the newline as part of the value.
+2. **`vercel env pull` faithfully reproduces it** — whatever is stored in Vercel (including the `\n`) comes back into `.env.local` verbatim.
+3. **dotenv expands `\n` inside double-quoted values** — Next.js uses dotenv, which turns `\n` inside `"..."` into an actual newline character, silently corrupting the key at runtime.
+
+Result: auth calls fail with cryptic errors, and the root cause is invisible.
+
+### Rule 1 — ALWAYS use `printf`, never `echo`, when piping to Vercel CLI
+
+```bash
+# WRONG — echo adds a trailing newline, corrupts the stored value
+echo "my-secret-value" | vercel env add MY_KEY development
+
+# CORRECT — printf does not add a trailing newline
+printf 'my-secret-value' | vercel env add MY_KEY development
+```
+
+### Rule 2 — ALWAYS pull env vars with the npm script, never raw `vercel env pull`
+
+```bash
+# WRONG — no sanitization, \n survives into .env.local
+vercel env pull .env.local
+
+# CORRECT — pulls then auto-strips any \n with sed
+npm run env:pull
+```
+
+The `env:pull` script runs `vercel env pull` then immediately runs:
+```bash
+sed -i '' 's/\\n"/"/g' .env.local
+```
+which removes any trailing `\n` from quoted values.
+
+### Rule 3 — After any manual .env.local edit, verify with
+
+```bash
+python3 -c "
+content = open('.env.local').read()
+bad = [l for l in content.splitlines() if r'\n' in l]
+print('BAD LINES:', bad) if bad else print('CLEAN')
+"
+```
+
+### What a corrupted line looks like
 
 ```
-# WRONG
+# WRONG — literal backslash-n before closing quote
 SUPABASE_SERVICE_ROLE_KEY="eyJhbG...odAE\n"
 
-# CORRECT
+# CORRECT — clean close
 SUPABASE_SERVICE_ROLE_KEY="eyJhbG...odAE"
 ```
 

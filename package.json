@@ -15,6 +15,7 @@
     "verify:schema": "node scripts/validate-schema.js",
     "ci:guard:ad-platform": "node scripts/ci/guard-no-bing.js",
     "ci:guards": "npm run ci:guard:ad-platform",
+    "env:pull": "vercel env pull .env.local && sed -i '' 's/\\\\n\"/\"/g' .env.local && echo '✓ .env.local pulled and sanitized (no \\n)'",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
   "dependencies": {
