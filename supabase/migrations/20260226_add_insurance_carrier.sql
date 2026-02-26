@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION public.fn_insert_lead(
 ) RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   v_id uuid := COALESCE(p_id, uuid_generate_v4());
