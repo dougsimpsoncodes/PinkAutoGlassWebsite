@@ -1,89 +1,109 @@
 #!/usr/bin/env node
+/**
+ * Supabase Migration Runner
+ * Connects directly via POSTGRES_URL (IPv4 pooler) using node-postgres.
+ * No CLI linking, no IPv6, no PAT needed.
+ *
+ * Usage:
+ *   node scripts/run-migration.js supabase/migrations/20260226_add_insurance_carrier.sql
+ *   node scripts/run-migration.js  (runs all .sql files in supabase/migrations/ in order)
+ *
+ * Reads POSTGRES_URL from .env.local.service (or .env.local)
+ */
 
-const { createClient } = require('@supabase/supabase-js');
+const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Load a .env file into process.env (skip if not present)
+function loadEnv(envPath) {
+  if (!fs.existsSync(envPath)) return;
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    let val = trimmed.slice(eqIdx + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    val = val.replace(/\\n$/, ''); // Strip literal \n corruption
+    if (!process.env[key]) process.env[key] = val;
+  }
+}
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase credentials in environment');
+const root = path.join(__dirname, '..');
+loadEnv(path.join(root, '.env.local'));
+loadEnv(path.join(root, '.env.local.service'));
+
+const connectionString = process.env.POSTGRES_URL;
+if (!connectionString) {
+  console.error('❌ POSTGRES_URL not found in .env.local or .env.local.service');
   process.exit(1);
 }
 
-console.log('Connecting to Supabase:', supabaseUrl);
+// Parse connection string into individual params to avoid URL parsing issues with special chars
+function parseConnectionString(url) {
+  const u = new URL(url);
+  return {
+    user: decodeURIComponent(u.username),
+    password: decodeURIComponent(u.password),
+    host: u.hostname,
+    port: parseInt(u.port) || 5432,
+    database: u.pathname.replace(/^\//, ''),
+    ssl: { rejectUnauthorized: false },
+  };
+}
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
-
-async function runMigration() {
-  try {
-    // Read the migration file
-    const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20251027_create_analytics_tables.sql');
-    const sql = fs.readFileSync(migrationPath, 'utf8');
-
-    console.log('Running migration...');
-    console.log('Migration file size:', sql.length, 'characters');
-
-    // Split SQL into individual statements (rough split by semicolon)
-    const statements = sql
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
-
-    console.log(`Found ${statements.length} SQL statements to execute`);
-
-    // Execute each statement using raw SQL
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i] + ';';
-
-      // Skip comments
-      if (statement.trim().startsWith('--')) continue;
-
-      console.log(`\nExecuting statement ${i + 1}/${statements.length}...`);
-
-      try {
-        const { data, error } = await supabase.rpc('exec_sql', { sql_query: statement });
-
-        if (error) {
-          console.error(`Error in statement ${i + 1}:`, error.message);
-          console.error('Statement:', statement.substring(0, 200) + '...');
-
-          // Continue with other statements even if one fails
-          continue;
-        }
-
-        console.log(`✓ Statement ${i + 1} executed successfully`);
-      } catch (err) {
-        console.error(`Exception in statement ${i + 1}:`, err.message);
-      }
-    }
-
-    console.log('\n✓ Migration process completed');
-
-    // Verify tables were created
-    console.log('\nVerifying tables...');
-    const { data: tables, error: tablesError } = await supabase
-      .from('pg_tables')
-      .select('tablename')
-      .eq('schemaname', 'public')
-      .in('tablename', ['page_views', 'user_sessions', 'conversion_events', 'analytics_events', 'admin_users']);
-
-    if (tablesError) {
-      console.error('Error checking tables:', tablesError);
-    } else {
-      console.log('Tables found:', tables?.map(t => t.tablename).join(', '));
-    }
-
-  } catch (error) {
-    console.error('Migration failed:', error);
+async function runMigrationFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    console.error(`❌ File not found: ${filePath}`);
     process.exit(1);
+  }
+
+  const sql = fs.readFileSync(filePath, 'utf8');
+  const fileName = path.basename(filePath);
+
+  console.log(`\n🔄 Applying: ${fileName}`);
+
+  const client = new Client(parseConnectionString(connectionString));
+  await client.connect();
+
+  try {
+    await client.query(sql);
+    console.log(`✅ Applied: ${fileName}`);
+  } catch (err) {
+    console.error(`❌ Failed: ${fileName}`);
+    console.error(`   ${err.message}`);
+    process.exitCode = 1;
+  } finally {
+    await client.end();
   }
 }
 
-runMigration();
+async function runAllMigrations() {
+  const migrationsDir = path.join(root, 'supabase', 'migrations');
+  const files = fs.readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
+
+  if (files.length === 0) {
+    console.log('No migration files found.');
+    return;
+  }
+
+  console.log(`Found ${files.length} migration file(s).`);
+  for (const file of files) {
+    await runMigrationFile(path.join(migrationsDir, file));
+  }
+  console.log('\n✅ Done.');
+}
+
+const arg = process.argv[2];
+if (arg) {
+  const filePath = path.isAbsolute(arg) ? arg : path.join(process.cwd(), arg);
+  runMigrationFile(filePath);
+} else {
+  runAllMigrations();
+}
