@@ -26,7 +26,8 @@ export function getQuoteInstantSMS(ctx: DripTemplateContext): string {
   const vehicleRef = ctx.vehicleMake && ctx.vehicleMake !== 'Unknown'
     ? `your ${ctx.vehicleMake} ${ctx.vehicleModel}`
     : 'your windshield service';
-  return `Hi ${ctx.firstName}, thanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for ${vehicleRef} and one of our team members will be in touch shortly.`;
+  const greeting = ctx.firstName && ctx.firstName !== 'Insurance' ? `Hi ${ctx.firstName}, t` : 'T';
+  return `${greeting}hanks for contacting Pink Auto Glass, where a portion of every job goes to breast cancer research. We just received your request for ${vehicleRef} and one of our team members will be in touch shortly.`;
 }
 
 /** Step 2: Next-day follow-up */
