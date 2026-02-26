@@ -169,7 +169,7 @@ export default function Home() {
 
             {/* Trust Signals */}
             <div>
-              <TrustSignals />
+              <TrustSignals visible={true} />
             </div>
           </div>
         </div>

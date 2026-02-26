@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MessageSquare, Calendar, CheckCircle, FileText, Shield } from 'lucide-react';
-import CTAButtons from '@/components/CTAButtons';
-import TrustSignals from '@/components/TrustSignals';
+import { Phone, CheckCircle, FileText, Shield } from 'lucide-react';
+import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
@@ -82,14 +81,10 @@ export default function InsuranceClaimsPage() {
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
                 Most Colorado drivers pay $0. Under state law, your insurer must offer zero-deductible glass coverage — we verify it, file your claim, and bill them directly. Your rates won't go up.
               </p>
-              <CTAButtons source="insurance-claims" />
+              <div className="max-w-md mx-auto mt-6">
+                <InsuranceQuoteForm source="insurance-claims-hub" />
+              </div>
             </div>
-          </div>
-        </section>
-
-        <section className="py-8 bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TrustSignals />
           </div>
         </section>
 
@@ -263,7 +258,10 @@ export default function InsuranceClaimsPage() {
                 <p className="text-xl mb-6 text-teal-100">
                   We handle all paperwork. Often no out-of-pocket cost. Direct billing.
                 </p>
-                <CTAButtons source="insurance-claims" />
+                <a href="tel:+17209187465" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl text-lg hover:bg-teal-50 transition-colors">
+                  <Phone className="w-5 h-5" />
+                  Call (720) 918-7465
+                </a>
               </section>
 
               <section className="bg-white rounded-xl p-8 border border-gray-200">
@@ -340,32 +338,7 @@ export default function InsuranceClaimsPage() {
 
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
-                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-teal-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Start Your Claim</h3>
-                  <div className="space-y-3">
-                    <a
-                      href="tel:+17209187465"
-                      className="flex items-center justify-center w-full bg-teal-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-teal-700 transition-colors"
-                    >
-                      <Phone className="w-5 h-5 mr-2" />
-                      Call (720) 918-7465
-                    </a>
-                    <a
-                      href="sms:+17209187465"
-                      className="flex items-center justify-center w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                    >
-                      <MessageSquare className="w-5 h-5 mr-2" />
-                      Text Policy Info
-                    </a>
-                    <Link
-                      href="/book"
-                      className="flex items-center justify-center w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Book Online
-                    </Link>
-                  </div>
-                </div>
+                <InsuranceQuoteForm source="insurance-claims-sidebar" />
 
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">What You'll Need</h3>

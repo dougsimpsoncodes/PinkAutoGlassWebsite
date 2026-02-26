@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MessageSquare, Calendar, CheckCircle, FileText, Shield } from 'lucide-react';
-import CTAButtons from '@/components/CTAButtons';
-import TrustSignals from '@/components/TrustSignals';
+import { Phone, CheckCircle, FileText, Shield } from 'lucide-react';
+import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
@@ -118,14 +117,10 @@ export default function ArizonaInsuranceClaimsPage() {
               <p className="answer-first text-lg text-orange-100 leading-relaxed mb-6 max-w-3xl mx-auto">
                 Arizona law (ARS 20-264) requires insurers to offer zero-deductible glass coverage — most Phoenix drivers already have it. Your rates can't go up (ARS 20-263), and you choose your shop (ARS 20-469). We handle your entire claim. You pay $0.
               </p>
-              <CTAButtons source="az-insurance-claims" />
+              <div className="max-w-md mx-auto mt-6">
+                <InsuranceQuoteForm source="az-insurance-hub" />
+              </div>
             </div>
-          </div>
-        </section>
-
-        <section className="py-8 bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TrustSignals />
           </div>
         </section>
 
@@ -319,38 +314,16 @@ export default function ArizonaInsuranceClaimsPage() {
                 <p className="text-xl mb-6 text-orange-100">
                   We handle all paperwork. Arizona law means $0 out of pocket. Same-day service across Phoenix metro.
                 </p>
-                <CTAButtons source="az-insurance-claims-cta" />
+                <a href="tel:+17209187465" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl text-lg hover:bg-teal-50 transition-colors">
+                  <Phone className="w-5 h-5" />
+                  Call (720) 918-7465
+                </a>
               </section>
             </div>
 
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
-                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-orange-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Start Your AZ Claim</h3>
-                  <div className="space-y-3">
-                    <a
-                      href="tel:+14807127465"
-                      className="flex items-center justify-center w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
-                    >
-                      <Phone className="w-5 h-5 mr-2" />
-                      Call (480) 712-7465
-                    </a>
-                    <a
-                      href="sms:+14807127465"
-                      className="flex items-center justify-center w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                    >
-                      <MessageSquare className="w-5 h-5 mr-2" />
-                      Text Policy Info
-                    </a>
-                    <Link
-                      href="/book"
-                      className="flex items-center justify-center w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Book Online
-                    </Link>
-                  </div>
-                </div>
+                <InsuranceQuoteForm source="az-insurance-sidebar" />
 
                 <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Arizona Glass Laws</h3>
