@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { CheckCircle, Phone, Shield, FileText, DollarSign, ChevronRight } from 'lucide-react';
-import CTAButtons from '@/components/CTAButtons';
-import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
@@ -83,22 +81,10 @@ export default function ProgressivePage() {
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
                 Yes — most Progressive drivers in Colorado qualify for zero-deductible windshield replacement. We verify your coverage, file the claim, and bill Progressive directly. Your rates won't go up.
               </p>
-              <CTAButtons source="insurance-progressive" />
+              <div className="max-w-md mx-auto mt-6">
+                <InsuranceQuoteForm carrier="Progressive" source="progressive-insurance" />
+              </div>
             </div>
-          </div>
-        </section>
-
-        {/* Trust Signals */}
-        <section className="py-8 bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TrustSignals />
-          </div>
-        </section>
-
-        {/* Mobile form */}
-        <section className="lg:hidden bg-gray-50 py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <InsuranceQuoteForm carrier="Progressive" source="insurance-progressive" />
           </div>
         </section>
 
@@ -202,7 +188,10 @@ export default function ProgressivePage() {
               <p className="text-xl mb-6 text-teal-100">
                 We handle all paperwork. Often $0 out of pocket. Direct billing to Progressive.
               </p>
-              <CTAButtons source="insurance-progressive" />
+              <a href="tel:+17209187465" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl text-lg hover:bg-teal-50 transition-colors">
+                <Phone className="w-5 h-5" />
+                Call (720) 918-7465
+              </a>
             </section>
 
             {/* Other carriers */}
