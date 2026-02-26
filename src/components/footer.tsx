@@ -168,6 +168,34 @@ export default function Footer() {
           </div>
         </div>
         
+        {/* Related Auto Glass Resources */}
+        <div className="border-t border-gray-700 py-8">
+          <h3 className="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-4">Auto Glass Resources</h3>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {[
+              { href: 'https://aurorawindshield.com', label: 'Aurora Windshield Replacement' },
+              { href: 'https://cheapestwindshieldnearme.com', label: 'Cheapest Windshield Near Me' },
+              { href: 'https://getawindshieldquote.com', label: 'Get a Windshield Quote' },
+              { href: 'https://mobilewindshielddenver.com', label: 'Mobile Windshield Denver' },
+              { href: 'https://newwindshieldcost.com', label: 'New Windshield Cost' },
+              { href: 'https://newwindshieldnearme.com', label: 'New Windshield Near Me' },
+              { href: 'https://windshieldchiprepairboulder.com', label: 'Windshield Chip Repair Boulder' },
+              { href: 'https://windshieldchiprepairdenver.com', label: 'Windshield Chip Repair Denver' },
+              { href: 'https://windshieldcostcalculator.com', label: 'Windshield Cost Calculator' },
+              { href: 'https://windshielddenver.com', label: 'Windshield Denver' },
+              { href: 'https://windshieldpricecompare.com', label: 'Windshield Price Compare' },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* Footer Bottom */}
         <div className="border-t border-gray-700 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
