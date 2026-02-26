@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 import StickyCallBar from "@/components/StickyCallBar";
 import StickyCallbackBar from "@/components/StickyCallbackBar";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import GlobalPhoneTracker from "@/components/GlobalPhoneTracker";
 import TrackingProvider from "@/components/TrackingProvider";
 import { Analytics } from '@vercel/analytics/react';
 import { Suspense } from 'react';
@@ -90,6 +91,7 @@ export default function RootLayout({
           <StickyCallBar />
           <StickyCallbackBar />
           <AnalyticsTracker />
+          <GlobalPhoneTracker />
           <Suspense fallback={null}>
             <TrackingProvider />
           </Suspense>
