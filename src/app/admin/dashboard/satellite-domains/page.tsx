@@ -401,12 +401,24 @@ export default function SatelliteDomainsPage() {
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
             <div>
-              <div className="font-semibold text-amber-900">No GSC data found</div>
-              <p className="text-sm text-amber-800 mt-1">
-                Make sure each domain is verified in Google Search Console with the same
-                credentials. Domain properties use the{' '}
-                <code className="bg-amber-100 px-1 rounded text-xs">sc-domain:</code> prefix.
-              </p>
+              {dateFilter === 'today' || dateFilter === 'yesterday' ? (
+                <>
+                  <div className="font-semibold text-amber-900">GSC data not available yet</div>
+                  <p className="text-sm text-amber-800 mt-1">
+                    Google Search Console has a 2–3 day data delay. Today and yesterday&apos;s
+                    data won&apos;t appear until Google processes it. Try <strong>Last 7 Days</strong> to see recent data.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="font-semibold text-amber-900">No GSC data found</div>
+                  <p className="text-sm text-amber-800 mt-1">
+                    Make sure each domain is verified in Google Search Console with the same
+                    credentials. Domain properties use the{' '}
+                    <code className="bg-amber-100 px-1 rounded text-xs">sc-domain:</code> prefix.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}
