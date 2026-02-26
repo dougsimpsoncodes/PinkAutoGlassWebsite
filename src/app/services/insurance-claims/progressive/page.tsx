@@ -111,14 +111,10 @@ export default function ProgressiveInsurancePage() {
                   Progressive Makes Windshield Claims Easy - And So Do We
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  If you have Progressive auto insurance with comprehensive coverage, your windshield repair or replacement is likely covered with little to no out-of-pocket cost. Progressive is one of the best insurance companies for glass claims in Colorado, often offering <strong>$0 deductible</strong> for comprehensive glass coverage.
+                  Most Progressive drivers in Colorado qualify for <strong>zero-deductible</strong> windshield replacement. Give us your policy number — we handle everything.
                 </p>
 
                 <AboveFoldCTA location="service-progressive" />
-
-                <p className="text-lg text-gray-700 mb-4">
-                  At Pink Auto Glass, we're experienced with Progressive claims and handle everything for you. You don't need to navigate Progressive's claims system or deal with paperwork - we do it all. Just give us your policy information, and we'll take care of the rest.
-                </p>
               </section>
 
               {/* Progressive Benefits */}

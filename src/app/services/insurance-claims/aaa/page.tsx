@@ -111,14 +111,10 @@ export default function AAAInsurancePage() {
                   AAA Members: We Make Your Windshield Claim Easy
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  As an AAA member, you deserve the best service for your auto glass needs. At Pink Auto Glass, we're proud to be an <strong>AAA approved auto repair shop</strong>, meeting AAA's high standards for quality workmanship, customer service, and fair pricing.
+                  Most AAA drivers in Colorado qualify for <strong>zero-deductible</strong> windshield replacement. Give us your policy number — we handle everything.
                 </p>
 
                 <AboveFoldCTA location="service-aaa" />
-
-                <p className="text-lg text-gray-700 mb-4">
-                  We handle everything for your AAA windshield claim - from filing the paperwork to billing AAA directly. You just approve the work, and we take care of the rest. Many AAA policies offer reduced or zero deductibles for glass claims, so your windshield repair or replacement may cost you little to nothing.
-                </p>
               </section>
 
               {/* AAA Member Benefits */}

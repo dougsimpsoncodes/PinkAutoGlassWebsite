@@ -111,14 +111,10 @@ export default function StateFarmInsurancePage() {
                   Farmers Customers: Get Smarter About Your Windshield Claim
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  As the one of America's leading auto insurers, Farmers serves millions of Colorado drivers. If you have comprehensive coverage on your Farmers policy, your windshield repair or replacement is likely covered with <strong>little to no out-of-pocket cost</strong>. Farmers offers excellent glass coverage in Colorado, often with $0 deductible for chip repairs.
+                  Most Farmers drivers in Colorado qualify for <strong>zero-deductible</strong> windshield replacement. Give us your policy number — we handle everything.
                 </p>
 
                 <AboveFoldCTA location="service-farmers" />
-
-                <p className="text-lg text-gray-700 mb-4">
-                  At Pink Auto Glass, we're experienced with Farmers claims and handle everything for you. From filing the claim to billing Farmers directly, we manage the entire process. You just approve the work, and we take care of the rest.
-                </p>
               </section>
 
               <section>

@@ -116,7 +116,7 @@ export default function ArizonaInsuranceClaimsPage() {
                 Arizona Law Means Your Windshield Replacement Costs $0
               </h1>
               <p className="answer-first text-lg text-orange-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Arizona has three laws that protect you when your windshield breaks. Under ARS 20-264, insurers must offer zero-deductible glass coverage — most Phoenix metro drivers with comprehensive policies already have it, paying just $5–$15/month extra. Under ARS 20-263, filing a glass claim is legally classified as no-fault, meaning your insurance rates cannot increase. Under ARS 20-469, you have the legal right to choose any auto glass shop — your insurer can recommend Safelite, but they cannot require it and must tell you that you can choose anyone you want. Pink Auto Glass serves all 20 Phoenix metro cities, handles 100% of your insurance paperwork, and provides same-day mobile service to your home or office. You pay nothing, you lose nothing, and you get your windshield replaced by experienced professionals.
+                Arizona law (ARS 20-264) requires insurers to offer zero-deductible glass coverage — most Phoenix drivers already have it. Your rates can't go up (ARS 20-263), and you choose your shop (ARS 20-469). We handle your entire claim. You pay $0.
               </p>
               <CTAButtons source="az-insurance-claims" />
             </div>
