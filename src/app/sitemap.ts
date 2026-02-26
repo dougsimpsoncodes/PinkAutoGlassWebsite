@@ -231,7 +231,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Insurance brand pages
+  // Insurance brand pages (legacy /services/insurance-claims/[carrier] routes)
   const insuranceBrands = [
     'progressive',
     'geico',
@@ -250,5 +250,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...locations, ...azLocations, ...vehicles, ...blog, ...brands];
+  // Carrier-specific insurance pages at /insurance/[carrier]
+  const carrierInsurancePages: MetadataRoute.Sitemap = [
+    'progressive',
+    'aaa',
+    'allstate',
+    'geico',
+    'esurance',
+    'state-farm',
+    'usaa',
+    'farmers',
+    'safeco',
+    'liberty-mutual',
+  ].map((slug) => ({
+    url: `${baseUrl}/insurance/${slug}`,
+    lastModified: new Date('2026-02-26'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+  }));
+
+  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...carrierInsurancePages, ...locations, ...azLocations, ...vehicles, ...blog, ...brands];
 }

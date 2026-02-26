@@ -104,14 +104,48 @@ export default function InsuranceClaimsPage() {
 
         {/* Timestamp */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <time dateTime="2026-02-22" className="text-sm text-gray-500">
-            Updated February 22, 2026
+          <time dateTime="2026-02-26" className="text-sm text-gray-500">
+            Updated February 26, 2026
           </time>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-12">
+
+              {/* Carrier Quick Links */}
+              <section className="bg-white rounded-xl p-8 border-2 border-teal-200 shadow-sm mt-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Select Your Insurance Carrier
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Choose your insurer below for carrier-specific coverage details, claim tips, and what to expect — including your $0 deductible options under Colorado law.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {[
+                    { name: 'Progressive', slug: 'progressive' },
+                    { name: 'AAA', slug: 'aaa' },
+                    { name: 'Allstate', slug: 'allstate' },
+                    { name: 'Geico', slug: 'geico' },
+                    { name: 'Esurance', slug: 'esurance' },
+                    { name: 'State Farm', slug: 'state-farm' },
+                    { name: 'USAA', slug: 'usaa' },
+                    { name: 'Farmers', slug: 'farmers' },
+                    { name: 'Safeco', slug: 'safeco' },
+                    { name: 'Liberty Mutual', slug: 'liberty-mutual' },
+                  ].map((carrier) => (
+                    <Link
+                      key={carrier.slug}
+                      href={`/insurance/${carrier.slug}`}
+                      className="flex flex-col items-center justify-center text-center bg-teal-50 hover:bg-teal-100 border border-teal-200 hover:border-teal-400 rounded-lg px-3 py-4 text-gray-900 transition-colors group"
+                    >
+                      <Shield className="w-5 h-5 text-teal-600 mb-1 group-hover:scale-110 transition-transform" />
+                      <span className="font-semibold text-sm leading-tight">{carrier.name}</span>
+                      <span className="text-teal-600 text-xs mt-1">View Details →</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -251,12 +285,12 @@ export default function InsuranceClaimsPage() {
                     { name: 'AAA', slug: 'aaa' },
                     { name: 'Farmers', slug: 'farmers' },
                     { name: 'Liberty Mutual', slug: 'liberty-mutual' },
-                    { name: 'Nationwide', slug: 'nationwide' },
-                    { name: 'Travelers', slug: 'travelers' },
+                    { name: 'Safeco', slug: 'safeco' },
+                    { name: 'Esurance', slug: 'esurance' },
                   ].map((insurer) => (
                     <Link
                       key={insurer.slug}
-                      href={`/services/insurance-claims/${insurer.slug}`}
+                      href={`/insurance/${insurer.slug}`}
                       className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 transition-colors"
                     >
                       <span className="font-medium">{insurer.name}</span>
@@ -267,7 +301,7 @@ export default function InsuranceClaimsPage() {
               </section>
 
               <section className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-xl p-8 border border-blue-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Insurance & Coverage Guides</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Insurance &amp; Coverage Guides</h2>
                 <p className="text-gray-700 mb-6">
                   Deeper answers on coverage, costs, and what to do next if you have glass damage.
                 </p>
