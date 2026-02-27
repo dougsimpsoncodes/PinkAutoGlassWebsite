@@ -1,47 +1,10 @@
-# Project-Specific Instructions for Claude Code
+# Pink Auto Glass — Project Rules
 
-## WORKFLOW: Plan First, Execute Simply
-
-**MANDATORY FOR ALL TASKS:**
-1. **Plan** - Think through problem, read codebase, write plan to `tasks/todo.md`
-2. **Get Approval** - Check in with user before beginning work
-3. **Execute** - Work through items one at a time, mark complete as you go
-4. **Document** - Add review section to `tasks/todo.md` with summary
-
----
-
-## SIMPLICITY IS EVERYTHING
-
-**ABSOLUTE RULES:**
-- Every change should be minimal and focused
-- Find ROOT CAUSE, no temporary fixes or workarounds
-- Changes should ONLY impact code relevant to the task
-- If touching unrelated code, STOP and reconsider
-- Ask: Is this the simplest solution? Am I changing more than necessary?
-
----
-
-## SECURITY: NEVER HARDCODE SECRETS
-
-**NEVER write secrets to:** Code files, docs, configs, scripts, or any git-tracked file.
-**ONLY place secrets in:** `.env.local`, `.env.production` (gitignored), Vercel env vars.
-
-```javascript
-// WRONG
-const API_KEY = 're_WpTtwkzV_...';
-
-// CORRECT
-const API_KEY = process.env.RESEND_API_KEY;
-if (!API_KEY) throw new Error('RESEND_API_KEY required');
-```
-
-**In documentation:** Use `[configured in Vercel]` or `***` instead of actual values.
+Workflow, debugging, and universal preferences are in `~/.claude/CLAUDE.md` (loads automatically).
 
 ---
 
 ## NEVER ADD `\n` TO .env FILES — ROOT CAUSE & PREVENTION
-
-### Why it happens
 
 Three things combine to create this bug every time:
 
@@ -71,12 +34,6 @@ vercel env pull .env.local
 npm run env:pull
 ```
 
-The `env:pull` script runs `vercel env pull` then immediately runs:
-```bash
-sed -i '' 's/\\n"/"/g' .env.local
-```
-which removes any trailing `\n` from quoted values.
-
 ### Rule 3 — After any manual .env.local edit, verify with
 
 ```bash
@@ -99,32 +56,6 @@ SUPABASE_SERVICE_ROLE_KEY="eyJhbG...odAE"
 
 ---
 
-## RingCentral JWT Authentication
-
-**Reference:** `/docs/RINGCENTRAL_JWT_EXPERT_GUIDE.md`
-
-Contains JWT troubleshooting, "Unauthorized for this grant type" fixes, token lifecycle, emergency recovery.
-
----
-
-## Authentication Troubleshooting Protocol
-
-### When Encountering Auth Errors:
-
-1. **Read error literally** - Value in brackets (e.g., `[AmA1nMSmTqHdJT6phipyqC]`) IS the problem
-2. **Research FIRST** - Web search exact error code before proposing fixes
-3. **Request ALL credentials together** - Never update one at a time
-4. **Verify assumptions** - Same app/account? Correct environment? Not expired?
-
-**Pattern Recognition:**
-- "Invalid client" → CLIENT_ID doesn't exist or wrong environment
-- "Invalid token" → Token expired or wrong CLIENT_ID
-- "Unauthorized" → Missing permissions
-
-**DO NOT:** Guess at solutions, update one credential at a time, assume .env values are valid.
-
----
-
 ## Next.js Environment Variable Caching
 
 **Problem:** Next.js caches env vars at startup. Updates to `.env.local` won't be picked up.
@@ -140,109 +71,82 @@ Or use `npm run dev:watch` for auto-restart on .env changes.
 
 ---
 
-## NEVER ASSUME - ALWAYS VERIFY
+## Authentication Troubleshooting
 
-Never assume which database/environment is production based on names.
+1. **Read error literally** — value in brackets (e.g., `[AmA1nMSmTqHdJT6phipyqC]`) IS the problem
+2. **Research FIRST** — web search the exact error code before proposing fixes
+3. **Request ALL credentials together** — never update one at a time
+4. **Verify assumptions** — same app/account? Correct environment? Not expired?
 
-**Always verify:**
-- Check project IDs in code
-- Ask user to confirm
-- Check activity levels in dashboard
+**Pattern recognition:**
+- "Invalid client" → CLIENT_ID doesn't exist or wrong environment
+- "Invalid token" → token expired or wrong CLIENT_ID
+- "Unauthorized" → missing permissions
+
+**RingCentral JWT:** See `/docs/RINGCENTRAL_JWT_EXPERT_GUIDE.md` for JWT troubleshooting, token lifecycle, and emergency recovery.
 
 ---
 
 ## DON'T OVER-ENGINEER
 
-**Start simple with SDKs.** Don't create custom fetch wrappers unless absolutely necessary.
+Start simple with SDKs. Don't create custom fetch wrappers unless absolutely necessary.
 
 ```typescript
 // START HERE
 const client = createClient(url, key);
 
-// NOT HERE (custom wrappers break auth)
+// NOT HERE — custom wrappers break auth
 const client = createClient(url, key, { global: { fetch: myCustomFetch } });
 ```
 
-**Test order:**
-1. Default SDK config
-2. Add ONE option at a time
-3. Test with curl to isolate issues
-4. Only customize if steps 1-3 prove necessary
+Test order: default config → add one option → test with curl → only customize if all three fail.
+
+Supabase client MUST use lazy init in API routes (not top-level) to avoid build failures.
 
 ---
 
-## TRY BEFORE SAYING "I CAN'T"
+## Database Migrations
 
-Never tell user "You'll need to do this manually" without trying the command first.
+Before applying any migration touching functions, triggers, or RLS:
 
-If you've used a CLI (vercel, supabase, gh) earlier in the session, assume you still have access.
-
----
-
-## NEVER USE FALLBACKS WITHOUT USER CONSENT
-
-Never implement silent fallbacks that mask failures. Always ask:
-
-> "If the API fails, should I: A) Show error, B) Fall back to estimates, C) Show stale data indicator?"
-
-**Fallbacks are BUSINESS decisions, not technical ones.**
-
----
-
-## DATABASE MIGRATIONS: Test Critical Paths
-
-**Before applying migrations touching functions/triggers/RLS:**
-
-1. Test critical path BEFORE migration (e.g., curl the lead form)
-2. Apply migration
+1. Test the critical path BEFORE the migration (e.g., curl the lead form)
+2. Apply the migration
 3. Test IMMEDIATELY after
-4. If fails, ROLLBACK
+4. If it fails, ROLLBACK
 
-**Supabase search_path:** Always include `extensions` schema:
+**Supabase search_path** — always include `extensions`:
 ```sql
--- WRONG: SET search_path = public;
--- CORRECT: SET search_path = public, extensions;
+-- WRONG
+SET search_path = public;
+-- CORRECT
+SET search_path = public, extensions;
 ```
 
-**Critical functions:** `fn_insert_lead` (Quote/Booking forms - lost leads = lost revenue)
+**`fn_insert_lead` is critical** — this powers Quote and Booking forms. A broken migration here means lost leads and lost revenue.
+
+Run migrations with: `node scripts/run-migration.js supabase/migrations/<file>.sql`
+Do NOT use `supabase db push` — it fails with IPv6.
 
 ---
 
-## MONITORING: Critical Business Metrics
+## Monitoring — Business Metrics
 
-| Metric | Alert If |
-|--------|----------|
+| Metric | Alert threshold |
+|--------|----------------|
 | Daily leads | < 1 in 24 hours |
 | /api/lead errors | > 5% |
 
 ---
 
-## THE TWO-ATTEMPT RULE
+## Direct Observation Over Indirect Inference
 
-**If first fix fails, STOP and research before trying again.**
+Use the simplest direct test — don't query the database to verify a frontend event fired.
 
-```
-Attempt #1 fails → STOP → Research exact error → Understand WHY → Attempt #2
-If still failing → Ask user / consult external sources
-```
-
-**Workarounds are red flags.** If you're hiding symptoms, stop and find root cause.
-
----
-
-## DIRECT OBSERVATION OVER INDIRECT INFERENCE
-
-**Use the simplest direct test.** Don't query database to verify frontend events fire.
-
-| To Verify | Direct Test |
+| To verify | Direct test |
 |-----------|-------------|
-| Frontend events | Browser extension, DevTools |
-| API response | Call the API |
+| Frontend events | Browser DevTools or tracking extension |
+| API response | Call the API directly (curl) |
 | Tracking pixels | Browser tracking extension |
 | UI rendering | Look at the screen |
 
-**Use the same tool that diagnosed the problem to verify the fix.**
-
----
-
-**Remember:** Research first. Official documentation is more reliable than guessing.
+Use the same tool that diagnosed the problem to verify the fix.
