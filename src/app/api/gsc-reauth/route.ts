@@ -21,7 +21,15 @@ const SCOPES: Record<string, { scope: string[]; envVar: string; label: string }>
   gsc: {
     scope: ['https://www.googleapis.com/auth/webmasters.readonly'],
     envVar: 'GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN',
-    label: 'Google Search Console',
+    label: 'Google Search Console (read-only)',
+  },
+  'gsc-write': {
+    scope: [
+      'https://www.googleapis.com/auth/webmasters',
+      'https://www.googleapis.com/auth/siteverification',
+    ],
+    envVar: 'GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN',
+    label: 'Google Search Console (write + verify)',
   },
   ads: {
     scope: ['https://www.googleapis.com/auth/adwords'],
