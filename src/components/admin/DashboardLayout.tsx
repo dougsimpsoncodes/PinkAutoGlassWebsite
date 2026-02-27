@@ -18,6 +18,7 @@ import {
   Upload,
   TrendingUp,
   Globe,
+  MapPinOff,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Website & Traffic', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
     { name: 'Search Performance', href: '/admin/dashboard/search-performance', icon: Search },
     { name: 'Satellite Sites', href: '/admin/dashboard/satellite-domains', icon: Globe },
+    { name: 'External Leads', href: '/admin/dashboard/external-leads', icon: MapPinOff },
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },

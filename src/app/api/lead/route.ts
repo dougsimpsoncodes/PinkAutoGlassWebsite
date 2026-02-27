@@ -13,6 +13,19 @@ import { getQuotePrice } from '@/lib/pricing';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { isExcludedPhone, isCustomerSmsEnabled, isTestPhone } from '@/lib/constants';
 
+// ─── Market classification ────────────────────────────────────────────────────
+// Phoenix metro: 850xx–855xx (Maricopa County)
+// Denver metro:  800xx–806xx
+const PHOENIX_PREFIXES = ['850', '851', '852', '853', '854', '855'];
+const DENVER_PREFIXES  = ['800', '801', '802', '803', '804', '805', '806'];
+
+function classifyMarket(zip: string | null | undefined): 'in_market' | 'out_of_market' | null {
+  if (!zip || zip.length < 3) return null;
+  const prefix = zip.replace(/\D/g, '').slice(0, 3);
+  if (PHOENIX_PREFIXES.includes(prefix) || DENVER_PREFIXES.includes(prefix)) return 'in_market';
+  return 'out_of_market';
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limit: 5 submissions per IP per 60 seconds
@@ -222,6 +235,32 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+    }
+
+    // =============================================================================
+    // MARKET TYPE: Tag lead as in_market or out_of_market based on zip
+    // =============================================================================
+    const zip = validatedData.zipCode || body.zip || null;
+    const marketType = classifyMarket(zip);
+
+    // Store market_type if column exists (migration may not be applied yet — fire-and-forget)
+    if (marketType) {
+      dedupClient
+        .from('leads')
+        .update({ market_type: marketType })
+        .eq('id', leadId)
+        .then(({ error }) => {
+          if (error && error.code !== '42703') console.error('Failed to set market_type:', error.message);
+        });
+    }
+
+    // Out-of-market leads: saved to DB but no SMS, drip, or admin alerts
+    if (marketType === 'out_of_market') {
+      console.log(`🌐 Out-of-market lead ${leadId} from zip ${zip} — saved, skipping notifications`);
+      return NextResponse.json(
+        { success: true, message: 'Quote request received! We\'ll text you within minutes.', leadId },
+        { status: 200 }
+      );
     }
 
     // =============================================================================
