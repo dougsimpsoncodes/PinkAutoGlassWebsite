@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GridScope — Admin Mockup (3 Phases)</title>
+  <script async src="https://maps.googleapis.com/maps/api/js?key=REDACTED_MAPS_API_KEY&callback=initMaps"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; color: #111827; }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 256px; min-width: 256px; background: #fff;
+      border-right: 1px solid #e5e7eb;
+      box-shadow: 2px 0 8px rgba(0,0,0,.05);
+      display: flex; flex-direction: column;
+      padding: 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px 20px;
+      border-bottom: 1px solid #f3f4f6; margin-bottom: 12px;
+    }
+    .sidebar-logo .logo-icon {
+      width: 36px; height: 36px; background: linear-gradient(135deg,#db2777,#2563eb);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 14px;
+    }
+    .sidebar-logo span { font-weight: 700; font-size: 15px; color: #111; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 8px;
+      text-decoration: none; color: #374151;
+      font-size: 13.5px; font-weight: 500;
+      transition: background .15s;
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: #f3f4f6; }
+    .nav-item.active { background: linear-gradient(90deg,#db2777,#2563eb); color: #fff; }
+    .nav-item .nav-icon { width: 18px; height: 18px; opacity: .75; flex-shrink: 0; }
+    .nav-item.active .nav-icon { opacity: 1; }
+    .nav-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      color: #9ca3af; text-transform: uppercase; padding: 14px 14px 4px;
+    }
+    .sidebar-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid #f3f4f6; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; padding: 32px; overflow-x: hidden; }
+    .page-header { margin-bottom: 20px; }
+    .page-title { font-size: 26px; font-weight: 700; color: #111827; }
+    .page-subtitle { font-size: 14px; color: #6b7280; margin-top: 2px; }
+
+    /* ── PHASE TABS (top level) ── */
+    .phase-tabs {
+      display: flex; gap: 0; margin-bottom: 28px;
+      background: #fff; border-radius: 12px; padding: 5px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); width: fit-content;
+    }
+    .phase-tab {
+      padding: 8px 22px; border-radius: 9px; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; border: none; background: none; color: #6b7280;
+      transition: all .2s;
+    }
+    .phase-tab.active {
+      background: linear-gradient(135deg,#db2777,#2563eb); color: #fff;
+      box-shadow: 0 2px 8px rgba(219,39,119,.3);
+    }
+    .phase-tab .phase-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 1px 6px; border-radius: 20px; margin-right: 6px;
+      background: rgba(255,255,255,.25); color: inherit;
+    }
+    .phase-tab:not(.active) .phase-badge { background: #f3f4f6; color: #9ca3af; }
+
+    /* ── INNER SUB-NAV (Phase 2+) ── */
+    .sub-nav {
+      display: flex; gap: 6px; margin-bottom: 22px;
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 0;
+    }
+    .sub-tab {
+      padding: 8px 16px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; background: none; color: #6b7280;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: all .15s;
+    }
+    .sub-tab.active { color: #db2777; border-bottom-color: #db2777; font-weight: 600; }
+    .sub-tab:hover:not(.active) { color: #374151; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07); padding: 24px;
+    }
+    .card-title { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 14px; }
+
+    /* ── METRIC CARDS ROW ── */
+    .metric-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+    .metric-card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07); padding: 18px 20px;
+    }
+    .metric-label { font-size: 11.5px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .metric-value { font-size: 28px; font-weight: 800; color: #111827; line-height: 1; }
+    .metric-sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .metric-card.green .metric-value { color: #16a34a; }
+    .metric-card.pink .metric-value { color: #db2777; }
+    .metric-card.blue .metric-value { color: #2563eb; }
+    .metric-card.amber .metric-value { color: #d97706; }
+
+    /* ── GRID CONTROLS ── */
+    .controls-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .city-tabs { display: flex; gap: 0; background: #f3f4f6; border-radius: 8px; padding: 3px; }
+    .city-tab {
+      padding: 6px 14px; font-size: 13px; font-weight: 600;
+      border-radius: 6px; cursor: pointer; border: none;
+      background: none; color: #6b7280; transition: all .15s;
+    }
+    .city-tab.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .select-input {
+      padding: 7px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+      font-size: 13px; background: #fff; color: #374151; outline: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      background: linear-gradient(135deg,#db2777,#2563eb); color: #fff;
+      border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(219,39,119,.3);
+    }
+    .btn-secondary {
+      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      background: #fff; color: #374151; border: 1px solid #e5e7eb; cursor: pointer;
+    }
+    .scan-info { font-size: 12px; color: #9ca3af; margin-left: auto; }
+
+    /* ── GEO-GRID HEATMAP ── */
+    .grid-container { display: flex; gap: 20px; }
+    .grid-wrap { flex: 1; }
+    .geo-grid {
+      display: grid; gap: 4px;
+      margin-bottom: 12px;
+    }
+    .grid-7 { grid-template-columns: repeat(7,1fr); }
+    .grid-cell {
+      aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 700; color: #fff;
+      cursor: pointer; transition: transform .1s; position: relative;
+    }
+    .grid-cell:hover { transform: scale(1.12); z-index: 10; }
+    .grid-cell.r1  { background: #166534; }
+    .grid-cell.r2  { background: #15803d; }
+    .grid-cell.r3  { background: #22c55e; color: #fff; }
+    .grid-cell.r4  { background: #84cc16; color: #365314; }
+    .grid-cell.r5  { background: #a3e635; color: #365314; }
+    .grid-cell.r6  { background: #facc15; color: #713f12; }
+    .grid-cell.r7  { background: #fbbf24; color: #713f12; }
+    .grid-cell.r8  { background: #f97316; }
+    .grid-cell.r9  { background: #ea580c; }
+    .grid-cell.r10 { background: #dc2626; }
+    .grid-cell.r11 { background: #b91c1c; }
+    .grid-cell.r12 { background: #991b1b; }
+    .grid-cell.nr  { background: #374151; color: #9ca3af; font-size: 10px; }
+
+    /* AI grid uses blue/purple scale */
+    .grid-cell.ai-yes  { background: #4f46e5; }
+    .grid-cell.ai-some { background: #7c3aed; }
+    .grid-cell.ai-rare { background: #a78bfa; color: #1e1b4b; }
+    .grid-cell.ai-no   { background: #374151; color: #9ca3af; font-size: 10px; }
+
+    .grid-legend {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #6b7280; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* ── SIDEBAR STATS (next to grid) ── */
+    .grid-sidebar { width: 220px; display: flex; flex-direction: column; gap: 10px; }
+    .solv-ring {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 16px;
+      text-align: center;
+    }
+    .solv-number { font-size: 38px; font-weight: 800; color: #16a34a; }
+    .solv-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+    .solv-desc { font-size: 11px; color: #6b7280; }
+    .stat-mini-card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07); padding: 12px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .stat-mini-label { font-size: 12px; color: #6b7280; }
+    .stat-mini-value { font-size: 18px; font-weight: 700; color: #111; }
+
+    /* ── COMPETITOR TABLE ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase;
+      letter-spacing: .06em; padding: 8px 12px; text-align: left;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    tbody td { font-size: 13px; padding: 10px 12px; border-bottom: 1px solid #f9fafb; color: #374151; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fdf2f8; }
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 22px; border-radius: 5px; font-size: 12px; font-weight: 700;
+      background: #dcfce7; color: #166534;
+    }
+    .rank-badge.mid { background: #fef9c3; color: #713f12; }
+    .rank-badge.low { background: #fee2e2; color: #991b1b; }
+    .stars { color: #f59e0b; font-size: 12px; }
+
+    /* ── ALERT BANNER ── */
+    .alert-banner {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px; border-radius: 10px; margin-bottom: 14px;
+    }
+    .alert-banner.red { background: #fef2f2; border: 1px solid #fecaca; }
+    .alert-banner.amber { background: #fffbeb; border: 1px solid #fde68a; }
+    .alert-banner.green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .alert-banner.blue { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .alert-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+    .alert-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .alert-desc { font-size: 12px; color: #6b7280; }
+    .alert-banner.red .alert-title { color: #b91c1c; }
+    .alert-banner.amber .alert-title { color: #92400e; }
+    .alert-banner.green .alert-title { color: #166534; }
+    .alert-banner.blue .alert-title { color: #1e40af; }
+
+    /* ── MARKET TABLE ── */
+    .opportunity-bar {
+      height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden;
+    }
+    .opportunity-fill { height: 100%; border-radius: 3px; }
+    .opp-high .opportunity-fill { background: #16a34a; }
+    .opp-med  .opportunity-fill { background: #f59e0b; }
+    .opp-low  .opportunity-fill { background: #dc2626; }
+
+    .score-pill {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      border-radius: 20px; font-size: 12px; font-weight: 700;
+    }
+    .score-pill.high { background: #dcfce7; color: #166534; }
+    .score-pill.med  { background: #fef9c3; color: #713f12; }
+    .score-pill.low  { background: #fee2e2; color: #991b1b; }
+
+    /* ── JOB PINS FEED ── */
+    .pin-feed { display: flex; flex-direction: column; gap: 10px; }
+    .pin-card {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px; background: #f9fafb; border-radius: 10px;
+      border: 1px solid #f3f4f6;
+    }
+    .pin-dot {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg,#db2777,#2563eb);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px; margin-top: 2px;
+    }
+    .pin-content { flex: 1; }
+    .pin-title { font-size: 13px; font-weight: 600; color: #111; }
+    .pin-meta { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .pin-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .pin-tag {
+      font-size: 11px; padding: 2px 8px; border-radius: 12px;
+      background: #ede9fe; color: #5b21b6; font-weight: 500;
+    }
+    .pin-tag.green { background: #dcfce7; color: #166534; }
+
+    /* ── AI ANALYSIS BOX ── */
+    .analysis-box {
+      background: linear-gradient(135deg, #fdf4ff, #eff6ff);
+      border: 1px solid #e9d5ff; border-radius: 12px; padding: 18px;
+    }
+    .analysis-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .analysis-icon { font-size: 20px; }
+    .analysis-title { font-size: 14px; font-weight: 700; color: #6b21a8; }
+    .analysis-finding { display: flex; gap: 10px; margin-bottom: 10px; }
+    .finding-bullet { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .finding-bullet.red { background: #fee2e2; color: #b91c1c; }
+    .finding-bullet.amber { background: #fef9c3; color: #92400e; }
+    .finding-bullet.blue { background: #dbeafe; color: #1e40af; }
+    .finding-text { font-size: 13px; color: #374151; }
+    .finding-text strong { color: #111827; }
+    .analysis-action {
+      margin-top: 14px; padding-top: 12px; border-top: 1px solid #e9d5ff;
+      font-size: 13px; font-weight: 600; color: #6b21a8;
+    }
+
+    /* ── GBP POSTS ── */
+    .posts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .post-card {
+      background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 10px; padding: 14px;
+    }
+    .post-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .post-type-badge {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      padding: 2px 8px; border-radius: 12px;
+    }
+    .post-type-badge.scheduled { background: #dbeafe; color: #1e40af; }
+    .post-type-badge.published { background: #dcfce7; color: #166534; }
+    .post-type-badge.draft { background: #f3f4f6; color: #6b7280; }
+    .post-card-text { font-size: 12.5px; color: #374151; line-height: 1.5; margin-bottom: 8px; }
+    .post-card-meta { font-size: 11px; color: #9ca3af; }
+
+    /* ── TAG PILL ── */
+    .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .tag.new-feature { background: #ede9fe; color: #5b21b6; }
+    .tag.phase { background: linear-gradient(90deg,#fdf4ff,#eff6ff); color: #6b21a8; border: 1px solid #e9d5ff; }
+
+    /* ── PHASE BANNER ── */
+    .phase-banner {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; border-radius: 10px; margin-bottom: 20px;
+      background: linear-gradient(90deg, #fdf4ff, #eff6ff);
+      border: 1px solid #e9d5ff;
+    }
+    .phase-banner-icon { font-size: 18px; }
+    .phase-banner-text { font-size: 13px; color: #6b21a8; font-weight: 500; }
+    .phase-banner-text strong { color: #581c87; }
+
+    /* ── VISIBILITY ── */
+    .hidden { display: none; }
+
+    /* ── LISTING MONITOR ── */
+    .change-log { display: flex; flex-direction: column; gap: 10px; }
+    .change-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px; border-radius: 10px; border: 1px solid;
+    }
+    .change-item.reverted { background: #f0fdf4; border-color: #bbf7d0; }
+    .change-item.pending  { background: #fffbeb; border-color: #fde68a; }
+    .change-item-icon { font-size: 16px; margin-top: 1px; }
+    .change-field { font-size: 13px; font-weight: 600; color: #111; }
+    .change-detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+    /* ── REVIEW INBOX ── */
+    .review-list { display: flex; flex-direction: column; gap: 10px; }
+    .review-item { background: #f9fafb; border-radius: 10px; border: 1px solid #f3f4f6; padding: 14px; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .reviewer-name { font-size: 13px; font-weight: 600; }
+    .review-date { font-size: 11px; color: #9ca3af; }
+    .review-text { font-size: 12.5px; color: #374151; line-height: 1.5; margin-bottom: 8px; }
+    .review-reply { font-size: 12px; color: #2563eb; cursor: pointer; font-weight: 500; }
+    .ai-reply-preview {
+      margin-top: 8px; padding: 8px 12px; background: #eff6ff;
+      border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; color: #1e40af;
+      font-style: italic;
+    }
+
+    /* ── MISC ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .divider { height: 1px; background: #f3f4f6; margin: 20px 0; }
+    .text-pink { color: #db2777; }
+    .text-muted { color: #9ca3af; font-size: 12px; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-3 { margin-bottom: 12px; }
+    .mb-2 { margin-bottom: 8px; }
+    .gap-10 { gap: 10px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-8 { gap: 8px; }
+
+    /* progress bar inline */
+    .prog-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 3px; }
+    .prog-green { background: #16a34a; }
+    .prog-amber { background: #f59e0b; }
+    .prog-red   { background: #dc2626; }
+
+    /* Notification dot */
+    .notif-dot {
+      width: 7px; height: 7px; background: #db2777; border-radius: 50%; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">P</div>
+      <span>Pink Auto Glass</span>
+    </div>
+
+    <div class="nav-section-label">Overview</div>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path stroke-width="2" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Leads
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+      Call Analytics
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Website &amp; Traffic
+    </a>
+
+    <div class="nav-section-label">Ads</div>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Google Ads
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-width="2" d="M8 21h8M12 17v4"/></svg>
+      Microsoft Ads
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-width="2"/><polyline points="17 6 23 6 23 12" stroke-width="2"/></svg>
+      Ad Performance
+    </a>
+
+    <div class="nav-section-label">Sites &amp; SEO</div>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke-width="2"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke-width="2"/></svg>
+      Satellite Sites
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"/></svg>
+      Search Performance
+    </a>
+    <a href="#" class="nav-item active" onclick="return false;">
+      <!-- Grid icon -->
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3" stroke-width="2"/></svg>
+      GridScope
+    </a>
+
+    <div class="nav-section-label">Tools</div>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+      Google Reviews
+    </a>
+    <a href="#" class="nav-item">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Invoice Upload
+    </a>
+
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item" style="color:#6b7280;">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="main">
+
+    <div class="page-header">
+      <div class="flex items-center gap-8 mb-2">
+        <span style="font-size:24px;">📡</span>
+        <div>
+          <h1 class="page-title">GridScope</h1>
+          <p class="page-subtitle">Local rank tracking &amp; SEO intelligence — Pink Auto Glass</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase selector tabs -->
+    <div class="phase-tabs">
+      <button class="phase-tab active" onclick="showPhase(1,this)">
+        <span class="phase-badge">P1</span>Geo-Grid Tracker
+      </button>
+      <button class="phase-tab" onclick="showPhase(2,this)">
+        <span class="phase-badge">P2</span>GBP + Expansion
+      </button>
+      <button class="phase-tab" onclick="showPhase(3,this)">
+        <span class="phase-badge">P3</span>AI + Job Pins
+      </button>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  PHASE 1 — GEO-GRID RANK TRACKER          -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="phase1">
+
+      <!-- Controls -->
+      <div class="controls-row">
+        <div class="city-tabs">
+          <button class="city-tab active">Phoenix</button>
+          <button class="city-tab">Denver</button>
+        </div>
+        <select class="select-input">
+          <option>windshield replacement</option>
+          <option>auto glass repair</option>
+          <option>mobile windshield replacement</option>
+          <option>$0 deductible windshield</option>
+        </select>
+        <select class="select-input">
+          <option>7×7 Grid</option>
+          <option>9×9 Grid</option>
+          <option>13×13 Grid</option>
+        </select>
+        <button class="btn-primary">▶ Run Scan</button>
+        <button class="btn-secondary">📅 History</button>
+        <span class="scan-info">Last scan: Feb 27, 2026 at 9:14 AM · 49 nodes</span>
+      </div>
+
+      <!-- Metric Cards -->
+      <div class="metric-row">
+        <div class="metric-card green">
+          <div class="metric-label">SoLV Score</div>
+          <div class="metric-value">61%</div>
+          <div class="metric-sub">30/49 nodes in top 3</div>
+        </div>
+        <div class="metric-card blue">
+          <div class="metric-label">Avg Rank</div>
+          <div class="metric-value">3.2</div>
+          <div class="metric-sub">Across ranked nodes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Competitors</div>
+          <div class="metric-value">7</div>
+          <div class="metric-sub">Appeared on this grid</div>
+        </div>
+        <div class="metric-card amber">
+          <div class="metric-label">Coverage Gap</div>
+          <div class="metric-value">8</div>
+          <div class="metric-sub">Nodes not ranked top 3</div>
+        </div>
+      </div>
+
+      <!-- Grid + Sidebar -->
+      <div class="card mb-4">
+        <div class="flex-between mb-3">
+          <div class="card-title" style="margin-bottom:0">Phoenix Metro — "windshield replacement"</div>
+          <div class="flex gap-8 items-center">
+            <span class="text-muted">NW → SE · 40 mile radius</span>
+            <button class="btn-secondary" style="padding:5px 12px;font-size:12px;">Export PNG</button>
+          </div>
+        </div>
+        <div class="grid-container">
+          <div class="grid-wrap">
+            <!-- Leaflet map with colored circle rank markers -->
+            <div id="map-phase1" style="height:440px;border-radius:10px;overflow:hidden;margin-bottom:10px;"></div>
+
+            <!-- Legend -->
+            <div class="grid-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#166534"></div>Rank 1</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>2–3</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#a3e635"></div>4–5</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>6–7</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>8–9</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>10–12</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#374151"></div>Not Ranked</div>
+            </div>
+          </div>
+
+          <!-- Grid sidebar stats -->
+          <div class="grid-sidebar">
+            <div class="solv-ring">
+              <div class="solv-label">SoLV</div>
+              <div class="solv-number">61%</div>
+              <div class="solv-desc">Share of Local Voice<br><span style="font-size:10px;color:#9ca3af">nodes ranked #1–3</span></div>
+            </div>
+            <div class="stat-mini-card">
+              <span class="stat-mini-label">Avg Rank Position</span>
+              <span class="stat-mini-value">3.2</span>
+            </div>
+            <div class="stat-mini-card">
+              <span class="stat-mini-label">Total Rank Position</span>
+              <span class="stat-mini-value">5.8</span>
+            </div>
+            <div class="stat-mini-card">
+              <span class="stat-mini-label">Ranked Nodes</span>
+              <span class="stat-mini-value">41 / 49</span>
+            </div>
+            <div class="stat-mini-card">
+              <span class="stat-mini-label">Top-3 Nodes</span>
+              <span class="stat-mini-value" style="color:#16a34a">30</span>
+            </div>
+            <div class="stat-mini-card">
+              <span class="stat-mini-label">Rank 8+ Nodes</span>
+              <span class="stat-mini-value" style="color:#dc2626">11</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Competitor Table -->
+      <div class="card">
+        <div class="flex-between mb-3">
+          <div class="card-title" style="margin-bottom:0">Competitor Overview — All Nodes</div>
+          <label style="font-size:12px;color:#6b7280;">
+            <input type="checkbox" style="margin-right:4px;"/> Show competitor overlay on grid
+          </label>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>SoLV</th>
+              <th>Avg Rank</th>
+              <th>Reviews</th>
+              <th>Rating</th>
+              <th>Distance</th>
+              <th>Nodes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Safelite AutoGlass</strong><br><span style="font-size:11px;color:#9ca3af">2345 E Thomas Rd</span></td>
+              <td><span class="score-pill high">72%</span></td>
+              <td><span class="rank-badge">2.1</span></td>
+              <td>1,847</td>
+              <td><span class="stars">★★★★☆</span> 4.1</td>
+              <td>2.1 mi</td>
+              <td>35/49</td>
+            </tr>
+            <tr>
+              <td><strong>Glass Doctor</strong><br><span style="font-size:11px;color:#9ca3af">Phoenix</span></td>
+              <td><span class="score-pill med">44%</span></td>
+              <td><span class="rank-badge mid">4.7</span></td>
+              <td>412</td>
+              <td><span class="stars">★★★★☆</span> 4.4</td>
+              <td>4.8 mi</td>
+              <td>22/49</td>
+            </tr>
+            <tr>
+              <td><strong>AZ Auto Glass</strong><br><span style="font-size:11px;color:#9ca3af">Scottsdale</span></td>
+              <td><span class="score-pill med">31%</span></td>
+              <td><span class="rank-badge mid">5.2</span></td>
+              <td>87</td>
+              <td><span class="stars">★★★★★</span> 4.8</td>
+              <td>3.2 mi</td>
+              <td>15/49</td>
+            </tr>
+            <tr>
+              <td><strong>Desert Glass Works</strong><br><span style="font-size:11px;color:#9ca3af">Mesa</span></td>
+              <td><span class="score-pill low">18%</span></td>
+              <td><span class="rank-badge low">7.1</span></td>
+              <td>34</td>
+              <td><span class="stars">★★★★☆</span> 4.2</td>
+              <td>7.4 mi</td>
+              <td>9/49</td>
+            </tr>
+            <tr>
+              <td><strong>Fast Glass Phoenix</strong><br><span style="font-size:11px;color:#9ca3af">Tempe</span></td>
+              <td><span class="score-pill low">12%</span></td>
+              <td><span class="rank-badge low">8.4</span></td>
+              <td>21</td>
+              <td><span class="stars">★★★☆☆</span> 3.9</td>
+              <td>5.1 mi</td>
+              <td>6/49</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /phase1 -->
+
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  PHASE 2 — GBP MANAGEMENT + EXPANSION     -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="phase2" class="hidden">
+
+      <div class="phase-banner">
+        <span class="phase-banner-icon">🚀</span>
+        <span class="phase-banner-text"><strong>Phase 2 includes everything in Phase 1</strong> plus GBP post scheduling, listing monitoring, review inbox, ranking alerts, and market expansion scoring.</span>
+      </div>
+
+      <!-- Sub-nav -->
+      <div class="sub-nav">
+        <button class="sub-tab" onclick="showSubTab('p2-grid',this,'p2')">📡 Rank Grid</button>
+        <button class="sub-tab active" onclick="showSubTab('p2-expansion',this,'p2')">🗺️ Market Expansion</button>
+        <button class="sub-tab" onclick="showSubTab('p2-alerts',this,'p2')">🔔 Alerts <span style="background:#db2777;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px;">3</span></button>
+        <button class="sub-tab" onclick="showSubTab('p2-posts',this,'p2')">📝 GBP Posts</button>
+        <button class="sub-tab" onclick="showSubTab('p2-listing',this,'p2')">🛡️ Listing Monitor</button>
+        <button class="sub-tab" onclick="showSubTab('p2-reviews',this,'p2')">⭐ Reviews</button>
+      </div>
+
+      <!-- Market Expansion (default) -->
+      <div id="p2-expansion">
+        <div class="metric-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric-card">
+            <div class="metric-label">Markets Tracked</div>
+            <div class="metric-value">2</div>
+            <div class="metric-sub">Phoenix · Denver</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-label">Top Opportunity</div>
+            <div class="metric-value" style="font-size:20px;font-weight:700;">Las Vegas</div>
+            <div class="metric-sub">Score 8.4 / 10</div>
+          </div>
+          <div class="metric-card blue">
+            <div class="metric-label">Markets Scored</div>
+            <div class="metric-value">12</div>
+            <div class="metric-sub">Ranked by opportunity</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex-between mb-3">
+            <div class="card-title" style="margin-bottom:0">Market Opportunity Scores</div>
+            <div class="flex gap-8">
+              <span class="text-muted">Weights: Search Vol 30% · Competition 25% · Insurance Laws 20% · Hail Risk 15% · Population 10%</span>
+              <button class="btn-secondary" style="font-size:12px;padding:5px 12px;">Add City</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>City</th>
+                <th>Search Vol/mo</th>
+                <th>Competition</th>
+                <th>$0 Deductible</th>
+                <th>Hail Risk</th>
+                <th>Opportunity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Las Vegas, NV</strong></td>
+                <td>2,400</td>
+                <td><span class="score-pill high">Low</span></td>
+                <td><span class="score-pill high">Yes</span></td>
+                <td><span class="score-pill med">Medium</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill high">8.4</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-green" style="width:84%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-primary" style="font-size:11px;padding:5px 12px;">Scan Market</button></td>
+              </tr>
+              <tr>
+                <td><strong>Tucson, AZ</strong></td>
+                <td>1,900</td>
+                <td><span class="score-pill high">Low</span></td>
+                <td><span class="score-pill high">Yes</span></td>
+                <td><span class="score-pill high">Low</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill high">7.9</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-green" style="width:79%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-primary" style="font-size:11px;padding:5px 12px;">Scan Market</button></td>
+              </tr>
+              <tr>
+                <td><strong>Colorado Springs, CO</strong></td>
+                <td>1,600</td>
+                <td><span class="score-pill med">Medium</span></td>
+                <td><span class="score-pill med">Partial</span></td>
+                <td><span class="score-pill high">High</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill high">7.2</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-green" style="width:72%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-secondary" style="font-size:11px;padding:5px 12px;">View Report</button></td>
+              </tr>
+              <tr>
+                <td><strong>Dallas, TX</strong></td>
+                <td>8,100</td>
+                <td><span class="score-pill low">High</span></td>
+                <td><span class="score-pill low">No</span></td>
+                <td><span class="score-pill high">High</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill med">6.1</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-amber" style="width:61%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-secondary" style="font-size:11px;padding:5px 12px;">View Report</button></td>
+              </tr>
+              <tr>
+                <td><strong>Orlando, FL</strong></td>
+                <td>3,200</td>
+                <td><span class="score-pill low">High</span></td>
+                <td><span class="score-pill high">Yes</span></td>
+                <td><span class="score-pill low">Low</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill med">5.8</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-amber" style="width:58%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-secondary" style="font-size:11px;padding:5px 12px;">View Report</button></td>
+              </tr>
+              <tr>
+                <td><strong>Atlanta, GA</strong></td>
+                <td>4,400</td>
+                <td><span class="score-pill low">Very High</span></td>
+                <td><span class="score-pill low">No</span></td>
+                <td><span class="score-pill med">Medium</span></td>
+                <td>
+                  <div class="flex items-center gap-8">
+                    <span class="score-pill low">3.9</span>
+                    <div style="width:80px;" class="prog-bar"><div class="prog-fill prog-red" style="width:39%"></div></div>
+                  </div>
+                </td>
+                <td><button class="btn-secondary" style="font-size:11px;padding:5px 12px;">View Report</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /p2-expansion -->
+
+      <!-- Alerts -->
+      <div id="p2-alerts" class="hidden">
+        <div class="card">
+          <div class="card-title">Ranking Alerts — Active</div>
+
+          <div class="alert-banner red mb-3">
+            <div>
+              <div class="alert-title">⬇ Rank Drop — Phoenix "windshield replacement" NW zone</div>
+              <div class="alert-desc">Fell from #2 → #5 across 6 nodes in the Peoria/Surprise area · Feb 26 at 3:22 PM · Competitor "Valley Auto Glass" gained 9 new reviews</div>
+            </div>
+            <button class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-left:auto;flex-shrink:0;">View Grid</button>
+          </div>
+
+          <div class="alert-banner amber mb-3">
+            <div>
+              <div class="alert-title">⚠ SAB Gap Detected — SW Phoenix</div>
+              <div class="alert-desc">Rankings drop below #7 west of I-17. Your GBP verified address is 8+ miles from this zone. Consider a local GBP or DataPin activity in this area.</div>
+            </div>
+            <button class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-left:auto;flex-shrink:0;">View Map</button>
+          </div>
+
+          <div class="alert-banner green">
+            <div>
+              <div class="alert-title">⬆ Rank Improvement — Denver "auto glass repair" Central</div>
+              <div class="alert-desc">Improved from #4 → #2 across 8 nodes in Capitol Hill / Cherry Creek · Feb 25 · Likely driven by 6 new reviews this week</div>
+            </div>
+            <button class="btn-secondary" style="font-size:12px;padding:5px 10px;margin-left:auto;flex-shrink:0;">View Grid</button>
+          </div>
+        </div>
+      </div><!-- /p2-alerts -->
+
+      <!-- GBP Posts -->
+      <div id="p2-posts" class="hidden">
+        <div class="flex-between mb-3">
+          <div></div>
+          <div class="flex gap-8">
+            <button class="btn-secondary">📅 Calendar View</button>
+            <button class="btn-primary">+ New Post</button>
+          </div>
+        </div>
+        <div class="posts-grid">
+          <div class="post-card">
+            <div class="post-card-header">
+              <span class="post-type-badge published">Published</span>
+              <span style="font-size:11px;color:#9ca3af">Feb 24</span>
+            </div>
+            <div class="post-card-text">Don't let a cracked windshield ruin your week. Pink Auto Glass comes to you — mobile service anywhere in Phoenix. Most insurance plans cover 100% at $0 out of pocket.</div>
+            <div class="post-card-meta">📍 Phoenix GBP · 847 views · 12 clicks</div>
+          </div>
+          <div class="post-card">
+            <div class="post-card-header">
+              <span class="post-type-badge scheduled">Scheduled</span>
+              <span style="font-size:11px;color:#9ca3af">Mar 2, 9:00 AM</span>
+            </div>
+            <div class="post-card-text">🌵 Phoenix rock chip season is here. A small chip fixed today prevents a full replacement tomorrow. Book your free repair — done in 30 minutes at your location.</div>
+            <div class="post-card-meta">📍 Phoenix GBP · 3 days away</div>
+          </div>
+          <div class="post-card">
+            <div class="post-card-header">
+              <span class="post-type-badge scheduled">Scheduled</span>
+              <span style="font-size:11px;color:#9ca3af">Mar 2, 9:00 AM</span>
+            </div>
+            <div class="post-card-text">Denver hail season is coming. Get your windshield inspected before spring storms hit. We accept all insurance — State Farm, GEICO, Allstate, Progressive.</div>
+            <div class="post-card-meta">📍 Denver GBP · 3 days away</div>
+          </div>
+          <div class="post-card">
+            <div class="post-card-header">
+              <span class="post-type-badge draft">Draft</span>
+              <span style="font-size:11px;color:#9ca3af">Not scheduled</span>
+            </div>
+            <div class="post-card-text">ADAS recalibration included with every windshield replacement. Your vehicle's cameras and sensors will be re-calibrated to factory spec. Serving all Phoenix metro.</div>
+            <div class="post-card-meta">📍 Phoenix GBP · Draft</div>
+          </div>
+          <div class="post-card" style="border:2px dashed #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;min-height:140px;cursor:pointer;">
+            <div style="text-align:center;color:#d1d5db;">
+              <div style="font-size:28px;margin-bottom:6px;">+</div>
+              <div style="font-size:13px;font-weight:600;">New Post</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /p2-posts -->
+
+      <!-- Listing Monitor -->
+      <div id="p2-listing" class="hidden">
+        <div class="card">
+          <div class="flex-between mb-3">
+            <div class="card-title" style="margin-bottom:0">GBP Change Log — Last 30 Days</div>
+            <span style="font-size:12px;color:#16a34a;font-weight:600;">✓ Attribute Sentry Active — changes auto-reverted</span>
+          </div>
+          <div class="change-log">
+            <div class="change-item reverted">
+              <span class="change-item-icon">✅</span>
+              <div>
+                <div class="change-field">Business Category — Reverted</div>
+                <div class="change-detail">Feb 25 at 11:42 PM · Unauthorized change: "Auto Body Shop" was added as primary category. Auto-reverted to "Auto Glass Shop" within 4 minutes.</div>
+              </div>
+            </div>
+            <div class="change-item reverted">
+              <span class="change-item-icon">✅</span>
+              <div>
+                <div class="change-field">Business Name — Reverted</div>
+                <div class="change-detail">Feb 20 at 8:15 AM · Name changed to "Pink Auto Glass LLC" (unknown source). Auto-reverted to "Pink Auto Glass" immediately.</div>
+              </div>
+            </div>
+            <div class="change-item pending">
+              <span class="change-item-icon">⚠️</span>
+              <div>
+                <div class="change-field">Phone Number — Pending Review</div>
+                <div class="change-detail">Feb 27 at 6:00 AM · New number (480) 555-0199 was suggested. Sentry paused auto-revert — manual review required since this is a phone field change.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /p2-listing -->
+
+      <!-- Reviews -->
+      <div id="p2-reviews" class="hidden">
+        <div class="metric-row" style="grid-template-columns:repeat(4,1fr)">
+          <div class="metric-card green">
+            <div class="metric-label">Avg Rating</div>
+            <div class="metric-value">4.9 ★</div>
+            <div class="metric-sub">187 total reviews</div>
+          </div>
+          <div class="metric-card blue">
+            <div class="metric-label">This Week</div>
+            <div class="metric-value">6</div>
+            <div class="metric-sub">New reviews</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Response Rate</div>
+            <div class="metric-value">94%</div>
+            <div class="metric-sub">Replied within 24h</div>
+          </div>
+          <div class="metric-card amber">
+            <div class="metric-label">Need Reply</div>
+            <div class="metric-value">2</div>
+            <div class="metric-sub">Unanswered</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Review Inbox</div>
+          <div class="review-list">
+            <div class="review-item">
+              <div class="review-header">
+                <span class="reviewer-name">Sarah M. <span class="stars">★★★★★</span></span>
+                <span class="review-date">Feb 27, 2026</span>
+              </div>
+              <div class="review-text">Incredible service! They came to my office in Scottsdale and replaced my windshield in under an hour. Insurance covered everything. Highly recommend Pink Auto Glass!</div>
+              <div class="review-reply">💬 Reply with AI suggestion →</div>
+              <div class="ai-reply-preview">"Thank you so much, Sarah! We're thrilled we could make it easy for you at your office in Scottsdale. We appreciate you trusting Pink Auto Glass for your windshield replacement!"</div>
+            </div>
+            <div class="review-item" style="border:1px solid #fde68a;background:#fffbeb;">
+              <div class="review-header">
+                <span class="reviewer-name">James K. <span class="stars" style="color:#f59e0b;">★★★☆☆</span></span>
+                <span class="review-date">Feb 26, 2026</span>
+              </div>
+              <div class="review-text">Good work but took longer than expected. Was told 90 minutes, ended up being 2.5 hours. Glass looks great though.</div>
+              <div class="review-reply">⚠ Needs response · <span style="color:#db2777">Reply now →</span></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /p2-reviews -->
+
+      <!-- Rank Grid (hidden by default in p2) -->
+      <div id="p2-grid" class="hidden">
+        <p style="color:#6b7280;font-size:14px;padding:20px 0;">← Same geo-grid view as Phase 1. Select city and keyword above to run a scan.</p>
+      </div>
+
+    </div><!-- /phase2 -->
+
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--  PHASE 3 — AI VISIBILITY + JOB PINS        -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="phase3" class="hidden">
+
+      <div class="phase-banner">
+        <span class="phase-banner-icon">✨</span>
+        <span class="phase-banner-text"><strong>Phase 3 adds</strong> AI search visibility tracking (ChatGPT · Gemini · Perplexity), job-site check-in pins, and automatic rank-change analysis.</span>
+      </div>
+
+      <div class="sub-nav">
+        <button class="sub-tab" onclick="showSubTab('p3-ai',this,'p3')">🤖 AI Visibility</button>
+        <button class="sub-tab active" onclick="showSubTab('p3-analysis',this,'p3')">🧠 Auto-Analysis</button>
+        <button class="sub-tab" onclick="showSubTab('p3-pins',this,'p3')">📍 Job Pins</button>
+        <button class="sub-tab" onclick="showSubTab('p3-weakspots',this,'p3')">🎯 Competitor Gaps</button>
+      </div>
+
+      <!-- AI Visibility (default hidden, show analysis) -->
+      <div id="p3-ai" class="hidden">
+        <div class="metric-row">
+          <div class="metric-card" style="background:linear-gradient(135deg,#ede9fe,#dbeafe)">
+            <div class="metric-label">SAIV Score</div>
+            <div class="metric-value" style="color:#4f46e5">38%</div>
+            <div class="metric-sub">Share of AI Voice</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">ChatGPT Mentions</div>
+            <div class="metric-value" style="color:#16a34a">12</div>
+            <div class="metric-sub">Nodes where you appear</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Gemini Mentions</div>
+            <div class="metric-value" style="color:#2563eb">9</div>
+            <div class="metric-sub">Nodes where you appear</div>
+          </div>
+          <div class="metric-card amber">
+            <div class="metric-label">Perplexity</div>
+            <div class="metric-value">4</div>
+            <div class="metric-sub">Nodes where you appear</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">ChatGPT Visibility — Phoenix "windshield replacement"</div>
+            <!-- Leaflet map with AI visibility circle markers -->
+            <div id="map-p3ai" style="height:280px;border-radius:10px;overflow:hidden;margin-bottom:10px;"></div>
+            <div class="grid-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#4f46e5"></div>Mentioned</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Mentioned (partial)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Rarely mentioned</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#374151"></div>Not mentioned</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">AI Visibility Over Time</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <div class="flex-between mb-2" style="margin-bottom:6px;">
+                  <span style="font-size:13px;color:#374151">ChatGPT SAIV</span>
+                  <span style="font-size:13px;font-weight:700;color:#4f46e5">38% (+6%)</span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill" style="width:38%;background:#4f46e5"></div></div>
+              </div>
+              <div>
+                <div class="flex-between mb-2" style="margin-bottom:6px;">
+                  <span style="font-size:13px;color:#374151">Gemini SAIV</span>
+                  <span style="font-size:13px;font-weight:700;color:#2563eb">29% (+2%)</span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill" style="width:29%;background:#2563eb"></div></div>
+              </div>
+              <div>
+                <div class="flex-between mb-2" style="margin-bottom:6px;">
+                  <span style="font-size:13px;color:#374151">Perplexity SAIV</span>
+                  <span style="font-size:13px;font-weight:700;color:#0891b2">12% (new)</span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill" style="width:12%;background:#0891b2"></div></div>
+              </div>
+              <div class="divider" style="margin:4px 0;"></div>
+              <div style="font-size:12px;color:#6b7280;">
+                AI visibility correlates with your review velocity. Your 6 reviews this week likely drove the ChatGPT SAIV increase. Keep the momentum going.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /p3-ai -->
+
+      <!-- Auto-Analysis (default visible) -->
+      <div id="p3-analysis">
+        <div class="two-col mb-4">
+          <div class="analysis-box">
+            <div class="analysis-header">
+              <span class="analysis-icon">🧠</span>
+              <span class="analysis-title">Phoenix "windshield replacement" — Rank Change Analysis</span>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Scan Feb 27 vs. Feb 20 · SoLV: 61% → 58% (▼3%)</p>
+            <div class="analysis-finding">
+              <div class="finding-bullet red">!</div>
+              <div class="finding-text"><strong>Valley Auto Glass gained 9 reviews</strong> this week, pushing their SoLV from 44% → 51% in your NW coverage zone (Peoria/Surprise)</div>
+            </div>
+            <div class="analysis-finding">
+              <div class="finding-bullet amber">!</div>
+              <div class="finding-text">Your <strong>last GBP post was 18 days ago</strong> — Google favors active profiles. Publish a post today to counter this drop.</div>
+            </div>
+            <div class="analysis-finding">
+              <div class="finding-bullet blue">i</div>
+              <div class="finding-text">You have <strong>no job-site pins</strong> in the Peoria/Surprise zone this month. Creating 2–3 check-ins there would generate local content signals.</div>
+            </div>
+            <div class="analysis-action">
+              Recommended: Post on GBP today · Create 2 job pins in NW Phoenix · Request reviews from last 5 customers
+            </div>
+          </div>
+          <div class="analysis-box">
+            <div class="analysis-header">
+              <span class="analysis-icon">🧠</span>
+              <span class="analysis-title">Denver "auto glass repair" — Rank Change Analysis</span>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Scan Feb 27 vs. Feb 20 · SoLV: 44% → 52% (▲8%) 🎉</p>
+            <div class="analysis-finding">
+              <div class="finding-bullet" style="background:#dcfce7;color:#166534;">✓</div>
+              <div class="finding-text"><strong>6 new reviews this week</strong> in Denver are the most likely driver. Review velocity is your top-performing lever right now.</div>
+            </div>
+            <div class="analysis-finding">
+              <div class="finding-bullet" style="background:#dcfce7;color:#166534;">✓</div>
+              <div class="finding-text">Your <strong>3 job-site pins in Capitol Hill</strong> from Feb 19–22 coincide with rank improvements in that exact zone.</div>
+            </div>
+            <div class="analysis-finding">
+              <div class="finding-bullet blue">i</div>
+              <div class="finding-text"><strong>Aurora remains weak</strong> (avg rank 8.1). No job pins in Aurora this month. Consider routing a job there and creating a check-in.</div>
+            </div>
+            <div class="analysis-action">
+              Keep momentum: maintain weekly GBP posts · Target Aurora for next job pins
+            </div>
+          </div>
+        </div>
+      </div><!-- /p3-analysis -->
+
+      <!-- Job Pins -->
+      <div id="p3-pins" class="hidden">
+        <div class="flex-between mb-3">
+          <div class="card-title" style="margin-bottom:0">Job Site Check-Ins — Recent</div>
+          <button class="btn-primary">+ New Check-In</button>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Recent Pins</div>
+            <div class="pin-feed">
+              <div class="pin-card">
+                <div class="pin-dot">📍</div>
+                <div class="pin-content">
+                  <div class="pin-title">Windshield Replacement — Tempe, AZ</div>
+                  <div class="pin-meta">Today 10:42 AM · 2124 E Apache Blvd · 33.4148, -111.9071</div>
+                  <div class="pin-tags">
+                    <span class="pin-tag">Honda Accord 2021</span>
+                    <span class="pin-tag">Full OEM Replacement</span>
+                    <span class="pin-tag green">Published to GBP</span>
+                  </div>
+                </div>
+              </div>
+              <div class="pin-card">
+                <div class="pin-dot">📍</div>
+                <div class="pin-content">
+                  <div class="pin-title">Chip Repair — Scottsdale, AZ</div>
+                  <div class="pin-meta">Feb 26, 3:15 PM · 8900 E Pinnacle Peak · 33.6870, -111.8556</div>
+                  <div class="pin-tags">
+                    <span class="pin-tag">Toyota RAV4 2023</span>
+                    <span class="pin-tag">Rock Chip Repair</span>
+                    <span class="pin-tag green">Published to GBP</span>
+                  </div>
+                </div>
+              </div>
+              <div class="pin-card">
+                <div class="pin-dot">📍</div>
+                <div class="pin-content">
+                  <div class="pin-title">Windshield Replacement — Aurora, CO</div>
+                  <div class="pin-meta">Feb 25, 1:05 PM · 14200 E Exposition Ave · 39.7142, -104.8242</div>
+                  <div class="pin-tags">
+                    <span class="pin-tag">Ford F-150 2020</span>
+                    <span class="pin-tag">Insurance Claim</span>
+                    <span class="pin-tag green">Published to city page</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Pin Coverage Map</div>
+            <!-- Simplified "map" placeholder -->
+            <div style="background:#e5e7eb;border-radius:10px;height:220px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:linear-gradient(135deg,#dbeafe,#e0f2fe);"></div>
+              <div style="position:relative;text-align:center;">
+                <div style="font-size:28px;margin-bottom:6px;">🗺️</div>
+                <div style="font-size:13px;font-weight:600;color:#1e40af;">Leaflet Map</div>
+                <div style="font-size:11px;color:#3b82f6;">OpenStreetMap + pin markers</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:4px;">3 pins shown · 33 total this month</div>
+              </div>
+              <!-- Fake pins -->
+              <div style="position:absolute;top:35%;left:55%;font-size:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));">📍</div>
+              <div style="position:absolute;top:28%;left:62%;font-size:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));">📍</div>
+              <div style="position:absolute;top:48%;left:42%;font-size:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));">📍</div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:16px;font-size:12px;color:#6b7280;">
+              <span>📍 33 pins this month</span>
+              <span>🏙 11 cities covered</span>
+              <span>📝 29 published to pages</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /p3-pins -->
+
+      <!-- Competitor Gap Finder -->
+      <div id="p3-weakspots" class="hidden">
+        <div class="card">
+          <div class="card-title">Competitor Weak Spots — Phoenix "windshield replacement"</div>
+          <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">Competitors with low review counts or weak SoLV in high-search zones — your best displacement targets.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Competitor</th>
+                <th>Reviews</th>
+                <th>Their SoLV</th>
+                <th>Zone</th>
+                <th>Weakness</th>
+                <th>Opportunity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AZ Auto Glass</strong></td>
+                <td>87</td>
+                <td><span class="score-pill med">31%</span></td>
+                <td>East Scottsdale</td>
+                <td>No GBP posts in 60 days. Low review velocity.</td>
+                <td><span class="score-pill high">High — 5 reviews + 2 posts</span></td>
+              </tr>
+              <tr>
+                <td><strong>Desert Glass Works</strong></td>
+                <td>34</td>
+                <td><span class="score-pill low">18%</span></td>
+                <td>Mesa / Gilbert</td>
+                <td>Only 34 reviews. Avg rating 4.2. Beatable with volume.</td>
+                <td><span class="score-pill high">High — target Mesa keywords</span></td>
+              </tr>
+              <tr>
+                <td><strong>Fast Glass Phoenix</strong></td>
+                <td>21</td>
+                <td><span class="score-pill low">12%</span></td>
+                <td>SW Phoenix / Laveen</td>
+                <td>21 reviews, 3.9 rating — lowest in market. Active GBP would displace.</td>
+                <td><span class="score-pill high">Very High — go now</span></td>
+              </tr>
+              <tr>
+                <td><strong>Glass Doctor</strong></td>
+                <td>412</td>
+                <td><span class="score-pill med">44%</span></td>
+                <td>NW Phoenix (Peoria)</td>
+                <td>Corporate location — slow review velocity lately. Peoria zone weakening.</td>
+                <td><span class="score-pill med">Medium — watch trend</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /p3-weakspots -->
+
+    </div><!-- /phase3 -->
+
+  </main>
+</div>
+
+<script>
+  // ── Grid data ──────────────────────────────────────────────────────────────
+  const RANK_GRID = [
+    [null,  9,  8,  7,  8,  9, null],
+    [   8,  6,  5,  4,  5,  7,   10],
+    [   7,  4,  3,  2,  3,  5,    8],
+    [   6,  3,  2,  1,  2,  3,    7],
+    [   7,  4,  3,  2,  3,  5,    9],
+    [   8,  6,  5,  4,  5,  8,   10],
+    [null,  9,  8,  6,  8,  9, null],
+  ];
+
+  // 0=not mentioned  1=rare  2=sometimes  3=yes
+  const AI_GRID = [
+    [3, 0, 0, 2, 0, 0, 0],
+    [0, 2, 3, 3, 2, 0, 0],
+    [0, 3, 3, 3, 3, 2, 0],
+    [2, 3, 3, 3, 3, 3, 1],
+    [0, 2, 3, 3, 3, 2, 0],
+    [0, 0, 2, 3, 2, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+  ];
+
+  const PHX_LAT = 33.4484, PHX_LNG = -112.0740;
+  const LAT_STEP = 0.080,  LNG_STEP = 0.100;
+
+  // ── Color helpers ──────────────────────────────────────────────────────────
+  function rankStyle(r) {
+    if (r === null) return { bg: '#374151', text: '#d1d5db' };
+    if (r === 1)    return { bg: '#166534', text: '#ffffff' };
+    if (r <= 3)     return { bg: '#22c55e', text: '#ffffff' };
+    if (r <= 5)     return { bg: '#a3e635', text: '#365314' };
+    if (r <= 7)     return { bg: '#facc15', text: '#713f12' };
+    if (r <= 9)     return { bg: '#f97316', text: '#ffffff' };
+                    return { bg: '#dc2626', text: '#ffffff' };
+  }
+
+  function aiStyle(v) {
+    return [
+      { bg: '#374151', text: '#9ca3af', label: '—' },
+      { bg: '#a78bfa', text: '#1e1b4b', label: '~'  },
+      { bg: '#7c3aed', text: '#ffffff', label: '✓'  },
+      { bg: '#4f46e5', text: '#ffffff', label: '✓'  },
+    ][v];
+  }
+
+  // SVG circle icon for Google Maps markers
+  function makeSVGIcon(label, bg, textColor) {
+    const fs = label.length > 1 ? 11 : 13;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+      <circle cx="18" cy="18" r="16" fill="${bg}" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"
+              style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.45))"/>
+      <text x="18" y="${18 + fs * 0.38}"
+            text-anchor="middle" dominant-baseline="middle"
+            font-size="${fs}" font-weight="700" fill="${textColor}"
+            font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">${label}</text>
+    </svg>`;
+    return {
+      url:         'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize:  new google.maps.Size(36, 36),
+      anchor:      new google.maps.Point(18, 18),
+    };
+  }
+
+  const GMAP_OPTS = {
+    zoom: 11,
+    mapTypeId: 'roadmap',
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    gestureHandling: 'cooperative',
+  };
+
+  // ── Phase 1 map ────────────────────────────────────────────────────────────
+  let map1 = null;
+  function initMap1() {
+    if (map1) return;
+    map1 = new google.maps.Map(document.getElementById('map-phase1'), {
+      ...GMAP_OPTS,
+      center: { lat: PHX_LAT, lng: PHX_LNG },
+    });
+    RANK_GRID.forEach((row, ri) => {
+      row.forEach((rank, ci) => {
+        const lat = PHX_LAT + (3 - ri) * LAT_STEP;
+        const lng = PHX_LNG + (ci - 3) * LNG_STEP;
+        const { bg, text } = rankStyle(rank);
+        const label = rank === null ? 'NR' : String(rank);
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map: map1,
+          icon:  makeSVGIcon(label, bg, text),
+          title: rank === null ? 'Not ranked' : `Rank #${rank}`,
+        });
+        const info = new google.maps.InfoWindow({
+          content: `<div style="font-size:13px;font-weight:600;">${rank === null ? 'Not Ranked' : 'Rank #' + rank}</div>
+                    <div style="font-size:11px;color:#6b7280;">windshield replacement</div>`,
+        });
+        marker.addListener('click', () => info.open(map1, marker));
+      });
+    });
+  }
+
+  // ── Phase 3 AI map ─────────────────────────────────────────────────────────
+  let mapAI = null;
+  function initMapAI() {
+    if (mapAI) return;
+    mapAI = new google.maps.Map(document.getElementById('map-p3ai'), {
+      ...GMAP_OPTS,
+      center:          { lat: PHX_LAT, lng: PHX_LNG },
+      fullscreenControl: false,
+    });
+    const tips = ['Not mentioned', 'Rarely mentioned', 'Sometimes mentioned', 'Mentioned'];
+    AI_GRID.forEach((row, ri) => {
+      row.forEach((val, ci) => {
+        const lat = PHX_LAT + (3 - ri) * LAT_STEP;
+        const lng = PHX_LNG + (ci - 3) * LNG_STEP;
+        const { bg, text, label } = aiStyle(val);
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map:  mapAI,
+          icon: makeSVGIcon(label, bg, text),
+          title: tips[val],
+        });
+        const info = new google.maps.InfoWindow({
+          content: `<div style="font-size:13px;font-weight:600;">ChatGPT: ${tips[val]}</div>`,
+        });
+        marker.addListener('click', () => info.open(mapAI, marker));
+      });
+    });
+  }
+
+  // ── Google Maps async callback ─────────────────────────────────────────────
+  window.initMaps = function() {
+    initMap1();   // Phase 1 is visible on load
+  };
+
+  // ── Phase / sub-tab switching ──────────────────────────────────────────────
+  function showPhase(n, clickedBtn) {
+    ['phase1','phase2','phase3'].forEach(id =>
+      document.getElementById(id).classList.add('hidden'));
+    document.querySelectorAll('.phase-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('phase'+n).classList.remove('hidden');
+    clickedBtn.classList.add('active');
+
+    // Google Maps needs a resize event after the container becomes visible
+    if (n === 1 && map1)  setTimeout(() => google.maps.event.trigger(map1,  'resize'), 50);
+    if (n === 3 && mapAI) setTimeout(() => google.maps.event.trigger(mapAI, 'resize'), 50);
+  }
+
+  function showSubTab(contentId, clickedTab, prefix) {
+    const ids = {
+      'p2': ['p2-grid','p2-expansion','p2-alerts','p2-posts','p2-listing','p2-reviews'],
+      'p3': ['p3-ai','p3-analysis','p3-pins','p3-weakspots'],
+    };
+    (ids[prefix]||[]).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    clickedTab.closest('.sub-nav').querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    const target = document.getElementById(contentId);
+    if (target) target.classList.remove('hidden');
+    clickedTab.classList.add('active');
+
+    if (contentId === 'p3-ai') {
+      setTimeout(() => {
+        initMapAI();
+        if (mapAI) google.maps.event.trigger(mapAI, 'resize');
+      }, 50);
+    }
+  }
+</script>
+
+</body>
+</html>
