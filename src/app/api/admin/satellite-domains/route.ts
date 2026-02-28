@@ -30,6 +30,7 @@ export const SATELLITE_DOMAINS = [
   // ── National ──────────────────────────────────────────────────────────────
   { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', label: 'Car WS Prices', color: '#0369a1' },
   { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', label: 'WS Repair Prices', color: '#0c4a6e' },
+  { domain: 'carglassprices.com', utmSource: 'carglassprices', label: 'Car Glass Prices', color: '#0284c7' },
 ] as const;
 
 export type SatelliteDomain = (typeof SATELLITE_DOMAINS)[number];

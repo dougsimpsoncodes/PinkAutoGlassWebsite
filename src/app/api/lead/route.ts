@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
     let marketType = classifyMarket(zip);
 
     // National satellite sites (no zip collected) → always out_of_market
-    const NATIONAL_SOURCES = ['carwindshieldprices', 'windshieldrepairprices'];
+    const NATIONAL_SOURCES = ['carwindshieldprices', 'windshieldrepairprices', 'carglassprices'];
     if (marketType === null && NATIONAL_SOURCES.includes(validatedData.utmSource ?? '')) {
       marketType = 'out_of_market';
     }

@@ -4,6 +4,22 @@ Workflow, debugging, and universal preferences are in `~/.claude/CLAUDE.md` (loa
 
 ---
 
+## Model Switching Protocol (Cost Control)
+
+Default model is **opusplan** (Opus for planning, Sonnet for coding — automatic).
+
+**Subagent model selection:** When spawning Task subagents, use the cheapest model that fits:
+- `model: "haiku"` — research, file exploration, web searches, simple reads
+- `model: "sonnet"` — coding, test running, feature implementation
+- `model: "opus"` — only for complex multi-step reasoning subagents
+
+**Prompt the user to switch only when:**
+- A full session on Opus is needed: `> Run /model opus — this entire task needs deep reasoning`
+- Trivial session: `> Run /model haiku — this is all simple stuff`
+- Done with special mode: `> Run /model opusplan to switch back`
+
+---
+
 ## NEVER ADD `\n` TO .env FILES — ROOT CAUSE & PREVENTION
 
 Three things combine to create this bug every time:
