@@ -202,7 +202,63 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 5: Calculate summary statistics with qualifying filters
+    // Step 5a: Persist qualifying accepted inbound calls as lead rows
+    // This ensures call leads appear in the leads table, not just in the unified view at query time
+    const qualifyingAccepted = callDataBatch.filter(
+      (c) => isQualifyingInbound(c) && c.result === 'Accepted'
+    );
+
+    if (qualifyingAccepted.length > 0) {
+      const phones = [...new Set(qualifyingAccepted.map((c) => c.from_number))];
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+
+      const { data: existingLeads } = await supabase
+        .from('leads')
+        .select('phone_e164')
+        .in('phone_e164', phones)
+        .gte('created_at', thirtyDaysAgo)
+        .eq('is_test', false);
+
+      const existingPhones = new Set((existingLeads || []).map((l) => l.phone_e164));
+
+      // Dedupe by phone: take earliest accepted call per unique phone
+      const dedupedCalls = new Map<string, (typeof qualifyingAccepted)[0]>();
+      for (const call of qualifyingAccepted) {
+        if (existingPhones.has(call.from_number)) continue;
+        const prev = dedupedCalls.get(call.from_number);
+        if (!prev || new Date(call.start_time) < new Date(prev.start_time)) {
+          dedupedCalls.set(call.from_number, call);
+        }
+      }
+
+      const callLeadInserts = [...dedupedCalls.values()].map((call) => {
+        const nameParts = (call.from_name || '').trim().split(' ');
+        return {
+          phone_e164: call.from_number,
+          phone: call.from_number,
+          first_name: nameParts[0] || 'Caller',
+          last_name: nameParts.slice(1).join(' ') || '',
+          utm_source: 'ringcentral_call',
+          status: 'new',
+          is_test: false,
+          created_at: call.start_time,
+        };
+      });
+
+      if (callLeadInserts.length > 0) {
+        const { error: callLeadError } = await supabase
+          .from('leads')
+          .insert(callLeadInserts);
+
+        if (callLeadError) {
+          console.error('Failed to insert call leads:', callLeadError.message);
+        } else {
+          console.log(`✅ Persisted ${callLeadInserts.length} new call leads to leads table`);
+        }
+      }
+    }
+
+    // Step 5b: Calculate summary statistics with qualifying filters
     const { data: stats } = await supabase
       .from('ringcentral_calls')
       .select('direction, result, duration, from_number, start_time')

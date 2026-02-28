@@ -241,7 +241,13 @@ export async function POST(request: NextRequest) {
     // MARKET TYPE: Tag lead as in_market or out_of_market based on zip
     // =============================================================================
     const zip = validatedData.zipCode || body.zip || null;
-    const marketType = classifyMarket(zip);
+    let marketType = classifyMarket(zip);
+
+    // National satellite sites (no zip collected) → always out_of_market
+    const NATIONAL_SOURCES = ['carwindshieldprices', 'windshieldrepairprices'];
+    if (marketType === null && NATIONAL_SOURCES.includes(validatedData.utmSource ?? '')) {
+      marketType = 'out_of_market';
+    }
 
     // Store market_type if column exists (migration may not be applied yet — fire-and-forget)
     if (marketType) {

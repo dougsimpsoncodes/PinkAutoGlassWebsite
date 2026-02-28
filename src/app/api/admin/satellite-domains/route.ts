@@ -8,6 +8,7 @@ export const runtime = 'nodejs';
 // ─── Satellite Domain Definitions ────────────────────────────────────────────
 
 export const SATELLITE_DOMAINS = [
+  // ── Denver / Colorado ──────────────────────────────────────────────────────
   { domain: 'windshieldcostcalculator.com', utmSource: 'windshieldcostcalculator', label: 'WS Cost Calculator', color: '#6366f1' },
   { domain: 'windshielddenver.com', utmSource: 'windshielddenver', label: 'WS Denver', color: '#ec4899' },
   { domain: 'windshieldchiprepairdenver.com', utmSource: 'chiprepairdenver', label: 'Chip Repair Denver', color: '#f59e0b' },
@@ -19,6 +20,16 @@ export const SATELLITE_DOMAINS = [
   { domain: 'getawindshieldquote.com', utmSource: 'getawindshieldquote', label: 'Get WS Quote', color: '#84cc16' },
   { domain: 'newwindshieldnearme.com', utmSource: 'newwindshieldnearme', label: 'New WS Near Me', color: '#f97316' },
   { domain: 'windshieldpricecompare.com', utmSource: 'windshieldpricecompare', label: 'WS Price Compare', color: '#14b8a6' },
+  // ── Phoenix / Arizona ─────────────────────────────────────────────────────
+  { domain: 'windshieldchiprepairmesa.com', utmSource: 'chiprepairmesa', label: 'Chip Repair Mesa', color: '#f43f5e' },
+  { domain: 'windshieldchiprepairphoenix.com', utmSource: 'chiprepairphoenix', label: 'Chip Repair Phoenix', color: '#e11d48' },
+  { domain: 'windshieldchiprepairscottsdale.com', utmSource: 'chiprepairscottsdale', label: 'Chip Repair Scottsdale', color: '#be123c' },
+  { domain: 'windshieldchiprepairtempe.com', utmSource: 'chiprepairtempe', label: 'Chip Repair Tempe', color: '#9f1239' },
+  { domain: 'windshieldcostphoenix.com', utmSource: 'windshieldcostphoenix', label: 'WS Cost Phoenix', color: '#b45309' },
+  { domain: 'mobilewindshieldphoenix.com', utmSource: 'mobilewindshieldphoenix', label: 'Mobile WS Phoenix', color: '#92400e' },
+  // ── National ──────────────────────────────────────────────────────────────
+  { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', label: 'Car WS Prices', color: '#0369a1' },
+  { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', label: 'WS Repair Prices', color: '#0c4a6e' },
 ] as const;
 
 export type SatelliteDomain = (typeof SATELLITE_DOMAINS)[number];
