@@ -490,7 +490,7 @@ export async function GET(request: NextRequest) {
     // This must run AFTER RingCentral sync so we have the latest calls
     try {
       const configValid = validateGoogleAdsConfig();
-      const hasOfflineConversionAction = !!process.env.GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID;
+      const hasOfflineConversionAction = !!process.env.GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID || !!process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
 
       if (configValid.isValid && hasOfflineConversionAction) {
         console.log('📤 Uploading offline conversions to Google Ads...');
@@ -509,7 +509,7 @@ export async function GET(request: NextRequest) {
           console.log('📭 No offline conversions to upload');
         }
       } else if (!hasOfflineConversionAction) {
-        results.googleAds.offlineConversions.error = 'GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID not configured';
+        results.googleAds.offlineConversions.error = 'No Google Ads offline conversion action ID configured';
         console.warn('⚠️ Offline conversion upload skipped: No conversion action ID configured');
       } else {
         results.googleAds.offlineConversions.error = `Missing config: ${configValid.missingVars.join(', ')}`;

@@ -4,6 +4,7 @@ import { Phone, MessageSquare, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { trackCTAClick } from '@/lib/analytics';
+import { resolveMarket, getPhoneForMarket } from '@/lib/market';
 
 interface AboveFoldCTAProps {
   location?: string; // For analytics tracking
@@ -11,9 +12,8 @@ interface AboveFoldCTAProps {
 
 export default function AboveFoldCTA({ location = 'above-fold' }: AboveFoldCTAProps) {
   const pathname = usePathname();
-  const isArizona = pathname.includes('/phoenix') || pathname.includes('-az') || pathname.includes('/arizona');
-  const phoneE164 = isArizona ? '+14807127465' : '+17209187465';
-  const displayPhone = isArizona ? '(480) 712-7465' : '(720) 918-7465';
+  const market = resolveMarket(pathname);
+  const { phoneE164, displayPhone } = getPhoneForMarket(market);
 
   return (
     <div className="my-8 bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6">

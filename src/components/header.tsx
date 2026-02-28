@@ -6,13 +6,14 @@ import Link from "next/link"
 import Image from "next/image"
 import { Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { resolveMarket, getPhoneForMarket } from "@/lib/market"
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
-  const isArizona = pathname.includes("/phoenix") || pathname.includes("-az") || pathname.includes("/arizona")
-  const phone = isArizona ? "(480) 712-7465" : "(720) 918-7465"
-  const tel = isArizona ? "tel:+14807127465" : "tel:+17209187465"
+  const market = resolveMarket(pathname)
+  const { displayPhone, phoneE164 } = getPhoneForMarket(market)
+  const tel = `tel:${phoneE164}`
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,7 +64,7 @@ export default function Header() {
             aria-label="Call Pink Auto Glass"
           >
             <Phone className="w-6 h-6" />
-            <span className="font-medium">{phone}</span>
+            <span className="font-medium">{displayPhone}</span>
           </a>
         </nav>
 
@@ -99,7 +100,7 @@ export default function Header() {
               aria-label="Call Pink Auto Glass"
             >
               <Phone className="w-4 h-4" />
-              <span className="font-medium">{phone}</span>
+              <span className="font-medium">{displayPhone}</span>
             </a>
           </div>
         </nav>

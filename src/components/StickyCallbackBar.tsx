@@ -1,14 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Phone, X } from 'lucide-react';
 import { trackCTAClick } from '@/lib/analytics';
+import { resolveMarket, getPhoneForMarket } from '@/lib/market';
 
 interface StickyCallbackBarProps {
   source?: string;
 }
 
 export default function StickyCallbackBar({ source = 'sticky-callback' }: StickyCallbackBarProps) {
+  const pathname = usePathname();
+  const market = resolveMarket(pathname);
+  const { phoneE164, displayPhone } = getPhoneForMarket(market);
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -57,12 +62,12 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
               </div>
             </div>
             <a
-              href="tel:+17209187465"
+              href={`tel:${phoneE164}`}
               onClick={handleCall}
               className="flex items-center gap-2 bg-white text-pink-600 px-4 py-2 rounded-lg font-bold hover:bg-pink-50 transition-colors mr-2"
             >
               <Phone className="w-4 h-4" />
-              <span className="text-sm">Call Now</span>
+              <span className="text-sm">{displayPhone}</span>
             </a>
             <button
               onClick={handleDismiss}
