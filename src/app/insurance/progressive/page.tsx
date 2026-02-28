@@ -43,7 +43,7 @@ export default function ProgressivePage() {
     },
     {
       question: 'What is Progressive\'s Glass Deductible Waiver (Glass Buyback)?',
-      answer: 'Progressive offers an optional add-on called the Glass Deductible Waiver or Glass Buyback that reduces your out-of-pocket glass deductible to $0. Even without this add-on, Colorado law (CRS 10-4-613) gives you the right to zero-deductible glass coverage — ask us to verify which applies to your policy.'
+      answer: 'Progressive offers an optional add-on called the Glass Deductible Waiver or Glass Buyback that reduces your out-of-pocket glass deductible to $0. Even without this add-on, Colorado law gives you the right to zero-deductible glass coverage — ask us to verify which applies to your policy.'
     },
     {
       question: 'Can I choose Pink Auto Glass instead of Safelite when using Progressive?',

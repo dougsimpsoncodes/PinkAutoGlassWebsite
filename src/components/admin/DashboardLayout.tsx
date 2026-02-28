@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Globe,
   MapPinOff,
+  Grid2x2,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -44,6 +45,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Search Performance', href: '/admin/dashboard/search-performance', icon: Search },
     { name: 'Satellite Sites', href: '/admin/dashboard/satellite-domains', icon: Globe },
     { name: 'External Leads', href: '/admin/dashboard/external-leads', icon: MapPinOff },
+    { name: 'GridScope', href: '/admin/dashboard/gridscope', icon: Grid2x2 },
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Google Ads', href: '/admin/dashboard/google-ads', icon: Zap },
     { name: 'Microsoft Ads', href: '/admin/dashboard/microsoft-ads', icon: Monitor },

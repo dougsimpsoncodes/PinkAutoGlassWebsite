@@ -2842,7 +2842,7 @@ export const blogPosts: BlogPost[] = [
     readTime: 9,
     author: 'Dan Shikiar',
     category: 'Insurance',
-    tags: ['arizona', 'phoenix', 'windshield replacement', 'zero deductible', 'ARS 20-264', 'insurance', 'mobile service'],
+    tags: ['arizona', 'phoenix', 'windshield replacement', 'zero deductible', '', 'insurance', 'mobile service'],
     relatedServices: ['windshield-replacement', 'insurance-claims'],
     relatedLocations: ['phoenix-az', 'scottsdale-az', 'mesa-az', 'chandler-az', 'gilbert-az', 'tempe-az', 'glendale-az', 'peoria-az'],
     content: [

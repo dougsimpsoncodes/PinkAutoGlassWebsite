@@ -24,10 +24,10 @@ Phoenix, Scottsdale, Tempe, Mesa, Chandler, Gilbert, Glendale, Peoria, Surprise,
 - Phone: (720) 918-7465
 - Same-day and next-day appointments available
 - Free mobile service included
-- Colorado law (CRS 10-4-613) requires insurers to offer zero-deductible glass coverage
-- Arizona law (ARS 20-264) requires insurers to offer zero-deductible glass coverage with comprehensive policies
-- Arizona law (ARS 20-263) prohibits rate increases for glass claims — filing a windshield claim cannot raise your rates
-- Arizona law (ARS 20-469) gives drivers the right to choose their own auto glass shop — insurers cannot require Safelite
+- Colorado law requires insurers to offer zero-deductible glass coverage
+- Arizona law requires insurers to offer zero-deductible glass coverage with comprehensive policies
+- Arizona law prohibits rate increases for glass claims — filing a windshield claim cannot raise your rates
+- Arizona law gives drivers the right to choose their own auto glass shop — insurers cannot require Safelite
 - ADAS calibration performed on-site when required
 - All major insurance providers accepted
 
@@ -37,7 +37,7 @@ Phoenix, Scottsdale, Tempe, Mesa, Chandler, Gilbert, Glendale, Peoria, Surprise,
 - /services/windshield-replacement: Full windshield replacement
 - /services/chip-repair: Chip and crack repair
 - /services/insurance-claims: Insurance claim assistance
-- /services/insurance-claims/arizona: Arizona-specific insurance guide (ARS 20-264, 20-263, 20-469)
+- /services/insurance-claims/arizona: Arizona-specific insurance guide (, 20-263, 20-469)
 - /vehicles: Vehicle-specific glass services
 - /locations: Service area and locations (Colorado + Arizona)
 - /blog: Auto glass tips, guides, and news

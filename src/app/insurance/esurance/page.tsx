@@ -39,7 +39,7 @@ export default function EsurancePage() {
     },
     {
       question: 'What is Esurance\'s windshield deductible in Colorado?',
-      answer: 'Your glass deductible depends on your specific policy terms. Under Colorado law (CRS 10-4-613), you may qualify for $0 out-of-pocket coverage on windshield replacement. We verify your exact deductible before starting any work — no surprises.'
+      answer: 'Your glass deductible depends on your specific policy terms. Under Colorado law, you may qualify for $0 out-of-pocket coverage on windshield replacement. We verify your exact deductible before starting any work — no surprises.'
     },
     {
       question: 'How do I file an Esurance windshield claim?',

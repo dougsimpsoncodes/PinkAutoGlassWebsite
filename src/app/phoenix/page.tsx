@@ -6,7 +6,7 @@ import PhoenixClickTracker from "@/components/PhoenixClickTracker";
 export const metadata: Metadata = {
   title: "Phoenix Windshield Replacement | $0 Out of Pocket | Mobile Service | (480) 712-7465",
   description:
-    "Arizona law (ARS 20-264) requires your insurer to replace your windshield with ZERO deductible. Pink Auto Glass serves all Phoenix metro — we come to you. Call (480) 712-7465.",
+    "Arizona law requires your insurer to replace your windshield with ZERO deductible. Pink Auto Glass serves all Phoenix metro — we come to you. Call (480) 712-7465.",
   keywords: [
     "windshield replacement phoenix az",
     "auto glass phoenix arizona",

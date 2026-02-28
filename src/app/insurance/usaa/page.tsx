@@ -35,7 +35,7 @@ export default function USAAPage() {
   const faqs = [
     {
       question: 'Does USAA cover windshield replacement in Colorado?',
-      answer: 'Yes. USAA comprehensive coverage includes windshield replacement. USAA is known for excellent claims processing and customer service. Under Colorado law (CRS 10-4-613), USAA members in Colorado may qualify for $0 out of pocket on windshield replacement. We verify your exact coverage before starting any work.'
+      answer: 'Yes. USAA comprehensive coverage includes windshield replacement. USAA is known for excellent claims processing and customer service. Under Colorado law, USAA members in Colorado may qualify for $0 out of pocket on windshield replacement. We verify your exact coverage before starting any work.'
     },
     {
       question: 'Will my USAA rates go up after a windshield claim?',

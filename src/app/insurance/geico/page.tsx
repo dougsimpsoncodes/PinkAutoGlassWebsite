@@ -35,7 +35,7 @@ export default function GeicoPage() {
   const faqs = [
     {
       question: 'Does Geico cover windshield replacement?',
-      answer: 'Yes. Geico comprehensive coverage includes windshield replacement. Comprehensive is a standard coverage add-on — if you have it, your windshield is covered. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We verify your coverage before starting any work.'
+      answer: 'Yes. Geico comprehensive coverage includes windshield replacement. Comprehensive is a standard coverage add-on — if you have it, your windshield is covered. Under Colorado law, you may qualify for $0 out of pocket. We verify your coverage before starting any work.'
     },
     {
       question: 'How do I file a Geico glass claim?',

@@ -39,7 +39,7 @@ export default function AllstatePage() {
     },
     {
       question: 'What is Allstate\'s glass deductible in Colorado?',
-      answer: 'Your glass deductible with Allstate depends on your policy. Under Colorado law (CRS 10-4-613), you may qualify for $0 out-of-pocket coverage on windshield replacement. We verify your specific deductible before starting any work so there are no surprises.'
+      answer: 'Your glass deductible with Allstate depends on your policy. Under Colorado law, you may qualify for $0 out-of-pocket coverage on windshield replacement. We verify your specific deductible before starting any work so there are no surprises.'
     },
     {
       question: 'How do I file an Allstate auto glass claim?',

@@ -110,15 +110,15 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   <h3 className="text-xl font-bold text-blue-900 mb-3">Arizona Law Protects {city.city} Drivers</h3>
                   <ul className="space-y-3 text-blue-800">
                     <li className="flex items-start">
-                      <span className="font-bold mr-2">ARS 20-264:</span>
+                      <span className="font-bold mr-2">:</span>
                       <span>Requires insurers to offer zero-deductible glass coverage as an option with comprehensive policies. This is the law that makes $0 windshield replacement possible.</span>
                     </li>
                     <li className="flex items-start">
-                      <span className="font-bold mr-2">ARS 20-263:</span>
+                      
                       <span>No-fault rate protection. Filing a glass claim in Arizona legally cannot raise your insurance rates.</span>
                     </li>
                     <li className="flex items-start">
-                      <span className="font-bold mr-2">ARS 20-469:</span>
+                      
                       <span>Right to choose your shop. Insurers can recommend Safelite but cannot require it — and must tell you that you have the right to choose any shop you want.</span>
                     </li>
                   </ul>
@@ -146,7 +146,7 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
-                    <p className="text-gray-700 mb-3">Full replacement with OEM-quality glass. $0 out of pocket with ARS 20-264 coverage.</p>
+                    <p className="text-gray-700 mb-3">Full replacement with OEM-quality glass. $0 out of pocket with coverage.</p>
                     <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
@@ -186,15 +186,15 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span><strong>ARS 20-264:</strong> $0 deductible option required</span>
+                      <span><strong>:</strong> $0 deductible option required</span>
                     </li>
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span><strong>ARS 20-263:</strong> No rate increase for glass claims</span>
+                      <span> No rate increase for glass claims</span>
                     </li>
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span><strong>ARS 20-469:</strong> Right to choose your shop</span>
+                      <span> Right to choose your shop</span>
                     </li>
                   </ul>
                   <Link href="/services/insurance-claims/arizona" className="block mt-4 text-pink-600 hover:underline font-semibold">Full AZ Insurance Guide →</Link>

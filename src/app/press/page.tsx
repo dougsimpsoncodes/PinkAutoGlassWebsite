@@ -25,7 +25,7 @@ const pressReleases = [
     publication: "OpenPR",
     date: "February 24, 2026",
     url: "https://www.openpr.com/news/4402503/2025-phoenix-auto-glass-market-report-arizona-s",
-    summary: "Arizona law (ARS 20-264) requires insurers to replace windshields at zero deductible for all comprehensive policyholders. Pink Auto Glass covers the three statutes protecting Arizona drivers and offers same-day mobile service across all 20 Phoenix metro cities.",
+    summary: "Arizona law requires insurers to replace windshields at zero deductible for all comprehensive policyholders. Pink Auto Glass covers the three statutes protecting Arizona drivers and offers same-day mobile service across all 20 Phoenix metro cities.",
     market: "Phoenix",
     blogPost: "/blog/arizona-windshield-replacement-law",
   },

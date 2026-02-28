@@ -1,0 +1,377 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation "Main navigation" [ref=e5]:
+      - link "Pink Auto Glass - Go to homepage" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Pink Auto Glass - Mobile Windshield Repair & Replacement Denver" [ref=e8]
+      - link "Call Pink Auto Glass" [ref=e10] [cursor=pointer]:
+        - /url: tel:+17209187465
+        - img [ref=e11]
+        - generic [ref=e13]: (720) 918-7465
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - complementary [ref=e16]:
+        - navigation [ref=e17]:
+          - generic [ref=e18]:
+            - link "Dashboard" [ref=e19] [cursor=pointer]:
+              - /url: /admin/dashboard
+              - img [ref=e20]
+              - generic [ref=e25]: Dashboard
+            - link "Leads" [ref=e26] [cursor=pointer]:
+              - /url: /admin/dashboard/leads
+              - img [ref=e27]
+              - generic [ref=e32]: Leads
+            - link "Call Analytics" [ref=e33] [cursor=pointer]:
+              - /url: /admin/dashboard/calls
+              - img [ref=e34]
+              - generic [ref=e36]: Call Analytics
+            - link "Website & Traffic" [ref=e37] [cursor=pointer]:
+              - /url: /admin/dashboard/website-analytics
+              - img [ref=e38]
+              - generic [ref=e40]: Website & Traffic
+            - link "Search Performance" [ref=e41] [cursor=pointer]:
+              - /url: /admin/dashboard/search-performance
+              - img [ref=e42]
+              - generic [ref=e45]: Search Performance
+            - link "Satellite Sites" [ref=e46] [cursor=pointer]:
+              - /url: /admin/dashboard/satellite-domains
+              - img [ref=e47]
+              - generic [ref=e50]: Satellite Sites
+            - link "External Leads" [ref=e51] [cursor=pointer]:
+              - /url: /admin/dashboard/external-leads
+              - img [ref=e52]
+              - generic [ref=e58]: External Leads
+            - link "GridScope" [ref=e59] [cursor=pointer]:
+              - /url: /admin/dashboard/gridscope
+              - img [ref=e60]
+              - generic [ref=e62]: GridScope
+            - link "Google Reviews" [ref=e63] [cursor=pointer]:
+              - /url: /admin/dashboard/google-reviews
+              - img [ref=e64]
+              - generic [ref=e66]: Google Reviews
+            - link "Google Ads" [ref=e67] [cursor=pointer]:
+              - /url: /admin/dashboard/google-ads
+              - img [ref=e68]
+              - generic [ref=e70]: Google Ads
+            - link "Microsoft Ads" [ref=e71] [cursor=pointer]:
+              - /url: /admin/dashboard/microsoft-ads
+              - img [ref=e72]
+              - generic [ref=e74]: Microsoft Ads
+            - link "Ad Performance" [ref=e75] [cursor=pointer]:
+              - /url: /admin/dashboard/roi
+              - img [ref=e76]
+              - generic [ref=e79]: Ad Performance
+            - link "Invoice Upload" [ref=e80] [cursor=pointer]:
+              - /url: /admin/dashboard/uploads
+              - img [ref=e81]
+              - generic [ref=e84]: Invoice Upload
+          - button "Logout" [ref=e85] [cursor=pointer]:
+            - img [ref=e86]
+            - generic [ref=e89]: Logout
+      - main [ref=e90]:
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - heading "GridScope" [level=1] [ref=e94]
+            - paragraph [ref=e95]: Local rank tracking — Pink Auto Glass
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - button "Phoenix" [ref=e98] [cursor=pointer]
+              - button "Denver" [ref=e99] [cursor=pointer]
+            - combobox [ref=e100]:
+              - option "windshield replacement" [selected]
+              - option "auto glass repair"
+              - option "mobile windshield replacement"
+              - option "$0 deductible windshield"
+            - combobox [ref=e101]:
+              - option "7x7 Grid" [selected]
+              - option "9x9 Grid"
+            - button "▶ Run Scan" [ref=e102] [cursor=pointer]
+            - combobox [ref=e103]:
+              - option "2/27/2026 — SoLV 0%" [selected]
+              - option "2/27/2026 — SoLV 0%"
+              - option "2/27/2026 — SoLV 0%"
+              - option "2/27/2026 — SoLV 0%"
+              - option "2/27/2026 — SoLV 0%"
+              - option "2/27/2026 — SoLV 0%"
+            - generic [ref=e104]: "Last scan: 2/27/2026, 9:39:45 PM · 49 nodes"
+          - generic [ref=e105]:
+            - generic [ref=e106]:
+              - generic [ref=e107]: SoLV Score
+              - generic [ref=e108]: 0%
+              - generic [ref=e109]: 0/49 nodes in top 3
+            - generic [ref=e110]:
+              - generic [ref=e111]: Avg Rank
+              - generic [ref=e112]: —
+              - generic [ref=e113]: Across ranked nodes
+            - generic [ref=e114]:
+              - generic [ref=e115]: Competitors
+              - generic [ref=e116]: "10"
+              - generic [ref=e117]: Appeared on this grid
+            - generic [ref=e118]:
+              - generic [ref=e119]: Coverage Gap
+              - generic [ref=e120]: "49"
+              - generic [ref=e121]: Nodes not ranked top 3
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - heading "Phoenix Metro — “windshield replacement”" [level=2] [ref=e124]
+              - generic [ref=e125]: 7x7 grid · ~35 mile radius
+            - generic [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e132]:
+                  - generic [ref=e134]: Oops! Something went wrong.
+                  - generic [ref=e135]: This page didn't load Google Maps correctly. See the JavaScript console for technical details.
+                - generic [ref=e136]:
+                  - generic [ref=e137]: Rank 1
+                  - generic [ref=e139]: 2–3
+                  - generic [ref=e141]: 4–5
+                  - generic [ref=e143]: 6–7
+                  - generic [ref=e145]: 8–9
+                  - generic [ref=e147]: 10+
+                  - generic [ref=e149]: Not Ranked
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - generic [ref=e153]: SoLV
+                  - generic [ref=e154]: 0%
+                  - generic [ref=e155]: Share of Local Voice
+                - generic [ref=e156]:
+                  - generic [ref=e157]: Avg Rank
+                  - generic [ref=e158]: —
+                - generic [ref=e159]:
+                  - generic [ref=e160]: Ranked Nodes
+                  - generic [ref=e161]: 0 / 49
+                - generic [ref=e162]:
+                  - generic [ref=e163]: Top-3 Nodes
+                  - generic [ref=e164]: "0"
+                - generic [ref=e165]:
+                  - generic [ref=e166]: Rank 8+ Nodes
+                  - generic [ref=e167]: "0"
+          - generic [ref=e168]:
+            - heading "Competitor Overview — All Nodes" [level=2] [ref=e169]
+            - table [ref=e170]:
+              - rowgroup [ref=e171]:
+                - row "Business Avg Rank Appearances SoLV Est." [ref=e172]:
+                  - cell "Business" [ref=e173]
+                  - cell "Avg Rank" [ref=e174]
+                  - cell "Appearances" [ref=e175]
+                  - cell "SoLV Est." [ref=e176]
+              - rowgroup [ref=e177]:
+                - row "AGD Auto Glass Direct & Tint Co. 1.9 25 / 49 51%" [ref=e178]:
+                  - cell "AGD Auto Glass Direct & Tint Co." [ref=e179]
+                  - cell "1.9" [ref=e180]:
+                    - generic [ref=e181]: "1.9"
+                  - cell "25 / 49" [ref=e182]
+                  - cell "51%" [ref=e183]:
+                    - generic [ref=e184]: 51%
+                - row "Foothills Autoglass 2.5 15 / 49 31%" [ref=e185]:
+                  - cell "Foothills Autoglass" [ref=e186]
+                  - cell "2.5" [ref=e187]:
+                    - generic [ref=e188]: "2.5"
+                  - cell "15 / 49" [ref=e189]
+                  - cell "31%" [ref=e190]:
+                    - generic [ref=e191]: 31%
+                - row "Anytime Auto Glass 3.7 13 / 49 27%" [ref=e192]:
+                  - cell "Anytime Auto Glass" [ref=e193]
+                  - cell "3.7" [ref=e194]:
+                    - generic [ref=e195]: "3.7"
+                  - cell "13 / 49" [ref=e196]
+                  - cell "27%" [ref=e197]:
+                    - generic [ref=e198]: 27%
+                - row "ORTIZ AUTO GLASS LLC 2.4 13 / 49 27%" [ref=e199]:
+                  - cell "ORTIZ AUTO GLASS LLC" [ref=e200]
+                  - cell "2.4" [ref=e201]:
+                    - generic [ref=e202]: "2.4"
+                  - cell "13 / 49" [ref=e203]
+                  - cell "27%" [ref=e204]:
+                    - generic [ref=e205]: 27%
+                - row "See N Clear Auto Glass Surprise 2 10 / 49 20%" [ref=e206]:
+                  - cell "See N Clear Auto Glass Surprise" [ref=e207]
+                  - cell "2" [ref=e208]:
+                    - generic [ref=e209]: "2"
+                  - cell "10 / 49" [ref=e210]
+                  - cell "20%" [ref=e211]:
+                    - generic [ref=e212]: 20%
+                - row "Gravity Auto Glass 2.4 9 / 49 18%" [ref=e213]:
+                  - cell "Gravity Auto Glass" [ref=e214]
+                  - cell "2.4" [ref=e215]:
+                    - generic [ref=e216]: "2.4"
+                  - cell "9 / 49" [ref=e217]
+                  - cell "18%" [ref=e218]:
+                    - generic [ref=e219]: 18%
+                - row "See N Clear Auto Glass 1.4 9 / 49 18%" [ref=e220]:
+                  - cell "See N Clear Auto Glass" [ref=e221]
+                  - cell "1.4" [ref=e222]:
+                    - generic [ref=e223]: "1.4"
+                  - cell "9 / 49" [ref=e224]
+                  - cell "18%" [ref=e225]:
+                    - generic [ref=e226]: 18%
+                - row "Elite Windshield Repair 3.3 8 / 49 16%" [ref=e227]:
+                  - cell "Elite Windshield Repair" [ref=e228]
+                  - cell "3.3" [ref=e229]:
+                    - generic [ref=e230]: "3.3"
+                  - cell "8 / 49" [ref=e231]
+                  - cell "16%" [ref=e232]:
+                    - generic [ref=e233]: 16%
+                - row "Glassy Auto Glass 3.1 8 / 49 16%" [ref=e234]:
+                  - cell "Glassy Auto Glass" [ref=e235]
+                  - cell "3.1" [ref=e236]:
+                    - generic [ref=e237]: "3.1"
+                  - cell "8 / 49" [ref=e238]
+                  - cell "16%" [ref=e239]:
+                    - generic [ref=e240]: 16%
+                - row "Align Autoglass 3.4 7 / 49 14%" [ref=e241]:
+                  - cell "Align Autoglass" [ref=e242]
+                  - cell "3.4" [ref=e243]:
+                    - generic [ref=e244]: "3.4"
+                  - cell "7 / 49" [ref=e245]
+                  - cell "14%" [ref=e246]:
+                    - generic [ref=e247]: 14%
+  - contentinfo [ref=e248]:
+    - generic [ref=e249]:
+      - generic [ref=e251]:
+        - generic [ref=e252]:
+          - generic [ref=e253]:
+            - generic [ref=e254]: Pink Auto Glass
+            - paragraph [ref=e255]: Professional mobile windshield repair and replacement throughout Colorado. We come to you with same-day service and lifetime warranty.
+          - generic [ref=e256]:
+            - generic [ref=e257]:
+              - img [ref=e258]
+              - link "(720) 918-7465" [ref=e260] [cursor=pointer]:
+                - /url: tel:+17209187465
+            - generic [ref=e261]:
+              - img [ref=e262]
+              - link "service@pinkautoglass.com" [ref=e265] [cursor=pointer]:
+                - /url: mailto:service@pinkautoglass.com
+            - generic [ref=e266]:
+              - img [ref=e267]
+              - generic [ref=e270]:
+                - text: Mobile Service Throughout
+                - text: Colorado
+        - generic [ref=e271]:
+          - heading "Services" [level=3] [ref=e272]
+          - list [ref=e273]:
+            - listitem [ref=e274]:
+              - link "Windshield Replacement" [ref=e275] [cursor=pointer]:
+                - /url: /services/windshield-replacement
+            - listitem [ref=e276]:
+              - link "Rock Chip Repair" [ref=e277] [cursor=pointer]:
+                - /url: /services/windshield-repair
+            - listitem [ref=e278]:
+              - link "Mobile Service" [ref=e279] [cursor=pointer]:
+                - /url: /services/mobile-service
+            - listitem [ref=e280]:
+              - link "ADAS Calibration" [ref=e281] [cursor=pointer]:
+                - /url: /services/adas-calibration
+            - listitem [ref=e282]:
+              - link "Insurance Claims" [ref=e283] [cursor=pointer]:
+                - /url: /services/insurance-claims
+            - listitem [ref=e284]:
+              - link "View All Services →" [ref=e285] [cursor=pointer]:
+                - /url: /services
+        - generic [ref=e286]:
+          - heading "Service Area" [level=3] [ref=e287]
+          - list [ref=e288]:
+            - listitem [ref=e289]:
+              - link "Denver" [ref=e290] [cursor=pointer]:
+                - /url: /locations/denver-co
+            - listitem [ref=e291]:
+              - link "Aurora" [ref=e292] [cursor=pointer]:
+                - /url: /locations/aurora-co
+            - listitem [ref=e293]:
+              - link "Lakewood" [ref=e294] [cursor=pointer]:
+                - /url: /locations/lakewood-co
+            - listitem [ref=e295]:
+              - link "Boulder" [ref=e296] [cursor=pointer]:
+                - /url: /locations/boulder-co
+            - listitem [ref=e297]:
+              - link "View All Locations →" [ref=e298] [cursor=pointer]:
+                - /url: /locations
+        - generic [ref=e299]:
+          - heading "Company" [level=3] [ref=e300]
+          - list [ref=e301]:
+            - listitem [ref=e302]:
+              - link "About Us" [ref=e303] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e304]:
+              - link "Contact" [ref=e305] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e306]:
+              - link "Blog" [ref=e307] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e308]:
+              - link "Find Your Vehicle" [ref=e309] [cursor=pointer]:
+                - /url: /vehicles
+            - listitem [ref=e310]:
+              - link "Careers" [ref=e311] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e312]:
+              - link "Privacy Policy" [ref=e313] [cursor=pointer]:
+                - /url: /privacy
+          - generic [ref=e314]:
+            - heading "Follow Us" [level=4] [ref=e315]
+            - generic [ref=e316]:
+              - link "Follow us on Facebook" [ref=e317] [cursor=pointer]:
+                - /url: https://www.facebook.com/PinkAutoGlassDenver
+                - img [ref=e318]
+              - link "Follow us on Instagram" [ref=e320] [cursor=pointer]:
+                - /url: https://www.instagram.com/pinkautoglassdenver
+                - img [ref=e321]
+              - link "Follow us on LinkedIn" [ref=e324] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/pink-auto-glass
+                - img [ref=e325]
+      - generic [ref=e329]:
+        - heading "Auto Glass Resources" [level=3] [ref=e330]
+        - generic [ref=e331]:
+          - link "Aurora Windshield Replacement" [ref=e332] [cursor=pointer]:
+            - /url: https://aurorawindshield.com
+          - link "Cheapest Windshield Near Me" [ref=e333] [cursor=pointer]:
+            - /url: https://cheapestwindshieldnearme.com
+          - link "Get a Windshield Quote" [ref=e334] [cursor=pointer]:
+            - /url: https://getawindshieldquote.com
+          - link "Mobile Windshield Denver" [ref=e335] [cursor=pointer]:
+            - /url: https://mobilewindshielddenver.com
+          - link "New Windshield Cost" [ref=e336] [cursor=pointer]:
+            - /url: https://newwindshieldcost.com
+          - link "New Windshield Near Me" [ref=e337] [cursor=pointer]:
+            - /url: https://newwindshieldnearme.com
+          - link "Windshield Chip Repair Boulder" [ref=e338] [cursor=pointer]:
+            - /url: https://windshieldchiprepairboulder.com
+          - link "Windshield Chip Repair Denver" [ref=e339] [cursor=pointer]:
+            - /url: https://windshieldchiprepairdenver.com
+          - link "Windshield Cost Calculator" [ref=e340] [cursor=pointer]:
+            - /url: https://windshieldcostcalculator.com
+          - link "Windshield Denver" [ref=e341] [cursor=pointer]:
+            - /url: https://windshielddenver.com
+          - link "Windshield Price Compare" [ref=e342] [cursor=pointer]:
+            - /url: https://windshieldpricecompare.com
+      - generic [ref=e344]:
+        - generic [ref=e345]:
+          - paragraph [ref=e346]: © 2024 Pink Auto Glass. All rights reserved.
+          - generic [ref=e347]:
+            - link "Privacy Policy" [ref=e348] [cursor=pointer]:
+              - /url: /privacy
+            - link "Terms of Service" [ref=e349] [cursor=pointer]:
+              - /url: /terms
+            - link "Sitemap" [ref=e350] [cursor=pointer]:
+              - /url: /sitemap
+        - generic [ref=e351]:
+          - generic [ref=e352]: Licensed & Insured
+          - generic [ref=e353]: •
+          - generic [ref=e354]: Lifetime Warranty
+  - generic [ref=e359] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e360]:
+      - img [ref=e361]
+    - generic [ref=e364]:
+      - button "Open issues overlay" [ref=e365]:
+        - generic [ref=e366]:
+          - generic [ref=e367]: "0"
+          - generic [ref=e368]: "1"
+        - generic [ref=e369]: Issue
+      - button "Collapse issues badge" [ref=e370]:
+        - img [ref=e371]
+  - alert [ref=e373]
+```

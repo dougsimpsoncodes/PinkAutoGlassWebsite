@@ -35,7 +35,7 @@ export default function LibertyMutualPage() {
   const faqs = [
     {
       question: 'Does Liberty Mutual cover windshield replacement?',
-      answer: 'Yes. Liberty Mutual comprehensive coverage includes windshield replacement. Under Colorado law (CRS 10-4-613), Liberty Mutual policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage and deductible before starting any work.'
+      answer: 'Yes. Liberty Mutual comprehensive coverage includes windshield replacement. Under Colorado law, Liberty Mutual policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage and deductible before starting any work.'
     },
     {
       question: 'Does filing a Liberty Mutual glass claim affect my RightTrack discount?',

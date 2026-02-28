@@ -35,7 +35,7 @@ export default function FarmersPage() {
   const faqs = [
     {
       question: 'Does Farmers Insurance cover windshield replacement?',
-      answer: 'Yes. Farmers comprehensive coverage includes windshield replacement. Under Colorado law (CRS 10-4-613), Farmers policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage before starting any work.'
+      answer: 'Yes. Farmers comprehensive coverage includes windshield replacement. Under Colorado law, Farmers policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage before starting any work.'
     },
     {
       question: 'How do I file a Farmers auto glass claim?',

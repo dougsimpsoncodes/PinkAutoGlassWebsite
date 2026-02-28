@@ -35,7 +35,7 @@ export default function StateFarmPage() {
   const faqs = [
     {
       question: 'Does State Farm cover windshield replacement in Colorado?',
-      answer: 'Yes. State Farm comprehensive coverage includes windshield replacement. State Farm is the #1 auto insurer in Colorado and has a straightforward glass claims process. Under Colorado law (CRS 10-4-613), you may qualify for $0 out of pocket. We verify your coverage before starting any work.'
+      answer: 'Yes. State Farm comprehensive coverage includes windshield replacement. State Farm is the #1 auto insurer in Colorado and has a straightforward glass claims process. Under Colorado law, you may qualify for $0 out of pocket. We verify your coverage before starting any work.'
     },
     {
       question: 'Will a State Farm glass claim raise my rates?',

@@ -35,7 +35,7 @@ export default function SafecoPage() {
   const faqs = [
     {
       question: 'Does Safeco cover windshield replacement?',
-      answer: 'Yes. Safeco comprehensive coverage includes windshield replacement. Safeco is owned by Liberty Mutual. Under Colorado law (CRS 10-4-613), Safeco policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage before starting any work.'
+      answer: 'Yes. Safeco comprehensive coverage includes windshield replacement. Safeco is owned by Liberty Mutual. Under Colorado law, Safeco policyholders may qualify for $0 out of pocket on glass claims. We verify your exact coverage before starting any work.'
     },
     {
       question: 'Is Safeco the same as Liberty Mutual?',

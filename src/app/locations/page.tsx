@@ -312,11 +312,11 @@ export default function LocationsPage() {
               Pink Auto Glass brings expert windshield repair and replacement directly to you across Colorado and Arizona. Our fully equipped mobile units serve 22 cities throughout Colorado and 20 cities in the Phoenix metro area, providing the same quality service you'd receive at a shop — right at your home, office, or any convenient location.
             </p>
             <p className="text-lg text-gray-700 mb-4">
-              Colorado drivers benefit from the state's zero-deductible glass coverage requirements. Arizona drivers are protected by three powerful laws: ARS 20-264 (zero-deductible mandate), ARS 20-263 (no rate increase), and ARS 20-469 (right to choose your shop).
+              Colorado drivers benefit from the state's zero-deductible glass coverage requirements. Arizona drivers are protected by three powerful laws: (zero-deductible mandate), (no rate increase), and (right to choose your shop).
             </p>
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left mt-6">
               <p className="text-orange-800 font-semibold mb-1">Now Serving Phoenix Metro, Arizona</p>
-              <p className="text-orange-700 text-sm">Arizona law (ARS 20-264) means most drivers pay $0 for windshield replacement. We serve all 20 Phoenix metro cities with same-day mobile service. <Link href="/services/insurance-claims/arizona" className="underline font-semibold">Learn about Arizona glass coverage →</Link></p>
+              <p className="text-orange-700 text-sm">Arizona law means most drivers pay $0 for windshield replacement. We serve all 20 Phoenix metro cities with same-day mobile service. <Link href="/services/insurance-claims/arizona" className="underline font-semibold">Learn about Arizona glass coverage →</Link></p>
             </div>
           </section>
 
@@ -455,7 +455,7 @@ export default function LocationsPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center flex-wrap gap-3">
                 <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">Arizona — New!</span>
                 Phoenix Metro
-                <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">$0 Out of Pocket — ARS 20-264</span>
+                <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">$0 Out of Pocket —</span>
               </h3>
               <p className="text-gray-600 mb-6 ml-1">Arizona law means most Phoenix metro drivers pay nothing for windshield replacement. <Link href="/services/insurance-claims/arizona" className="text-orange-600 hover:underline font-semibold">Learn how →</Link></p>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -485,7 +485,7 @@ export default function LocationsPage() {
                         </div>
                         <div className="flex items-center text-sm text-orange-600 font-semibold">
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          <span>$0 with ARS 20-264 coverage</span>
+                          <span>$0 with coverage</span>
                         </div>
                       </div>
 

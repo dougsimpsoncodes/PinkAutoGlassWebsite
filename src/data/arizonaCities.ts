@@ -28,7 +28,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Ahwatukee',
     metadata: {
       title: 'Windshield Replacement Ahwatukee AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Ahwatukee AZ. Same-day mobile service to Ahwatukee Foothills, Club West & all Ahwatukee. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Ahwatukee AZ. Same-day mobile service to Ahwatukee Foothills, Club West & all Ahwatukee. means $0 out of pocket.',
       keywords: 'windshield replacement ahwatukee az, windshield repair ahwatukee, auto glass ahwatukee az, zero deductible windshield ahwatukee, ahwatukee foothills windshield, south phoenix auto glass',
     },
     intro: 'We offer same-day mobile service throughout Ahwatukee Foothills and Club West — right along the I-10 South Mountain corridor — and Arizona law means most drivers pay $0 out of pocket.',
@@ -55,7 +55,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to Ahwatukee residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance. Ahwatukee residents in Ahwatukee Foothills, Lakewood, The Foothills, Club West, and Mountain Park Ranch all qualify. We verify your coverage before starting work. For most Ahwatukee drivers with the glass endorsement, windshield replacement is completely $0 out of pocket.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance. Ahwatukee residents in Ahwatukee Foothills, Lakewood, The Foothills, Club West, and Mountain Park Ranch all qualify. We verify your coverage before starting work. For most Ahwatukee drivers with the glass endorsement, windshield replacement is completely $0 out of pocket.',
       },
       {
         question: 'Why do Ahwatukee residents deal with so many windshield chips from I-10?',
@@ -63,7 +63,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my rates go up for filing a glass claim in Ahwatukee?',
-        answer: 'No. Arizona law ARS 20-263 provides legal no-fault protection for glass claims statewide. Ahwatukee residents can file windshield replacement claims without any risk to their insurance rates. Glass claims are classified as no-fault comprehensive events in Arizona — filing one cannot raise your premiums.',
+        answer: 'No. Arizona law provides legal no-fault protection for glass claims statewide. Ahwatukee residents can file windshield replacement claims without any risk to their insurance rates. Glass claims are classified as no-fault comprehensive events in Arizona — filing one cannot raise your premiums.',
       },
       {
         question: 'Can you service my vehicle at my Ahwatukee Foothills home with views of South Mountain?',
@@ -77,7 +77,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Apache Junction',
     metadata: {
       title: 'Windshield Replacement Apache Junction AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Apache Junction AZ. Same-day mobile service near Superstition Mountains & all AJ. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Apache Junction AZ. Same-day mobile service near Superstition Mountains & all AJ. means $0 out of pocket.',
       keywords: 'windshield replacement apache junction az, windshield repair apache junction, auto glass apache junction, zero deductible windshield apache junction, gold canyon windshield, US-60 auto glass',
     },
     intro: 'We offer same-day mobile service throughout Apache Junction and Gold Canyon — and Arizona law means most drivers pay $0 out of pocket regardless of their deductible.',
@@ -104,7 +104,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law cover Apache Junction residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance, including Apache Junction and Gold Canyon residents. We verify your coverage before starting any work. If you have the glass endorsement, your replacement is completely free regardless of your deductible amount on the rest of your policy.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance, including Apache Junction and Gold Canyon residents. We verify your coverage before starting any work. If you have the glass endorsement, your replacement is completely free regardless of your deductible amount on the rest of your policy.',
       },
       {
         question: 'Why is Apache Junction one of the toughest areas for windshields in Arizona?',
@@ -116,7 +116,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I file a windshield claim?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for glass claims. Your rates cannot legally increase because of a windshield replacement claim. Many Apache Junction and Gold Canyon residents are retirees who maintain excellent driving records — this protection means you can use your coverage without concern.',
+        answer: 'No. Arizona law provides no-fault rate protection for glass claims. Your rates cannot legally increase because of a windshield replacement claim. Many Apache Junction and Gold Canyon residents are retirees who maintain excellent driving records — this protection means you can use your coverage without concern.',
       },
     ],
     nearbyLinks: ['Mesa', 'Queen Creek', 'Gilbert', 'Chandler', 'Fountain Hills', 'Maricopa'],
@@ -126,7 +126,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Avondale',
     metadata: {
       title: 'Windshield Replacement Avondale AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Avondale AZ. Same-day mobile service near Phoenix International Raceway & all Avondale. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Avondale AZ. Same-day mobile service near Phoenix International Raceway & all Avondale. means $0 out of pocket.',
       keywords: 'windshield replacement avondale az, windshield repair avondale, auto glass avondale az, zero deductible windshield avondale arizona, mobile windshield avondale',
     },
     intro: 'We bring $0 mobile windshield service to Avondale — located just off I-10 west near Phoenix International Raceway, where California freight traffic runs constantly.',
@@ -152,11 +152,11 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s $0 windshield law apply to Avondale residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive coverage. Avondale residents in Coldwater Springs, Garden Lakes, Casa Mia, and all other neighborhoods qualify. We verify coverage before starting work so you know exactly what you\'ll pay — which for most drivers is nothing.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive coverage. Avondale residents in Coldwater Springs, Garden Lakes, Casa Mia, and all other neighborhoods qualify. We verify coverage before starting work so you know exactly what you\'ll pay — which for most drivers is nothing.',
       },
       {
         question: 'Will my insurance rates increase if I file a glass claim in Avondale?',
-        answer: 'No. ARS 20-263 provides no-fault rate protection for all Arizona glass claims. Filing a windshield claim in Avondale is legally classified as a no-fault event, meaning your insurer cannot raise your rates because of it.',
+        answer: 'No. provides no-fault rate protection for all Arizona glass claims. Filing a windshield claim in Avondale is legally classified as a no-fault event, meaning your insurer cannot raise your rates because of it.',
       },
       {
         question: 'Why do Avondale residents deal with so many windshield chips near the Raceway?',
@@ -174,7 +174,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Buckeye',
     metadata: {
       title: 'Windshield Replacement Buckeye AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Buckeye AZ — fastest-growing US city. Same-day mobile service. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Buckeye AZ — fastest-growing US city. Same-day mobile service. means $0 out of pocket.',
       keywords: 'windshield replacement buckeye az, windshield repair buckeye, auto glass buckeye az, zero deductible windshield buckeye arizona, sundance buckeye windshield, festival ranch auto glass',
     },
     intro: 'We offer same-day mobile service to Sundance, Tartesso, Festival Ranch, and every Buckeye community — and Arizona law means most drivers pay $0 out of pocket.',
@@ -200,7 +200,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to new Buckeye residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona residents with comprehensive auto coverage, including recent transplants to new Buckeye developments. If you moved to Buckeye from another state, you may not know Arizona\'s glass coverage laws — we explain everything and verify your coverage at no charge before starting any work.',
+        answer: 'Yes. applies to all Arizona residents with comprehensive auto coverage, including recent transplants to new Buckeye developments. If you moved to Buckeye from another state, you may not know Arizona\'s glass coverage laws — we explain everything and verify your coverage at no charge before starting any work.',
       },
       {
         question: 'Why does Buckeye\'s construction cause so many windshield chips?',
@@ -212,7 +212,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will filing a glass claim affect my rates in Buckeye?',
-        answer: 'No. Arizona law ARS 20-263 provides legal no-fault protection for glass claims. Your insurance rates cannot legally increase because you filed a windshield replacement claim in Arizona. This applies to all Buckeye residents regardless of your insurer or how long you\'ve been an Arizona resident.',
+        answer: 'No. Arizona law provides legal no-fault protection for glass claims. Your insurance rates cannot legally increase because you filed a windshield replacement claim in Arizona. This applies to all Buckeye residents regardless of your insurer or how long you\'ve been an Arizona resident.',
       },
     ],
     nearbyLinks: ['Goodyear', 'Avondale', 'Litchfield Park', 'Surprise', 'Phoenix', 'Maricopa'],
@@ -222,7 +222,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Cave Creek',
     metadata: {
       title: 'Windshield Replacement Cave Creek AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Cave Creek AZ. Same-day mobile service to Cave Creek Town Center, Carefree & all area. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Cave Creek AZ. Same-day mobile service to Cave Creek Town Center, Carefree & all area. means $0 out of pocket.',
       keywords: 'windshield replacement cave creek az, windshield repair cave creek, auto glass cave creek az, zero deductible windshield cave creek, carefree windshield, tatum ranch auto glass',
     },
     intro: 'We offer same-day mobile service to Cave Creek properties and Carefree — including equestrian ranches along Cave Creek Road — and Arizona law means most drivers pay $0 out of pocket.',
@@ -249,7 +249,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s $0 windshield law apply to Cave Creek and Carefree residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance. Cave Creek and Carefree residents with the glass endorsement pay $0 for windshield replacement. The endorsement typically adds $5–$15 per month to your comprehensive policy — a small price for coverage that eliminates out-of-pocket costs entirely.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance. Cave Creek and Carefree residents with the glass endorsement pay $0 for windshield replacement. The endorsement typically adds $5–$15 per month to your comprehensive policy — a small price for coverage that eliminates out-of-pocket costs entirely.',
       },
       {
         question: 'Why is Cave Creek so tough on windshields?',
@@ -257,7 +257,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I file a glass claim in Cave Creek?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for all glass claims in Arizona. Cave Creek and Carefree residents often maintain long clean driving records and value their insurance history — this law protects that record while letting you use coverage you\'ve already paid for.',
+        answer: 'No. Arizona law provides no-fault rate protection for all glass claims in Arizona. Cave Creek and Carefree residents often maintain long clean driving records and value their insurance history — this law protects that record while letting you use coverage you\'ve already paid for.',
       },
       {
         question: 'Can you come to my equestrian property or rural home in Cave Creek?',
@@ -271,7 +271,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Chandler',
     metadata: {
       title: 'Windshield Replacement Chandler AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Chandler AZ. Same-day mobile service to Ocotillo, Fulton Ranch & all Chandler. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Chandler AZ. Same-day mobile service to Ocotillo, Fulton Ranch & all Chandler. means $0 out of pocket.',
       keywords: 'windshield replacement chandler az, windshield repair chandler, auto glass chandler az, zero deductible windshield chandler, ocotillo windshield, mobile auto glass chandler arizona',
     },
     intro: 'We bring $0 mobile windshield service to Chandler — the Loop 202 San Tan Freeway carries heavy commercial traffic past Ocotillo, Fulton Ranch, and the Intel campus.',
@@ -298,11 +298,11 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to tech employees in Chandler?',
-        answer: 'Yes, absolutely. Arizona\'s ARS 20-264 applies to all Arizona drivers regardless of employer or profession. Intel, Wells Fargo, PayPal, and other major Chandler employers are home to thousands of employees who qualify. If you have comprehensive auto insurance with the glass endorsement, you pay $0 for windshield replacement. We handle all paperwork so you don\'t miss work.',
+        answer: 'Yes, absolutely. Arizona\'s applies to all Arizona drivers regardless of employer or profession. Intel, Wells Fargo, PayPal, and other major Chandler employers are home to thousands of employees who qualify. If you have comprehensive auto insurance with the glass endorsement, you pay $0 for windshield replacement. We handle all paperwork so you don\'t miss work.',
       },
       {
         question: 'My insurer said I have to use their preferred shop. Is that true?',
-        answer: 'No. Under Arizona law ARS 20-469, you have the legal right to choose any auto glass shop. Insurers can recommend preferred shops, but they cannot require you to use them and must inform you of your right to choose. This applies to all Chandler drivers regardless of insurer or policy type.',
+        answer: 'No. Under Arizona law, you have the legal right to choose any auto glass shop. Insurers can recommend preferred shops, but they cannot require you to use them and must inform you of your right to choose. This applies to all Chandler drivers regardless of insurer or policy type.',
       },
       {
         question: 'How quickly can you replace a windshield in Chandler?',
@@ -321,7 +321,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'El Mirage',
     metadata: {
       title: 'Windshield Replacement El Mirage AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in El Mirage AZ. Same-day mobile service. Grand Avenue (US-60) corridor & all El Mirage. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in El Mirage AZ. Same-day mobile service. Grand Avenue (US-60) corridor & all El Mirage. means $0 out of pocket.',
       keywords: 'windshield replacement el mirage az, windshield repair el mirage, auto glass el mirage az, zero deductible windshield el mirage arizona, grand avenue windshield, US-60 auto glass el mirage',
     },
     intro: 'We offer same-day mobile service throughout El Mirage — including the Grand Avenue corridor — and Arizona law means most drivers pay $0 out of pocket.',
@@ -347,7 +347,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to El Mirage residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance. El Mirage residents qualify for $0 windshield replacement with the glass endorsement on their comprehensive policy. We verify coverage before starting any work — for most El Mirage drivers, the cost is nothing out of pocket.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance. El Mirage residents qualify for $0 windshield replacement with the glass endorsement on their comprehensive policy. We verify coverage before starting any work — for most El Mirage drivers, the cost is nothing out of pocket.',
       },
       {
         question: 'Why does the Grand Avenue (US-60) corridor cause so many windshield chips?',
@@ -359,7 +359,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I use my glass coverage?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for glass claims. Your rates cannot increase because of a windshield replacement claim in Arizona. El Mirage residents with comprehensive coverage can use this benefit without concern about their premium history.',
+        answer: 'No. Arizona law provides no-fault rate protection for glass claims. Your rates cannot increase because of a windshield replacement claim in Arizona. El Mirage residents with comprehensive coverage can use this benefit without concern about their premium history.',
       },
     ],
     nearbyLinks: ['Surprise', 'Peoria', 'Glendale', 'Avondale', 'Goodyear', 'Litchfield Park'],
@@ -369,7 +369,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Fountain Hills',
     metadata: {
       title: 'Windshield Replacement Fountain Hills AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Fountain Hills AZ. Same-day mobile service to Eagle Mountain, Firerock & all Fountain Hills. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Fountain Hills AZ. Same-day mobile service to Eagle Mountain, Firerock & all Fountain Hills. means $0 out of pocket.',
       keywords: 'windshield replacement fountain hills az, windshield repair fountain hills, auto glass fountain hills az, zero deductible windshield fountain hills arizona, eagle mountain auto glass',
     },
     intro: 'We offer same-day mobile service throughout Fountain Hills — including gated communities at Eagle Mountain and Firerock — and Arizona law means most drivers pay $0 out of pocket.',
@@ -396,7 +396,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to Fountain Hills residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance. Fountain Hills residents in Eagle Mountain, Firerock Country Club, Sunridge Canyon, and all other neighborhoods qualify. The glass endorsement typically adds just $5–$15 per month to your premium, and we verify coverage before starting any work.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance. Fountain Hills residents in Eagle Mountain, Firerock Country Club, Sunridge Canyon, and all other neighborhoods qualify. The glass endorsement typically adds just $5–$15 per month to your premium, and we verify coverage before starting any work.',
       },
       {
         question: 'Why is driving to and from Fountain Hills so hard on windshields?',
@@ -404,7 +404,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my rates go up if I file a glass claim from Fountain Hills?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection. Filing a windshield claim cannot raise your insurance rates regardless of your location in Arizona. Many Fountain Hills residents maintain long clean driving records — this protection means you can use your glass coverage without any impact on your record.',
+        answer: 'No. Arizona law provides no-fault rate protection. Filing a windshield claim cannot raise your insurance rates regardless of your location in Arizona. Many Fountain Hills residents maintain long clean driving records — this protection means you can use your glass coverage without any impact on your record.',
       },
       {
         question: 'Can you service vehicles at Firerock Country Club or Eagle Mountain communities?',
@@ -418,7 +418,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Gilbert',
     metadata: {
       title: 'Windshield Replacement Gilbert AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Gilbert AZ. Same-day mobile service to Heritage District, Power Ranch & all Gilbert. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Gilbert AZ. Same-day mobile service to Heritage District, Power Ranch & all Gilbert. means $0 out of pocket.',
       keywords: 'windshield replacement gilbert az, windshield repair gilbert, auto glass gilbert az, zero deductible windshield gilbert, power ranch windshield, mobile auto glass gilbert arizona',
     },
     intro: 'We bring $0 mobile windshield service to Gilbert — from the Heritage District to Power Ranch, Agritopia, and Morrison Ranch.',
@@ -445,11 +445,11 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s $0 deductible glass law apply to Gilbert\'s newer developments?',
-        answer: 'Yes. Arizona\'s ARS 20-264 applies to all Arizona drivers with comprehensive coverage, regardless of where in the state you live. Residents in new Gilbert developments like Morrison Ranch, Lyons Gate, and the Heritage District all qualify. If you have comprehensive insurance with the glass endorsement, your windshield replacement is $0 out of pocket.',
+        answer: 'Yes. Arizona\'s applies to all Arizona drivers with comprehensive coverage, regardless of where in the state you live. Residents in new Gilbert developments like Morrison Ranch, Lyons Gate, and the Heritage District all qualify. If you have comprehensive insurance with the glass endorsement, your windshield replacement is $0 out of pocket.',
       },
       {
         question: 'Will my insurance rates go up if I use my glass coverage in Gilbert?',
-        answer: 'No. Under ARS 20-263, Arizona law specifically protects you from rate increases for glass claims. It\'s a no-fault coverage type — using it legally cannot raise your premiums. Gilbert is one of the fastest-growing cities in the country, and many newer residents don\'t realize this protection exists.',
+        answer: 'No. Under, Arizona law specifically protects you from rate increases for glass claims. It\'s a no-fault coverage type — using it legally cannot raise your premiums. Gilbert is one of the fastest-growing cities in the country, and many newer residents don\'t realize this protection exists.',
       },
       {
         question: 'Why do Gilbert residents get so many windshield chips from construction?',
@@ -467,7 +467,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Glendale',
     metadata: {
       title: 'Windshield Replacement Glendale AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Glendale AZ. Same-day mobile service to Westgate, Arrowhead & all Glendale. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Glendale AZ. Same-day mobile service to Westgate, Arrowhead & all Glendale. means $0 out of pocket.',
       keywords: 'windshield replacement glendale az, windshield repair glendale, auto glass glendale az, zero deductible windshield glendale, westgate windshield, mobile auto glass glendale arizona',
     },
     intro: 'We bring $0 mobile windshield service to Glendale — the I-17 Black Canyon Freeway runs through town carrying heavy freight traffic from Phoenix to Flagstaff.',
@@ -494,7 +494,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona law protect Glendale drivers from insurance rate increases after glass claims?',
-        answer: 'Yes. ARS 20-263 is Arizona\'s no-fault rate protection law for glass claims. Filing a windshield replacement claim in Glendale cannot legally raise your insurance rates. Glendale drivers with comprehensive coverage have been paying for this benefit — there\'s no financial reason not to use it.',
+        answer: 'Yes. is Arizona\'s no-fault rate protection law for glass claims. Filing a windshield replacement claim in Glendale cannot legally raise your insurance rates. Glendale drivers with comprehensive coverage have been paying for this benefit — there\'s no financial reason not to use it.',
       },
       {
         question: 'Can I get my windshield replaced near State Farm Stadium in Glendale?',
@@ -502,7 +502,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Does Arizona\'s zero-deductible law cover all auto glass, not just windshields?',
-        answer: 'Yes. Under ARS 20-264, Arizona\'s zero-deductible glass coverage applies to all auto glass — windshields, door windows, rear glass, vent windows, quarter glass, and even headlights in some policies. All glass in your vehicle is covered by the endorsement, not just the front windshield.',
+        answer: 'Yes. Under, Arizona\'s zero-deductible glass coverage applies to all auto glass — windshields, door windows, rear glass, vent windows, quarter glass, and even headlights in some policies. All glass in your vehicle is covered by the endorsement, not just the front windshield.',
       },
       {
         question: 'Why is the I-17 so rough on windshields in the Glendale area?',
@@ -516,7 +516,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Goodyear',
     metadata: {
       title: 'Windshield Replacement Goodyear AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Goodyear AZ. Same-day mobile service to Estrella Mountain Ranch, Verrado & all Goodyear. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Goodyear AZ. Same-day mobile service to Estrella Mountain Ranch, Verrado & all Goodyear. means $0 out of pocket.',
       keywords: 'windshield replacement goodyear az, windshield repair goodyear, auto glass goodyear az, zero deductible windshield goodyear, estrella mountain ranch windshield, verrado auto glass',
     },
     intro: 'We bring $0 mobile windshield service to Goodyear — the I-10 west corridor carries heavy California freight traffic past Estrella Mountain Ranch and Verrado.',
@@ -543,7 +543,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to Goodyear and the West Valley?',
-        answer: 'Yes. ARS 20-264 applies statewide to all Arizona drivers with comprehensive coverage. Goodyear residents in Estrella Mountain Ranch, Verrado, Palm Valley, and all other neighborhoods qualify. We verify your coverage before starting any work so you know exactly what to expect.',
+        answer: 'Yes. applies statewide to all Arizona drivers with comprehensive coverage. Goodyear residents in Estrella Mountain Ranch, Verrado, Palm Valley, and all other neighborhoods qualify. We verify your coverage before starting any work so you know exactly what to expect.',
       },
       {
         question: 'Is Luke AFB proximity affecting windshields near Goodyear?',
@@ -555,7 +555,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will filing a glass claim affect my insurance rates in Goodyear?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection. Filing a windshield replacement claim cannot legally raise your insurance premiums. Glass claims are classified as no-fault comprehensive claims in Arizona regardless of how many you file.',
+        answer: 'No. Arizona law provides no-fault rate protection. Filing a windshield replacement claim cannot legally raise your insurance premiums. Glass claims are classified as no-fault comprehensive claims in Arizona regardless of how many you file.',
       },
     ],
     nearbyLinks: ['Avondale', 'Buckeye', 'Litchfield Park', 'Surprise', 'Phoenix', 'Peoria'],
@@ -565,7 +565,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Litchfield Park',
     metadata: {
       title: 'Windshield Replacement Litchfield Park AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Litchfield Park AZ. Same-day mobile service near Wigwam Resort, Luke AFB corridor & all Litchfield Park. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Litchfield Park AZ. Same-day mobile service near Wigwam Resort, Luke AFB corridor & all Litchfield Park. means $0 out of pocket.',
       keywords: 'windshield replacement litchfield park az, windshield repair litchfield park, auto glass litchfield park az, zero deductible windshield litchfield park arizona, wigwam resort area auto glass',
     },
     intro: 'We offer same-day mobile service throughout Litchfield Park — near the Wigwam Resort and Luke AFB corridor — and Arizona law means most drivers pay $0 out of pocket.',
@@ -591,7 +591,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s $0 windshield law apply to Litchfield Park residents?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive coverage. Litchfield Park residents near the Wigwam Resort, Dreaming Summit, and all other neighborhoods qualify. We verify your coverage before starting work — for most Litchfield Park drivers with the glass endorsement, replacement is completely free.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive coverage. Litchfield Park residents near the Wigwam Resort, Dreaming Summit, and all other neighborhoods qualify. We verify your coverage before starting work — for most Litchfield Park drivers with the glass endorsement, replacement is completely free.',
       },
       {
         question: 'How does Loop 303 traffic affect windshields in Litchfield Park?',
@@ -599,7 +599,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I file a glass claim near Luke AFB?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for all glass claims regardless of location. Military families stationed at Luke AFB and civilian residents of Litchfield Park are equally protected. Filing a windshield claim cannot raise your insurance rates in Arizona.',
+        answer: 'No. Arizona law provides no-fault rate protection for all glass claims regardless of location. Military families stationed at Luke AFB and civilian residents of Litchfield Park are equally protected. Filing a windshield claim cannot raise your insurance rates in Arizona.',
       },
       {
         question: 'Can you service vehicles at the Wigwam Resort or nearby commercial areas?',
@@ -613,7 +613,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Maricopa',
     metadata: {
       title: 'Windshield Replacement Maricopa AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Maricopa AZ. Same-day mobile service to Province, Rancho El Dorado & all Maricopa. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Maricopa AZ. Same-day mobile service to Province, Rancho El Dorado & all Maricopa. means $0 out of pocket.',
       keywords: 'windshield replacement maricopa az, windshield repair maricopa, auto glass maricopa az, zero deductible windshield maricopa arizona, province maricopa windshield, SR-347 auto glass',
     },
     intro: 'We offer same-day mobile service to your Maricopa home — no SR-347 drive required — and Arizona law means most drivers pay $0 out of pocket.',
@@ -640,7 +640,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s $0 windshield law apply to Maricopa and Pinal County residents?',
-        answer: 'Yes. ARS 20-264 is an Arizona statewide law that applies to all Arizona drivers with comprehensive coverage regardless of county. Maricopa city residents in Pinal County qualify just like Maricopa County drivers. We verify your coverage before starting work — for most Maricopa drivers with the glass endorsement, it\'s $0 out of pocket.',
+        answer: 'Yes. is an Arizona statewide law that applies to all Arizona drivers with comprehensive coverage regardless of county. Maricopa city residents in Pinal County qualify just like Maricopa County drivers. We verify your coverage before starting work — for most Maricopa drivers with the glass endorsement, it\'s $0 out of pocket.',
       },
       {
         question: 'Why is the SR-347 commute so hard on windshields?',
@@ -648,7 +648,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my rates go up for filing a glass claim as a Maricopa commuter?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for glass claims statewide. Filing a windshield claim in Maricopa cannot legally raise your insurance rates. Maricopa commuters who drive SR-347 daily are among Arizona\'s most glass-vulnerable drivers — this protection is especially valuable for frequent commuters.',
+        answer: 'No. Arizona law provides no-fault rate protection for glass claims statewide. Filing a windshield claim in Maricopa cannot legally raise your insurance rates. Maricopa commuters who drive SR-347 daily are among Arizona\'s most glass-vulnerable drivers — this protection is especially valuable for frequent commuters.',
       },
       {
         question: 'Can you come to my home in Maricopa — it\'s pretty far from Phoenix?',
@@ -662,7 +662,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Mesa',
     metadata: {
       title: 'Windshield Replacement Mesa AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Mesa AZ. Same-day mobile service to Dobson Ranch, Eastmark & all Mesa. Arizona ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Mesa AZ. Same-day mobile service to Dobson Ranch, Eastmark & all Mesa. Arizona means $0 out of pocket.',
       keywords: 'windshield replacement mesa az, windshield repair mesa, auto glass mesa az, zero deductible windshield mesa, dobson ranch windshield, mobile auto glass mesa arizona',
     },
     intro: 'We bring $0 mobile windshield service to Mesa — the US-60 Superstition Freeway creates constant rock chip exposure for commuters from Dobson Ranch to Eastmark.',
@@ -693,11 +693,11 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'How does Arizona\'s zero-deductible glass law work for Mesa residents?',
-        answer: 'Under ARS 20-264, Arizona law requires insurance companies to offer a zero-deductible glass endorsement as part of any comprehensive auto policy. If you have comprehensive coverage and elected the glass endorsement (typically $5–$15 per month), you pay nothing when your windshield is replaced. We verify your coverage before starting any work on your Mesa vehicle.',
+        answer: 'Under, Arizona law requires insurance companies to offer a zero-deductible glass endorsement as part of any comprehensive auto policy. If you have comprehensive coverage and elected the glass endorsement (typically $5–$15 per month), you pay nothing when your windshield is replaced. We verify your coverage before starting any work on your Mesa vehicle.',
       },
       {
         question: 'Does filing a glass claim affect my insurance rates in Mesa?',
-        answer: 'No. Arizona law (ARS 20-263) provides no-fault rate protection for glass claims. Insurers cannot legally raise your rates because you filed a glass claim. Mesa residents file these claims regularly — it\'s a benefit you\'ve already paid for.',
+        answer: 'No. Arizona law provides no-fault rate protection for glass claims. Insurers cannot legally raise your rates because you filed a glass claim. Mesa residents file these claims regularly — it\'s a benefit you\'ve already paid for.',
       },
       {
         question: 'What parts of Mesa do you serve with mobile windshield service?',
@@ -716,7 +716,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Peoria',
     metadata: {
       title: 'Windshield Replacement Peoria AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Peoria AZ. Same-day mobile service to Vistancia, Lake Pleasant & all Peoria. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Peoria AZ. Same-day mobile service to Vistancia, Lake Pleasant & all Peoria. means $0 out of pocket.',
       keywords: 'windshield replacement peoria az, windshield repair peoria, auto glass peoria az, zero deductible windshield peoria, vistancia windshield, mobile auto glass peoria arizona',
     },
     intro: 'We bring $0 mobile windshield service to Peoria — from Arrowhead to Vistancia and the gravel access roads near Lake Pleasant Regional Park.',
@@ -743,7 +743,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible glass law apply to Peoria and the Northwest Valley?',
-        answer: 'Yes. ARS 20-264 applies to all Arizona drivers with comprehensive auto insurance. Peoria residents, including those in newer communities like Vistancia and Westwing, all qualify if they have a glass endorsement on their comprehensive policy. The endorsement typically adds just $5–$15/month to your premium, and we can check your coverage in minutes.',
+        answer: 'Yes. applies to all Arizona drivers with comprehensive auto insurance. Peoria residents, including those in newer communities like Vistancia and Westwing, all qualify if they have a glass endorsement on their comprehensive policy. The endorsement typically adds just $5–$15/month to your premium, and we can check your coverage in minutes.',
       },
       {
         question: 'Can you service my vehicle near Lake Pleasant or the Peoria Sports Complex?',
@@ -751,7 +751,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will filing a glass claim raise my insurance rates in Peoria?',
-        answer: 'No. Arizona law ARS 20-263 provides no-fault rate protection for glass claims. Filing a windshield replacement claim in Peoria is legally classified as a no-fault comprehensive claim, which means your insurer cannot use it to raise your premiums.',
+        answer: 'No. Arizona law provides no-fault rate protection for glass claims. Filing a windshield replacement claim in Peoria is legally classified as a no-fault comprehensive claim, which means your insurer cannot use it to raise your premiums.',
       },
       {
         question: 'Why do Peoria drivers get so many windshield chips from Happy Valley Road?',
@@ -765,8 +765,8 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Phoenix',
     metadata: {
       title: 'Windshield Replacement Phoenix AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Phoenix AZ. Same-day mobile service. Arizona law (ARS 20-264) means $0 out of pocket with comprehensive coverage. We handle all paperwork.',
-      keywords: 'windshield replacement phoenix az, windshield repair phoenix, auto glass phoenix az, zero deductible windshield phoenix, ARS 20-264 arizona, mobile windshield phoenix',
+      description: 'Windshield replacement & auto glass repair in Phoenix AZ. Same-day mobile service. Arizona law means $0 out of pocket with comprehensive coverage. We handle all paperwork.',
+      keywords: 'windshield replacement phoenix az, windshield repair phoenix, auto glass phoenix az, zero deductible windshield phoenix, arizona, mobile windshield phoenix',
     },
     intro: 'We offer same-day mobile service anywhere in Phoenix — from Arcadia to Laveen to the I-10/I-17 corridor — and Arizona law means most drivers pay $0 out of pocket.',
     challenges: {
@@ -800,15 +800,15 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona law really require $0 deductible windshield replacement in Phoenix?',
-        answer: 'Yes. Under ARS 20-264, Arizona law requires insurance companies to offer zero-deductible glass coverage as part of any comprehensive auto policy. If you have comprehensive coverage and selected the glass endorsement (which typically costs just $5–$15/month extra), your windshield replacement in Phoenix costs you nothing out of pocket. We verify your coverage before we start any work.',
+        answer: 'Yes. Under, Arizona law requires insurance companies to offer zero-deductible glass coverage as part of any comprehensive auto policy. If you have comprehensive coverage and selected the glass endorsement (which typically costs just $5–$15/month extra), your windshield replacement in Phoenix costs you nothing out of pocket. We verify your coverage before we start any work.',
       },
       {
         question: 'Will filing a glass claim raise my insurance rates in Phoenix?',
-        answer: 'No. Under ARS 20-263, filing an auto glass claim in Arizona is a no-fault event. Arizona law legally prohibits insurers from raising your rates solely because you filed a glass claim. You\'ve been paying for this coverage — using it is your right.',
+        answer: 'No. Under, filing an auto glass claim in Arizona is a no-fault event. Arizona law legally prohibits insurers from raising your rates solely because you filed a glass claim. You\'ve been paying for this coverage — using it is your right.',
       },
       {
         question: 'Do I have to use Safelite or my insurance\'s recommended shop in Phoenix?',
-        answer: 'Absolutely not. Under ARS 20-469, Arizona law gives you the legal right to choose any auto glass shop you want. Your insurer can suggest Safelite or another shop, but they cannot require you to use it and must tell you that you have the right to choose any shop. Choose Pink Auto Glass — we handle 100% of the paperwork.',
+        answer: 'Absolutely not. Under Arizona law, Arizona law gives you the legal right to choose any auto glass shop you want. Your insurer can suggest Safelite or another shop, but they cannot require you to use it and must tell you that you have the right to choose any shop. Choose Pink Auto Glass — we handle 100% of the paperwork.',
       },
       {
         question: 'Why is summer heat such a big problem for Phoenix windshields?',
@@ -823,7 +823,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Queen Creek',
     metadata: {
       title: 'Windshield Replacement Queen Creek AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Queen Creek AZ. Same-day mobile service to Pecan Creek, Hastings Farms & all Queen Creek. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Queen Creek AZ. Same-day mobile service to Pecan Creek, Hastings Farms & all Queen Creek. means $0 out of pocket.',
       keywords: 'windshield replacement queen creek az, windshield repair queen creek, auto glass queen creek az, zero deductible windshield queen creek arizona, hastings farms windshield',
     },
     intro: 'We offer same-day mobile service throughout Queen Creek — from Pecan Creek to Hastings Farms — and Arizona law means most drivers pay $0 out of pocket.',
@@ -850,7 +850,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Does Arizona\'s zero-deductible law apply to Queen Creek and San Tan Valley?',
-        answer: 'Yes. ARS 20-264 applies statewide to all Arizona drivers with comprehensive coverage. Queen Creek residents in Pecan Creek, Hastings Farms, Cortina, and Harvest all qualify. We verify your coverage before starting work — for most Queen Creek drivers with the glass endorsement, it\'s completely $0 out of pocket.',
+        answer: 'Yes. applies statewide to all Arizona drivers with comprehensive coverage. Queen Creek residents in Pecan Creek, Hastings Farms, Cortina, and Harvest all qualify. We verify your coverage before starting work — for most Queen Creek drivers with the glass endorsement, it\'s completely $0 out of pocket.',
       },
       {
         question: 'Why do Queen Creek\'s agricultural roads cause so many windshield chips?',
@@ -858,7 +858,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I use my Arizona glass coverage?',
-        answer: 'No. ARS 20-263 provides no-fault protection for glass claims throughout Arizona. Filing a windshield replacement claim in Queen Creek cannot legally raise your insurance rates. Queen Creek is a newer community with many transplant residents who don\'t realize this protection exists.',
+        answer: 'No. provides no-fault protection for glass claims throughout Arizona. Filing a windshield replacement claim in Queen Creek cannot legally raise your insurance rates. Queen Creek is a newer community with many transplant residents who don\'t realize this protection exists.',
       },
       {
         question: 'Can you come out to my house in Queen Creek for same-day service?',
@@ -872,7 +872,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Scottsdale',
     metadata: {
       title: 'Windshield Replacement Scottsdale AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Scottsdale AZ. Same-day mobile service to Old Town, North Scottsdale & all areas. Arizona ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Scottsdale AZ. Same-day mobile service to Old Town, North Scottsdale & all areas. Arizona means $0 out of pocket.',
       keywords: 'windshield replacement scottsdale az, windshield repair scottsdale, auto glass scottsdale, zero deductible windshield scottsdale az, north scottsdale windshield repair, mobile auto glass scottsdale',
     },
     intro: 'We bring $0 mobile windshield service directly to Scottsdale — from Old Town to DC Ranch and Troon.',
@@ -907,11 +907,11 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Does Arizona law protect me from rate increases when I file a glass claim?',
-        answer: 'Yes. Under ARS 20-263, Arizona law provides no-fault rate protection for glass claims. Filing a windshield claim cannot legally raise your insurance rates. You\'ve been paying for this coverage — there\'s no reason not to use it.',
+        answer: 'Yes. Under, Arizona law provides no-fault rate protection for glass claims. Filing a windshield claim cannot legally raise your insurance rates. You\'ve been paying for this coverage — there\'s no reason not to use it.',
       },
       {
         question: 'Can my insurance require me to use a specific shop in Scottsdale?',
-        answer: 'No. Under ARS 20-469, Arizona law gives you the right to choose any auto glass repair shop. Your insurer may recommend Safelite or another preferred shop, but they cannot require you to use it and must inform you of your right to choose. We handle all paperwork regardless of your insurer.',
+        answer: 'No. Under Arizona law, Arizona law gives you the right to choose any auto glass repair shop. Your insurer may recommend Safelite or another preferred shop, but they cannot require you to use it and must inform you of your right to choose. We handle all paperwork regardless of your insurer.',
       },
       {
         question: 'What makes windshield damage so common in North Scottsdale?',
@@ -926,7 +926,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Surprise',
     metadata: {
       title: 'Windshield Replacement Surprise AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Surprise AZ. Same-day mobile service to Sun City Grand, Marley Park & all Surprise. ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Surprise AZ. Same-day mobile service to Sun City Grand, Marley Park & all Surprise. means $0 out of pocket.',
       keywords: 'windshield replacement surprise az, windshield repair surprise, auto glass surprise az, zero deductible windshield surprise, sun city grand windshield, mobile auto glass surprise arizona',
     },
     intro: 'We bring $0 mobile windshield service to Surprise — including Sun City Grand, Marley Park, and the Bell Road corridor where Loop 303 construction traffic is constant.',
@@ -953,7 +953,7 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Do retired residents at Sun City Grand in Surprise qualify for $0 windshield replacement?',
-        answer: 'Yes. Arizona\'s ARS 20-264 zero-deductible glass law applies to all Arizona drivers with comprehensive coverage, including Sun City Grand residents. Many retirees are surprised to learn they\'ve been paying for this benefit their entire time in Arizona. If you have comprehensive insurance with the glass endorsement, your windshield replacement is completely free.',
+        answer: 'Yes. Arizona\'s zero-deductible glass law applies to all Arizona drivers with comprehensive coverage, including Sun City Grand residents. Many retirees are surprised to learn they\'ve been paying for this benefit their entire time in Arizona. If you have comprehensive insurance with the glass endorsement, your windshield replacement is completely free.',
       },
       {
         question: 'Can you service my vehicle at my Sun City Grand home in Surprise?',
@@ -961,7 +961,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Will my insurance rates go up if I file a glass claim in Surprise?',
-        answer: 'No. Arizona law ARS 20-263 provides legal no-fault rate protection for glass claims. Filing a windshield replacement claim in Surprise cannot raise your insurance rates. This law protects every Arizona driver, including longtime residents who have maintained clean driving records and don\'t want to risk their rates.',
+        answer: 'No. Arizona law provides legal no-fault rate protection for glass claims. Filing a windshield replacement claim in Surprise cannot raise your insurance rates. This law protects every Arizona driver, including longtime residents who have maintained clean driving records and don\'t want to risk their rates.',
       },
       {
         question: 'Why are Bell Road and the US-60 extension so hard on windshields in Surprise?',
@@ -975,7 +975,7 @@ export const arizonaCities: ArizonaCity[] = [
     city: 'Tempe',
     metadata: {
       title: 'Windshield Replacement Tempe AZ | Auto Glass Repair | $0 Deductible | (480) 712-7465',
-      description: 'Windshield replacement & auto glass repair in Tempe AZ. Same-day mobile service near ASU, Mill Avenue & all Tempe. Arizona ARS 20-264 means $0 out of pocket.',
+      description: 'Windshield replacement & auto glass repair in Tempe AZ. Same-day mobile service near ASU, Mill Avenue & all Tempe. Arizona means $0 out of pocket.',
       keywords: 'windshield replacement tempe az, windshield repair tempe, auto glass tempe az, zero deductible windshield tempe, asu area windshield, mobile auto glass tempe arizona',
     },
     intro: 'We bring $0 mobile windshield service to Tempe — including the I-10/US-60 interchange corridor and ASU campus area.',
@@ -1003,11 +1003,11 @@ export const arizonaCities: ArizonaCity[] = [
     faqs: [
       {
         question: 'Do you serve the ASU campus area and student neighborhoods in Tempe?',
-        answer: 'Yes. We serve all of Tempe including the ASU campus area, Mill Avenue corridor, and student neighborhoods. Mobile service means we come to your apartment, dorm parking lot, or anywhere in Tempe. Arizona\'s zero-deductible law under ARS 20-264 applies to all Tempe residents with comprehensive coverage regardless of age or student status.',
+        answer: 'Yes. We serve all of Tempe including the ASU campus area, Mill Avenue corridor, and student neighborhoods. Mobile service means we come to your apartment, dorm parking lot, or anywhere in Tempe. Arizona\'s zero-deductible law under applies to all Tempe residents with comprehensive coverage regardless of age or student status.',
       },
       {
         question: 'Will my insurance rates go up if I file a glass claim in Tempe?',
-        answer: 'No. Arizona law (ARS 20-263) classifies glass claims as no-fault events. Filing a windshield claim in Tempe cannot legally raise your insurance rates. This applies to all Arizona drivers including students with their own or family policies.',
+        answer: 'No. Arizona law classifies glass claims as no-fault events. Filing a windshield claim in Tempe cannot legally raise your insurance rates. This applies to all Arizona drivers including students with their own or family policies.',
       },
       {
         question: 'Why do Tempe drivers get so many rock chips?',
@@ -1015,7 +1015,7 @@ export const arizonaCities: ArizonaCity[] = [
       },
       {
         question: 'Does my insurance cover all types of glass — not just the windshield?',
-        answer: 'Yes. Arizona law under ARS 20-264 covers ALL vehicle glass, not just the windshield. Door windows, rear glass, vent windows, and quarter glass are all covered under zero-deductible glass endorsements. Same $0 out of pocket for any glass in your vehicle.',
+        answer: 'Yes. Arizona law under covers ALL vehicle glass, not just the windshield. Door windows, rear glass, vent windows, and quarter glass are all covered under zero-deductible glass endorsements. Same $0 out of pocket for any glass in your vehicle.',
       },
     ],
     nearbyLinks: ['Phoenix', 'Scottsdale', 'Mesa', 'Chandler', 'Gilbert', 'Ahwatukee'],
