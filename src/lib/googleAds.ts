@@ -357,6 +357,162 @@ export async function fetchSearchQueryReport(
 }
 
 // ============================================================================
+// CALL TRACKING — AGGREGATE CONVERSIONS + INDIVIDUAL CALL RECORDS
+// ============================================================================
+
+/**
+ * Fetch phone call conversion data broken out by conversion action.
+ * Returns daily counts of "Calls from ads" per campaign.
+ */
+export async function fetchCallConversions(
+  startDate: string,
+  endDate: string
+): Promise<Array<{
+  date: string;
+  campaign_id: string;
+  campaign_name: string;
+  conversion_action_id: string;
+  conversion_action_name: string;
+  conversions: number;
+  conversions_value: number;
+}>> {
+  const { customer } = getGoogleAdsClient();
+
+  const query = `
+    SELECT
+      campaign.id,
+      campaign.name,
+      segments.date,
+      segments.conversion_action,
+      segments.conversion_action_name,
+      metrics.conversions,
+      metrics.conversions_value
+    FROM campaign
+    WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
+      AND segments.conversion_action_category = 'PHONE_CALL'
+      AND campaign.status != 'REMOVED'
+    ORDER BY segments.date DESC
+  `;
+
+  try {
+    const results = await customer.query(query);
+
+    return results.map((row: any) => {
+      // Parse conversion action ID from resource name:
+      // "customers/123/conversionActions/7351179314" -> "7351179314"
+      const resourceName = row.segments?.conversion_action || '';
+      const actionId = resourceName.split('/').pop() || '';
+
+      return {
+        date: row.segments.date,
+        campaign_id: row.campaign.id?.toString() || '',
+        campaign_name: row.campaign.name || '',
+        conversion_action_id: actionId,
+        conversion_action_name: row.segments.conversion_action_name || '',
+        conversions: parseFloat(row.metrics.conversions || '0'),
+        conversions_value: parseFloat(row.metrics.conversions_value || '0'),
+      };
+    });
+  } catch (error: any) {
+    console.error('Error fetching call conversions:', error);
+    throw new Error(`Failed to fetch call conversions: ${error.message}`);
+  }
+}
+
+/**
+ * Fetch individual call records from Google Ads call_view.
+ * Queries ONE DAY AT A TIME to avoid gRPC timeout (Opteo library has 5-min limit).
+ * For backfill, call in a loop; for daily cron, pass yesterday only.
+ */
+export async function fetchCallView(
+  singleDate: string // Format: YYYY-MM-DD (one day only)
+): Promise<Array<{
+  resource_name: string;
+  start_date_time: string;
+  end_date_time: string | null;
+  call_duration_seconds: number;
+  caller_area_code: string;
+  caller_country_code: string;
+  call_status: string;
+  call_type: string;
+  call_tracking_display_location: string;
+  campaign_id: string;
+  campaign_name: string;
+  ad_group_id: string;
+  ad_group_name: string;
+}>> {
+  const { customer } = getGoogleAdsClient();
+
+  const query = `
+    SELECT
+      call_view.resource_name,
+      call_view.start_call_date_time,
+      call_view.end_call_date_time,
+      call_view.call_duration_seconds,
+      call_view.caller_area_code,
+      call_view.caller_country_code,
+      call_view.call_status,
+      call_view.type,
+      call_view.call_tracking_display_location,
+      campaign.id,
+      campaign.name,
+      ad_group.id,
+      ad_group.name
+    FROM call_view
+    WHERE segments.date = '${singleDate}'
+  `;
+
+  try {
+    const results = await customer.query(query);
+
+    return results.map((row: any) => ({
+      resource_name: row.call_view?.resource_name || '',
+      start_date_time: row.call_view?.start_call_date_time || '',
+      end_date_time: row.call_view?.end_call_date_time || null,
+      call_duration_seconds: parseInt(row.call_view?.call_duration_seconds || '0'),
+      caller_area_code: row.call_view?.caller_area_code || '',
+      caller_country_code: row.call_view?.caller_country_code || '',
+      call_status: String(row.call_view?.call_status || ''),
+      call_type: String(row.call_view?.type || ''),
+      call_tracking_display_location: String(row.call_view?.call_tracking_display_location || ''),
+      campaign_id: row.campaign?.id?.toString() || '',
+      campaign_name: row.campaign?.name || '',
+      ad_group_id: row.ad_group?.id?.toString() || '',
+      ad_group_name: row.ad_group?.name || '',
+    }));
+  } catch (error: any) {
+    console.error(`Error fetching call_view for ${singleDate}:`, error);
+    throw new Error(`Failed to fetch call_view for ${singleDate}: ${error.message}`);
+  }
+}
+
+/**
+ * Fetch call_view records for a date range by looping day-by-day.
+ * Prevents gRPC timeouts on the Opteo library's 5-minute limit.
+ */
+export async function fetchCallViewRange(
+  startDate: string,
+  endDate: string
+): Promise<ReturnType<typeof fetchCallView> extends Promise<infer T> ? T : never> {
+  const allCalls: Awaited<ReturnType<typeof fetchCallView>> = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    try {
+      const dayCalls = await fetchCallView(dateStr);
+      allCalls.push(...dayCalls);
+    } catch (error: any) {
+      // Log but continue — don't let one failed day stop the entire sync
+      console.warn(`⚠️ call_view failed for ${dateStr}: ${error.message}`);
+    }
+  }
+
+  return allCalls;
+}
+
+// ============================================================================
 // OFFLINE CONVERSION UPLOAD
 // ============================================================================
 

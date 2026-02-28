@@ -5,6 +5,7 @@ import {
   getSupabaseClient,
   getCallMetrics,
   getPaidAdsDailyMetrics,
+  getCallAttributionMetrics,
   DateFilter,
 } from '@/lib/dashboardData';
 
@@ -37,12 +38,13 @@ export async function GET(request: NextRequest) {
     const { start, end, display, startDateStr, endDateStr } = getMountainDateRange(period);
     const supabase = getSupabaseClient();
 
-    // Fetch call metrics, revenue, cost-of-goods, and paid platform data in parallel
+    // Fetch call metrics, revenue, cost-of-goods, paid platform data, and call attribution in parallel
     const [
       callMetrics,
       revenueResult,
       costResult,
       paidMetrics,
+      callAttribution,
     ] = await Promise.all([
       getCallMetrics(supabase, start, end),
       // Lightweight revenue query (just sum revenue_amount from leads table)
@@ -60,6 +62,7 @@ export async function GET(request: NextRequest) {
         .lte('install_date', end.toISOString())
         .eq('status', 'completed'),
       getPaidAdsDailyMetrics(supabase, startDateStr, endDateStr),
+      getCallAttributionMetrics(supabase, startDateStr, endDateStr),
     ]);
 
     const googleApiData = paidMetrics.google;
@@ -121,6 +124,7 @@ export async function GET(request: NextRequest) {
         answerRate: callMetrics.answerRate,
         avgDuration: callMetrics.avgDuration,
         byPlatform: callMetrics.byPlatform,
+        attribution: callAttribution,
       },
 
       comparison: {

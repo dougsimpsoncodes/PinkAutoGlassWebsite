@@ -46,6 +46,13 @@ interface UnifiedDashboardData {
       microsoft: number;
       direct: number;
     };
+    attribution?: {
+      googleAdsConversionCount: number;
+      googleAdsCallRecords: number;
+      crossReferencedCalls: number;
+      unmatchedForwardingCalls: number;
+      gbpCalls: { total: number; missed: number; answered: number } | null;
+    };
   };
   comparison: {
     spendShare: { google: number; microsoft: number };
@@ -638,11 +645,53 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="pt-4 border-t border-gray-100 space-y-2">
-            <p className="text-sm text-gray-600 mb-2">By Source</p>
+            <p className="text-sm text-gray-600 mb-2">Website-Attributed Calls</p>
             <div className="flex justify-between"><span className="text-sm text-blue-600">Google Ads</span><span className="text-sm font-medium">{calls.byPlatform.google}</span></div>
             <div className="flex justify-between"><span className="text-sm text-cyan-600">Microsoft Ads</span><span className="text-sm font-medium">{calls.byPlatform.microsoft}</span></div>
             <div className="flex justify-between"><span className="text-sm text-gray-600">Direct / Organic</span><span className="text-sm font-medium">{calls.byPlatform.direct}</span></div>
           </div>
+          {/* Google Ads Forwarding Calls (callers who never visited the website) */}
+          {calls.attribution && calls.attribution.googleAdsConversionCount > 0 && (
+            <div className="pt-4 border-t border-gray-100 space-y-2">
+              <p className="text-sm text-gray-600 mb-2">Google Ads Forwarding</p>
+              <div className="flex justify-between">
+                <span className="text-sm text-purple-600">Calls from Ads</span>
+                <span className="text-sm font-medium">{Math.round(calls.attribution.googleAdsConversionCount)}</span>
+              </div>
+              {calls.attribution.googleAdsCallRecords > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-purple-400 pl-2">Matched to RC</span>
+                    <span className="text-sm font-medium text-green-600">{calls.attribution.crossReferencedCalls}</span>
+                  </div>
+                  {calls.attribution.unmatchedForwardingCalls > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-purple-400 pl-2">Short/Unmatched</span>
+                      <span className="text-sm font-medium text-gray-400">{calls.attribution.unmatchedForwardingCalls}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+          {/* Google Business Profile Calls */}
+          {calls.attribution?.gbpCalls && (
+            <div className="pt-4 border-t border-gray-100 space-y-2">
+              <p className="text-sm text-gray-600 mb-2">Google Business Profile</p>
+              <div className="flex justify-between">
+                <span className="text-sm text-orange-600">GBP Calls</span>
+                <span className="text-sm font-medium">{calls.attribution.gbpCalls.total}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-orange-400 pl-2">Answered</span>
+                <span className="text-sm font-medium text-green-600">{calls.attribution.gbpCalls.answered}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-orange-400 pl-2">Missed</span>
+                <span className="text-sm font-medium text-red-600">{calls.attribution.gbpCalls.missed}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Lead Attribution */}

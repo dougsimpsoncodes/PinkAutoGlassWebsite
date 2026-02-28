@@ -36,6 +36,11 @@ const SCOPES: Record<string, { scope: string[]; envVar: string; label: string }>
     envVar: 'GOOGLE_ADS_REFRESH_TOKEN',
     label: 'Google Ads',
   },
+  gbp: {
+    scope: ['https://www.googleapis.com/auth/business.manage'],
+    envVar: 'GBP_REFRESH_TOKEN',
+    label: 'Google Business Profile',
+  },
 };
 
 function getRedirectUri(req: NextRequest): string {

@@ -14,7 +14,10 @@ import {
   validateGoogleAdsConfig,
   fetchSearchQueryReport,
   fetchCampaignPerformance,
+  fetchCallConversions,
+  fetchCallView,
 } from '@/lib/googleAds';
+import { crossReferenceCallsToRingCentral } from '@/lib/callAttributionSync';
 import {
   validateSearchConsoleConfig,
   fetchQueryPerformance,
@@ -22,6 +25,7 @@ import {
 } from '@/lib/googleSearchConsole';
 import { syncOfflineConversions, syncMicrosoftOfflineConversions } from '@/lib/offlineConversionSync';
 import { validateMicrosoftAdsConfig, fetchSearchTerms as fetchMicrosoftSearchTerms } from '@/lib/microsoftAds';
+import { validateGBPConfig, fetchGBPCallMetrics } from '@/lib/googleBusinessProfile';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -59,12 +63,20 @@ export async function GET(request: NextRequest) {
       },
       googleAds: {
         campaigns: { success: false, records: 0, error: null as string | null },
+        callConversions: { success: false, records: 0, error: null as string | null },
+        callView: { success: false, records: 0, error: null as string | null },
         searchTerms: { success: false, records: 0, error: null as string | null },
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
+      },
+      callAttribution: {
+        crossReference: { success: false, matched: 0, unmatched: 0, error: null as string | null },
       },
       microsoftAds: {
         searchTerms: { success: false, records: 0, error: null as string | null },
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
+      },
+      gbp: {
+        calls: { success: false, records: 0, error: null as string | null },
       },
       googleSearchConsole: {
         queries: { success: false, records: 0, error: null as string | null },
@@ -255,6 +267,83 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.googleAds.campaigns.error = error.message;
       console.error('❌ Google Ads campaign sync failed:', error.message);
+    }
+
+    // ========================================
+    // 2.5. Sync Google Ads Call Conversions + Call View
+    // ========================================
+    try {
+      const configValid = validateGoogleAdsConfig();
+      if (configValid.isValid) {
+        // 2.5a: Aggregate call conversions by conversion action
+        console.log('📞 Syncing Google Ads call conversions...');
+        const conversions = await fetchCallConversions(startDateStr, endDateStr);
+        if (conversions.length > 0) {
+          const dbRecords = conversions.map(c => ({
+            date: c.date,
+            campaign_id: c.campaign_id,
+            campaign_name: c.campaign_name,
+            conversion_action_id: c.conversion_action_id,
+            conversion_action_name: c.conversion_action_name,
+            call_conversions: c.conversions,
+            call_conversions_value: c.conversions_value,
+            sync_timestamp: new Date().toISOString(),
+          }));
+          const { error } = await supabase
+            .from('google_ads_call_conversions')
+            .upsert(dbRecords, { onConflict: 'date,campaign_id,conversion_action_id' });
+          if (!error) {
+            results.googleAds.callConversions = { success: true, records: dbRecords.length, error: null };
+            console.log(`✅ Synced ${dbRecords.length} call conversion records`);
+          } else {
+            results.googleAds.callConversions.error = error.message;
+          }
+        } else {
+          results.googleAds.callConversions = { success: true, records: 0, error: null };
+        }
+
+        // 2.5b: Individual call records via call_view (yesterday only to avoid timeout)
+        const yesterday = endDateStr;
+        console.log(`📞 Fetching call_view for ${yesterday}...`);
+        try {
+          const calls = await fetchCallView(yesterday);
+          if (calls.length > 0) {
+            const dbRecords = calls.map(c => ({
+              resource_name: c.resource_name,
+              start_date_time: c.start_date_time,
+              end_date_time: c.end_date_time,
+              call_duration_seconds: c.call_duration_seconds,
+              caller_area_code: c.caller_area_code,
+              caller_country_code: c.caller_country_code,
+              call_status: c.call_status,
+              call_type: c.call_type,
+              call_tracking_display_location: c.call_tracking_display_location,
+              campaign_id: c.campaign_id,
+              campaign_name: c.campaign_name,
+              ad_group_id: c.ad_group_id,
+              ad_group_name: c.ad_group_name,
+              sync_timestamp: new Date().toISOString(),
+            }));
+            const { error } = await supabase
+              .from('google_ads_calls')
+              .upsert(dbRecords, { onConflict: 'resource_name' });
+            if (!error) {
+              results.googleAds.callView = { success: true, records: dbRecords.length, error: null };
+              console.log(`✅ Synced ${dbRecords.length} call_view records`);
+            } else {
+              results.googleAds.callView.error = error.message;
+            }
+          } else {
+            results.googleAds.callView = { success: true, records: 0, error: null };
+          }
+        } catch (cvError: any) {
+          results.googleAds.callView.error = cvError.message;
+          console.warn(`⚠️ call_view sync failed (non-fatal): ${cvError.message}`);
+        }
+      }
+    } catch (error: any) {
+      results.googleAds.callConversions.error = error.message;
+      console.error('❌ Google Ads call sync failed:', error.message);
     }
 
     // ========================================
@@ -540,6 +629,68 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.microsoftAds.searchTerms.error = error.message;
       console.error('❌ Microsoft Ads search terms sync failed:', error.message);
+    }
+
+    // ========================================
+    // 8.5. Sync Google Business Profile Call Metrics
+    // ========================================
+    try {
+      const gbpConfig = validateGBPConfig();
+      if (gbpConfig.isValid) {
+        console.log('📞 Syncing GBP call metrics...');
+        const metrics = await fetchGBPCallMetrics(startDateStr, endDateStr);
+        if (metrics.length > 0) {
+          const locationName = process.env.GBP_LOCATION_ID || 'default';
+          const dbRecords = metrics.map(m => ({
+            date: m.date,
+            location_name: locationName,
+            total_calls: m.totalCalls,
+            missed_calls: m.missedCalls,
+            answered_calls: m.answeredCalls,
+            calls_under_30s: m.callsUnder30s,
+            calls_30s_to_120s: m.calls30sTo120s,
+            calls_over_120s: m.callsOver120s,
+            sync_timestamp: new Date().toISOString(),
+            raw_data: m.rawData,
+          }));
+          const { error } = await supabase
+            .from('gbp_call_metrics')
+            .upsert(dbRecords, { onConflict: 'date,location_name' });
+          if (!error) {
+            results.gbp.calls = { success: true, records: dbRecords.length, error: null };
+            console.log(`✅ Synced ${dbRecords.length} GBP call metric records`);
+          } else {
+            results.gbp.calls.error = error.message;
+          }
+        } else {
+          results.gbp.calls = { success: true, records: 0, error: null };
+          console.log('📞 GBP: No call data returned');
+        }
+      } else {
+        results.gbp.calls.error = `Not configured: ${gbpConfig.missingVars.join(', ')}`;
+        console.warn('⚠️ GBP not configured, skipping');
+      }
+    } catch (error: any) {
+      results.gbp.calls.error = error.message;
+      console.error('❌ GBP sync failed:', error.message);
+    }
+
+    // ========================================
+    // 9. Cross-Reference Google Ads Calls to RingCentral
+    // ========================================
+    // Must run after both call_view (step 2.5) and RingCentral (step 1) syncs complete
+    try {
+      console.log('🔗 Cross-referencing Google Ads calls to RingCentral...');
+      const crossRef = await crossReferenceCallsToRingCentral(supabase, startDateStr, endDateStr);
+      results.callAttribution.crossReference = {
+        success: true,
+        matched: crossRef.matched,
+        unmatched: crossRef.unmatched,
+        error: crossRef.errors > 0 ? `${crossRef.errors} update errors` : null,
+      };
+    } catch (error: any) {
+      results.callAttribution.crossReference.error = error.message;
+      console.error('❌ Cross-reference failed:', error.message);
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

@@ -433,6 +433,97 @@ export async function getCallMetrics(
  *
  * This function performs session-based attribution for unattributed calls
  */
+// ============================================================================
+// CALL ATTRIBUTION METRICS
+// ============================================================================
+
+export interface CallAttributionMetrics {
+  /** "Calls from ads" aggregate count from google_ads_call_conversions */
+  googleAdsConversionCount: number;
+  /** Individual call records from google_ads_calls (call_view) */
+  googleAdsCallRecords: number;
+  /** Calls matched to RingCentral records */
+  crossReferencedCalls: number;
+  /** Google Ads calls not found in RingCentral (e.g., below 30s threshold) */
+  unmatchedForwardingCalls: number;
+  /** Google Business Profile calls (null if not configured) */
+  gbpCalls: { total: number; missed: number; answered: number } | null;
+}
+
+/**
+ * Fetch call attribution metrics from all three sources:
+ * 1. google_ads_call_conversions (aggregate daily counts)
+ * 2. google_ads_calls (individual call records + cross-reference status)
+ * 3. gbp_call_metrics (Google Business Profile)
+ */
+export async function getCallAttributionMetrics(
+  supabase: SupabaseClient,
+  startDateStr: string,
+  endDateStr: string
+): Promise<CallAttributionMetrics> {
+  const [convResult, callsResult, matchedResult, gbpResult] = await Promise.all([
+    // 1. Aggregate "Calls from ads" count
+    supabase
+      .from('google_ads_call_conversions')
+      .select('call_conversions')
+      .gte('date', startDateStr)
+      .lte('date', endDateStr),
+
+    // 2. Individual call records count
+    supabase
+      .from('google_ads_calls')
+      .select('id', { count: 'exact', head: true })
+      .gte('start_date_time', `${startDateStr}T00:00:00`)
+      .lte('start_date_time', `${endDateStr}T23:59:59`),
+
+    // 3. Cross-referenced (matched) count
+    supabase
+      .from('google_ads_calls')
+      .select('id', { count: 'exact', head: true })
+      .gte('start_date_time', `${startDateStr}T00:00:00`)
+      .lte('start_date_time', `${endDateStr}T23:59:59`)
+      .not('matched_rc_call_id', 'is', null),
+
+    // 4. GBP call metrics
+    supabase
+      .from('gbp_call_metrics')
+      .select('total_calls, missed_calls, answered_calls')
+      .gte('date', startDateStr)
+      .lte('date', endDateStr),
+  ]);
+
+  // Sum aggregate conversions
+  const googleAdsConversionCount = (convResult.data || []).reduce(
+    (sum, row) => sum + parseFloat(row.call_conversions || 0),
+    0
+  );
+
+  const googleAdsCallRecords = callsResult.count || 0;
+  const crossReferencedCalls = matchedResult.count || 0;
+  const unmatchedForwardingCalls = googleAdsCallRecords - crossReferencedCalls;
+
+  // GBP: null if table is empty (not configured yet)
+  let gbpCalls: CallAttributionMetrics['gbpCalls'] = null;
+  if (gbpResult.data && gbpResult.data.length > 0) {
+    gbpCalls = gbpResult.data.reduce(
+      (acc, row) => ({
+        total: acc.total + (row.total_calls || 0),
+        missed: acc.missed + (row.missed_calls || 0),
+        answered: acc.answered + (row.answered_calls || 0),
+      }),
+      { total: 0, missed: 0, answered: 0 }
+    );
+  }
+
+  return {
+    googleAdsConversionCount,
+    googleAdsCallRecords,
+    crossReferencedCalls,
+    unmatchedForwardingCalls,
+    gbpCalls,
+  };
+}
+
 export async function getAttributedLeadMetrics(
   supabase: SupabaseClient,
   startDate: Date,
