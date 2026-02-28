@@ -384,9 +384,6 @@ export default function SatelliteDomainsPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Satellite Sites</h1>
-          <p className="text-gray-600 mt-1">
-            GSC performance and lead attribution across all 11 microsites
-          </p>
         </div>
 
         {/* Date Filter */}
