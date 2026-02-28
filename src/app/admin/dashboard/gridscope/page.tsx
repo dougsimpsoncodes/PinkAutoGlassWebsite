@@ -98,6 +98,18 @@ export default function GridScopePage() {
   // ── Load Google Maps via script tag ─────────────────────────────────────────
 
   useEffect(() => {
+    // Auth failure callback — fires when Maps JS rejects the key.
+    // Only treat as fatal if the map hasn't already rendered (Google can
+    // fire this late during background tile-auth even when tiles loaded).
+    (window as any).gm_authFailure = () => {
+      if (!googleMapRef.current) {
+        setMapError('gm_authFailure triggered (Maps JS rejected the key).');
+        setMapStatus('error');
+      } else {
+        console.warn('[GridScope] gm_authFailure fired after map initialized — ignoring.');
+      }
+    };
+
     // Already loaded (e.g. HMR)
     if (typeof google !== 'undefined' && google.maps && mapRef.current) {
       googleMapRef.current = new google.maps.Map(mapRef.current, {
@@ -129,8 +141,25 @@ export default function GridScopePage() {
     };
     script.onerror = () => { setMapError('Google Maps script failed to load'); setMapStatus('error'); };
     document.head.appendChild(script);
+
+    return () => {
+      delete (window as any).gm_authFailure;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Re-render map when tab regains focus (browser suspends inactive tabs) ──
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && googleMapRef.current) {
+        google.maps.event.trigger(googleMapRef.current, 'resize');
+        googleMapRef.current.setCenter(CITY_CENTERS[city]);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [city]);
 
   // ── Re-center map when city changes ──────────────────────────────────────
 

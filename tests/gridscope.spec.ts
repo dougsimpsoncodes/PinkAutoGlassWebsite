@@ -67,8 +67,9 @@ test.describe('GridScope Page', () => {
     // Competitor table should appear (at least one competitor)
     await expect(page.locator('text=Competitor Overview')).toBeVisible({ timeout: 5000 });
 
-    // History dropdown should now have an entry
-    await expect(page.locator('text=SoLV')).toBeVisible();
+    // Verify scan summary stats rendered (first metric card has a percentage)
+    const firstCard = metricCards.first();
+    await expect(firstCard).toContainText('%');
 
     // Take a screenshot for the user
     await page.screenshot({ path: 'test-results/gridscope-scan-success.png', fullPage: true });
