@@ -22,6 +22,22 @@ if git rev-parse @{u} > /dev/null 2>&1; then
     fi
 fi
 
+# Check .env.local for \n contamination in secret values
+if [ -f ".env.local" ]; then
+    BAD_LINES=$(python3 -c "
+content = open('.env.local').read()
+bad = [l.split('=')[0] for l in content.splitlines() if r'\n' in l and '=' in l]
+if bad:
+    print(' '.join(bad))
+" 2>/dev/null)
+    if [ -n "$BAD_LINES" ]; then
+        echo "❌ .env.local has \\n contamination in: $BAD_LINES"
+        echo "   Run: npm run env:pull  to re-pull sanitized values from Vercel"
+        exit 1
+    fi
+    echo "✅ .env.local clean (no \\n contamination)"
+fi
+
 # Build the project
 echo "📦 Building project..."
 if ! npm run build > /dev/null 2>&1; then
