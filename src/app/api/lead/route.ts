@@ -150,17 +150,52 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    // Service role client for session lookup (bypasses RLS)
+    const sessionClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // =============================================================================
-    // ATTRIBUTION: Build immutable attribution using centralized helper
+    // ATTRIBUTION: Capture session context (fallback) + build immutable attribution
     // =============================================================================
-    // For /api/lead, we don't have session lookup - only body values
-    // (QuoteForm is a simple form without session context)
+    let sessionId: string | null = validatedData.sessionId || body.sessionId || request.cookies.get('session_id')?.value || null;
+    let utmParams: any = {};
+
+    try {
+      if (sessionId) {
+        const { data: sessionData, error: sessionError } = await sessionClient
+          .from('user_sessions')
+          .select('utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, msclkid')
+          .eq('session_id', sessionId)
+          .single();
+
+        if (!sessionError && sessionData) {
+          utmParams = {
+            utm_source: sessionData.utm_source,
+            utm_medium: sessionData.utm_medium,
+            utm_campaign: sessionData.utm_campaign,
+            utm_term: sessionData.utm_term,
+            utm_content: sessionData.utm_content,
+            gclid: sessionData.gclid,
+            msclkid: sessionData.msclkid,
+          };
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to capture session attribution (non-fatal):', error);
+    }
+
     const attribution = buildAttribution({
+      lookupGclid: utmParams.gclid,
+      lookupMsclkid: utmParams.msclkid,
       bodyGclid: validatedData.gclid,
       bodyMsclkid: validatedData.msclkid,
-      utmSource: validatedData.utmSource,
-      utmMedium: validatedData.utmMedium,
-      utmCampaign: validatedData.utmCampaign,
+      utmSource: utmParams.utm_source ?? validatedData.utmSource,
+      utmMedium: utmParams.utm_medium ?? validatedData.utmMedium,
+      utmCampaign: utmParams.utm_campaign ?? validatedData.utmCampaign,
+      utmTerm: utmParams.utm_term ?? (validatedData as any).utmTerm,
+      utmContent: utmParams.utm_content ?? (validatedData as any).utmContent,
     });
 
     // Build payload for fn_insert_lead RPC using validated data
@@ -180,7 +215,7 @@ export async function POST(request: NextRequest) {
       zip: validatedData.zipCode || null,
       referralCode: validatedData.referralCode || null,
       clientId: body.clientId || null,
-      sessionId: body.sessionId || null,
+      sessionId: sessionId || null,
       insuranceCarrier: validatedData.insuranceCarrier || null,
       // Mark as test if phone is in EXCLUDED_DRIP_PHONES or TEST_PHONES
       isTest: isExcludedPhone(validatedData.phone) || isTestPhone(validatedData.phone),

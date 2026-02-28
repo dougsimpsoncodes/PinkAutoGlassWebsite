@@ -2,13 +2,16 @@
 
 import { Phone, MessageSquare, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { trackPhoneClick, trackTextClick } from '@/lib/tracking';
+import { resolveMarket, getPhoneForMarket } from '@/lib/market';
 
 export default function StickyCallBar() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
-  const phoneNumber = '7209187465';
-  const displayPhone = '(720) 918-7465';
+  const market = resolveMarket(pathname);
+  const { phoneNumber, displayPhone } = getPhoneForMarket(market);
 
   // Check if sticky bar is enabled via environment variable
   const isEnabled = process.env.NEXT_PUBLIC_STICKY_CALLBAR === '1';
@@ -67,7 +70,7 @@ export default function StickyCallBar() {
               className="flex-1 flex items-center justify-center gap-2 bg-white text-pink-600 font-bold py-3 px-4 rounded-lg shadow-lg active:scale-95 transition-transform"
             >
               <Phone className="w-5 h-5" />
-              <span className="text-sm">Call Now</span>
+              <span className="text-sm">{displayPhone}</span>
             </a>
 
             {/* Text Button */}

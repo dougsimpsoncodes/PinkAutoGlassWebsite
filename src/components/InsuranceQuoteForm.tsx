@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Phone, ChevronRight } from 'lucide-react';
-import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid } from '@/lib/tracking';
+import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
 
 const CARRIERS = [
   'Progressive',
@@ -65,6 +65,8 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
       const sessionId = getSessionId();
       const gclid = getGclid();
       const msclkid = getMsclkid();
+      const utmParams = getUTMParams();
+      const utmSource = utmParams.source || 'direct';
 
       const response = await fetch('/api/lead', {
         method: 'POST',
@@ -81,12 +83,17 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
           sessionId,
           gclid,
           msclkid,
+          utmSource,
+          utmMedium: utmParams.medium,
+          utmCampaign: utmParams.campaign,
+          utmTerm: utmParams.term,
+          utmContent: utmParams.content,
           firstTouch: {
-            utm_source: new URLSearchParams(window.location.search).get('utm_source') || 'organic',
+            utm_source: utmSource,
             referrer: document.referrer || 'direct',
           },
           lastTouch: {
-            utm_source: new URLSearchParams(window.location.search).get('utm_source') || 'organic',
+            utm_source: utmSource,
             referrer: document.referrer || 'direct',
           },
         }),
@@ -94,7 +101,7 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
 
       if (response.ok) {
         const data = await response.json();
-        trackFormSubmission(source, { leadId: data.leadId });
+        trackFormSubmission(source, { leadId: data.leadId, phone });
         router.push('/thank-you');
       } else {
         alert(`Something went wrong. Please call us at ${displayPhone}`);

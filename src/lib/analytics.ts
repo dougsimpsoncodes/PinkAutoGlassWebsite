@@ -219,8 +219,29 @@ export const trackGoogleAdsConversion = (
   }
 };
 
+// Enhanced Conversions (hashed automatically by gtag)
+export const setEnhancedConversionData = (userData: { email?: string; phone?: string }) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+
+  const normalizedEmail = userData.email?.trim().toLowerCase();
+  const digits = userData.phone?.replace(/\D/g, '') || '';
+  let normalizedPhone: string | undefined;
+  if (digits.length === 10) normalizedPhone = `+1${digits}`;
+  else if (digits.length === 11 && digits.startsWith('1')) normalizedPhone = `+${digits}`;
+  else if (digits.length > 11) normalizedPhone = `+${digits}`;
+
+  const payload: Record<string, string> = {};
+  if (normalizedEmail) payload.email = normalizedEmail;
+  if (normalizedPhone) payload.phone_number = normalizedPhone;
+
+  if (Object.keys(payload).length > 0) {
+    window.gtag('set', 'user_data', payload);
+  }
+};
+
 // Track lead form submission conversion (booking form, quote form)
-export const trackLeadFormConversion = (leadId: string) => {
+export const trackLeadFormConversion = (leadId: string, userData?: { email?: string; phone?: string }) => {
+  if (userData) setEnhancedConversionData(userData);
   trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL);
 };
 

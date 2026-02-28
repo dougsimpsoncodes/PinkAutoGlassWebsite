@@ -6,7 +6,7 @@
  * Two attribution approaches:
  * 1. DIRECT MATCH: Link phone_click conversion events → actual RingCentral calls
  *    - Customer visited website, clicked phone number, then called
- *    - Match by phone number + timestamp (within 5 min)
+ *    - Match by phone number + timestamp (within attribution window)
  *    - Confidence: 95-100%
  *
  * 2. TIME-BASED CORRELATION: Match calls to campaign impression spikes
@@ -23,6 +23,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { normalizePhoneNumber } from './customerDeduplication';
+import { ATTRIBUTION_WINDOW_MINUTES } from './constants';
 
 interface AttributionResult {
   callId: string;
@@ -115,15 +116,15 @@ export async function matchDirectConversions(
     const normalizedPhone = normalizePhoneNumber(call.from_number);
     const callTime = new Date(call.start_time);
 
-    // Look for phone_click events within 5 minutes before the call
-    const fiveMinBefore = new Date(callTime.getTime() - 5 * 60 * 1000);
+    // Look for phone_click events within attribution window before the call
+    const windowBefore = new Date(callTime.getTime() - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000);
     const oneMinAfter = new Date(callTime.getTime() + 1 * 60 * 1000);
 
     const { data: events, error } = await client
       .from('conversion_events')
       .select('*')
       .eq('event_type', 'phone_click')
-      .gte('created_at', fiveMinBefore.toISOString())
+      .gte('created_at', windowBefore.toISOString())
       .lte('created_at', oneMinAfter.toISOString());
 
     if (error) {

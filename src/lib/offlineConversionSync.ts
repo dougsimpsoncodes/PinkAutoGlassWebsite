@@ -8,10 +8,10 @@
  *
  * 1. Direct phone_click match (highest confidence)
  *    - User clicks phone button on website (phone_click event recorded with click ID)
- *    - User calls within 5 minutes
+ *    - User calls within attribution window
  *    - Direct link between click and call
  *
- * 2. Session-based match (5-minute window)
+ * 2. Session-based match (attribution window)
  *    - User visits website from ad (session recorded with click ID)
  *    - User calls within 5 minutes of session start
  *    - Only used when exactly ONE platform has a session in the window
@@ -39,6 +39,12 @@ import {
 
 // Default conversion value for phone calls
 const DEFAULT_CALL_VALUE = 150;
+// Default conversion value for form leads (fallback when no revenue available)
+const DEFAULT_FORM_VALUE = 150;
+
+// Optional: separate conversion action for form leads
+const GOOGLE_ADS_FORM_CONVERSION_ACTION_ID = process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
+const MICROSOFT_OFFLINE_FORM_CONVERSION_NAME = process.env.MICROSOFT_OFFLINE_FORM_CONVERSION_NAME;
 
 interface AttributedCall {
   callId: string;
@@ -50,6 +56,13 @@ interface AttributedCall {
   clickTime: Date;
 }
 
+interface AttributedLead {
+  leadId: string;
+  leadTime: Date;
+  gclid: string;
+  conversionValue: number;
+}
+
 interface MicrosoftAttributedCall {
   callId: string;
   callTime: Date;
@@ -58,6 +71,13 @@ interface MicrosoftAttributedCall {
   msclkid: string;
   sessionId: string;
   clickTime: Date;
+}
+
+interface MicrosoftAttributedLead {
+  leadId: string;
+  leadTime: Date;
+  msclkid: string;
+  conversionValue: number;
 }
 
 interface SyncResult {
@@ -97,8 +117,8 @@ function getSupabaseClient(): SupabaseClient {
  * Find calls that can be attributed to Google Ads clicks
  *
  * Attribution priority:
- * 1. Direct phone_click match - user clicked phone button with GCLID within 5 min
- * 2. Session match - user visited from Google ad within 5 min (only if no Microsoft session)
+ * 1. Direct phone_click match - user clicked phone button with GCLID within attribution window
+ * 2. Session match - user visited from Google ad within attribution window (only if no Microsoft session)
  */
 async function findAttributableCalls(
   supabase: SupabaseClient,
@@ -252,6 +272,72 @@ async function markCallsAsUploaded(
   }
 }
 
+async function markLeadsAsUploaded(
+  supabase: SupabaseClient,
+  leadIds: string[]
+): Promise<void> {
+  if (leadIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      google_ads_form_uploaded_at: new Date().toISOString(),
+    })
+    .in('id', leadIds);
+
+  if (error) {
+    console.error('Error marking leads as uploaded:', error);
+  }
+}
+
+async function findAttributableLeads(
+  supabase: SupabaseClient,
+  lookbackDays: number = 30
+): Promise<AttributedLead[]> {
+  const lookbackDate = new Date();
+  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
+
+  let leads;
+  let leadsError;
+
+  try {
+    const result = await supabase
+      .from('leads')
+      .select('id, created_at, gclid, revenue_amount, is_test, google_ads_form_uploaded_at')
+      .not('gclid', 'is', null)
+      .eq('is_test', false)
+      .gte('created_at', lookbackDate.toISOString())
+      .is('google_ads_form_uploaded_at', null);
+
+    leads = result.data;
+    leadsError = result.error;
+
+    if (leadsError?.message?.includes('does not exist')) {
+      console.warn('⚠️ google_ads_form_uploaded_at column not found - skipping lead uploads');
+      return [];
+    }
+  } catch (err: any) {
+    console.error('Error fetching leads for Google Ads upload:', err.message);
+    return [];
+  }
+
+  if (leadsError) {
+    console.error('Error fetching leads:', leadsError);
+    return [];
+  }
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  return leads.map((lead: any) => ({
+    leadId: lead.id,
+    leadTime: new Date(lead.created_at),
+    gclid: lead.gclid,
+    conversionValue: Number(lead.revenue_amount) || DEFAULT_FORM_VALUE,
+  }));
+}
+
 /**
  * Sync RingCentral calls to Google Ads as offline conversions
  *
@@ -275,32 +361,68 @@ export async function syncOfflineConversions(): Promise<SyncResult> {
 
     // Find calls that can be attributed to Google Ads
     const attributedCalls = await findAttributableCalls(supabase);
+    const attributedLeads = GOOGLE_ADS_FORM_CONVERSION_ACTION_ID
+      ? await findAttributableLeads(supabase)
+      : [];
+    if (!GOOGLE_ADS_FORM_CONVERSION_ACTION_ID) {
+      console.warn('⚠️ GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID not set - skipping lead uploads');
+    }
+
+    result.callsProcessed = attributedCalls.length;
     result.callsAttributed = attributedCalls.length;
 
-    if (attributedCalls.length === 0) {
-      console.log('📭 No calls to upload');
+    if (attributedCalls.length === 0 && attributedLeads.length === 0) {
+      console.log('📭 No offline conversions to upload');
       return result;
     }
 
-    // Convert to offline conversion format
-    const conversions: OfflineConversion[] = attributedCalls.map((call) => ({
-      gclid: call.gclid,
-      conversionDateTime: formatConversionDateTime(call.callTime),
-      conversionValue: DEFAULT_CALL_VALUE,
-      currencyCode: 'USD',
-    }));
+    const conversionsToUpload: Array<{ kind: 'call' | 'lead'; id: string; conversion: OfflineConversion }> = [];
+
+    for (const call of attributedCalls) {
+      conversionsToUpload.push({
+        kind: 'call',
+        id: call.callId,
+        conversion: {
+          gclid: call.gclid,
+          conversionDateTime: formatConversionDateTime(call.callTime),
+          conversionValue: DEFAULT_CALL_VALUE,
+          currencyCode: 'USD',
+        },
+      });
+    }
+
+    for (const lead of attributedLeads) {
+      conversionsToUpload.push({
+        kind: 'lead',
+        id: lead.leadId,
+        conversion: {
+          gclid: lead.gclid,
+          conversionDateTime: formatConversionDateTime(lead.leadTime),
+          conversionValue: lead.conversionValue,
+          currencyCode: 'USD',
+          conversionActionId: GOOGLE_ADS_FORM_CONVERSION_ACTION_ID,
+        },
+      });
+    }
 
     // Upload to Google Ads
-    const uploadResult = await uploadOfflineConversions(conversions);
+    const uploadResult = await uploadOfflineConversions(conversionsToUpload.map((item) => item.conversion));
     result.conversionsUploaded = uploadResult.successCount;
     result.conversionsFailed = uploadResult.failureCount;
 
     // Mark successful uploads
-    const successfulCallIds = attributedCalls
-      .filter((call, index) => uploadResult.results[index]?.success)
-      .map((call) => call.callId);
+    const successfulCallIds: string[] = [];
+    const successfulLeadIds: string[] = [];
+    uploadResult.results.forEach((res, index) => {
+      if (!res.success) return;
+      const item = conversionsToUpload[index];
+      if (!item) return;
+      if (item.kind === 'call') successfulCallIds.push(item.id);
+      if (item.kind === 'lead') successfulLeadIds.push(item.id);
+    });
 
     await markCallsAsUploaded(supabase, successfulCallIds);
+    await markLeadsAsUploaded(supabase, successfulLeadIds);
 
     // Log failures
     for (const failedResult of uploadResult.results.filter((r) => !r.success)) {
@@ -311,6 +433,7 @@ export async function syncOfflineConversions(): Promise<SyncResult> {
 
     console.log(`\n✅ Offline conversion sync complete:`);
     console.log(`   Calls attributed: ${result.callsAttributed}`);
+    console.log(`   Form leads attributed: ${attributedLeads.length}`);
     console.log(`   Conversions uploaded: ${result.conversionsUploaded}`);
     console.log(`   Failures: ${result.conversionsFailed}`);
 
@@ -388,8 +511,8 @@ export async function getAttributionStats(
  * Find calls that can be attributed to Microsoft Ads clicks (via MSCLKID)
  *
  * Attribution priority:
- * 1. Direct phone_click match - user clicked phone button with MSCLKID within 5 min
- * 2. Session match - user visited from Microsoft ad within 5 min (only if no Google session)
+ * 1. Direct phone_click match - user clicked phone button with MSCLKID within attribution window
+ * 2. Session match - user visited from Microsoft ad within attribution window (only if no Google session)
  */
 async function findMicrosoftAttributableCalls(
   supabase: SupabaseClient,
@@ -543,6 +666,72 @@ async function markCallsAsUploadedToMicrosoft(
   }
 }
 
+async function markLeadsAsUploadedToMicrosoft(
+  supabase: SupabaseClient,
+  leadIds: string[]
+): Promise<void> {
+  if (leadIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      microsoft_ads_form_uploaded_at: new Date().toISOString(),
+    })
+    .in('id', leadIds);
+
+  if (error) {
+    console.error('Error marking leads as uploaded to Microsoft Ads:', error);
+  }
+}
+
+async function findMicrosoftAttributableLeads(
+  supabase: SupabaseClient,
+  lookbackDays: number = 30
+): Promise<MicrosoftAttributedLead[]> {
+  const lookbackDate = new Date();
+  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
+
+  let leads;
+  let leadsError;
+
+  try {
+    const result = await supabase
+      .from('leads')
+      .select('id, created_at, msclkid, revenue_amount, is_test, microsoft_ads_form_uploaded_at')
+      .not('msclkid', 'is', null)
+      .eq('is_test', false)
+      .gte('created_at', lookbackDate.toISOString())
+      .is('microsoft_ads_form_uploaded_at', null);
+
+    leads = result.data;
+    leadsError = result.error;
+
+    if (leadsError?.message?.includes('does not exist')) {
+      console.warn('⚠️ microsoft_ads_form_uploaded_at column not found - skipping lead uploads');
+      return [];
+    }
+  } catch (err: any) {
+    console.error('Error fetching leads for Microsoft Ads upload:', err.message);
+    return [];
+  }
+
+  if (leadsError) {
+    console.error('Error fetching leads:', leadsError);
+    return [];
+  }
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  return leads.map((lead: any) => ({
+    leadId: lead.id,
+    leadTime: new Date(lead.created_at),
+    msclkid: lead.msclkid,
+    conversionValue: Number(lead.revenue_amount) || DEFAULT_FORM_VALUE,
+  }));
+}
+
 /**
  * Sync RingCentral calls to Microsoft Ads as offline conversions
  */
@@ -572,33 +761,69 @@ export async function syncMicrosoftOfflineConversions(): Promise<MicrosoftSyncRe
 
     // Find calls that can be attributed to Microsoft Ads
     const attributedCalls = await findMicrosoftAttributableCalls(supabase);
+    const attributedLeads = MICROSOFT_OFFLINE_FORM_CONVERSION_NAME
+      ? await findMicrosoftAttributableLeads(supabase)
+      : [];
+    if (!MICROSOFT_OFFLINE_FORM_CONVERSION_NAME) {
+      console.warn('⚠️ MICROSOFT_OFFLINE_FORM_CONVERSION_NAME not set - skipping lead uploads');
+    }
+
+    result.callsProcessed = attributedCalls.length;
     result.callsAttributed = attributedCalls.length;
 
-    if (attributedCalls.length === 0) {
-      console.log('📭 No calls to upload to Microsoft Ads');
+    if (attributedCalls.length === 0 && attributedLeads.length === 0) {
+      console.log('📭 No offline conversions to upload to Microsoft Ads');
       return result;
     }
 
-    // Convert to Microsoft offline conversion format
-    const conversions: MicrosoftOfflineConversion[] = attributedCalls.map((call) => ({
-      msclkid: call.msclkid,
-      conversionName: MICROSOFT_OFFLINE_CONVERSION_NAME,
-      conversionTime: formatMicrosoftConversionDateTime(call.callTime),
-      conversionValue: DEFAULT_CALL_VALUE,
-      conversionCurrency: 'USD',
-    }));
+    const conversionsToUpload: Array<{ kind: 'call' | 'lead'; id: string; conversion: MicrosoftOfflineConversion }> = [];
+
+    for (const call of attributedCalls) {
+      conversionsToUpload.push({
+        kind: 'call',
+        id: call.callId,
+        conversion: {
+          msclkid: call.msclkid,
+          conversionName: MICROSOFT_OFFLINE_CONVERSION_NAME,
+          conversionTime: formatMicrosoftConversionDateTime(call.callTime),
+          conversionValue: DEFAULT_CALL_VALUE,
+          conversionCurrency: 'USD',
+        },
+      });
+    }
+
+    for (const lead of attributedLeads) {
+      conversionsToUpload.push({
+        kind: 'lead',
+        id: lead.leadId,
+        conversion: {
+          msclkid: lead.msclkid,
+          conversionName: MICROSOFT_OFFLINE_FORM_CONVERSION_NAME || MICROSOFT_OFFLINE_CONVERSION_NAME,
+          conversionTime: formatMicrosoftConversionDateTime(lead.leadTime),
+          conversionValue: lead.conversionValue,
+          conversionCurrency: 'USD',
+        },
+      });
+    }
 
     // Upload to Microsoft Ads
-    const uploadResult = await uploadMicrosoftOfflineConversions(conversions);
+    const uploadResult = await uploadMicrosoftOfflineConversions(conversionsToUpload.map((item) => item.conversion));
     result.conversionsUploaded = uploadResult.successCount;
     result.conversionsFailed = uploadResult.failureCount;
 
     // Mark successful uploads
-    const successfulCallIds = attributedCalls
-      .filter((call, index) => uploadResult.results[index]?.success)
-      .map((call) => call.callId);
+    const successfulCallIds: string[] = [];
+    const successfulLeadIds: string[] = [];
+    uploadResult.results.forEach((res, index) => {
+      if (!res.success) return;
+      const item = conversionsToUpload[index];
+      if (!item) return;
+      if (item.kind === 'call') successfulCallIds.push(item.id);
+      if (item.kind === 'lead') successfulLeadIds.push(item.id);
+    });
 
     await markCallsAsUploadedToMicrosoft(supabase, successfulCallIds);
+    await markLeadsAsUploadedToMicrosoft(supabase, successfulLeadIds);
 
     // Log failures
     for (const failedResult of uploadResult.results.filter((r) => !r.success)) {
@@ -609,6 +834,7 @@ export async function syncMicrosoftOfflineConversions(): Promise<MicrosoftSyncRe
 
     console.log(`\n✅ Microsoft Ads offline conversion sync complete:`);
     console.log(`   Calls attributed: ${result.callsAttributed}`);
+    console.log(`   Form leads attributed: ${attributedLeads.length}`);
     console.log(`   Conversions uploaded: ${result.conversionsUploaded}`);
     console.log(`   Failures: ${result.conversionsFailed}`);
 

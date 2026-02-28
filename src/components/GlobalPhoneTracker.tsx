@@ -15,6 +15,14 @@ export default function GlobalPhoneTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
+    const applyPhoneTrackingClass = () => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach((anchor) => {
+        anchor.classList.add('phone-tracking');
+      });
+    };
+
+    applyPhoneTrackingClass();
+
     function handleClick(e: MouseEvent) {
       const anchor = (e.target as HTMLElement).closest('a');
       if (!anchor) return;
@@ -26,7 +34,14 @@ export default function GlobalPhoneTracker() {
       }
     }
     document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+
+    const observer = new MutationObserver(() => applyPhoneTrackingClass());
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+      observer.disconnect();
+    };
   }, [pathname]);
 
   return null;

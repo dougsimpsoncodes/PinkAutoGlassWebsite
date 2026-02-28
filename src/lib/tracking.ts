@@ -659,7 +659,9 @@ export function trackFormSubmission(formName: string, metadata?: Record<string, 
   // Fire Google Ads form conversion with leadId or session as transaction_id
   const transactionId = metadata?.leadId || getSessionId();
   if (transactionId) {
-    analytics.trackLeadFormConversion(transactionId);
+    const email = metadata?.email;
+    const phone = metadata?.phone;
+    analytics.trackLeadFormConversion(transactionId, { email, phone });
   }
 
   // Fire Microsoft Ads UET form submission conversion

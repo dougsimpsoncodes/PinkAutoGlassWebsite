@@ -21,7 +21,7 @@ export const MIN_CALL_DURATION_SECONDS = 30;
 // Attribution window for session-based matching (in minutes).
 // If an ad click session started within this window before a call,
 // the call is attributed to that ad platform.
-export const ATTRIBUTION_WINDOW_MINUTES = 5;
+export const ATTRIBUTION_WINDOW_MINUTES = 15;
 
 // Customer-facing SMS kill switch. Set ENABLE_CUSTOMER_SMS=false to disable all
 // automated SMS to customers (instant replies, drip follow-ups, review requests,

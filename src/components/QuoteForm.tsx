@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid } from '@/lib/tracking';
+import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
 
 export default function QuoteForm() {
   const router = useRouter();
@@ -125,6 +125,8 @@ export default function QuoteForm() {
       // Note: ad_platform is derived SERVER-SIDE from gclid/msclkid presence (trust boundary)
       const gclid = getGclid();
       const msclkid = getMsclkid();
+      const utmParams = getUTMParams();
+      const utmSource = utmParams.source || 'direct';
 
       // Combine vehicle data into single string for API
       const vehicle = `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`.trim();
@@ -146,12 +148,17 @@ export default function QuoteForm() {
           sessionId,
           gclid,
           msclkid,
+          utmSource,
+          utmMedium: utmParams.medium,
+          utmCampaign: utmParams.campaign,
+          utmTerm: utmParams.term,
+          utmContent: utmParams.content,
           firstTouch: {
-            utm_source: 'direct',
+            utm_source: utmSource,
             referrer: document.referrer || 'direct'
           },
           lastTouch: {
-            utm_source: 'direct',
+            utm_source: utmSource,
             referrer: document.referrer || 'direct'
           }
         })
@@ -161,7 +168,7 @@ export default function QuoteForm() {
         const data = await response.json();
         // Track form submission with GCLID/MSCLKID attribution to conversion_events table
         // This also fires Google Ads and Microsoft Ads conversion tracking
-        trackFormSubmission('homepage_quote_form', { leadId: data.leadId });
+        trackFormSubmission('homepage_quote_form', { leadId: data.leadId, email: formData.email, phone: formData.phone });
         router.push('/thank-you');
       } else {
         alert('Something went wrong. Please call us at (720) 918-7465');
