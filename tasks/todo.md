@@ -1,49 +1,56 @@
-# AI Search Optimization - 6 Enhancements
+# FAQ / AEO Rollout — All Satellite Sites + Main Site
 
-## Plan
+## Goal
+Add thorough, AI-crawlable FAQ sections to every satellite site and pinkautoglass.com.
+Target: ChatGPT, Perplexity, Google AI Overviews all cite Pink Auto Glass for auto glass questions.
 
-- [x] 1. Create `/llms.txt` route at `src/app/llms.txt/route.ts` (plain text response)
-- [x] 2. Add 5 AI crawler rules to `src/app/robots.ts` (OAI-SearchBot, ClaudeBot, Claude-SearchBot, Bytespider, meta-externalagent)
-- [x] 3. Add SpeakableSpecification schema to top 3 service pages + blog post template
-- [x] 4. Add visible `<time>` timestamps to service pages + blog posts
-- [x] 5. Semantic HTML5 — wrap service page content in `<article>`, ensure `<section>` usage (blog already had `<article>`)
-- [x] 6. Add "answer-first" summary paragraphs after H1 on top 3 service pages
+## The Plan
 
-## Files Modified
-- `src/app/llms.txt/route.ts` (NEW)
-- `src/app/robots.ts`
-- `src/app/services/windshield-replacement/page.tsx`
-- `src/app/services/insurance-claims/page.tsx`
-- `src/app/services/windshield-repair/page.tsx`
-- `src/app/blog/[slug]/page.tsx`
+### Phase 1: Create reusable FAQ component + content bank
+- [x] 1. Create `FAQSection.tsx` component — renders visible Q&A with `<h2>`/`<h3>`/`<p>` + inline FAQPage JSON-LD schema
+- [x] 2. Build FAQ content bank (28 Q&As) organized by tier (universal / state-specific / city-specific)
+- [x] 3. Create FAQ sets mapped to each satellite type
 
-## Build
-- [x] `npm run build` — passed, 232 pages generated, zero errors
+### Phase 2: Roll out to satellite sites (batch by type)
+- [x] 4. National sites (3): carwindshieldprices, windshieldrepairprices, carglassprices
+- [x] 5. Phoenix chip repair (4): phoenix, scottsdale, mesa, tempe
+- [x] 6. Phoenix other (2): windshieldcostphoenix, mobilewindshieldphoenix
+- [x] 7. Denver sites (6): windshield-denver, chip-repair-denver, chip-repair-boulder, aurora, mobile-denver
+- [x] 8. Remaining national/cost (5): windshield-cost-calculator, cheapest-windshield, new-windshield-cost, get-windshield-quote, new-windshield-near-me, windshield-price-compare
 
-## Review (Feb 22, 2026)
+### Phase 3: Main site
+- [x] 9. Add FAQ to pinkautoglass.com emergency-windshield-repair (only service page missing FAQ)
+- [x] 10. Phoenix landing page already had FAQ — no change needed
 
-### Task 1: /llms.txt
-Created `src/app/llms.txt/route.ts` returning plain text with business info, services, area, pages, and contact.
+### Phase 4: Validate
+- [ ] 11. Deploy all satellites and run Google Rich Results Test
+- [ ] 12. Test with ChatGPT/Perplexity to verify citation
 
-### Task 2: robots.ts AI crawlers
-Added 5 new rules: OAI-SearchBot, ClaudeBot, Claude-SearchBot, Bytespider, meta-externalagent. All existing rules preserved.
+## Review (Feb 28, 2026)
 
-### Task 3: SpeakableSpecification
-- Service pages: Added WebPage schema with SpeakableSpecification to the combined schema graph
-- Blog posts: Added speakable property directly to the Article schema object
-- All use cssSelector targeting `.answer-first` and `h1`
+### What changed
+- Created `FAQSection.tsx` reusable component (renders visible FAQ + FAQPage JSON-LD)
+- Deployed to all 20 satellite site repos
+- Added 8-9 localized FAQ items per site using 3-tier content system:
+  - Tier 1 (universal): repair vs replace, ADAS, OEM vs aftermarket, warranty
+  - Tier 2 (state-specific): CO law CRS 10-4-613, AZ zero-deductible, hail/heat/monsoon
+  - Tier 3 (city/neighborhood): Scottsdale (Old Town, DC Ranch), Mesa (Superstition Springs), Tempe (ASU, Kyrene), Boulder (Pearl Street), Aurora (Southlands, I-225), etc.
+- Removed stale schema-only FAQPage from layout.tsx on sites that had it (phoenix, scottsdale, mesa, tempe chip repair sites + windshield-repair-prices)
+- Added 8-question FAQ + JSON-LD to pinkautoglass.com/services/emergency-windshield-repair (was the only service page missing FAQ)
 
-### Task 4: Visible timestamps
-- Service pages: Added `<time dateTime="2026-02-22">Updated February 22, 2026</time>` after breadcrumbs
-- Blog posts: Wrapped existing date display in `<time>` element with dateTime attribute and "Published" prefix
+### Sites modified (14 new FAQ sections added)
+windshield-chip-repair-phoenix, windshield-chip-repair-scottsdale, windshield-chip-repair-mesa, windshield-chip-repair-tempe, mobile-windshield-phoenix, windshield-denver, windshield-chip-repair-denver, windshield-chip-repair-boulder, aurora-windshield, mobile-windshield-denver, windshield-repair-prices, cheapest-windshield, new-windshield-near-me, windshield-price-compare
 
-### Task 5: Semantic HTML5
-- Service pages: Changed outermost `<div>` to `<article>`, all content sections already used `<section>`
-- Blog posts: Already used `<article>` tag, no change needed
+### Sites with component added (FAQ already existed)
+car-windshield-prices, car-glass-prices, windshield-cost-phoenix, windshield-cost-calculator, new-windshield-cost, get-windshield-quote
 
-### Task 6: Answer-first content blocks
-Added ~150-word answer-first paragraphs (with className="answer-first") inside the hero sections of:
-- Windshield replacement: covers cost range, $0 deductible law, OEM glass, mobile service, ADAS calibration
-- Insurance claims: covers process, zero-deductible law CRS 10-4-613, accepted insurers, no rate increase
-- Windshield repair: covers 30-minute service, insurance coverage, mobile service, resin process, lifetime warranty
-- Blog posts: Added answer-first class to the excerpt paragraph
+### Build verification
+- pinkautoglass.com: clean build ✓
+- windshield-chip-repair-phoenix: clean build ✓
+- windshield-denver: clean build ✓
+- cheapest-windshield: clean build ✓
+
+### Remaining
+- Deploy all 20 satellites + main site to Vercel
+- Validate FAQPage schema with Google Rich Results Test
+- Monitor AI citation in ChatGPT/Perplexity over next 2-4 weeks

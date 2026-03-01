@@ -4,6 +4,7 @@ import { Clock, Phone, AlertTriangle, Shield, MapPin, Zap, CheckCircle } from 'l
 import CTAButtons from '@/components/CTAButtons';
 import TrustBadges from '@/components/TrustBadges';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { generateFAQSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
   title: "24/7 Emergency Windshield Repair Denver | Same-Day Service | Pink Auto Glass",
@@ -22,6 +23,43 @@ export const metadata: Metadata = {
 };
 
 export default function EmergencyWindshieldRepairPage() {
+  const faqs = [
+    {
+      question: 'What qualifies as an emergency windshield repair?',
+      answer: 'Any damage that compromises your safety or ability to drive — a large crack obstructing your view, a shattered windshield from a collision, or a crack that is actively spreading. If driving feels unsafe, call us immediately for same-day emergency service.',
+    },
+    {
+      question: 'How fast can you get to me for an emergency windshield repair in Denver?',
+      answer: 'Pink Auto Glass offers same-day emergency mobile service across the Denver metro area. For urgent requests made before noon, we can typically arrive within 2-4 hours. Call our emergency line directly for the fastest scheduling.',
+    },
+    {
+      question: 'Can I drive with a shattered or badly cracked windshield?',
+      answer: 'It depends on the severity. If the crack is in your direct line of sight or the glass is structurally compromised, do not drive. A cracked windshield provides 30-45% of your vehicle\'s roof crush resistance in a rollover. Call us and we will come to you.',
+    },
+    {
+      question: 'Does insurance cover emergency windshield replacement?',
+      answer: 'Yes. Comprehensive insurance covers windshield replacement regardless of whether it is scheduled or emergency. Colorado law (CRS 10-4-613) requires insurers to offer zero-deductible glass coverage. Pink Auto Glass handles the claim for you — most customers pay $0.',
+    },
+    {
+      question: 'Do you offer 24/7 emergency windshield service?',
+      answer: 'Pink Auto Glass offers extended hours and same-day emergency service across the Denver metro. Call our emergency line at (720) 918-7465 to check current availability. We prioritize safety-critical damage.',
+    },
+    {
+      question: 'What should I do right now if my windshield just cracked?',
+      answer: 'First, do not touch or press on the crack. Apply clear packing tape over the damage to prevent debris and moisture from entering. Avoid extreme temperature changes like blasting heat or AC directly on the glass. Then call Pink Auto Glass for same-day repair or replacement.',
+    },
+    {
+      question: 'Will my emergency windshield replacement include ADAS calibration?',
+      answer: 'If your vehicle has a windshield-mounted ADAS camera (common on 2018+ vehicles), yes — recalibration is required after any replacement. Pink Auto Glass includes calibration when needed and confirms coverage with your insurer before starting work.',
+    },
+    {
+      question: 'What areas do you cover for emergency windshield service?',
+      answer: 'Pink Auto Glass provides emergency mobile service across the Denver metro: Denver, Aurora, Lakewood, Arvada, Westminster, Broomfield, Thornton, Englewood, Littleton, Centennial, Highlands Ranch, Parker, and Castle Rock.',
+    },
+  ];
+
+  const faqSchema = generateFAQSchema(faqs);
+
   const emergencySchema = {
     "@context": "https://schema.org",
     "@type": "EmergencyService",
@@ -133,6 +171,10 @@ export default function EmergencyWindshieldRepairPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(emergencySchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       <div className="page-top-padding">
@@ -355,6 +397,24 @@ export default function EmergencyWindshieldRepairPage() {
           <div className="mb-16">
             <TrustBadges variant="grid" size="md" />
           </div>
+
+          {/* FAQ */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              Emergency Windshield Repair — Frequently Asked Questions
+            </h2>
+            <div className="space-y-4">
+              {faqs.map((faq, index) => (
+                <details key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
+                  <summary className="font-semibold text-lg text-gray-900 cursor-pointer flex justify-between items-center">
+                    {faq.question}
+                    <span className="text-pink-600 group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
 
           {/* Final Emergency CTA */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-8 md:p-12 text-center text-white">
