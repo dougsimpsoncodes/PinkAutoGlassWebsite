@@ -10,6 +10,9 @@ export default function StickyCallBar() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+
+  if (pathname?.startsWith('/admin')) return null;
+
   const market = resolveMarket(pathname);
   const { phoneNumber, displayPhone } = getPhoneForMarket(market);
 

@@ -145,21 +145,8 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                function getCookieValue(name) {
-                  var match = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]+)'));
-                  return match ? decodeURIComponent(match[2]) : '';
-                }
-                var marketCookie = (getCookieValue('market') || '').toLowerCase();
                 var path = (window.location.pathname || '').toLowerCase();
-                var hasArizonaMarker = path.includes('/phoenix') || path.includes('-az') || path.includes('/arizona');
-                var hasColoradoMarker =
-                  path.includes('/denver') ||
-                  path.includes('/boulder') ||
-                  path.includes('/aurora') ||
-                  path.includes('/colorado-springs') ||
-                  path.includes('/colorado') ||
-                  path.includes('-co');
-                var isArizona = hasArizonaMarker ? true : (hasColoradoMarker ? false : marketCookie === 'arizona');
+                var isArizona = path.includes('/phoenix') || path.includes('-az') || path.includes('/arizona');
                 var phoneConversionNumber = isArizona ? '(480) 712-7465' : '(720) 918-7465';
                 gtag('config', 'AW-17667607828', {
                   'phone_conversion_number': phoneConversionNumber,

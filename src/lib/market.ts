@@ -19,17 +19,8 @@ export function getMarketFromPath(pathname: string | null | undefined): Market |
   return null;
 }
 
-export function getMarketFromCookie(): Market | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|; )market=([^;]+)/);
-  if (!match) return null;
-  const value = decodeURIComponent(match[1] || '').toLowerCase();
-  if (value === 'arizona' || value === 'colorado') return value;
-  return null;
-}
-
 export function resolveMarket(pathname?: string | null): Market {
-  return getMarketFromPath(pathname) || getMarketFromCookie() || 'colorado';
+  return getMarketFromPath(pathname) || 'colorado';
 }
 
 export function getPhoneForMarket(market: Market) {

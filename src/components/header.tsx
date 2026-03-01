@@ -11,6 +11,9 @@ import { resolveMarket, getPhoneForMarket } from "@/lib/market"
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
+
+  if (pathname?.startsWith('/admin')) return null
+
   const market = resolveMarket(pathname)
   const { displayPhone, phoneE164 } = getPhoneForMarket(market)
   const tel = `tel:${phoneE164}`

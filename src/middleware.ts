@@ -17,49 +17,6 @@ export async function middleware(request: NextRequest) {
 
   const hostname = request.nextUrl.hostname.toLowerCase();
   const pathname = request.nextUrl.pathname.toLowerCase();
-  const hasArizonaMarker =
-    hostname.includes('phoenix') ||
-    hostname.includes('-az') ||
-    hostname.includes('arizona') ||
-    pathname.includes('/phoenix') ||
-    pathname.includes('-az') ||
-    pathname.includes('/arizona');
-  const hasColoradoMarker =
-    hostname.includes('denver') ||
-    hostname.includes('boulder') ||
-    hostname.includes('aurora') ||
-    hostname.includes('colorado') ||
-    hostname.includes('-co') ||
-    pathname.includes('/denver') ||
-    pathname.includes('/boulder') ||
-    pathname.includes('/aurora') ||
-    pathname.includes('/colorado-springs') ||
-    pathname.includes('/colorado') ||
-    pathname.includes('-co');
-
-  // Geo-IP market detection (set once via cookie, only when market is ambiguous)
-  const marketCookie = request.cookies.get('market')?.value;
-  const explicitMarket: 'arizona' | 'colorado' | null = hasArizonaMarker
-    ? 'arizona'
-    : hasColoradoMarker
-      ? 'colorado'
-      : null;
-
-  if (!marketCookie && !explicitMarket) {
-    const region = request.geo?.region || request.headers.get('x-vercel-ip-country-region') || '';
-    const normalizedRegion = region.toUpperCase();
-    let market: 'arizona' | 'colorado' | null = null;
-    if (normalizedRegion === 'AZ') market = 'arizona';
-    if (normalizedRegion === 'CO') market = 'colorado';
-    if (market) {
-      response.cookies.set('market', market, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        sameSite: 'lax',
-      });
-    }
-  }
-
   // Check if this is an admin route
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
