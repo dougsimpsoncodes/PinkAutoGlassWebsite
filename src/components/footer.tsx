@@ -47,7 +47,7 @@ export default function Footer() {
                   <MapPin className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-300">
                     Mobile Service Throughout<br />
-                    Colorado
+                    Denver, CO 80202–80290
                   </span>
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-400">
-              <p>&copy; 2024 Pink Auto Glass. All rights reserved.</p>
+              <p>&copy; 2026 Pink Auto Glass. All rights reserved.</p>
               <div className="flex space-x-4">
                 <Link href="/privacy" className="hover:text-white transition-colors">
                   Privacy Policy
