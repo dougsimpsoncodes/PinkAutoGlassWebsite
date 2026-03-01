@@ -166,6 +166,49 @@ const nextConfig = {
         destination: '/privacy',
         permanent: true, // 301 redirect
       },
+      // Legacy insurance claims pages → new /insurance/[carrier] pages
+      {
+        source: '/services/insurance-claims/:carrier(progressive|geico|state-farm|allstate|usaa|aaa|farmers|liberty-mutual|nationwide|travelers)',
+        destination: '/insurance/:carrier',
+        permanent: true,
+      },
+      // Common 404 URLs Google tries to crawl → redirect to relevant pages
+      {
+        source: '/quote',
+        destination: '/book',
+        permanent: true,
+      },
+      {
+        source: '/get-quote',
+        destination: '/book',
+        permanent: true,
+      },
+      {
+        source: '/faq',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/reviews',
+        destination: '/about',
+        permanent: true,
+      },
+      // Location shorthand → proper slugs
+      {
+        source: '/locations/denver',
+        destination: '/locations/denver-co',
+        permanent: true,
+      },
+      {
+        source: '/locations/boulder',
+        destination: '/locations/boulder-co',
+        permanent: true,
+      },
+      {
+        source: '/locations/phoenix',
+        destination: '/locations/phoenix-az',
+        permanent: true,
+      },
     ];
   },
 }

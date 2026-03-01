@@ -84,6 +84,13 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   {city.intro}
                 </p>
                 <AboveFoldCTA location={city.slug} />
+                {city.localContext && (
+                  <div className="prose prose-lg text-gray-700 my-6 space-y-4">
+                    {city.localContext.split('\n\n').map((paragraph, i) => (
+                      <p key={i}>{paragraph}</p>
+                    ))}
+                  </div>
+                )}
 
                 <div className="bg-pink-50 border-l-4 border-pink-500 p-6 my-6 rounded-r-lg">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{city.challenges.title}</h3>
@@ -110,16 +117,16 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   <h3 className="text-xl font-bold text-blue-900 mb-3">Arizona Law Protects {city.city} Drivers</h3>
                   <ul className="space-y-3 text-blue-800">
                     <li className="flex items-start">
-                      <span className="font-bold mr-2">:</span>
+                      <span className="font-bold mr-2">ARS § 20-263:</span>
                       <span>Requires insurers to offer zero-deductible glass coverage as an option with comprehensive policies. This is the law that makes $0 windshield replacement possible.</span>
                     </li>
                     <li className="flex items-start">
-                      
-                      <span>No-fault rate protection. Filing a glass claim in Arizona legally cannot raise your insurance rates.</span>
+                      <span className="font-bold mr-2">Rate Protection:</span>
+                      <span>Filing a glass claim in Arizona legally cannot raise your insurance rates.</span>
                     </li>
                     <li className="flex items-start">
-                      
-                      <span>Right to choose your shop. Insurers can recommend Safelite but cannot require it — and must tell you that you have the right to choose any shop you want.</span>
+                      <span className="font-bold mr-2">Right to Choose:</span>
+                      <span>Insurers can recommend Safelite but cannot require it — and must tell you that you have the right to choose any shop you want.</span>
                     </li>
                   </ul>
                 </div>
@@ -186,15 +193,15 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span><strong>:</strong> $0 deductible option required</span>
+                      <span><strong>ARS § 20-263:</strong> $0 deductible option required</span>
                     </li>
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span> No rate increase for glass claims</span>
+                      <span><strong>Rate Protection:</strong> No rate increase for glass claims</span>
                     </li>
                     <li className="flex items-start">
                       <Shield className="w-4 h-4 text-pink-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span> Right to choose your shop</span>
+                      <span><strong>Right to Choose:</strong> Pick any shop you want</span>
                     </li>
                   </ul>
                   <Link href="/services/insurance-claims/arizona" className="block mt-4 text-pink-600 hover:underline font-semibold">Full AZ Insurance Guide →</Link>

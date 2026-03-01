@@ -160,8 +160,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Blog pages
+  // Blog pages (exclude slugs that 301-redirect to canonical versions)
   const blogPosts = getAllBlogPosts();
+  const redirectedBlogSlugs = new Set([
+    'windshield-repair-vs-replacement-decision-guide',
+    'windshield-replacement-cost-guide-colorado',
+  ]);
   const blog: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/blog`,
@@ -169,12 +173,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
-    ...blogPosts.map((post) => ({
-      url: `${baseUrl}/blog/${post.slug}`,
-      lastModified: new Date(post.publishDate),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    })),
+    ...blogPosts
+      .filter((post) => !redirectedBlogSlugs.has(post.slug))
+      .map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.publishDate),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      })),
   ];
 
   // Brand (make) pages
@@ -231,24 +237,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Insurance brand pages (legacy /services/insurance-claims/[carrier] routes)
-  const insuranceBrands = [
-    'progressive',
-    'geico',
-    'state-farm',
-    'allstate',
-    'usaa',
-    'aaa',
-    'farmers',
-    'liberty-mutual',
-    'nationwide',
-    'travelers',
-  ].map((slug) => ({
-    url: `${baseUrl}/services/insurance-claims/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
+  // Legacy /services/insurance-claims/[carrier] routes now 301 → /insurance/[carrier]
+  // Only keep /services/insurance-claims/arizona (no redirect, unique AZ law page)
+  const insuranceBrands: MetadataRoute.Sitemap = [];
 
   // Carrier-specific insurance pages at /insurance/[carrier]
   const carrierInsurancePages: MetadataRoute.Sitemap = [
