@@ -4,9 +4,16 @@
  * Deterministically matches Google Ads call_view records to RingCentral call logs
  * by comparing timestamps and durations. This bridges the gap between Google's
  * forwarding number system and our RingCentral phone system.
+ *
+ * TIMEZONE NOTE: Google Ads call_view timestamps are in the account timezone
+ * (America/Phoenix = UTC-7, no DST). RingCentral timestamps are UTC.
+ * We correct for this 7-hour offset during comparison.
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+
+// Google Ads account timezone is America/Phoenix (UTC-7 always, no DST)
+const GADS_TZ_OFFSET_MS = 7 * 60 * 60 * 1000;
 
 export interface CrossReferenceResult {
   matched: number;
@@ -20,7 +27,7 @@ export interface CrossReferenceResult {
  * Match Google Ads call_view records to RingCentral calls.
  *
  * Matching criteria (deterministic, not probabilistic):
- * - start_time within 60 seconds of each other
+ * - start_time within 60 seconds of each other (after timezone correction)
  * - duration within 10 seconds of each other
  * - If caller_area_code available, also verify area code matches from_number
  *
@@ -47,11 +54,12 @@ export async function crossReferenceCallsToRingCentral(
     return { matched: 0, unmatched: 0, errors: gadsError ? 1 : 0, leadsCreated: 0, leadsUpdated: 0 };
   }
 
-  // Fetch RingCentral calls for the same period (with buffer for timezone differences)
+  // Fetch RingCentral calls for the same period
+  // Buffer accounts for timezone offset: GAds MST times + 7h = UTC, then ±2h safety margin
   const bufferStart = new Date(`${startDate}T00:00:00`);
-  bufferStart.setHours(bufferStart.getHours() - 2);
+  bufferStart.setTime(bufferStart.getTime() + GADS_TZ_OFFSET_MS - 2 * 60 * 60 * 1000);
   const bufferEnd = new Date(`${endDate}T23:59:59`);
-  bufferEnd.setHours(bufferEnd.getHours() + 2);
+  bufferEnd.setTime(bufferEnd.getTime() + GADS_TZ_OFFSET_MS + 2 * 60 * 60 * 1000);
 
   const { data: rcCalls, error: rcError } = await supabase
     .from('ringcentral_calls')
@@ -85,7 +93,8 @@ export async function crossReferenceCallsToRingCentral(
   const claimedRcIds = new Set<string>();
 
   for (const gadsCall of gadsCalls) {
-    const gadsTime = new Date(gadsCall.start_date_time).getTime();
+    // Convert Google Ads MST timestamp to UTC for comparison with RingCentral
+    const gadsTime = new Date(gadsCall.start_date_time).getTime() + GADS_TZ_OFFSET_MS;
     const gadsDuration = gadsCall.call_duration_seconds;
     const gadsAreaCode = gadsCall.caller_area_code || '';
 
