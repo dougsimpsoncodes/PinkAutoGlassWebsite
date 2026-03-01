@@ -19,8 +19,6 @@ export interface CrossReferenceResult {
   matched: number;
   unmatched: number;
   errors: number;
-  leadsCreated: number;
-  leadsUpdated: number;
 }
 
 /**
@@ -51,7 +49,7 @@ export async function crossReferenceCallsToRingCentral(
 
   if (gadsError || !gadsCalls || gadsCalls.length === 0) {
     if (gadsError) console.error('Error fetching Google Ads calls:', gadsError);
-    return { matched: 0, unmatched: 0, errors: gadsError ? 1 : 0, leadsCreated: 0, leadsUpdated: 0 };
+    return { matched: 0, unmatched: 0, errors: gadsError ? 1 : 0 };
   }
 
   // Fetch RingCentral calls for the same period
@@ -71,23 +69,11 @@ export async function crossReferenceCallsToRingCentral(
 
   if (rcError || !rcCalls) {
     if (rcError) console.error('Error fetching RingCentral calls:', rcError);
-    return { matched: 0, unmatched: gadsCalls.length, errors: 1, leadsCreated: 0, leadsUpdated: 0 };
+    return { matched: 0, unmatched: gadsCalls.length, errors: 1 };
   }
 
   let matched = 0;
   let errors = 0;
-  let leadsCreated = 0;
-  let leadsUpdated = 0;
-
-  // Build test phone set for filtering
-  const excludedPhones = new Set(
-    (process.env.EXCLUDED_DRIP_PHONES || '').split(',').map(p => p.trim()).filter(Boolean)
-  );
-  const testPhones = new Set(
-    (process.env.TEST_PHONES || '').split(',').map(p => p.trim()).filter(Boolean)
-  );
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   // Track which RC calls have been claimed (prevent double-matching)
   const claimedRcIds = new Set<string>();
@@ -166,58 +152,6 @@ export async function crossReferenceCallsToRingCentral(
         errors++;
       } else {
         matched++;
-
-        // Fix B: Create or update lead for call-only Google Ads customers
-        const callerPhone = bestMatch.from_number;
-        if (callerPhone && !excludedPhones.has(callerPhone) && !testPhones.has(callerPhone)) {
-          try {
-            // Dedup: check for existing lead with same phone in last 7 days
-            const { data: existingLead } = await supabase
-              .from('leads')
-              .select('id, ad_platform')
-              .eq('phone_e164', callerPhone)
-              .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
-              .gte('created_at', sevenDaysAgo.toISOString())
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .single();
-
-            if (existingLead) {
-              // Update existing lead attribution if it's unattributed
-              if (!existingLead.ad_platform || existingLead.ad_platform === 'direct' || existingLead.ad_platform === 'unknown') {
-                await supabase
-                  .from('leads')
-                  .update({ ad_platform: 'google', first_contact_method: 'call' })
-                  .eq('id', existingLead.id);
-                leadsUpdated++;
-              }
-            } else {
-              // Create a new lead for this call-only customer
-              const callTime = new Date(gadsCall.start_date_time);
-              await supabase
-                .from('leads')
-                .insert({
-                  first_name: 'Google Ads',
-                  last_name: 'Caller',
-                  phone_e164: callerPhone,
-                  email: `call-${callTime.getTime()}@temp.pinkautoglass.com`,
-                  vehicle_year: 2000,
-                  vehicle_make: 'Unknown',
-                  vehicle_model: 'Unknown',
-                  service_type: 'repair',
-                  ad_platform: 'google',
-                  first_contact_method: 'call',
-                  is_test: false,
-                  status: 'new',
-                  created_at: callTime.toISOString(),
-                });
-              leadsCreated++;
-            }
-          } catch (leadErr) {
-            // Non-fatal: log but don't fail the cross-reference
-            console.error('Error creating/updating lead for Google Ads call:', leadErr);
-          }
-        }
       }
     }
   }
@@ -226,9 +160,8 @@ export async function crossReferenceCallsToRingCentral(
 
   console.log(
     `📞 Cross-reference: ${matched} matched, ${unmatched} unmatched, ${errors} errors ` +
-    `(${gadsCalls.length} Google Ads calls, ${rcCalls.length} RingCentral calls)` +
-    (leadsCreated || leadsUpdated ? ` | Leads: ${leadsCreated} created, ${leadsUpdated} updated` : '')
+    `(${gadsCalls.length} Google Ads calls, ${rcCalls.length} RingCentral calls)`
   );
 
-  return { matched, unmatched, errors, leadsCreated, leadsUpdated };
+  return { matched, unmatched, errors };
 }

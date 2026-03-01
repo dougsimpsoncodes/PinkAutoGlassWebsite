@@ -18,6 +18,7 @@ import {
   fetchCallView,
 } from '@/lib/googleAds';
 import { crossReferenceCallsToRingCentral } from '@/lib/callAttributionSync';
+import { syncCallLeads } from '@/lib/callLeadSync';
 import {
   validateSearchConsoleConfig,
   fetchQueryPerformance,
@@ -72,6 +73,9 @@ export async function GET(request: NextRequest) {
         callView: { success: false, records: 0, error: null as string | null },
         searchTerms: { success: false, records: 0, error: null as string | null },
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
+      },
+      callLeadSync: {
+        success: false, created: 0, updated: 0, skipped: 0, error: null as string | null,
       },
       callAttribution: {
         crossReference: { success: false, matched: 0, unmatched: 0, error: null as string | null },
@@ -747,6 +751,28 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.callAttribution.crossReference.error = error.message;
       console.error('❌ Cross-reference failed:', error.message);
+    }
+
+    // ========================================
+    // 11. Create/Update Leads for Qualifying Callers
+    // ========================================
+    // Must run AFTER cross-reference (step 10) so Google Ads attribution
+    // is already populated on ringcentral_calls.ad_platform before we
+    // create leads from those calls.
+    try {
+      console.log('📋 Syncing call-based leads...');
+      const callLeadResult = await syncCallLeads(supabase, startDateStr, endDateStr);
+      results.callLeadSync = {
+        success: true,
+        created: callLeadResult.created,
+        updated: callLeadResult.updated,
+        skipped: callLeadResult.skipped,
+        error: null,
+      };
+      console.log(`✅ Call leads: ${callLeadResult.created} created, ${callLeadResult.updated} updated, ${callLeadResult.skipped} skipped`);
+    } catch (error: any) {
+      results.callLeadSync.error = error.message;
+      console.error('❌ Call lead sync failed:', error.message);
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
