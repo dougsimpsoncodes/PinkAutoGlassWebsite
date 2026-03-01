@@ -24,12 +24,17 @@ import {
   fetchDailyPerformance,
 } from '@/lib/googleSearchConsole';
 import { syncOfflineConversions, syncMicrosoftOfflineConversions } from '@/lib/offlineConversionSync';
-import { validateMicrosoftAdsConfig, fetchSearchTerms as fetchMicrosoftSearchTerms } from '@/lib/microsoftAds';
+import {
+  validateMicrosoftAdsConfig,
+  fetchSearchTerms as fetchMicrosoftSearchTerms,
+  fetchCampaignPerformance as fetchMicrosoftCampaignPerformance,
+} from '@/lib/microsoftAds';
 import { validateGBPConfig, fetchGBPCallMetrics } from '@/lib/googleBusinessProfile';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes max
+const UPSERT_CHUNK_SIZE = 250;
 
 function getSupabaseClient() {
   return createClient(
@@ -72,6 +77,7 @@ export async function GET(request: NextRequest) {
         crossReference: { success: false, matched: 0, unmatched: 0, error: null as string | null },
       },
       microsoftAds: {
+        campaigns: { success: false, records: 0, error: null as string | null },
         searchTerms: { success: false, records: 0, error: null as string | null },
         offlineConversions: { success: false, uploaded: 0, failed: 0, error: null as string | null },
       },
@@ -552,7 +558,57 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 8. Sync Microsoft Ads Search Terms
+    // 8. Sync Microsoft Ads Campaign Performance (Daily)
+    // ========================================
+    try {
+      const msConfigValid = validateMicrosoftAdsConfig();
+      if (msConfigValid.isValid) {
+        console.log('📊 Syncing Microsoft Ads campaign performance...');
+        const campaignData = await fetchMicrosoftCampaignPerformance(startDateStr, endDateStr);
+
+        const campaignRecordsRaw = campaignData.map((record) => ({
+          date: record.date,
+          campaign_id: record.campaign_id,
+          campaign_name: record.campaign_name,
+          campaign_status: record.campaign_status,
+          impressions: record.impressions,
+          clicks: record.clicks,
+          cost_micros: record.cost_micros,
+          conversions: record.conversions,
+          conversion_value_micros: record.conversion_value_micros,
+          ctr: record.ctr,
+          average_cpc_micros: record.average_cpc_micros,
+          channel_type: record.channel_type,
+        }));
+
+        const campaignRecords = dedupeRecords(
+          campaignRecordsRaw,
+          (r) => `${r.date}|${r.campaign_id}`
+        );
+
+        const stored = await upsertInChunks(
+          supabase,
+          'microsoft_ads_daily_performance',
+          campaignRecords,
+          'date,campaign_id'
+        );
+
+        results.microsoftAds.campaigns = {
+          success: true,
+          records: stored,
+          error: null,
+        };
+        console.log(`✅ Synced ${stored} Microsoft Ads daily performance records`);
+      } else {
+        results.microsoftAds.campaigns.error = `Missing config: ${msConfigValid.missingVars.join(', ')}`;
+      }
+    } catch (error: any) {
+      results.microsoftAds.campaigns.error = error.message;
+      console.error('❌ Microsoft Ads campaign sync failed:', error.message);
+    }
+
+    // ========================================
+    // 9. Sync Microsoft Ads Search Terms
     // ========================================
     try {
       const msConfigValid = validateMicrosoftAdsConfig();
@@ -632,7 +688,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 8.5. Sync Google Business Profile Call Metrics
+    // 9.5. Sync Google Business Profile Call Metrics
     // ========================================
     try {
       const gbpConfig = validateGBPConfig();
@@ -676,7 +732,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 9. Cross-Reference Google Ads Calls to RingCentral
+    // 10. Cross-Reference Google Ads Calls to RingCentral
     // ========================================
     // Must run after both call_view (step 2.5) and RingCentral (step 1) syncs complete
     try {
@@ -716,4 +772,30 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function upsertInChunks<T extends Record<string, any>>(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  table: string,
+  records: T[],
+  onConflict: string
+): Promise<number> {
+  let stored = 0;
+
+  for (let i = 0; i < records.length; i += UPSERT_CHUNK_SIZE) {
+    const chunk = records.slice(i, i + UPSERT_CHUNK_SIZE);
+    const { error } = await supabase.from(table).upsert(chunk, { onConflict });
+    if (!error) stored += chunk.length;
+    else console.error(`${table} upsert error:`, error.message, error.code);
+  }
+
+  return stored;
+}
+
+function dedupeRecords<T>(records: T[], keyFn: (record: T) => string): T[] {
+  const byKey = new Map<string, T>();
+  for (const record of records) {
+    byKey.set(keyFn(record), record);
+  }
+  return Array.from(byKey.values());
 }

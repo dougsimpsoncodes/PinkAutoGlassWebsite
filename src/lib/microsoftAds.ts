@@ -17,6 +17,7 @@
  */
 
 import { inflateRawSync } from 'zlib';
+import { createClient } from '@supabase/supabase-js';
 // adm-zip as fallback
 import AdmZip from 'adm-zip';
 
@@ -58,12 +59,50 @@ export function validateMicrosoftAdsConfig(): {
  * Get OAuth access token from refresh token
  * Microsoft uses standard OAuth 2.0 token exchange
  */
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return null;
+  return createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+async function getStoredRefreshToken(): Promise<string | null> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', 'microsoft_ads_refresh_token')
+    .single();
+  if (error) return null;
+  return data?.value || null;
+}
+
+async function storeRefreshToken(nextToken: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return;
+  await supabase
+    .from('app_config')
+    .upsert(
+      { key: 'microsoft_ads_refresh_token', value: nextToken, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+}
+
 async function getAccessToken(): Promise<string> {
   const config = validateMicrosoftAdsConfig();
   if (!config.isValid) {
     throw new Error(
       `Missing required Microsoft Ads credentials: ${config.missingVars.join(', ')}`
     );
+  }
+
+  const storedRefreshToken = await getStoredRefreshToken();
+  const refreshToken = storedRefreshToken || MICROSOFT_ADS_REFRESH_TOKEN;
+  if (!refreshToken) {
+    throw new Error('Missing Microsoft Ads refresh token');
   }
 
   const tokenEndpoint = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
@@ -76,7 +115,7 @@ async function getAccessToken(): Promise<string> {
     body: new URLSearchParams({
       client_id: MICROSOFT_ADS_CLIENT_ID!,
       client_secret: MICROSOFT_ADS_CLIENT_SECRET!,
-      refresh_token: MICROSOFT_ADS_REFRESH_TOKEN!,
+      refresh_token: refreshToken,
       grant_type: 'refresh_token',
       scope: 'https://ads.microsoft.com/msads.manage',
     }),
@@ -87,6 +126,9 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = await response.json();
+  if (data.refresh_token && data.refresh_token !== refreshToken) {
+    await storeRefreshToken(data.refresh_token);
+  }
   return data.access_token;
 }
 
