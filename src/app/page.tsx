@@ -18,6 +18,7 @@ export default function Home() {
       "@type": "PostalAddress",
       "addressLocality": "Denver",
       "addressRegion": "CO",
+      "postalCode": "80202",
       "addressCountry": "US"
     },
     "geo": {
@@ -30,7 +31,17 @@ export default function Home() {
       { "@type": "City", "name": "Aurora" },
       { "@type": "City", "name": "Lakewood" },
       { "@type": "City", "name": "Highlands Ranch" },
-      { "@type": "City", "name": "Boulder" }
+      { "@type": "City", "name": "Boulder" },
+      { "@type": "City", "name": "Littleton" },
+      { "@type": "City", "name": "Englewood" },
+      { "@type": "City", "name": "Westminster" },
+      { "@type": "City", "name": "Thornton" },
+      { "@type": "City", "name": "Arvada" },
+      { "@type": "City", "name": "Centennial" },
+      { "@type": "City", "name": "Parker" },
+      { "@type": "City", "name": "Broomfield" },
+      { "@type": "City", "name": "Castle Rock" },
+      { "@type": "City", "name": "Commerce City" }
     ],
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
@@ -39,8 +50,9 @@ export default function Home() {
       "closes": "19:00"
     },
     "sameAs": [
-      "https://www.facebook.com/pinkautoglass",
-      "https://www.instagram.com/pinkautoglass"
+      "https://www.facebook.com/PinkAutoGlassDenver",
+      "https://www.instagram.com/pinkautoglassdenver",
+      "https://www.linkedin.com/company/pink-auto-glass"
     ],
     "aggregateRating": {
       "@type": "AggregateRating",
