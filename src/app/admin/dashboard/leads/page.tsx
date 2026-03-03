@@ -30,6 +30,7 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  RadioTower,
 } from 'lucide-react';
 import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
 
@@ -354,6 +355,7 @@ export default function LeadManagementDashboard() {
     let aVal: string | number, bVal: string | number;
     switch (sortColumn) {
       case 'type':    aVal = a.type;    bVal = b.type;    break;
+      case 'source':  aVal = a.ad_platform || 'unknown'; bVal = b.ad_platform || 'unknown'; break;
       case 'name':    aVal = a.name?.toLowerCase() || '';  bVal = b.name?.toLowerCase() || ''; break;
       case 'date':    aVal = new Date(a.created_at).getTime(); bVal = new Date(b.created_at).getTime(); break;
       case 'status':  aVal = a.status;  bVal = b.status;  break;
@@ -419,7 +421,11 @@ export default function LeadManagementDashboard() {
     texts: leads.filter(l => l.type === 'text').length,
     forms: leads.filter(l => l.type === 'form').length,
     new: leads.filter(l => l.status === 'new').length,
+    contacted: leads.filter(l => l.status === 'contacted').length,
+    closed: leads.filter(l => l.status === 'scheduled' || l.status === 'completed').length,
+    completed: leads.filter(l => l.revenue_amount && l.revenue_amount > 0).length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
+    closeRate: leads.length > 0 ? Math.round((leads.filter(l => l.status === 'scheduled' || l.status === 'completed').length / leads.length) * 100) : 0,
   };
 
   // Only show spinner on initial load when we have no cached data
@@ -439,9 +445,15 @@ export default function LeadManagementDashboard() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-        <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
+          <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+          <RadioTower className="w-4 h-4" />
+          Market toggle coming soon
+        </div>
       </div>
 
       {/* Date Filter Bar */}
@@ -453,26 +465,30 @@ export default function LeadManagementDashboard() {
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-gray-500">
           <div className="text-sm text-gray-600">Total Leads</div>
           <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-          <div className="text-sm text-gray-600">Phone Calls</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+          <div className="text-sm text-gray-600">Contacted</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.contacted}</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-          <div className="text-sm text-gray-600">Form Leads</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
+          <div className="text-sm text-gray-600">Closed</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.closed}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-600">New Leads</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.new}</div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+          <div className="text-sm text-gray-600">Completed</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.completed}</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-600">
           <div className="text-sm text-gray-600">Revenue</div>
           <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-500">
+          <div className="text-sm text-gray-600">Close Rate</div>
+          <div className="text-2xl font-bold text-indigo-600">{stats.closeRate}%</div>
         </div>
       </div>
 
@@ -541,6 +557,9 @@ export default function LeadManagementDashboard() {
                 <th onClick={() => handleSort('type')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
                   Type<SortIcon column="type" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
+                <th onClick={() => handleSort('source')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                  Source<SortIcon column="source" sortColumn={sortColumn} sortDirection={sortDirection} />
+                </th>
                 <th onClick={() => handleSort('name')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
                   Name / Phone<SortIcon column="name" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
@@ -563,7 +582,7 @@ export default function LeadManagementDashboard() {
             <tbody className="divide-y divide-gray-200">
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     No leads found
                   </td>
                 </tr>
@@ -576,6 +595,20 @@ export default function LeadManagementDashboard() {
                         {getTypeIcon(lead.type)}
                         {lead.type === 'call' ? 'Call' : lead.type === 'text' ? 'Text' : 'Form'}
                       </span>
+                    </td>
+
+                    {/* Source */}
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {lead.ad_platform === 'google' && '🔍 Google Ads'}
+                        {lead.ad_platform === 'bing' && '🔍 Bing Ads'}
+                        {lead.ad_platform === 'organic' && '🌱 Organic'}
+                        {lead.ad_platform === 'direct' && '🔗 Direct'}
+                        {!lead.ad_platform && <span className="text-gray-400">Unknown</span>}
+                      </div>
+                      {lead.utm_campaign && (
+                        <div className="text-xs text-gray-500 mt-0.5">{lead.utm_campaign}</div>
+                      )}
                     </td>
 
                     {/* Name / Phone */}
