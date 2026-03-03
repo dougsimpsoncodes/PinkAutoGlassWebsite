@@ -50,6 +50,7 @@ export interface UnifiedLead {
   // Attribution
   ad_platform?: string;
   utm_campaign?: string;
+  utm_source?: string;
 }
 
 interface FetchOptions {
@@ -118,6 +119,7 @@ export async function fetchUnifiedLeads(
       notes: lead.notes,
       ad_platform: lead.ad_platform,
       utm_campaign: lead.utm_campaign,
+      utm_source: lead.utm_source,
     }));
     allLeads.push(...formLeads);
   }

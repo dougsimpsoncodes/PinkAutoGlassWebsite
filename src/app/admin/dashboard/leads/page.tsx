@@ -231,6 +231,15 @@ function MarkCompleteButton({
   );
 }
 
+// Satellite domain utm_source values (for lead source tracking)
+const SATELLITE_UTM_SOURCES = [
+  'windshieldcostcalculator', 'windshielddenver', 'chiprepairdenver', 'chiprepairboulder',
+  'aurorawindshield', 'mobilewindshielddenver', 'cheapestwindshield', 'newwindshieldcost',
+  'getawindshieldquote', 'newwindshieldnearme', 'windshieldpricecompare', 'chiprepairmesa',
+  'chiprepairphoenix', 'chiprepairscottsdale', 'chiprepairtempe', 'windshieldcostphoenix',
+  'mobilewindshieldphoenix', 'carwindshieldprices', 'windshieldrepairprices', 'carglassprices'
+];
+
 export default function LeadManagementDashboard() {
   // Get global sync state
   const { syncVersion } = useSync();
@@ -420,12 +429,11 @@ export default function LeadManagementDashboard() {
     calls: leads.filter(l => l.type === 'call').length,
     texts: leads.filter(l => l.type === 'text').length,
     forms: leads.filter(l => l.type === 'form').length,
-    new: leads.filter(l => l.status === 'new').length,
-    contacted: leads.filter(l => l.status === 'contacted').length,
-    closed: leads.filter(l => l.status === 'scheduled' || l.status === 'completed').length,
-    completed: leads.filter(l => l.revenue_amount && l.revenue_amount > 0).length,
+    googleAds: leads.filter(l => l.ad_platform === 'google').length,
+    microsoftAds: leads.filter(l => l.ad_platform === 'bing').length,
+    satelliteSites: leads.filter(l => l.utm_source && SATELLITE_UTM_SOURCES.includes(l.utm_source)).length,
+    organic: leads.filter(l => l.ad_platform === 'organic').length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
-    closeRate: leads.length > 0 ? Math.round((leads.filter(l => l.status === 'scheduled' || l.status === 'completed').length / leads.length) * 100) : 0,
   };
 
   // Only show spinner on initial load when we have no cached data
@@ -464,31 +472,62 @@ export default function LeadManagementDashboard() {
         color="gray"
       />
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+      {/* Summary Stats - Lead Sources */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
+        {/* Total */}
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-gray-500">
-          <div className="text-sm text-gray-600">Total Leads</div>
+          <div className="text-xs text-gray-600 uppercase">Total</div>
           <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+          <div className="text-xs text-gray-500 mt-1">All leads</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
-          <div className="text-sm text-gray-600">Contacted</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.contacted}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-          <div className="text-sm text-gray-600">Closed</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.closed}</div>
-        </div>
+        
+        {/* Phone */}
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-          <div className="text-sm text-gray-600">Completed</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.completed}</div>
+          <div className="text-xs text-gray-600 uppercase">Phone</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.calls / stats.total) * 100) : 0}% of total</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-600">
-          <div className="text-sm text-gray-600">Revenue</div>
-          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
+        
+        {/* Form */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+          <div className="text-xs text-gray-600 uppercase">Form</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.forms / stats.total) * 100) : 0}% of total</div>
         </div>
+        
+        {/* Google Ads */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+          <div className="text-xs text-gray-600 uppercase">🔍 Google</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.googleAds}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.googleAds / stats.total) * 100) : 0}% of total</div>
+        </div>
+        
+        {/* Microsoft Ads */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-orange-500">
+          <div className="text-xs text-gray-600 uppercase">🔍 Bing</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.microsoftAds}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.microsoftAds / stats.total) * 100) : 0}% of total</div>
+        </div>
+        
+        {/* Satellite Sites */}
         <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-500">
-          <div className="text-sm text-gray-600">Close Rate</div>
-          <div className="text-2xl font-bold text-indigo-600">{stats.closeRate}%</div>
+          <div className="text-xs text-gray-600 uppercase">🛰️ Sat Sites</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.satelliteSites}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.satelliteSites / stats.total) * 100) : 0}% of total</div>
+        </div>
+        
+        {/* Organic */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-emerald-500">
+          <div className="text-xs text-gray-600 uppercase">🌱 Organic</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.organic}</div>
+          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.organic / stats.total) * 100) : 0}% of total</div>
+        </div>
+        
+        {/* Revenue */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-600">
+          <div className="text-xs text-gray-600 uppercase">💰 Revenue</div>
+          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
+          <div className="text-xs text-gray-500 mt-1">Total earned</div>
         </div>
       </div>
 
