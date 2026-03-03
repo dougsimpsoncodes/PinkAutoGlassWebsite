@@ -134,8 +134,9 @@ export async function POST(request: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     // Use JSON mode to force Gemini to always return valid JSON
+    // Using 1.5-flash as 2.5-flash may not be available in all regions yet
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
 
@@ -151,11 +152,21 @@ export async function POST(request: NextRequest) {
         ]);
 
         const rawText = result.response.text();
+        console.log(`Raw response from Gemini for ${file.name}:`, rawText.substring(0, 500));
+        
         let parsed: any;
         try {
           parsed = JSON.parse(rawText);
-        } catch {
-          parsed = JSON.parse(jsonrepair(rawText));
+        } catch (parseErr: any) {
+          console.error(`JSON.parse failed for ${file.name}:`, parseErr.message);
+          console.log('Attempting jsonrepair...');
+          try {
+            parsed = JSON.parse(jsonrepair(rawText));
+            console.log(`jsonrepair succeeded for ${file.name}`);
+          } catch (repairErr: any) {
+            console.error(`jsonrepair also failed for ${file.name}:`, repairErr.message);
+            throw new Error(`Failed to parse JSON: ${parseErr.message}. Raw text: ${rawText.substring(0, 200)}`);
+          }
         }
         return { ...parsed, source_filename: file.name };
 
