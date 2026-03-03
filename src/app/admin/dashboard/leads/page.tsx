@@ -473,61 +473,70 @@ export default function LeadManagementDashboard() {
       />
 
       {/* Summary Stats - Lead Sources */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
-        {/* Total */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-gray-500">
-          <div className="text-xs text-gray-600 uppercase">Total</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-          <div className="text-xs text-gray-500 mt-1">All leads</div>
-        </div>
-        
-        {/* Phone */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-          <div className="text-xs text-gray-600 uppercase">Phone</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.calls}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.calls / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Form */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-          <div className="text-xs text-gray-600 uppercase">Form</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.forms}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.forms / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Google Ads */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
-          <div className="text-xs text-gray-600 uppercase">🔍 Google</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.googleAds}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.googleAds / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Microsoft Ads */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-orange-500">
-          <div className="text-xs text-gray-600 uppercase">🔍 Bing</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.microsoftAds}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.microsoftAds / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Satellite Sites */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-500">
-          <div className="text-xs text-gray-600 uppercase">🛰️ Sat Sites</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.satelliteSites}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.satelliteSites / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Organic */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-emerald-500">
-          <div className="text-xs text-gray-600 uppercase">🌱 Organic</div>
-          <div className="text-2xl font-bold text-gray-900">{stats.organic}</div>
-          <div className="text-xs text-gray-500 mt-1">{stats.total > 0 ? Math.round((stats.organic / stats.total) * 100) : 0}% of total</div>
-        </div>
-        
-        {/* Revenue */}
-        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-600">
-          <div className="text-xs text-gray-600 uppercase">💰 Revenue</div>
-          <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
-          <div className="text-xs text-gray-500 mt-1">Total earned</div>
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 divide-x divide-gray-200">
+          {/* Total */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">TOTAL</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+            <div className="text-xs text-gray-400 mt-1">All leads</div>
+          </div>
+          
+          {/* Phone */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">📞 PHONE</div>
+            <div className="text-3xl font-bold text-green-600">{stats.calls}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.calls / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Form */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">📝 FORM</div>
+            <div className="text-3xl font-bold text-purple-600">{stats.forms}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.forms / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Text */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">💬 TEXT</div>
+            <div className="text-3xl font-bold text-blue-600">{stats.texts}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.texts / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Google Ads */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">🔍 GOOGLE</div>
+            <div className="text-3xl font-bold text-blue-500">{stats.googleAds}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.googleAds / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Microsoft Ads */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">🔍 BING</div>
+            <div className="text-3xl font-bold text-orange-500">{stats.microsoftAds}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.microsoftAds / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Satellite Sites */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">🛰️ SAT</div>
+            <div className="text-3xl font-bold text-indigo-500">{stats.satelliteSites}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.satelliteSites / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Organic */}
+          <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">🌱 ORGANIC</div>
+            <div className="text-3xl font-bold text-emerald-500">{stats.organic}</div>
+            <div className="text-xs text-gray-400 mt-1">{stats.total > 0 ? Math.round((stats.organic / stats.total) * 100) : 0}%</div>
+          </div>
+          
+          {/* Revenue */}
+          <div className="p-4 text-center bg-green-50 hover:bg-green-100 transition-colors">
+            <div className="text-xs font-medium text-green-700 uppercase tracking-wide mb-1">💰 REVENUE</div>
+            <div className="text-3xl font-bold text-green-600">${stats.totalRevenue.toLocaleString()}</div>
+            <div className="text-xs text-green-600 mt-1">Total earned</div>
+          </div>
         </div>
       </div>
 
