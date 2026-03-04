@@ -648,11 +648,20 @@ export default function LeadManagementDashboard() {
                     {/* Source */}
                     <td className="px-4 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {lead.ad_platform === 'google' && '🔍 Google Ads'}
-                        {lead.ad_platform === 'bing' && '🔍 Bing Ads'}
-                        {lead.ad_platform === 'organic' && '🌱 Organic'}
-                        {lead.ad_platform === 'direct' && '🔗 Direct'}
-                        {!lead.ad_platform && <span className="text-gray-400">Unknown</span>}
+                        {/* Satellite Site - show specific domain */}
+                        {lead.utm_source && SATELLITE_UTM_SOURCES.includes(lead.utm_source) ? (
+                          <span className="text-indigo-600">🛰️ {lead.utm_source.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
+                        ) : lead.ad_platform === 'google' ? (
+                          <span className="text-blue-600">🔍 Google Ads</span>
+                        ) : lead.ad_platform === 'bing' ? (
+                          <span className="text-orange-600">🔍 Bing Ads</span>
+                        ) : lead.ad_platform === 'organic' ? (
+                          <span className="text-green-600">🌱 Organic</span>
+                        ) : lead.ad_platform === 'direct' ? (
+                          <span className="text-gray-600">🔗 Direct</span>
+                        ) : (
+                          <span className="text-gray-400">Unknown</span>
+                        )}
                       </div>
                       {lead.utm_campaign && (
                         <div className="text-xs text-gray-500 mt-0.5">{lead.utm_campaign}</div>
