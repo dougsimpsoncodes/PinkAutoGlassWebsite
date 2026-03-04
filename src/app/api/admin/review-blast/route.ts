@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const testLeadId: string | undefined = body.lead_id;
+  const limit: number | undefined = body.limit;
 
   // ── Fetch eligible leads ────────────────────────────────────────────────────
   let query = supabase
@@ -37,8 +38,9 @@ export async function POST(req: NextRequest) {
     .not('phone_e164', 'is', null);
 
   if (testLeadId) {
-    // Test mode: only this lead
     query = query.eq('id', testLeadId);
+  } else if (limit) {
+    query = query.limit(limit);
   }
 
   const { data: leads, error: leadsError } = await query;
