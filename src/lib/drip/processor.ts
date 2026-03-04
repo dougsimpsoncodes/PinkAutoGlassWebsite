@@ -131,8 +131,8 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
         continue;
       }
 
-      // Render the template
-      const rendered = renderTemplate(msg.template_key, msg.context);
+      // Render the template (inject lead_id so tracking URLs are personalized)
+      const rendered = renderTemplate(msg.template_key, { ...msg.context, leadId: msg.lead_id });
       if (!rendered) {
         await markFailed(supabase, msg.id, `Unknown template: ${msg.template_key}`);
         result.failed++;

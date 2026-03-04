@@ -15,6 +15,7 @@ interface DripTemplateContext {
   referenceNumber?: string | null;
   smsConsent: boolean;
   quotePrice?: number;
+  leadId?: string;
 }
 
 // =============================================================================
@@ -94,17 +95,24 @@ export function getQuoteInstantEmail(ctx: DripTemplateContext): string {
 
 const GOOGLE_REVIEW_URL = 'https://g.page/r/CZ2YTY_EELLQEAI/review';
 
+function reviewUrl(ctx: DripTemplateContext, src: string): string {
+  if (ctx.leadId) {
+    return `https://pinkautoglass.com/api/review-click?lead=${ctx.leadId}&src=${src}`;
+  }
+  return GOOGLE_REVIEW_URL;
+}
+
 /** Review request SMS — sent 2 hours after job marked complete */
 export function getReviewRequestSMS(ctx: DripTemplateContext): string {
   const vehicle = ctx.vehicleMake && ctx.vehicleModel
-    ? ` with your ${ctx.vehicleMake} ${ctx.vehicleModel}`
+    ? ` your ${ctx.vehicleMake} ${ctx.vehicleModel}`
     : '';
-  return `Hi ${ctx.firstName}, this is Dan at Pink Auto Glass. Thanks for trusting us${vehicle}! If you had a great experience, a quick Google review would really help us out: ${GOOGLE_REVIEW_URL}`;
+  return `Hi ${ctx.firstName}, this is Dan at Pink Auto Glass. We loved working on${vehicle}! A quick Google review helps our small team grow — we'd really appreciate it: ${reviewUrl(ctx, 'sms1')}`;
 }
 
 /** Review reminder SMS — sent 3 days after job marked complete */
 export function getReviewReminderSMS(ctx: DripTemplateContext): string {
-  return `Hey ${ctx.firstName}, just a quick follow-up from Pink Auto Glass. If you have a moment, we'd really appreciate a Google review: ${GOOGLE_REVIEW_URL} — Thanks again for your business!`;
+  return `Hey ${ctx.firstName}, Dan here from Pink Auto Glass. We really appreciate your business! A Google review from you would go a long way for our team: ${reviewUrl(ctx, 'sms2')} — Thanks again!`;
 }
 
 /** Review request email — sent 2 hours after job marked complete */
@@ -112,6 +120,7 @@ export function getReviewRequestEmail(ctx: DripTemplateContext): string {
   const vehicle = ctx.vehicleMake && ctx.vehicleModel
     ? `${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`
     : 'your vehicle';
+  const url = reviewUrl(ctx, 'email');
   return `
 <!DOCTYPE html>
 <html>
@@ -124,26 +133,29 @@ export function getReviewRequestEmail(ctx: DripTemplateContext): string {
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); padding: 40px 20px; text-align: center;">
       <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Thank You!</h1>
-      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Your ${vehicle} service is complete</p>
     </div>
 
     <!-- Content -->
     <div style="padding: 40px 30px;">
       <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Hi ${ctx.firstName},</h2>
       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-        Thanks for choosing Pink Auto Glass! We hope you're happy with the work on your ${vehicle}.
+        Thanks for choosing Pink Auto Glass for your windshield work on your ${vehicle}.
       </p>
       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 30px 0;">
-        If you had a great experience, a quick Google review would mean the world to our small team. It only takes 30 seconds and helps other Colorado drivers find us.
+        A quick Google review helps other Colorado drivers find us and means the world to our small team. It only takes 30 seconds.
       </p>
 
       <!-- CTA -->
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${GOOGLE_REVIEW_URL}" style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 18px;">&#11088; Leave a Google Review</a>
+        <a href="${url}" style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 18px;">&#11088; Leave a Google Review</a>
       </div>
 
       <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
-        Have any concerns? Reply to this email or call us at (720) 918-7465 — we'll make it right.
+        ${url}
+      </p>
+
+      <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
+        Any concerns? Reply here or call us at (720) 918-7465 — we'll make it right.
       </p>
     </div>
 
