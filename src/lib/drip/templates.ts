@@ -96,10 +96,11 @@ export function getQuoteInstantEmail(ctx: DripTemplateContext): string {
 const GOOGLE_REVIEW_URL = 'https://g.page/r/CZ2YTY_EELLQEAI/review';
 
 function reviewUrl(ctx: DripTemplateContext, src: string): string {
-  if (ctx.leadId) {
-    return `https://pinkautoglass.com/api/review-click?lead=${ctx.leadId}&src=${src}`;
-  }
-  return GOOGLE_REVIEW_URL;
+  if (!ctx.leadId) return GOOGLE_REVIEW_URL;
+  // SMS: clean branded URL with no visible tracking params
+  if (src.startsWith('sms')) return `https://pinkautoglass.com/r/${ctx.leadId}`;
+  // Email: full tracking URL (hidden behind button text in HTML)
+  return `https://pinkautoglass.com/api/review-click?lead=${ctx.leadId}&src=${src}`;
 }
 
 /** Review request SMS — sent 2 hours after job marked complete */
@@ -149,10 +150,6 @@ export function getReviewRequestEmail(ctx: DripTemplateContext): string {
       <div style="text-align: center; margin: 30px 0;">
         <a href="${url}" style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 18px;">&#11088; Leave a Google Review</a>
       </div>
-
-      <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
-        ${url}
-      </p>
 
       <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
         Any concerns? Reply here or call us at (720) 918-7465 — we'll make it right.
