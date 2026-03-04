@@ -24,23 +24,63 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Validate Omega config
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // ── Schedule Review Requests for Newly Completed Jobs ────────
+    // Runs regardless of Omega config — only needs Supabase.
+    // Leads are marked completed by fn_backfill_lead_revenue after
+    // invoice upload, so this fires nightly after Doug's upload.
+    let reviewsScheduled = 0;
+    try {
+      const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+      const { data: completedLeads } = await supabase
+        .from('leads')
+        .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
+        .eq('status', 'completed')
+        .gte('updated_at', since)
+        .not('phone_e164', 'is', null);
+
+      if (completedLeads && completedLeads.length > 0) {
+        console.log(`Omega cron: scheduling review requests for ${completedLeads.length} recently completed leads`);
+        for (const lead of completedLeads) {
+          try {
+            const result = await scheduleReviewRequest(lead.id, {
+              firstName: lead.first_name || 'there',
+              phone: lead.phone_e164,
+              email: lead.email || undefined,
+              vehicleYear: lead.vehicle_year || 0,
+              vehicleMake: lead.vehicle_make || '',
+              vehicleModel: lead.vehicle_model || '',
+              smsConsent: lead.sms_consent ?? true,
+            });
+            reviewsScheduled += result.scheduled;
+          } catch (err: any) {
+            console.error(`Omega cron: review request failed for lead ${lead.id}:`, err.message);
+          }
+        }
+        console.log(`Omega cron: scheduled ${reviewsScheduled} review request messages`);
+      }
+    } catch (err: any) {
+      console.error('Omega cron: review request scheduling error:', err.message);
+    }
+
+    // Validate Omega config — if not set, skip EDI sync but reviews already ran
     const config = validateOmegaConfig();
     if (!config.isValid) {
-      console.warn('Omega EDI not configured, skipping sync');
+      console.warn('Omega EDI not configured, skipping EDI sync');
       return NextResponse.json({
         ok: true,
         skipped: true,
         reason: 'Omega EDI not configured',
         missing: config.missingVars,
+        reviewsScheduled,
       });
     }
 
     const omega = getOmegaClient();
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
 
     // Sync last 2 days (overlap window for late-arriving records)
     const endDate = new Date().toISOString().split('T')[0];
@@ -171,44 +211,6 @@ export async function GET(request: NextRequest) {
       }
     } catch (err: any) {
       console.error('Omega cron: backfill error:', err.message);
-    }
-
-    // ── Schedule Review Requests for Newly Completed Jobs ────────
-    // Query leads marked completed in the last 25 hours that don't
-    // already have a review request scheduled (scheduleReviewRequest
-    // has its own dedup, but pre-filtering reduces noise in logs).
-    let reviewsScheduled = 0;
-    try {
-      const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
-      const { data: completedLeads } = await supabase
-        .from('leads')
-        .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
-        .eq('status', 'completed')
-        .gte('updated_at', since)
-        .not('phone_e164', 'is', null);
-
-      if (completedLeads && completedLeads.length > 0) {
-        console.log(`Omega cron: scheduling review requests for ${completedLeads.length} recently completed leads`);
-        for (const lead of completedLeads) {
-          try {
-            const result = await scheduleReviewRequest(lead.id, {
-              firstName: lead.first_name || 'there',
-              phone: lead.phone_e164,
-              email: lead.email || undefined,
-              vehicleYear: lead.vehicle_year || 0,
-              vehicleMake: lead.vehicle_make || '',
-              vehicleModel: lead.vehicle_model || '',
-              smsConsent: lead.sms_consent ?? true,
-            });
-            reviewsScheduled += result.scheduled;
-          } catch (err: any) {
-            console.error(`Omega cron: review request failed for lead ${lead.id}:`, err.message);
-          }
-        }
-        console.log(`Omega cron: scheduled ${reviewsScheduled} review request messages`);
-      }
-    } catch (err: any) {
-      console.error('Omega cron: review request scheduling error:', err.message);
     }
 
     // ── Log Sync ─────────────────────────────────────────────────
