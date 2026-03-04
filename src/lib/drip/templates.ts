@@ -105,10 +105,10 @@ function reviewUrl(ctx: DripTemplateContext, src: string): string {
 
 /** Review request SMS — sent 2 hours after job marked complete */
 export function getReviewRequestSMS(ctx: DripTemplateContext): string {
-  const vehicle = ctx.vehicleMake && ctx.vehicleModel
-    ? ` your ${ctx.vehicleMake} ${ctx.vehicleModel}`
-    : '';
-  return `Hi ${ctx.firstName}, this is Dan at Pink Auto Glass. We loved working on${vehicle}! A quick Google review helps our small team grow — we'd really appreciate it: ${reviewUrl(ctx, 'sms1')}`;
+  const action = ctx.vehicleMake && ctx.vehicleModel
+    ? `working on your ${ctx.vehicleMake} ${ctx.vehicleModel}`
+    : `working with you`;
+  return `Hi ${ctx.firstName}, this is Dan at Pink Auto Glass. We loved ${action}! A quick Google review helps our small team grow — we'd really appreciate it: ${reviewUrl(ctx, 'sms1')}`;
 }
 
 /** Review reminder SMS — sent 3 days after job marked complete */
@@ -119,7 +119,7 @@ export function getReviewReminderSMS(ctx: DripTemplateContext): string {
 /** Review request email — sent 2 hours after job marked complete */
 export function getReviewRequestEmail(ctx: DripTemplateContext): string {
   const vehicle = ctx.vehicleMake && ctx.vehicleModel
-    ? `${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`
+    ? `${ctx.vehicleYear ? ctx.vehicleYear + ' ' : ''}${ctx.vehicleMake} ${ctx.vehicleModel}`
     : 'your vehicle';
   const url = reviewUrl(ctx, 'email');
   return `

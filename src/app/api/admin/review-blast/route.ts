@@ -30,10 +30,15 @@ export async function POST(req: NextRequest) {
   const testLeadId: string | undefined = body.lead_id;
   const limit: number | undefined = body.limit;
 
-  // ── Fetch eligible leads ────────────────────────────────────────────────────
+  // ── Fetch eligible leads with invoice data as fallback ───────────────────────
   let query = supabase
     .from('leads')
-    .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model')
+    .select(`
+      id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model,
+      omega_installs!omega_installs_matched_lead_id_fkey (
+        customer_name, vehicle_make, vehicle_model, vehicle_year
+      )
+    `)
     .eq('status', 'completed')
     .not('phone_e164', 'is', null);
 
@@ -85,6 +90,14 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
+    // Fall back to invoice data when lead fields are missing
+    const invoice = Array.isArray(lead.omega_installs) ? lead.omega_installs[0] : lead.omega_installs;
+    const rawName = lead.first_name || invoice?.customer_name || '';
+    const firstName = rawName ? rawName.split(' ')[0] : 'there';
+    const vehicleMake = lead.vehicle_make || invoice?.vehicle_make || '';
+    const vehicleModel = lead.vehicle_model || invoice?.vehicle_model || '';
+    const vehicleYear = lead.vehicle_year || invoice?.vehicle_year || 0;
+
     const steps = [
       { delayHours: 0,  channel: 'sms',   templateKey: 'review_request',       sequenceStep: 1 },
       { delayHours: 2,  channel: 'email',  templateKey: 'review_request_email', sequenceStep: 2 },
@@ -92,7 +105,6 @@ export async function POST(req: NextRequest) {
     ];
 
     for (const step of steps) {
-      // sms_consent defaults to true (column may not exist on all leads)
       if (step.channel === 'email' && !lead.email) continue;
 
       const rawTime = new Date(now.getTime() + step.delayHours * 60 * 60 * 1000);
@@ -106,12 +118,12 @@ export async function POST(req: NextRequest) {
         sequence_name: 'review_request',
         sequence_step: step.sequenceStep,
         context: {
-          firstName: lead.first_name || 'there',
+          firstName,
           phone: lead.phone_e164,
           email: lead.email || null,
-          vehicleYear: lead.vehicle_year || 0,
-          vehicleMake: lead.vehicle_make || '',
-          vehicleModel: lead.vehicle_model || '',
+          vehicleYear,
+          vehicleMake,
+          vehicleModel,
           smsConsent: true,
         },
       });
