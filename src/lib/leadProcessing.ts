@@ -51,6 +51,9 @@ export interface UnifiedLead {
   ad_platform?: string;
   utm_campaign?: string;
   utm_source?: string;
+  utm_medium?: string;
+  gclid?: string;
+  msclkid?: string;
 }
 
 interface FetchOptions {
@@ -94,33 +97,51 @@ export async function fetchUnifiedLeads(
   // Process form leads
   if (formRes.ok) {
     const formData = await formRes.json();
-    const formLeads = (formData.leads || []).map((lead: any) => ({
-      id: lead.id,
-      type: lead.first_contact_method === 'sms'
-        ? 'text' as const
-        : lead.first_contact_method === 'call'
-          ? 'call' as const
-          : 'form' as const,
-      name: `${lead.first_name} ${lead.last_name}`,
-      phone: lead.phone_e164 || lead.phone || '',
-      email: lead.email,
-      created_at: lead.created_at,
-      status: lead.status || 'new',
-      vehicle_year: lead.vehicle_year,
-      vehicle_make: lead.vehicle_make,
-      vehicle_model: lead.vehicle_model,
-      service_type: lead.service_type,
-      city: lead.city,
-      state: lead.state,
-      zip: lead.zip,
-      quote_amount: lead.quote_amount,
-      revenue_amount: lead.revenue_amount,
-      close_date: lead.close_date,
-      notes: lead.notes,
-      ad_platform: lead.ad_platform,
-      utm_campaign: lead.utm_campaign,
-      utm_source: lead.utm_source,
-    }));
+    const formLeads = (formData.leads || []).map((lead: any) => {
+      // Derive ad_platform from click IDs if not already set
+      let derivedPlatform = lead.ad_platform;
+      if (!derivedPlatform) {
+        if (lead.gclid) {
+          derivedPlatform = 'google';
+        } else if (lead.msclkid) {
+          derivedPlatform = 'bing';
+        } else if (lead.utm_source) {
+          // Check if organic, otherwise assume direct
+          derivedPlatform = lead.utm_medium === 'organic' ? 'organic' : 'direct';
+        }
+      }
+      
+      return {
+        id: lead.id,
+        type: lead.first_contact_method === 'sms'
+          ? 'text' as const
+          : lead.first_contact_method === 'call'
+            ? 'call' as const
+            : 'form' as const,
+        name: `${lead.first_name} ${lead.last_name}`,
+        phone: lead.phone_e164 || lead.phone || '',
+        email: lead.email,
+        created_at: lead.created_at,
+        status: lead.status || 'new',
+        vehicle_year: lead.vehicle_year,
+        vehicle_make: lead.vehicle_make,
+        vehicle_model: lead.vehicle_model,
+        service_type: lead.service_type,
+        city: lead.city,
+        state: lead.state,
+        zip: lead.zip,
+        quote_amount: lead.quote_amount,
+        revenue_amount: lead.revenue_amount,
+        close_date: lead.close_date,
+        notes: lead.notes,
+        ad_platform: derivedPlatform,
+        utm_campaign: lead.utm_campaign,
+        utm_source: lead.utm_source,
+        utm_medium: lead.utm_medium,
+        gclid: lead.gclid,
+        msclkid: lead.msclkid,
+      };
+    });
     allLeads.push(...formLeads);
   }
 
