@@ -188,7 +188,7 @@ export async function fetchUnifiedLeads(
         if (googlePhoneSet.has(phoneNumber)) {
           callPlatform = 'google';
         } else if (microsoftPhoneSet.has(phoneNumber)) {
-          callPlatform = 'microsoft';
+          callPlatform = 'bing';  // Changed from 'microsoft' to 'bing' to match frontend
         }
       }
 

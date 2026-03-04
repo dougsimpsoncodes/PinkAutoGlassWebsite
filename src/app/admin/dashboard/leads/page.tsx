@@ -430,11 +430,20 @@ export default function LeadManagementDashboard() {
     texts: leads.filter(l => l.type === 'text').length,
     forms: leads.filter(l => l.type === 'form').length,
     googleAds: leads.filter(l => l.ad_platform === 'google').length,
-    microsoftAds: leads.filter(l => l.ad_platform === 'bing').length,
+    microsoftAds: leads.filter(l => l.ad_platform === 'bing' || l.ad_platform === 'microsoft').length,
     satelliteSites: leads.filter(l => l.utm_source && SATELLITE_UTM_SOURCES.includes(l.utm_source)).length,
     organic: leads.filter(l => l.ad_platform === 'organic').length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
   };
+  
+  // Debug: Log first few leads to see ad_platform values
+  if (typeof window !== 'undefined' && leads.length > 0) {
+    console.log('Sample leads ad_platform:', leads.slice(0, 5).map(l => ({ 
+      name: l.name, 
+      ad_platform: l.ad_platform, 
+      utm_source: l.utm_source 
+    })));
+  }
 
   // Only show spinner on initial load when we have no cached data
   if (loading && allLeadsCache.length === 0) {
@@ -653,14 +662,14 @@ export default function LeadManagementDashboard() {
                           <span className="text-indigo-600">🛰️ {lead.utm_source.replace(/([a-z])([A-Z])/g, '$1 $2')}</span>
                         ) : lead.ad_platform === 'google' ? (
                           <span className="text-blue-600">🔍 Google Ads</span>
-                        ) : lead.ad_platform === 'bing' ? (
+                        ) : (lead.ad_platform === 'bing' || lead.ad_platform === 'microsoft') ? (
                           <span className="text-orange-600">🔍 Bing Ads</span>
                         ) : lead.ad_platform === 'organic' ? (
                           <span className="text-green-600">🌱 Organic</span>
                         ) : lead.ad_platform === 'direct' ? (
                           <span className="text-gray-600">🔗 Direct</span>
                         ) : (
-                          <span className="text-gray-400">Unknown</span>
+                          <span className="text-gray-400">Unknown ({lead.ad_platform || 'null'})</span>
                         )}
                       </div>
                       {lead.utm_campaign && (
