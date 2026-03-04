@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledMessages } from '@/lib/drip/processor';
-import { sendAdminSMS } from '@/lib/notifications/sms';
+import { sendSMS } from '@/lib/notifications/sms';
+
+async function alertOwner(message: string) {
+  const phone = process.env.OWNER_PHONE;
+  if (!phone) return;
+  await sendSMS({ to: phone, message }).catch(() => {});
+}
 
 export async function GET(request: NextRequest) {
   // Verify cron secret (same pattern as daily-report)
@@ -15,7 +21,7 @@ export async function GET(request: NextRequest) {
     // Alert on any failures
     if (result.failed > 0 || result.errors.length > 0) {
       const summary = `Pink Auto Glass Alert: ${result.failed} customer message(s) failed to send today (${result.sent} sent successfully). Your review request system may not be working correctly.`;
-      await sendAdminSMS(summary).catch(() => {});
+      await alertOwner(summary);
     }
 
     return NextResponse.json({
@@ -27,7 +33,7 @@ export async function GET(request: NextRequest) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ Drip cron job failed:', msg);
 
-    await sendAdminSMS(`Pink Auto Glass Alert: The customer messaging system crashed and no messages were sent today.`).catch(() => {});
+    await alertOwner(`Pink Auto Glass Alert: The customer messaging system crashed and no messages were sent today.`);
 
     return NextResponse.json(
       { ok: false, error: 'Drip processing failed' },
