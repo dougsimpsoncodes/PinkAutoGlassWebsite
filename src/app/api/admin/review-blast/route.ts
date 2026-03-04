@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   // ── Fetch eligible leads ────────────────────────────────────────────────────
   let query = supabase
     .from('leads')
-    .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
+    .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model')
     .eq('status', 'completed')
     .not('phone_e164', 'is', null);
 
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     ];
 
     for (const step of steps) {
-      if (step.channel === 'sms' && !lead.sms_consent) continue;
+      // sms_consent defaults to true (column may not exist on all leads)
       if (step.channel === 'email' && !lead.email) continue;
 
       const rawTime = new Date(now.getTime() + step.delayHours * 60 * 60 * 1000);
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           vehicleYear: lead.vehicle_year || 0,
           vehicleMake: lead.vehicle_make || '',
           vehicleModel: lead.vehicle_model || '',
-          smsConsent: lead.sms_consent ?? true,
+          smsConsent: true,
         },
       });
     }
