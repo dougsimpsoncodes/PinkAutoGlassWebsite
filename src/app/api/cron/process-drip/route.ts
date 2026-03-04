@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Alert on any failures
     if (result.failed > 0 || result.errors.length > 0) {
-      const summary = `Pink Auto Glass Alert: ${result.failed} customer message(s) failed to send today (${result.sent} sent successfully). Your review request system may not be working correctly. Contact your developer to investigate.`;
+      const summary = `Pink Auto Glass Alert: ${result.failed} customer message(s) failed to send today (${result.sent} sent successfully). Your review request system may not be working correctly.`;
       await sendAdminSMS(summary).catch(() => {});
     }
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ Drip cron job failed:', msg);
 
-    await sendAdminSMS(`Pink Auto Glass Alert: The customer messaging system crashed and no messages were sent today. Contact your developer immediately.`).catch(() => {});
+    await sendAdminSMS(`Pink Auto Glass Alert: The customer messaging system crashed and no messages were sent today.`).catch(() => {});
 
     return NextResponse.json(
       { ok: false, error: 'Drip processing failed' },
