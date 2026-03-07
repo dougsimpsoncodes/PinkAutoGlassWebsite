@@ -104,14 +104,6 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{
               __html: `
                 window.uetq=window.uetq||[];
-                window.uetq.push('consent', 'default', {
-                  'ad_storage': 'denied',
-                });
-                if (navigator.language && navigator.language.startsWith('en-US')) {
-                  window.uetq.push('consent', 'update', {
-                    'ad_storage': 'granted',
-                  });
-                }
                 (function(w,d,t,r,u)
                 {
                   var f,n,i;
