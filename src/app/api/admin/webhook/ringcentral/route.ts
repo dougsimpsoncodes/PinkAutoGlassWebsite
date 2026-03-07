@@ -40,7 +40,7 @@ export async function POST() {
         transportType: 'WebHook',
         address: webhookUrl,
       },
-      expiresIn: 604800, // 7 days (max)
+      expiresIn: 630720000, // 20 years (max allowed by RC API)
     });
 
     const result = await response.json();
