@@ -60,6 +60,20 @@ print('BAD LINES:', bad) if bad else print('CLEAN')
 "
 ```
 
+### Rule 4 — ALWAYS scan and fix on sight
+
+If you pull, read, or encounter any `.env` file during a session, **immediately check for `\n` corruption**:
+
+```bash
+python3 -c "
+content = open('.env.local').read()
+bad = [l for l in content.splitlines() if r'\n' in l]
+print('BAD LINES:', bad) if bad else print('CLEAN')
+"
+```
+
+If any corrupted vars are found, **fix them immediately** — do not defer. Use `printf` to re-add the clean value to Vercel, then re-pull. This is a standing rule, not optional.
+
 ### What a corrupted line looks like
 
 ```
@@ -151,6 +165,37 @@ Do NOT use `supabase db push` — it fails with IPv6.
 |--------|----------------|
 | Daily leads | < 1 in 24 hours |
 | /api/lead errors | > 5% |
+
+---
+
+## Session Documentation
+
+### Where things go
+
+| Content | Location |
+|---------|----------|
+| Reusable patterns, credentials, architectural decisions, "don't do X" rules | `~/.claude/projects/.../memory/MEMORY.md` |
+| Session work log (what changed, decisions made, verification results) | `tasks/todo.md` — append a dated review section at the bottom |
+| Large session logs (100+ lines of content) | `tasks/YYYY-MM-DD-topic.md` — separate file, linked from MEMORY.md |
+
+### MEMORY.md rules
+- **Keep it lean** — only facts that need to survive across unrelated sessions
+- No session narratives, no lists of files changed
+- If adding more than ~10 lines for one session, use a dated task file instead and add a one-line pointer in MEMORY.md
+
+### tasks/todo.md pattern
+After completing any non-trivial session, append a review section:
+```markdown
+## YYYY-MM-DD — Topic
+- What changed and why (decisions, not just actions)
+- Anything deliberately NOT done and why
+- Verification: what was checked and passed
+```
+
+### When to create a dated task file
+- Session log would exceed ~100 lines in todo.md
+- Work spans many files across multiple repos (e.g. 19 satellite sites)
+- Log file: `tasks/YYYY-MM-DD-topic.md`, pointer in MEMORY.md
 
 ---
 
