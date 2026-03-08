@@ -31,6 +31,11 @@ export const SATELLITE_DOMAINS = [
   { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', label: 'Car WS Prices', color: '#0369a1' },
   { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', label: 'WS Repair Prices', color: '#0c4a6e' },
   { domain: 'carglassprices.com', utmSource: 'carglassprices', label: 'Car Glass Prices', color: '#0284c7' },
+  // ── Colorado Springs / Fort Collins ───────────────────────────────────────
+  { domain: 'coloradospringswindshield.com', utmSource: 'coloradospringswindshield', label: 'CS Windshield', color: '#0891b2' },
+  { domain: 'autoglasscoloradosprings.com', utmSource: 'autoglasscoloradosprings', label: 'CS Auto Glass', color: '#0e7490' },
+  { domain: 'mobilewindshieldcoloradosprings.com', utmSource: 'mobilewindshieldcoloradosprings', label: 'CS Mobile WS', color: '#155e75' },
+  { domain: 'windshieldreplacementfortcollins.com', utmSource: 'windshieldreplacementfortcollins', label: 'Ft Collins WS', color: '#164e63' },
 ] as const;
 
 export type SatelliteDomain = (typeof SATELLITE_DOMAINS)[number];

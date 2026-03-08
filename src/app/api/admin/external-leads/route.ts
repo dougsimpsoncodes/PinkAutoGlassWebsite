@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await client
       .from('leads')
       .select('id, created_at, first_name, last_name, phone_e164, zip, city, state, utm_source, status, vehicle_year, vehicle_make, vehicle_model, market_type')
-      .in('utm_source', ['carwindshieldprices', 'windshieldrepairprices', 'carglassprices'])
+      .in('utm_source', ['carwindshieldprices', 'windshieldrepairprices', 'carglassprices', 'coloradospringswindshield', 'autoglasscoloradosprings', 'mobilewindshieldcoloradosprings', 'windshieldreplacementfortcollins'])
       .eq('is_test', false)
       .order('created_at', { ascending: false })
       .limit(limit);
