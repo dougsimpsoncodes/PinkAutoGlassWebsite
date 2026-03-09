@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2, RadioTower } from 'lucide-react';
 import type { ParsedInvoice } from '@/app/api/admin/parse-invoice/route';
 
 type Step = 'upload' | 'preview' | 'results';
@@ -11,6 +11,7 @@ interface ImportResults {
   imported: number;
   skipped: number;
   matched: number;
+  reviewsScheduled: number;
   matchedJobs: { invoice_number: string; customer_name: string; customer_phone: string; total_revenue: number; match_confidence: string }[];
   unmatched: { invoice_number: string; customer_name: string; customer_phone: string; total_revenue: number }[];
   errors: string[];
@@ -114,9 +115,15 @@ export default function UploadsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Invoice Upload</h1>
-          <p className="text-gray-500 mt-1">Upload Omega invoice screenshots to sync revenue and close the loop on lead attribution.</p>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Invoice Upload</h1>
+            <p className="text-gray-500 mt-1">Upload Omega invoice screenshots to sync revenue and close the loop on lead attribution.</p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+            <RadioTower className="w-4 h-4" />
+            Market toggle coming soon
+          </div>
         </div>
 
         {/* Step indicators */}
@@ -345,7 +352,7 @@ export default function UploadsPage() {
         {step === 'results' && results && (
           <div className="space-y-6">
             {/* Summary cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
                 <p className="text-3xl font-bold text-gray-900">{results.imported}</p>
                 <p className="text-sm text-gray-500 mt-1">Invoices imported</p>
@@ -357,6 +364,10 @@ export default function UploadsPage() {
               <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
                 <p className="text-3xl font-bold text-orange-500">{results.unmatched.length}</p>
                 <p className="text-sm text-gray-500 mt-1">Unmatched jobs</p>
+              </div>
+              <div className="bg-white rounded-xl border border-pink-200 p-6 text-center">
+                <p className="text-3xl font-bold text-pink-600">{results.reviewsScheduled ?? 0}</p>
+                <p className="text-sm text-gray-500 mt-1">Review requests sent</p>
               </div>
             </div>
 

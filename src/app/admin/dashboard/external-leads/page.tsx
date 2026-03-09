@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Globe, MapPin, Phone, Car, Calendar, ExternalLink } from 'lucide-react';
+import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { getDateRange, isInDateRange } from '@/lib/dateUtils';
+import { Globe, MapPin, Phone, Car, Calendar, ExternalLink, RadioTower } from 'lucide-react';
 
 interface ExternalLead {
   id: string;
@@ -32,24 +34,30 @@ function formatPhone(e164: string) {
 
 export default function ExternalLeadsPage() {
   const [leads, setLeads] = useState<ExternalLead[]>([]);
-  const [total, setTotal] = useState(0);
   const [allNational, setAllNational] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
 
   useEffect(() => {
     fetch('/api/admin/external-leads?limit=500')
       .then(r => r.json())
       .then(d => {
         setLeads(d.leads || []);
-        setTotal(d.total || 0);
         setAllNational(d.allNationalLeads || 0);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
+
+  const filteredLeads = useMemo(
+    () => leads.filter(l => isInDateRange(l.created_at, dateRangeObj)),
+    [leads, dateRangeObj]
+  );
+
   // Group by state for the summary bar
-  const byState = leads.reduce<Record<string, number>>((acc, l) => {
+  const byState = filteredLeads.reduce<Record<string, number>>((acc, l) => {
     const key = l.state || l.zip?.slice(0, 3) || 'Unknown';
     acc[key] = (acc[key] || 0) + 1;
     return acc;
@@ -62,27 +70,38 @@ export default function ExternalLeadsPage() {
     <DashboardLayout>
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <Globe className="w-7 h-7 text-indigo-600" />
-            <h1 className="text-2xl font-bold text-gray-900">External Leads</h1>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <Globe className="w-7 h-7 text-indigo-600" />
+              <h1 className="text-2xl font-bold text-gray-900">External Leads</h1>
+            </div>
+            <p className="text-gray-500 text-sm">
+              Leads from national sites outside Phoenix &amp; Denver. Stored for future partner referral.
+            </p>
           </div>
-          <p className="text-gray-500 text-sm">
-            Leads from national sites (carwindshieldprices.com, windshieldrepairprices.com) outside Phoenix &amp; Denver.
-            Saved to database — no SMS or drip sent. Future: broker or partner referral.
-          </p>
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+            <RadioTower className="w-4 h-4" />
+            Market toggle coming soon
+          </div>
         </div>
+
+        <DateFilterBar
+          dateFilter={dateFilter}
+          onFilterChange={setDateFilter}
+          color="gray"
+        />
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">Total External</p>
-            <p className="text-3xl font-bold text-indigo-600">{total}</p>
+            <p className="text-3xl font-bold text-indigo-600">{filteredLeads.length}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">This Week</p>
             <p className="text-3xl font-bold text-gray-900">
-              {leads.filter(l => new Date(l.created_at) > new Date(Date.now() - 7 * 86400000)).length}
+              {filteredLeads.filter(l => new Date(l.created_at) > new Date(Date.now() - 7 * 86400000)).length}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -121,7 +140,7 @@ export default function ExternalLeadsPage() {
 
           {loading ? (
             <div className="p-12 text-center text-gray-400 text-sm">Loading...</div>
-          ) : leads.length === 0 ? (
+          ) : filteredLeads.length === 0 ? (
             <div className="p-12 text-center">
               <Globe className="w-12 h-12 text-gray-200 mx-auto mb-3" />
               <p className="text-gray-500 font-medium">No external leads yet</p>
@@ -141,7 +160,7 @@ export default function ExternalLeadsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {leads.map(lead => (
+                  {filteredLeads.map(lead => (
                     <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                         <div className="flex items-center gap-1">

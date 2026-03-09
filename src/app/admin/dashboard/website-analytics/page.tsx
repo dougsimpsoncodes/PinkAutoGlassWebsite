@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import { useSync } from '@/contexts/SyncContext';
+import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import {
   Download,
   Phone,
@@ -11,6 +12,7 @@ import {
   ArrowUpDown,
   ExternalLink,
   TrendingUp,
+  RadioTower,
 } from 'lucide-react';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
@@ -111,7 +113,7 @@ function exportCSV(headers: string[], rows: (string | number)[][], filename: str
 export default function WebsiteTrafficPage() {
   const { syncVersion } = useSync();
 
-  const [dateRange, setDateRange] = useState('7days');
+  const [dateRange, setDateRange] = useState<DateFilter>('7days');
   const [loading, setLoading] = useState(true);
 
   // Overview
@@ -207,20 +209,6 @@ export default function WebsiteTrafficPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────
 
-  const DateSelect = () => (
-    <select
-      value={dateRange}
-      onChange={e => setDateRange(e.target.value)}
-      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none text-sm"
-    >
-      <option value="today">Today</option>
-      <option value="yesterday">Yesterday</option>
-      <option value="7days">Last 7 Days</option>
-      <option value="30days">Last 30 Days</option>
-      <option value="90days">Last 90 Days</option>
-    </select>
-  );
-
   const SortTh = ({ label, col, current, desc, onSort }: { label: string; col: string; current: string; desc: boolean; onSort: (c: any) => void }) => (
     <th
       onClick={() => onSort(col)}
@@ -249,13 +237,22 @@ export default function WebsiteTrafficPage() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Website &amp; Traffic</h1>
           <p className="text-gray-600 mt-1">Overview · Traffic Sources · Conversions · Pages</p>
         </div>
-        <DateSelect />
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+          <RadioTower className="w-4 h-4" />
+          Market toggle coming soon
+        </div>
       </div>
+
+      <DateFilterBar
+        dateFilter={dateRange}
+        onFilterChange={(filter) => setDateRange(filter)}
+        color="pink"
+      />
 
       {/* Jump links */}
       <div className="flex gap-3 mb-8 flex-wrap">

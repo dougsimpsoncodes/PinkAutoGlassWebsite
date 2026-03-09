@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Star,
   TrendingUp,
+  RadioTower,
 } from 'lucide-react';
 
 interface ThemeResult {
@@ -189,11 +190,17 @@ export default function GoogleReviewsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Google Reviews</h1>
-        <p className="text-gray-600 mt-1">
-          Customer feedback quality, verbatims, and actionable reputation metrics
-        </p>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Google Reviews</h1>
+          <p className="text-gray-600 mt-1">
+            Customer feedback quality, verbatims, and actionable reputation metrics
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+          <RadioTower className="w-4 h-4" />
+          Market toggle coming soon
+        </div>
       </div>
 
       <DateFilterBar

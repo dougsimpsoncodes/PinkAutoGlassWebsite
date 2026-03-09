@@ -18,7 +18,7 @@ import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
 import { getDateRange, isInDateRange } from '@/lib/dateUtils';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight, RadioTower } from 'lucide-react';
 import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 const QUALIFYING_DURATION_MIN = 30;
@@ -372,9 +372,15 @@ export default function CallAnalyticsPage() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Call Analytics</h1>
-        <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Call Analytics</h1>
+          <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+          <RadioTower className="w-4 h-4" />
+          Market toggle coming soon
+        </div>
       </div>
 
       {/* Date Filter Bar */}

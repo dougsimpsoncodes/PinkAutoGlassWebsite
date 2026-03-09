@@ -22,6 +22,7 @@ import {
   Users,
   AlertTriangle,
   ExternalLink,
+  RadioTower,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ interface SatelliteApiResponse {
 }
 
 type ChartMetric = 'clicks' | 'impressions' | 'ctr' | 'position';
+type InsightDomain = DomainData & { conversionRate: number; leadShare: number };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,6 +97,10 @@ function getDateRange(filter: DateFilter): { startDate: string; endDate: string 
 
 function formatCtr(value: number): string {
   return `${(value * 100).toFixed(2)}%`;
+}
+
+function formatPercent(value: number, digits = 1): string {
+  return `${(value * 100).toFixed(digits)}%`;
 }
 
 function formatPosition(value: number): string {
@@ -240,9 +246,15 @@ export default function SatelliteDomainsPage() {
 
   // ── Sorted domains ──────────────────────────────────────────────────────────
 
-  const sortedDomains = useMemo(() => {
+  const sortedDomains = useMemo<InsightDomain[]>(() => {
     if (!data) return [];
-    return [...data.domains].sort((a, b) => b.impressions - a.impressions);
+    const totalLeads = data.domains.reduce((s, d) => s + d.leads, 0);
+    const withRates = data.domains.map((d) => ({
+      ...d,
+      conversionRate: d.clicks > 0 ? d.leads / d.clicks : 0,
+      leadShare: totalLeads > 0 ? d.leads / totalLeads : 0,
+    }));
+    return [...withRates].sort((a, b) => b.impressions - a.impressions);
   }, [data]);
 
   // ── Summary totals ──────────────────────────────────────────────────────────
@@ -277,6 +289,35 @@ export default function SatelliteDomainsPage() {
       leads: totalLeads,
     };
   }, [data]);
+
+  const totalConversionRate = totals.clicks > 0 ? totals.leads / totals.clicks : 0;
+
+  // ── Insights ────────────────────────────────────────────────────────────────
+
+  const topLeads = useMemo(() => {
+    return [...sortedDomains].sort((a, b) => b.leads - a.leads).slice(0, 3);
+  }, [sortedDomains]);
+
+  const topConversion = useMemo(() => {
+    return [...sortedDomains]
+      .filter((d) => d.clicks >= 10)
+      .sort((a, b) => b.conversionRate - a.conversionRate)
+      .slice(0, 3);
+  }, [sortedDomains]);
+
+  const lowCtr = useMemo(() => {
+    return [...sortedDomains]
+      .filter((d) => d.impressions >= 250)
+      .sort((a, b) => a.ctr - b.ctr)
+      .slice(0, 3);
+  }, [sortedDomains]);
+
+  const lowConversion = useMemo(() => {
+    return [...sortedDomains]
+      .filter((d) => d.clicks >= 25)
+      .sort((a, b) => a.conversionRate - b.conversionRate)
+      .slice(0, 3);
+  }, [sortedDomains]);
 
   // ── Chart domains (filtered to selected) ────────────────────────────────────
 
@@ -382,8 +423,19 @@ export default function SatelliteDomainsPage() {
       <div className="max-w-[1600px] mx-auto space-y-6">
 
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Satellite Sites</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Satellite Sites</h1>
+            {data?.dateRange && (
+              <p className="text-sm text-gray-500 mt-1">
+                Data through {data.dateRange.endDate}
+              </p>
+            )}
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
+            <RadioTower className="w-4 h-4" />
+            Market toggle coming soon
+          </div>
         </div>
 
         {/* Date Filter */}
@@ -421,7 +473,7 @@ export default function SatelliteDomainsPage() {
         )}
 
         {/* Summary Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <StatCard
             label="Total Clicks"
             value={totals.clicks.toLocaleString()}
@@ -441,6 +493,12 @@ export default function SatelliteDomainsPage() {
             color="bg-green-500"
           />
           <StatCard
+            label="Lead CVR"
+            value={formatPercent(totalConversionRate)}
+            icon={Target}
+            color="bg-teal-500"
+          />
+          <StatCard
             label="Avg Position"
             value={totals.position > 0 ? formatPosition(totals.position) : '—'}
             icon={Target}
@@ -452,6 +510,86 @@ export default function SatelliteDomainsPage() {
             icon={Users}
             color="bg-pink-500"
           />
+        </div>
+
+        {/* Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h2 className="text-base font-semibold text-gray-900">Top Lead Drivers</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Most leads in this period</p>
+            <div className="mt-4 space-y-3">
+              {topLeads.length === 0 ? (
+                <div className="text-sm text-gray-400">No lead data yet.</div>
+              ) : (
+                topLeads.map((domain) => (
+                  <div key={domain.domain} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: domain.color }}
+                      />
+                      <span className="text-sm font-medium text-gray-800">{domain.label}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">{domain.leads} leads</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h2 className="text-base font-semibold text-gray-900">Highest Conversion</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Leads per click</p>
+            <div className="mt-4 space-y-3">
+              {topConversion.length === 0 ? (
+                <div className="text-sm text-gray-400">Not enough click data yet.</div>
+              ) : (
+                topConversion.map((domain) => (
+                  <div key={domain.domain} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: domain.color }}
+                      />
+                      <span className="text-sm font-medium text-gray-800">{domain.label}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {formatPercent(domain.conversionRate)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h2 className="text-base font-semibold text-gray-900">Opportunities</h2>
+            <p className="text-xs text-gray-500 mt-0.5">High exposure, low engagement</p>
+            <div className="mt-4 space-y-3">
+              {lowCtr.length === 0 && lowConversion.length === 0 ? (
+                <div className="text-sm text-gray-400">No clear opportunities yet.</div>
+              ) : (
+                <>
+                  {lowCtr.map((domain) => (
+                    <div key={`${domain.domain}-ctr`} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{domain.label}</span>
+                      <span className="text-xs text-amber-600">
+                        Low CTR {formatPercent(domain.ctr)}
+                      </span>
+                    </div>
+                  ))}
+                  {lowConversion.map((domain) => (
+                    <div key={`${domain.domain}-cvr`} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{domain.label}</span>
+                      <span className="text-xs text-rose-600">
+                        Low CVR {formatPercent(domain.conversionRate)}
+                      </span>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Domain Table */}
@@ -470,8 +608,10 @@ export default function SatelliteDomainsPage() {
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Clicks</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Impressions</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Avg CTR</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Lead CVR</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Avg Position</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Leads</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Lead Share</th>
                   <th className="text-center px-4 py-3 font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
@@ -523,6 +663,9 @@ export default function SatelliteDomainsPage() {
                       <td className="px-4 py-3 text-right text-gray-900">
                         {domain.ctr > 0 ? formatCtr(domain.ctr) : '—'}
                       </td>
+                      <td className="px-4 py-3 text-right text-gray-900">
+                        {domain.conversionRate > 0 ? formatPercent(domain.conversionRate) : '—'}
+                      </td>
                       <td className={`px-4 py-3 text-right ${positionColor}`}>
                         {domain.position > 0 ? formatPosition(domain.position) : '—'}
                       </td>
@@ -531,6 +674,9 @@ export default function SatelliteDomainsPage() {
                           <Users className="w-3.5 h-3.5 text-gray-400" />
                           <span className="font-medium text-gray-900">{domain.leads}</span>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-900">
+                        {domain.leadShare > 0 ? formatPercent(domain.leadShare) : '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {hasData ? (
