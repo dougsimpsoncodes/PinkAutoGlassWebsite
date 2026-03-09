@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { ParsedInvoice } from '../parse-invoice/route';
+import { runOmegaCleanup } from '@/lib/omega/data-cleanup';
+import { scheduleReviewRequest } from '@/lib/drip/scheduler';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -161,11 +163,59 @@ export async function POST(request: NextRequest) {
 
     console.log(`Invoice import complete: ${results.imported} imported, ${matched} total matched leads`);
 
+    // Schedule review requests for leads just marked completed by the backfill
+    let reviewsScheduled = 0;
+    try {
+      const { data: matchedLeadIds } = await supabase
+        .from('omega_installs')
+        .select('matched_lead_id')
+        .in('omega_invoice_id', batchIds)
+        .not('matched_lead_id', 'is', null);
+
+      if (matchedLeadIds && matchedLeadIds.length > 0) {
+        const ids = matchedLeadIds.map((r: any) => r.matched_lead_id);
+        const { data: completedLeads } = await supabase
+          .from('leads')
+          .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
+          .in('id', ids)
+          .eq('status', 'completed')
+          .not('phone_e164', 'is', null);
+
+        for (const lead of completedLeads || []) {
+          try {
+            const result = await scheduleReviewRequest(lead.id, {
+              firstName: lead.first_name || 'there',
+              phone: lead.phone_e164,
+              email: lead.email || undefined,
+              vehicleYear: lead.vehicle_year || 0,
+              vehicleMake: lead.vehicle_make || '',
+              vehicleModel: lead.vehicle_model || '',
+              smsConsent: lead.sms_consent ?? true,
+            });
+            reviewsScheduled += result.scheduled;
+          } catch (err: any) {
+            console.error(`Review request failed for lead ${lead.id}:`, err.message);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('import-invoices review scheduling error:', err.message);
+    }
+
+    // Run cleanup on just-imported records (daysSince=1 catches today's uploads)
+    let cleanup = { checked: 0, updated: 0, flagged: 0, errors: 0 };
+    try {
+      cleanup = await runOmegaCleanup(supabase, { daysSince: 1 });
+    } catch (err: any) {
+      console.error('import-invoices cleanup error:', err.message);
+    }
+
     return NextResponse.json({
       ok: true,
       imported: results.imported,
       skipped: results.skipped,
       matched,
+      reviewsScheduled,
       matchedJobs: matchedJobs || [],
       unmatched: unmatched || [],
       errors: results.errors,

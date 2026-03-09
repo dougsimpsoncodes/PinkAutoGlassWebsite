@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getOmegaClient, validateOmegaConfig } from '@/lib/omegaEDI';
 import { scheduleReviewRequest } from '@/lib/drip/scheduler';
+import { runOmegaCleanup } from '@/lib/omega/data-cleanup';
 
 export async function GET(request: NextRequest) {
   // Verify cron secret (same pattern as other cron jobs)
@@ -213,6 +214,14 @@ export async function GET(request: NextRequest) {
       console.error('Omega cron: backfill error:', err.message);
     }
 
+    // ── Data Cleanup ─────────────────────────────────────────────
+    let cleanup = { checked: 0, updated: 0, flagged: 0, errors: 0 };
+    try {
+      cleanup = await runOmegaCleanup(supabase, { daysSince: 3 });
+    } catch (err: any) {
+      console.error('Omega cron: cleanup error:', err.message);
+    }
+
     // ── Log Sync ─────────────────────────────────────────────────
     const duration = Date.now() - startTime;
     const allErrors = [...results.quotes.errors, ...results.invoices.errors];
@@ -228,7 +237,7 @@ export async function GET(request: NextRequest) {
       started_at: new Date(startTime).toISOString(),
       completed_at: new Date().toISOString(),
       duration_ms: duration,
-      metadata: { startDate, endDate, results, reviewsScheduled },
+      metadata: { startDate, endDate, results, reviewsScheduled, cleanup },
     });
 
     console.log(`Omega cron completed in ${duration}ms`);
