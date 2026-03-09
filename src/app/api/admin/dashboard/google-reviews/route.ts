@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { DateFilter, getMountainDateRange } from '@/lib/dashboardData';
 import {
   googleReviews,
@@ -6,6 +7,39 @@ import {
   GOOGLE_REVIEW_URL,
   type GoogleReview,
 } from '@/data/reviews';
+
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+async function getReviewsFromDb(): Promise<{ reviews: ReviewRecord[]; meta: { userRatingCount: number | null; averageRating: number | null } }> {
+  const supabase = getSupabaseClient();
+
+  const [{ data: rows }, { data: meta }] = await Promise.all([
+    supabase.from('google_reviews').select('*').order('published_at', { ascending: false }),
+    supabase.from('google_reviews_meta').select('*').order('synced_at', { ascending: false }).limit(1).single(),
+  ]);
+
+  const reviews: ReviewRecord[] = (rows ?? []).map((r: any) => ({
+    reviewId: r.review_id,
+    reviewerName: r.reviewer_name,
+    rating: r.rating,
+    comment: r.comment ?? '',
+    date: r.published_at ?? r.synced_at?.slice(0, 10) ?? '',
+    source: 'google_places_api' as const,
+  }));
+
+  return {
+    reviews,
+    meta: {
+      userRatingCount: meta?.user_rating_count ?? null,
+      averageRating: meta?.average_rating ?? null,
+    },
+  };
+}
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -260,36 +294,24 @@ export async function GET(request: NextRequest) {
     const period = (searchParams.get('period') || 'all') as DateFilter;
     const { start, end, display } = getMountainDateRange(period);
 
-    const localAllReviews: ReviewRecord[] = googleReviews
+    // 1. Try Supabase (populated by /api/admin/sync/gbp-reviews)
+    const db = await getReviewsFromDb().catch(() => ({ reviews: [], meta: { userRatingCount: null, averageRating: null } }));
+
+    // 2. Fall back to local curated set only if DB is empty
+    const fallbackReviews: ReviewRecord[] = googleReviews
       .map(toReviewRecord)
       .sort((a, b) => b.date.localeCompare(a.date));
 
-    const localFilteredReviews = localAllReviews.filter(review => {
+    const allReviews = db.reviews.length > 0 ? db.reviews : fallbackReviews;
+    const usingDb = db.reviews.length > 0;
+
+    const filteredReviews = allReviews.filter(review => {
+      if (!review.date) return true;
       const dt = new Date(`${review.date}T00:00:00`);
       return dt >= start && dt <= end;
     });
 
-    const publicSnapshot = await fetchPublicGoogleSnapshot().catch(() => null);
-    const placesApi = await fetchPlacesApiReviews(publicSnapshot?.placeId || null).catch(() => ({
-      ok: false,
-      rating: null,
-      userRatingCount: null,
-      reviews: [],
-      error: 'places_api_request_failed',
-    }));
-
-    const reviewsForDisplay = placesApi.ok && placesApi.reviews.length > 0
-      ? placesApi.reviews.map((r): ReviewRecord => ({
-          reviewId: r.reviewId,
-          reviewerName: r.reviewerName,
-          rating: r.rating,
-          comment: r.comment,
-          date: r.date,
-          source: 'google_places_api',
-        }))
-      : localFilteredReviews;
-
-    const analysisPool = localFilteredReviews.length > 0 ? localFilteredReviews : localAllReviews;
+    const analysisPool = filteredReviews.length > 0 ? filteredReviews : allReviews;
     const total = analysisPool.length;
     const avgRating = total > 0
       ? Number((analysisPool.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(2))
@@ -300,8 +322,8 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const d90 = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-    const reviewsLast30 = localAllReviews.filter(r => new Date(`${r.date}T00:00:00`) >= d30).length;
-    const reviewsLast90 = localAllReviews.filter(r => new Date(`${r.date}T00:00:00`) >= d90).length;
+    const reviewsLast30 = allReviews.filter(r => r.date && new Date(`${r.date}T00:00:00`) >= d30).length;
+    const reviewsLast90 = allReviews.filter(r => r.date && new Date(`${r.date}T00:00:00`) >= d90).length;
 
     const distribution = [5, 4, 3, 2, 1].map(stars => {
       const count = analysisPool.filter(r => r.rating === stars).length;
@@ -313,46 +335,38 @@ export async function GET(request: NextRequest) {
     });
 
     const themes = buildThemeResults(analysisPool);
-    const hasDirectGoogleApiCount = placesApi.ok && placesApi.userRatingCount !== null;
+    const hasDirectGoogleApiCount = usingDb && db.meta.userRatingCount !== null;
+    const profileReviewCount = db.meta.userRatingCount ?? (usingDb ? total : null);
+
     const recommendations = buildRecommendations({
-      profileReviewCount: placesApi.userRatingCount,
+      profileReviewCount,
       reviewsLast30,
       lowRatingPct,
       hasDirectGoogleApiCount,
     });
 
     const response = {
-      dateRange: {
-        period,
-        start: start.toISOString(),
-        end: end.toISOString(),
-        display,
-      },
+      dateRange: { period, start: start.toISOString(), end: end.toISOString(), display },
       source: {
-        mode: hasDirectGoogleApiCount ? 'google_places_api' : 'local_curated_repo',
+        mode: usingDb ? 'google_places_api' : 'local_curated_repo',
         hasDirectGoogleApiCount,
         notes: [
-          hasDirectGoogleApiCount
-            ? 'Google Places API is connected for live aggregate review count.'
-            : 'Google Places API is not connected; using local curated review set for analysis.',
-          placesApi.error ? `Places API note: ${placesApi.error}` : null,
-        ].filter(Boolean),
+          usingDb
+            ? 'Live Google reviews synced via Places API.'
+            : 'No synced reviews yet — run Sync All Data to connect live Google reviews.',
+        ],
       },
       profile: {
         businessName: 'Pink Auto Glass',
         googleProfileUrl: GOOGLE_PROFILE_URL,
         googleReviewUrl: GOOGLE_REVIEW_URL,
-        placeUrl: publicSnapshot?.placeUrl || null,
-        placeId: publicSnapshot?.placeId || null,
-        mapsCid: publicSnapshot?.mapsCid || null,
-        phone: publicSnapshot?.phone || null,
-        rating: placesApi.rating ?? publicSnapshot?.rating ?? avgRating,
-        userRatingCount: placesApi.userRatingCount,
+        rating: db.meta.averageRating ?? avgRating,
+        userRatingCount: profileReviewCount,
       },
       metrics: {
         datasetReviewCount: total,
         datasetAverageRating: avgRating,
-        profileReviewCount: placesApi.userRatingCount ?? total,
+        profileReviewCount: profileReviewCount ?? total,
         profileReviewCountScope: hasDirectGoogleApiCount ? 'google_profile_total' : 'connected_dataset_total',
         reviewsLast30,
         reviewsLast90,
@@ -361,7 +375,7 @@ export async function GET(request: NextRequest) {
       distribution,
       themes,
       recommendations,
-      reviews: reviewsForDisplay.slice(0, 50),
+      reviews: analysisPool.slice(0, 50),
       fetchedAt: new Date().toISOString(),
     };
 

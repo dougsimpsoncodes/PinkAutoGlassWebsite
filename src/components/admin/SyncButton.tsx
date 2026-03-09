@@ -75,6 +75,7 @@ export default function SyncButton({ scope = 'all', onSyncComplete }: SyncButton
           '/api/admin/sync/microsoft-ads',
           '/api/admin/sync/google-search-console',
           '/api/admin/sync/ringcentral',
+          '/api/admin/sync/gbp-reviews',
         ];
     }
   };
