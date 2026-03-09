@@ -2,11 +2,13 @@ import { createClient } from '@supabase/supabase-js';
 import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
 
 const TIMEZONE = 'America/Denver';
-const BUSINESS_OPEN_HOUR = 7;   // 7 AM MT
-const BUSINESS_CLOSE_HOUR = 19; // 7 PM MT
-const TCPA_QUIET_START = 21;    // 9 PM MT
-const TCPA_QUIET_END = 8;       // 8 AM MT
-const DRIP_SAFE_SEND_HOUR = 9;  // Rescheduled messages land at 9 AM MT
+const BUSINESS_OPEN_HOUR = 7;        // 7 AM MT
+const BUSINESS_CLOSE_HOUR = 19;      // 7 PM MT
+const TCPA_QUIET_START = 21;         // 9 PM MT
+const TCPA_QUIET_END = 8;            // 8 AM MT
+const DRIP_SAFE_SEND_HOUR = 9;       // Rescheduled messages land at 9 AM MT
+const REVIEW_REQUEST_SEND_HOUR = 18; // Review requests always send at 6 PM MT
+const REVIEW_REQUEST_CUTOFF = 18;    // If it's already past 6 PM, roll to next day
 
 // Business days: Mon(1) through Sat(6), closed Sunday(0)
 const BUSINESS_DAYS = new Set([1, 2, 3, 4, 5, 6]);
@@ -112,6 +114,43 @@ export function getNextSafeTime(date: Date): Date {
 
   // 9 AM MT = 9:00 local + offset to UTC
   const target = new Date(`${dateStr}T${String(DRIP_SAFE_SEND_HOUR).padStart(2, '0')}:00:00Z`);
+  return new Date(target.getTime() + offsetMs);
+}
+
+/**
+ * Get the next 6 PM MT slot for review request sends.
+ * If it's already 6 PM or later, rolls to the next business day at 6 PM.
+ */
+export function getNextReviewSendTime(from: Date = new Date()): Date {
+  const mtString = from.toLocaleDateString('en-CA', { timeZone: TIMEZONE }); // YYYY-MM-DD
+  const mtHour = getMountainTime(from).hour;
+
+  // If it's already at or past the cutoff, move to next day
+  let dateStr = mtString;
+  if (mtHour >= REVIEW_REQUEST_CUTOFF) {
+    const next = new Date(from);
+    next.setDate(next.getDate() + 1);
+    dateStr = next.toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+  }
+
+  // Skip forward past Sunday
+  let attempts = 0;
+  while (true) {
+    const probe = new Date(`${dateStr}T12:00:00Z`);
+    const day = getMountainTime(probe).day;
+    if (BUSINESS_DAYS.has(day)) break;
+    const next = new Date(probe);
+    next.setDate(next.getDate() + 1);
+    dateStr = next.toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+    if (++attempts > 7) break;
+  }
+
+  // Build 6 PM MT using DST-safe offset calculation
+  const refNoon = new Date(`${dateStr}T12:00:00Z`);
+  const mtNoonStr = refNoon.toLocaleString('en-US', { timeZone: TIMEZONE });
+  const mtNoon = new Date(mtNoonStr);
+  const offsetMs = refNoon.getTime() - mtNoon.getTime();
+  const target = new Date(`${dateStr}T${String(REVIEW_REQUEST_SEND_HOUR).padStart(2, '0')}:00:00Z`);
   return new Date(target.getTime() + offsetMs);
 }
 
@@ -266,8 +305,17 @@ export async function scheduleReviewRequest(
       continue;
     }
 
-    const rawTime = new Date(now.getTime() + step.delayHours * 60 * 60 * 1000);
-    const scheduledFor = step.channel === 'sms' ? getNextSafeTime(rawTime) : rawTime;
+    // Step 1 SMS always targets next 6 PM MT slot.
+    // Subsequent steps are offset from that anchor.
+    // Emails get a random 0–5 min stagger to avoid SendGrid rate limits.
+    const anchor = getNextReviewSendTime(now);
+    let scheduledFor: Date;
+    if (step.sequenceStep === 1) {
+      scheduledFor = anchor;
+    } else {
+      const staggerMs = step.channel === 'email' ? Math.floor(Math.random() * 5 * 60 * 1000) : 0;
+      scheduledFor = new Date(anchor.getTime() + step.delayHours * 60 * 60 * 1000 + staggerMs);
+    }
 
     rows.push({
       lead_id: leadId,
@@ -276,6 +324,7 @@ export async function scheduleReviewRequest(
       template_key: step.templateKey,
       sequence_name: sequenceName,
       sequence_step: step.sequenceStep,
+      max_retries: 5,
       context: {
         firstName: context.firstName,
         phone: context.phone,

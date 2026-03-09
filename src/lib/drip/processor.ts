@@ -145,7 +145,7 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
       if (msg.channel === 'sms') {
         success = await sendCustomerSMS({ to: msg.context.phone, message: rendered.body });
       } else if (msg.channel === 'email') {
-        if (!msg.context.email) {
+        if (!msg.context.email || msg.context.email.includes('@temp.pinkautoglass.com')) {
           await markSkipped(supabase, msg.id, 'no_email_address');
           result.skipped++;
           continue;

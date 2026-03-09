@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { isTCPAQuietHours, getNextSafeTime } from '@/lib/drip/scheduler';
+import { getNextReviewSendTime } from '@/lib/drip/scheduler';
 import { isExcludedPhone } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
 
   // ── Schedule messages ─────────────────────────────────────────────────────
   const now = new Date();
+  const anchor = getNextReviewSendTime(now);
   const rows: object[] = [];
   let skipped = 0;
 
@@ -107,8 +108,10 @@ export async function POST(req: NextRequest) {
     for (const step of steps) {
       if (step.channel === 'email' && !lead.email) continue;
 
-      const rawTime = new Date(now.getTime() + step.delayHours * 60 * 60 * 1000);
-      const scheduledFor = step.channel === 'sms' ? getNextSafeTime(rawTime) : rawTime;
+      const staggerMs = step.channel === 'email' ? Math.floor(Math.random() * 5 * 60 * 1000) : 0;
+      const scheduledFor = step.sequenceStep === 1
+        ? anchor
+        : new Date(anchor.getTime() + step.delayHours * 60 * 60 * 1000 + staggerMs);
 
       rows.push({
         lead_id: lead.id,
@@ -117,6 +120,7 @@ export async function POST(req: NextRequest) {
         template_key: step.templateKey,
         sequence_name: 'review_request',
         sequence_step: step.sequenceStep,
+        max_retries: 5,
         context: {
           firstName,
           phone: lead.phone_e164,
