@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     // Use JSON mode to force Gemini to always return valid JSON
     // Using 1.5-flash as 2.5-flash may not be available in all regions yet
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
 

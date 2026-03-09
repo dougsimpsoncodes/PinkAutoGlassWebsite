@@ -11,12 +11,52 @@ import { z } from 'zod';
 // - Service type enum
 // - Notes/message validator with HTML stripping
 
+// Blocked temporary/disposable email domains
+const BLOCKED_EMAIL_DOMAINS = [
+  'temp.pin',
+  'guerrillamail.com',
+  'guerrillamail.net',
+  'guerrillamail.org',
+  'guerrillamail.biz',
+  'sharklasers.com',
+  'grr.la',
+  'guerrillamail.de',
+  'mailinator.com',
+  '10minutemail.com',
+  '10minutemail.net',
+  'tempmail.com',
+  'throwaway.email',
+  'yopmail.com',
+  'maildrop.cc',
+  'getnada.com',
+  'trashmail.com',
+  'fakeinbox.com',
+  'tempr.email',
+  'mohmal.com',
+  'emailondeck.com',
+  'dispostable.com',
+  'mintemail.com',
+  'mytemp.email',
+  'temp-mail.org',
+  'temp-mail.io',
+] as const;
+
 const nameSchema = z.string().trim().min(2).max(50).regex(/^[a-zA-Z\s\-']+$/);
 const phoneSchema = z.string().trim().regex(/^(\+?1)?[\s\-.]?\(?([0-9]{3})\)?[\s\-.]?([0-9]{3})[\s\-.]?([0-9]{4})$/).transform((phone) => {
   const digits = phone.replace(/\D/g, '');
   return digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits.startsWith('1') ? `+${digits}` : `+${digits}`;
 });
-const emailSchema = z.string().trim().toLowerCase().email().max(254);
+
+// Email validator with temp/disposable email blocking
+const emailSchema = z.string().trim().toLowerCase().email().max(254).refine(
+  (email) => {
+    const domain = email.split('@')[1];
+    return !BLOCKED_EMAIL_DOMAINS.includes(domain as any);
+  },
+  {
+    message: 'Temporary or disposable email addresses are not allowed. Please use a permanent email address.',
+  }
+);
 const citySchema = z.string().trim().min(2).max(100).regex(/^[a-zA-Z\s\-.']+$/);
 const stateSchema = z.string().trim().toUpperCase().length(2).regex(/^[A-Z]{2}$/);
 const zipCodeSchema = z.string().trim().regex(/^\d{5}(-\d{4})?$/);
