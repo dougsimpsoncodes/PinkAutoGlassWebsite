@@ -31,9 +31,21 @@ export async function POST() {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinkautoglass.com';
-    const webhookUrl = `${siteUrl}/api/webhook/ringcentral/sms`;
+    const webhookToken = process.env.RINGCENTRAL_WEBHOOK_TOKEN;
+
+    if (!webhookToken) {
+      return NextResponse.json(
+        { ok: false, error: 'RINGCENTRAL_WEBHOOK_TOKEN not configured' },
+        { status: 500 }
+      );
+    }
+
+    // Auth token embedded in URL — RC's per-event Validation-Token header is unreliable
+    // for SMS subscriptions, so URL secret is the primary auth mechanism.
+    const webhookUrl = `${siteUrl}/api/webhook/ringcentral/sms?auth_token=${webhookToken}`;
 
     const platform = client.platform();
+
     const response = await platform.post('/restapi/v1.0/subscription', {
       eventFilters: [SMS_EVENT_FILTER],
       deliveryMode: {

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendAdminSMS } from '@/lib/notifications/sms';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
 
@@ -20,21 +19,40 @@ function getSupabase() {
 /**
  * POST /api/webhook/ringcentral/sms
  *
- * Public endpoint (no admin auth) — receives inbound SMS events from RingCentral.
+ * Receives inbound SMS events from RingCentral.
+ * Authenticated via ?auth_token=<RINGCENTRAL_WEBHOOK_TOKEN> in the subscribed URL.
+ * RC's per-event Validation-Token header is unreliable for SMS subscriptions (known RC issue),
+ * so URL secret is used as the primary auth mechanism per RC's own sample URLs.
  *
  * Two modes:
- * 1. Validation handshake: RC sends Validation-Token header, we echo it back.
- * 2. SMS event: RC posts message data, we store it and notify admin.
+ * 1. Validation handshake: RC sends Validation-Token header with empty body — echo it back.
+ * 2. SMS event: verify URL secret, then store message and process.
  */
 export async function POST(req: NextRequest) {
-  // --- Validation handshake ---
-  const validationToken = req.headers.get('validation-token');
-  if (validationToken) {
+  // --- URL secret authentication (before any JSON parsing or DB writes) ---
+  const webhookSecret = process.env.RINGCENTRAL_WEBHOOK_TOKEN;
+  const incomingToken = req.headers.get('validation-token');
+
+  if (!webhookSecret) {
+    console.error('RC webhook: RINGCENTRAL_WEBHOOK_TOKEN not configured');
+    return new NextResponse('Not found', { status: 404 });
+  }
+
+  // Validation handshake: RC sends Validation-Token header to verify the endpoint is live.
+  // Echo it back — no URL secret check needed here as it happens before subscription is active.
+  if (incomingToken) {
     console.log('RC webhook validation handshake received');
     return new NextResponse('', {
       status: 200,
-      headers: { 'Validation-Token': validationToken },
+      headers: { 'Validation-Token': incomingToken },
     });
+  }
+
+  // All real events must arrive at the URL containing our secret.
+  const urlSecret = req.nextUrl.searchParams.get('auth_token');
+  if (urlSecret !== webhookSecret) {
+    console.warn('RC webhook: rejected — missing or invalid auth_token');
+    return new NextResponse('Not found', { status: 404 });
   }
 
   // --- Inbound SMS event ---
@@ -179,54 +197,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Forward to admin as an SMS notification
-    const preview = messageText.length > 100 ? messageText.slice(0, 100) + '...' : messageText;
-    const adminMsg = `Inbound SMS from ${fromNumber}: ${preview}`;
-    sendAdminSMS(adminMsg).catch((err) =>
-      console.error('Failed to forward inbound SMS to admin:', err)
-    );
 
-    // Auto-reply: one-time greeting per phone number (24h dedup window)
-    if (fromNumber) {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await supabase
+    // Auto-reply: one greeting per phone number per calendar day (UTC).
+    // Uses a deterministic message_id so the DB unique constraint prevents double-sends
+    // even under concurrent webhook retries — insert succeeds only once per day.
+    if (fromNumber && isCustomerSmsEnabled()) {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+      const autoReplyMsgId = `auto-reply-${fromNumber}-${today}`;
+      const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';
+
+      // Attempt to reserve the slot — if already exists (23505), skip sending.
+      const { error: reserveErr } = await supabase
         .from('ringcentral_sms')
-        .select('*', { count: 'exact', head: true })
-        .eq('to_number', fromNumber)
-        .eq('direction', 'Outbound')
-        .ilike('message_text', 'Thanks for texting Pink Auto Glass%')
-        .gte('message_time', twentyFourHoursAgo);
+        .insert({
+          message_id: autoReplyMsgId,
+          conversation_id: conversationId,
+          message_time: new Date().toISOString(),
+          direction: 'Outbound',
+          from_number: fromNum,
+          to_number: fromNumber,
+          message_text: AUTO_REPLY_MESSAGE,
+          message_status: 'Queued',
+          read_status: 'Read',
+        });
 
-      if (count === 0 && isCustomerSmsEnabled()) {
-        // Fire-and-forget: send auto-reply without blocking the webhook response
+      if (!reserveErr) {
+        // Slot reserved — send the auto-reply
         sendCustomerSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE })
           .then((sent) => {
             if (sent) {
               console.log(`Auto-reply sent to ${fromNumber}`);
-              // Store outbound record for dedup and conversation history
-              const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';
               supabase
                 .from('ringcentral_sms')
-                .upsert(
-                  {
-                    message_id: `auto-reply-${fromNumber}-${Date.now()}`,
-                    conversation_id: conversationId,
-                    message_time: new Date().toISOString(),
-                    direction: 'Outbound',
-                    from_number: fromNum,
-                    to_number: fromNumber,
-                    message_text: AUTO_REPLY_MESSAGE,
-                    message_status: 'Sent',
-                    read_status: 'Read',
-                  },
-                  { onConflict: 'message_id' }
-                )
-                .then(({ error: storeErr }) => {
-                  if (storeErr) console.error('Failed to store auto-reply:', storeErr.message);
+                .update({ message_status: 'Sent' })
+                .eq('message_id', autoReplyMsgId)
+                .then(({ error: updateErr }) => {
+                  if (updateErr) console.error('Failed to update auto-reply status:', updateErr.message);
                 });
             }
           })
           .catch((err) => console.error('Auto-reply failed:', err));
+      } else if (reserveErr.code === '23505') {
+        console.log(`Auto-reply already sent to ${fromNumber} today, skipping`);
+      } else {
+        console.error('Failed to reserve auto-reply slot:', reserveErr.message);
       }
     }
 
