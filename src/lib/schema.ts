@@ -123,6 +123,7 @@ export function generateLocalBusinessSchema(params: {
   latitude: number;
   longitude: number;
   neighborhood?: string;
+  telephone?: string;
 }) {
   return {
     "@context": "https://schema.org",
@@ -130,7 +131,7 @@ export function generateLocalBusinessSchema(params: {
     "name": `Pink Auto Glass - ${params.city}`,
     "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
     "url": `https://pinkautoglass.com/locations/${params.city.toLowerCase().replace(/\s+/g, '-')}-${params.state.toLowerCase()}`,
-    "telephone": "+17209187465",
+    "telephone": params.telephone || "+17209187465",
     "priceRange": "Contact for Quote",
     "address": {
       "@type": "PostalAddress",

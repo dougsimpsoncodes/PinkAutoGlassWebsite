@@ -19,6 +19,7 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
     zipCode: '85001',
     latitude: 33.4484,
     longitude: -112.0740,
+    telephone: '+14807127465',
   });
 
   const faqSchema = generateFAQSchema(

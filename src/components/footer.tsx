@@ -1,7 +1,15 @@
+'use client';
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react"
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isAZ = pathname ? /\/-[a-z]+-az(\/|$)/.test(pathname) || pathname.includes('-az') : false;
+  const phone = isAZ ? '(480) 712-7465' : '(720) 918-7465';
+  const phoneHref = isAZ ? 'tel:+14807127465' : 'tel:+17209187465';
+
   return (
     <footer className="bg-navy-900 text-white" role="contentinfo">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,7 +26,7 @@ export default function Footer() {
                   Pink Auto Glass
                 </div>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Professional mobile windshield repair and replacement throughout Colorado.
+                  Professional mobile windshield repair and replacement throughout Colorado and Arizona.
                   We come to you with same-day service and lifetime warranty.
                 </p>
               </div>
@@ -28,10 +36,10 @@ export default function Footer() {
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-pink-400 flex-shrink-0" />
                   <a
-                    href="tel:+17209187465"
+                    href={phoneHref}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    (720) 918-7465
+                    {phone}
                   </a>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -47,7 +55,7 @@ export default function Footer() {
                   <MapPin className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-300">
                     Mobile Service Throughout<br />
-                    Denver, CO 80202–80290
+                    Colorado &amp; Arizona
                   </span>
                 </div>
               </div>
