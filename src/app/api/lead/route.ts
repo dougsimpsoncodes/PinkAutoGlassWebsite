@@ -278,8 +278,19 @@ export async function POST(request: NextRequest) {
     const zip = validatedData.zipCode || body.zip || null;
     let marketType = classifyMarket(zip);
 
-    // National satellite sites (no zip collected) → always out_of_market
-    const NATIONAL_SOURCES = ['carwindshieldprices', 'windshieldrepairprices', 'carglassprices', 'coloradospringswindshield', 'autoglasscoloradosprings', 'mobilewindshieldcoloradosprings', 'windshieldreplacementfortcollins'];
+    // National satellite sites — if zip is null/unrecognized, treat as out_of_market.
+    // Exception: Denver (800-806xx) or Phoenix (850-855xx) zips are already classified
+    // as in_market by classifyMarket() above, so this block only fires when marketType===null.
+    const NATIONAL_SOURCES = [
+      // Original national sites
+      'carwindshieldprices', 'windshieldrepairprices', 'carglassprices',
+      // New national sites (added geo routing 2026-03-08)
+      'windshieldcostcalculator', 'cheapestwindshield', 'newwindshieldcost',
+      'getawindshieldquote', 'newwindshieldnearme', 'windshieldpricecompare',
+      // Colorado Springs / Fort Collins (out of Denver/Phoenix service area)
+      'coloradospringswindshield', 'autoglasscoloradosprings',
+      'mobilewindshieldcoloradosprings', 'windshieldreplacementfortcollins',
+    ];
     if (marketType === null && NATIONAL_SOURCES.includes(validatedData.utmSource ?? '')) {
       marketType = 'out_of_market';
     }
