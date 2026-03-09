@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Ads Control Room (V2)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#0f172a; --muted:#64748b; --bg:#f1f5f9; --panel:#fff; --line:rgba(15,23,42,0.08); --blue:#0ea5e9; --orange:#f97316; }
+    *{box-sizing:border-box;} body{margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:radial-gradient(1000px 600px at 10% -10%, #e0f2fe, transparent), var(--bg);} 
+    .shell{padding:24px 28px 40px;max-width:1280px;margin:0 auto;} .top{display:flex;align-items:center;justify-content:space-between;gap:16px;} 
+    h1{font-family:"Space Grotesk",sans-serif;font-size:26px;margin:0;} .subtitle{color:var(--muted);font-size:13px;} 
+    .nav{display:flex;gap:10px;background:rgba(255,255,255,0.7);border:1px solid var(--line);padding:6px;border-radius:999px;} .nav a{text-decoration:none;padding:8px 14px;border-radius:999px;font-size:13px;color:#0f172a;} .nav a.active{background:#0f172a;color:#fff;} 
+    .controls{display:flex;gap:10px;align-items:center;} .toggle{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;gap:6px;} .toggle span{padding:6px 12px;border-radius:999px;font-size:12px;} .toggle .active{background:#0f172a;color:#fff;} 
+    .chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font-size:12px;} 
+    .grid{display:grid;gap:14px;} .kpis{grid-template-columns:repeat(4,minmax(160px,1fr));margin-top:18px;} 
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06);} 
+    .card h3{margin:0 0 8px 0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;} .value{font-family:"Space Grotesk",sans-serif;font-size:24px;font-weight:700;} 
+    .table{width:100%;border-collapse:collapse;font-size:13px;} .table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid #f1f5f9;} 
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:14px;} 
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <div>
+        <h1>Search Ads Control Room</h1>
+        <div class="subtitle">Combined view of Google + Microsoft performance</div>
+      </div>
+      <div class="controls">
+        <div class="nav">
+          <a href="#">Executive</a>
+          <a class="active" href="#">Search Ads</a>
+          <a href="#">Satellites</a>
+          <a href="#">Market</a>
+          <a href="#">GridScope</a>
+        </div>
+        <span class="chip">Today</span>
+        <span class="chip">Yesterday</span>
+        <span class="chip" style="background:#0f172a;color:#fff;">Last 7 Days</span>
+        <span class="chip">Last 30</span>
+        <div class="toggle"><span class="active">Phoenix</span><span>Denver</span></div>
+      </div>
+    </div>
+
+    <div class="grid kpis">
+      <div class="card"><h3>Spend</h3><div class="value">$12,410</div></div>
+      <div class="card"><h3>Leads</h3><div class="value">212</div></div>
+      <div class="card"><h3>CPA</h3><div class="value">$58.54</div></div>
+      <div class="card"><h3>ROAS</h3><div class="value">6.8x</div></div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="split">
+      <div class="card">
+        <h3>Google vs Microsoft</h3>
+        <table class="table">
+          <thead><tr><th>Engine</th><th>Spend</th><th>Leads</th><th>Revenue</th><th>ROAS</th></tr></thead>
+          <tbody>
+            <tr><td>Google</td><td>$8,930</td><td>154</td><td>$49,700</td><td>5.6x</td></tr>
+            <tr><td>Microsoft</td><td>$3,480</td><td>58</td><td>$12,100</td><td>3.5x</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Budget Signals</h3>
+        <table class="table"><tbody>
+          <tr><td>Google CPA</td><td>$58</td><td>Stable</td></tr>
+          <tr><td>Microsoft CPA</td><td>$60</td><td>Rising</td></tr>
+          <tr><td>Top Campaign</td><td>Windshield Replacement</td><td>+14%</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="card">
+      <h3>Top Campaigns (All Engines)</h3>
+      <table class="table">
+        <thead><tr><th>Campaign</th><th>Engine</th><th>Spend</th><th>Leads</th><th>CPA</th><th>ROAS</th></tr></thead>
+        <tbody>
+          <tr><td>Windshield Replacement</td><td>Google</td><td>$4,220</td><td>72</td><td>$58</td><td>6.2x</td></tr>
+          <tr><td>Chip Repair</td><td>Google</td><td>$2,610</td><td>48</td><td>$54</td><td>7.1x</td></tr>
+          <tr><td>Mobile Glass</td><td>Microsoft</td><td>$1,640</td><td>28</td><td>$59</td><td>3.2x</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Market Health (V2)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#0f172a; --muted:#64748b; --bg:#f1f5f9; --panel:#fff; --line:rgba(15,23,42,0.08); }
+    *{box-sizing:border-box;} body{margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:radial-gradient(1000px 600px at 10% -10%, #ecfccb, transparent), var(--bg);} 
+    .shell{padding:24px 28px 40px;max-width:1280px;margin:0 auto;} .top{display:flex;align-items:center;justify-content:space-between;gap:16px;} 
+    h1{font-family:"Space Grotesk",sans-serif;font-size:26px;margin:0;} .subtitle{color:var(--muted);font-size:13px;} 
+    .nav{display:flex;gap:10px;background:rgba(255,255,255,0.7);border:1px solid var(--line);padding:6px;border-radius:999px;} .nav a{text-decoration:none;padding:8px 14px;border-radius:999px;font-size:13px;color:#0f172a;} .nav a.active{background:#0f172a;color:#fff;} 
+    .controls{display:flex;gap:10px;align-items:center;} .toggle{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;gap:6px;} .toggle span{padding:6px 12px;border-radius:999px;font-size:12px;} .toggle .active{background:#0f172a;color:#fff;} 
+    .chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font-size:12px;} 
+    .grid{display:grid;gap:14px;} .kpis{grid-template-columns:repeat(4,minmax(160px,1fr));margin-top:18px;} 
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06);} 
+    .card h3{margin:0 0 8px 0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;} .value{font-family:"Space Grotesk",sans-serif;font-size:24px;font-weight:700;} 
+    .table{width:100%;border-collapse:collapse;font-size:13px;} .table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid #f1f5f9;} 
+    .split{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:18px;} 
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <div>
+        <h1>Market Health</h1>
+        <div class="subtitle">SEO, reviews, competitors, and site performance</div>
+      </div>
+      <div class="controls">
+        <div class="nav">
+          <a href="#">Executive</a>
+          <a href="#">Search Ads</a>
+          <a href="#">Satellites</a>
+          <a class="active" href="#">Market</a>
+          <a href="#">GridScope</a>
+        </div>
+        <span class="chip">Today</span>
+        <span class="chip">Yesterday</span>
+        <span class="chip" style="background:#0f172a;color:#fff;">Last 7 Days</span>
+        <span class="chip">Last 30</span>
+        <div class="toggle"><span class="active">Phoenix</span><span>Denver</span></div>
+      </div>
+    </div>
+
+    <div class="grid kpis">
+      <div class="card"><h3>Reviews (Avg)</h3><div class="value">4.9</div></div>
+      <div class="card"><h3>New Reviews</h3><div class="value">22</div></div>
+      <div class="card"><h3>SEO Impressions</h3><div class="value">184k</div></div>
+      <div class="card"><h3>Organic Leads</h3><div class="value">74</div></div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h3>Competitor Snapshot</h3>
+        <table class="table">
+          <thead><tr><th>Competitor</th><th>Visibility</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td>Safelite</td><td>High</td><td>+2%</td></tr>
+            <tr><td>XYZ Auto Glass</td><td>Medium</td><td>-1%</td></tr>
+            <tr><td>Local Glass Co</td><td>Low</td><td>+4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Website Performance</h3>
+        <table class="table"><tbody>
+          <tr><td>Avg Load</td><td>2.3s</td></tr>
+          <tr><td>Conversion Rate</td><td>4.2%</td></tr>
+          <tr><td>Bounce Rate</td><td>38%</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="card">
+      <h3>Review Health</h3>
+      <table class="table">
+        <thead><tr><th>Metric</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>5-star rate</td><td>92%</td><td>Above market</td></tr>
+          <tr><td>Response rate</td><td>88%</td><td>Target 90%</td></tr>
+          <tr><td>Avg response time</td><td>14h</td><td>On track</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

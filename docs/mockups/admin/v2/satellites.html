@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Satellite Performance (V2)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#0f172a; --muted:#64748b; --bg:#f1f5f9; --panel:#fff; --line:rgba(15,23,42,0.08); }
+    *{box-sizing:border-box;} body{margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--ink);background:radial-gradient(1000px 600px at 10% -10%, #fef3c7, transparent), var(--bg);} 
+    .shell{padding:24px 28px 40px;max-width:1280px;margin:0 auto;} .top{display:flex;align-items:center;justify-content:space-between;gap:16px;} 
+    h1{font-family:"Space Grotesk",sans-serif;font-size:26px;margin:0;} .subtitle{color:var(--muted);font-size:13px;} 
+    .nav{display:flex;gap:10px;background:rgba(255,255,255,0.7);border:1px solid var(--line);padding:6px;border-radius:999px;} .nav a{text-decoration:none;padding:8px 14px;border-radius:999px;font-size:13px;color:#0f172a;} .nav a.active{background:#0f172a;color:#fff;} 
+    .controls{display:flex;gap:10px;align-items:center;} .toggle{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;gap:6px;} .toggle span{padding:6px 12px;border-radius:999px;font-size:12px;} .toggle .active{background:#0f172a;color:#fff;} 
+    .chip{border:1px solid var(--line);background:#fff;padding:6px 10px;border-radius:999px;font-size:12px;} 
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06);} 
+    .card h3{margin:0 0 8px 0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;} 
+    .table{width:100%;border-collapse:collapse;font-size:13px;} .table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid #f1f5f9;} 
+    .split{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:18px;} 
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <div>
+        <h1>Satellite Performance</h1>
+        <div class="subtitle">Traffic, leads, and revenue by site</div>
+      </div>
+      <div class="controls">
+        <div class="nav">
+          <a href="#">Executive</a>
+          <a href="#">Search Ads</a>
+          <a class="active" href="#">Satellites</a>
+          <a href="#">Market</a>
+          <a href="#">GridScope</a>
+        </div>
+        <span class="chip">Today</span>
+        <span class="chip">Yesterday</span>
+        <span class="chip" style="background:#0f172a;color:#fff;">Last 7 Days</span>
+        <span class="chip">Last 30</span>
+        <div class="toggle"><span class="active">Phoenix</span><span>Denver</span></div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h3>Satellite Sites (Ranked)</h3>
+        <table class="table">
+          <thead><tr><th>Site</th><th>Imps</th><th>Clicks</th><th>Leads</th><th>Revenue</th><th>CPA</th></tr></thead>
+          <tbody>
+            <tr><td>windshieldchiprepairdenver.com</td><td>84k</td><td>2,410</td><td>68</td><td>$12,240</td><td>$57</td></tr>
+            <tr><td>mobilewindshieldphoenix.com</td><td>61k</td><td>1,820</td><td>52</td><td>$9,880</td><td>$54</td></tr>
+            <tr><td>windshieldcostphoenix.com</td><td>42k</td><td>1,090</td><td>31</td><td>$5,260</td><td>$61</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Winners / Losers</h3>
+        <table class="table"><tbody>
+          <tr><td>Top Growth</td><td>windshieldchiprepairdenver.com</td></tr>
+          <tr><td>Best CPA</td><td>mobilewindshieldphoenix.com</td></tr>
+          <tr><td>Needs Work</td><td>windshieldcostphoenix.com</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="card">
+      <h3>Opportunities</h3>
+      <table class="table">
+        <thead><tr><th>Site</th><th>Issue</th><th>Suggested Fix</th></tr></thead>
+        <tbody>
+          <tr><td>windshieldcostphoenix.com</td><td>Low CTR</td><td>Rewrite hero + tighten CTA</td></tr>
+          <tr><td>windshieldchiprepairmesa.com</td><td>Low leads</td><td>Add pricing snapshot + reviews</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

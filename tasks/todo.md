@@ -54,3 +54,162 @@ car-windshield-prices, car-glass-prices, windshield-cost-phoenix, windshield-cos
 - Deploy all 20 satellites + main site to Vercel
 - Validate FAQPage schema with Google Rich Results Test
 - Monitor AI citation in ChatGPT/Perplexity over next 2-4 weeks
+
+---
+
+## 2026-03-04 — Review Blast System + Data Cleanup
+
+### What changed
+- Fixed pre-push hook: removed dead `/vehicles/brands/` URL check (routes deleted last session)
+- Moved second `sync-search-data` cron from 6 PM MT → 11 PM MT (`vercel.json`)
+- Built review blast system:
+  - `src/app/api/admin/review-blast/route.ts` — admin POST endpoint; schedules SMS+email+reminder drip for completed leads; deduplicates by sequence_name; joins omega_installs for name/vehicle fallback
+  - `src/app/r/[leadId]/route.ts` — clean branded SMS redirect (pinkautoglass.com/r/[leadId])
+  - `src/app/api/review-click/route.ts` — email click tracking redirect
+  - Updated `src/lib/drip/templates.ts` — affirmative tone, `leadId` for personalized URLs, grammar fix for missing vehicle
+  - Updated `src/lib/drip/processor.ts` — injects `leadId` into template context
+- Fixed process-drip cron: added SMS error alerts to OWNER_PHONE (Doug only, not partners)
+- Fixed two silent DB constraint bugs via Supabase Management API:
+  - `sequence_name` missing `'review_request'` — caused blast to fail silently
+  - `status` missing `'processing'` — caused process-drip to silently fail every night since launch; also freed 11 backlogged `quick_quote_drip` messages that sent immediately when fixed
+- Fixed Natalie Taylor's vehicle (`esca5` → `Escape`) directly in omega_installs (#10037)
+- Documented constraints in `supabase/migrations/20260304_add_review_request_sequence.sql`
+
+### Deliberately NOT done
+- Names NOT auto-fixed — some may look wrong but we don't know (e.g., `Vencent` might be intentional)
+- Blast NOT fired yet — pending data cleanup decisions below
+
+### Verification
+- Tested full flow end-to-end: fake lead → blast API → process-drip → SMS + email received ✓
+- Error alerting tested: owner (Doug) receives plain-English text with action item ✓
+- Partners (Dan, Kody) do NOT receive alerts ✓
+
+### Remaining before firing blast
+
+**Manual decisions needed (cannot auto-fix):**
+1. Company names — exclude from blast or send anyway? `Sunshine Limo`, `Fuller Construction`, `Sanford Drywall`
+2. `Vencent` — misspelling of Vincent, or correct? Check Omega CRM
+3. `Dodge Grand` (#10096 Kevin Krueger) — Grand Caravan or Grand Cherokee?
+4. `Sprinter 170" WB` — clean up the `"` character in vehicle model?
+
+**Safe to fix (capitalization only):**
+- Names: `leanne`, `nick`, `Mason neese`, `Jim moore`, `Jared current`, `Michelle bird`, `Tiffany billingsley`
+- Vehicles: `ford escape` → `Ford Escape` (#10229), `Honda Crv` → `Honda CR-V` (#10159)
+- `Cameron Mishotte #2` → remove `#2` suffix
+
+**Cleanup:**
+- Delete test lead: `node scripts/review-blast-test.mjs --cleanup e1f1f3c6-dfac-413c-b782-7aed518b37d4`
+
+---
+
+## Task: Nightly Omega Data Cleanup
+
+### Goal
+After every `sync-omega` run, automatically clean obvious data quality issues in `omega_installs`
+so the review blast (and future drip messages) always have clean name/vehicle data.
+
+### Rules
+- **NEVER auto-fix names** — `first_name`, `customer_name` are off-limits. Misspellings may be intentional.
+  Flag suspicious names (numbers, symbols, all-caps, very short) to a review queue instead.
+- Fix only clearly mechanical errors: capitalization, known abbreviations, trailing junk.
+
+### What to auto-fix (safe)
+
+**Vehicle makes — known abbreviations → canonical form:**
+| Raw value | Fix to |
+|-----------|--------|
+| `chev`, `chevy` | `Chevrolet` |
+| `vw` | `Volkswagen` |
+| `gmc` (exact, case-insensitive) | `GMC` |
+| `bmw` (exact) | `BMW` |
+| `kia` (exact) | `Kia` |
+
+**Vehicle models — known typos → correct spelling:**
+| Raw value | Fix to |
+|-----------|--------|
+| `esca5`, `escpe`, `escape` (case variations) | `Escape` |
+| `crv`, `cr-v` (case variations) | `CR-V` |
+| `equinx`, `equinox` (case variations) | `Equinox` |
+| Any model starting with a digit (e.g., `4Runner`) | preserve as-is |
+
+**General string cleanup (vehicle_make, vehicle_model only):**
+- Title-case single-word values that are all-lowercase (e.g., `escape` → `Escape`)
+- Trim leading/trailing whitespace
+- Remove trailing `#N` suffixes (e.g., `Escape #2`)
+- Normalize `"` (curly quote) → `"` (straight quote) in string values
+
+**Vehicle year:**
+- If `vehicle_year < 1990` or `vehicle_year > current_year + 2`, set to `null` and flag
+
+### What to flag (do NOT auto-fix)
+Write flagged records to a new table `omega_data_flags` with columns:
+`id, invoice_number, field_name, raw_value, flag_reason, created_at, resolved_at`
+
+Flag conditions:
+- `customer_name` contains digits, `&`, `/`, or is all-caps (likely a company name)
+- `first_name` is null or empty after sync
+- `customer_name` is a single word with no space (may be last-name-only entry)
+- Vehicle make is unrecognized (not in a known-makes list of ~40 common brands)
+- Vehicle model contains `"` (inch mark, likely data entry error in Omega)
+
+### Implementation plan
+1. Create `omega_data_flags` table via migration
+2. Create `src/lib/omega/data-cleanup.ts`:
+   - `cleanOmegaRecord(record)` — applies auto-fixes, returns cleaned record + list of flags
+   - `runOmegaCleanup()` — queries recent omega_installs (last 7 days), cleans, upserts, inserts flags
+3. Call `runOmegaCleanup()` at the end of `sync-omega` cron route (after existing logic)
+4. Add a simple admin page or API endpoint to view/resolve flags: `GET /api/admin/omega-flags`
+
+### Success criteria
+- After a sync, `SELECT * FROM omega_installs WHERE vehicle_make ~ '[a-z]'` returns 0 lowercase makes
+- `SELECT * FROM omega_data_flags WHERE resolved_at IS NULL` shows only genuinely ambiguous records
+- No names are ever modified by the cleanup process
+
+### Priority
+Medium — do after the review blast fires (blast is imminent, cleanup is ongoing)
+
+## 2026-03-08 — RingCentral SMS Routing & Dan's Inbox
+
+### What was investigated
+- Root cause of Dan receiving duplicate texts: `sendAdminSMS` was called on every inbound SMS, delivering a copy on top of his native RC inbox access. Removed from webhook handler.
+- Root cause of Doug receiving texts: his number was in `ADMIN_PHONE`. Removed.
+- RC webhook auth: `deliveryMode.validationToken` is broken for SMS subscriptions (known RC bug). Switched to URL secret (`?auth_token=`) embedded in webhook URL.
+- Auto-reply dedupe: replaced brittle text-match logic with deterministic `message_id` key + DB unique constraint.
+- RC Admin Portal confirmed: main number `+17209187465` Fax/SMS Recipient already set to Dan Ext. 101. No change needed.
+- Dan can see all inbound customer SMS in his **Text** tab in the RC mobile app.
+
+### Decisions made
+- Dan is sole handler of all inbound SMS. Kody gets no copy (risk of double-replies).
+- Beetexting inaccessible — all customer SMS falls back to RingCentral. Not revisiting.
+- No code changes needed for RC inbox visibility — routing was already correct.
+
+### Verification
+- Live test at 1:32pm confirmed webhook captures inbound SMS and stores to DB correctly.
+- RC subscription status: Active, blacklistedData: null.
+
+## 2026-03-08 — Colorado Satellite Site Deployment + SEO
+
+### Sites deployed (all 4 live, GSC verified, sitemap submitted):
+- coloradospringswindshield.com — "windshield replacement colorado springs" (1,600/mo)
+- autoglasscoloradosprings.com — "auto glass colorado springs" (480/mo)
+- mobilewindshieldcoloradosprings.com — "mobile windshield replacement colorado springs" (1,600/mo)
+- windshieldreplacementfortcollins.com — "windshield replacement fort collins" (390/mo)
+
+### Template bug fixed on all 4: Phoenix phone (480) 712-7465 was still in header/footer/inner pages. Replaced with (720) 918-7465 site-wide.
+
+### SEO improvements applied to all 4:
+- H1s keyword front-loaded; meta titles ≤60 chars
+- JSON-LD AutoRepair schema: correct city, areaServed, priceRange, openingHours
+- UTM locationSuffix fixed (was hardcoded denver-co; now city-specific)
+- CRS 10-4-613 FAQ added to all (Colorado zero-deductible glass law)
+- Local landmarks: Fort Carson, Peterson SFB, CSU, Horsetooth, Pikes Peak
+- Inner pages (service-areas, replacement, insurance) rewritten to remove Arizona/Phoenix content
+
+### Main site config updated + committed:
+- satellite-domains/route.ts — 4 new domains in dashboard
+- lead/route.ts — added to NATIONAL_SOURCES
+- external-leads/route.ts — added to utm_source filter
+
+### Vercel cost reduction (earlier in session):
+- Switched all 30 projects from Turbo → Standard build machines
+- Saves ~$380/year
