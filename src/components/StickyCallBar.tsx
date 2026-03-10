@@ -11,16 +11,12 @@ export default function StickyCallBar() {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  if (pathname?.startsWith('/admin')) return null;
-
-  const market = resolveMarket(pathname);
-  const { phoneNumber, displayPhone } = getPhoneForMarket(market);
-
-  // Check if sticky bar is enabled via environment variable
+  const isAdmin = pathname?.startsWith('/admin') ?? false;
   const isEnabled = process.env.NEXT_PUBLIC_STICKY_CALLBAR === '1';
 
+  // All hooks must be called before any early returns
   useEffect(() => {
-    if (!isEnabled || isDismissed) return;
+    if (isAdmin || !isEnabled || isDismissed) return;
 
     // Show after scrolling down 300px
     const handleScroll = () => {
@@ -33,7 +29,12 @@ export default function StickyCallBar() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isEnabled, isDismissed]);
+  }, [isAdmin, isEnabled, isDismissed]);
+
+  if (isAdmin) return null;
+
+  const market = resolveMarket(pathname);
+  const { phoneNumber, displayPhone } = getPhoneForMarket(market);
 
   const handleDismiss = () => {
     setIsDismissed(true);
