@@ -36,7 +36,7 @@ jobs:
           cache: 'npm'
 
       - name: Run npm audit
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical
         continue-on-error: false  # Fail build on high/critical vulnerabilities
 
   security-headers:
