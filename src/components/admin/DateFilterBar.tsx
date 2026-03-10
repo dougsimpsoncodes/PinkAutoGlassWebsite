@@ -1,7 +1,8 @@
 'use client';
 
+import { useContext } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { useSync } from '@/contexts/SyncContext';
+import { SyncContext } from '@/contexts/SyncContext';
 
 export type DateFilter = 'today' | 'yesterday' | '7days' | '30days' | 'all';
 export const ALL_DATE_FILTERS: DateFilter[] = ['today', 'yesterday', '7days', '30days', 'all'];
@@ -67,12 +68,7 @@ export default function DateFilterBar({
   const colors = colorClasses[color];
 
   // Use global sync context if available, otherwise fall back to props
-  let globalSync: ReturnType<typeof useSync> | null = null;
-  try {
-    globalSync = useSync();
-  } catch {
-    // Context not available (e.g., outside SyncProvider)
-  }
+  const globalSync = useContext(SyncContext);
 
   // Use global sync state if available, otherwise use props
   const syncing = globalSync?.syncing ?? syncingProp;

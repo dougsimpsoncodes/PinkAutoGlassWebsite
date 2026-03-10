@@ -16,7 +16,7 @@ interface SyncContextType extends SyncState {
   notifySyncComplete: () => void;
 }
 
-const SyncContext = createContext<SyncContextType | null>(null);
+export const SyncContext = createContext<SyncContextType | null>(null);
 
 const SYNC_ENDPOINTS = [
   { name: 'Google Ads', endpoint: '/api/admin/sync/google-ads' },

@@ -12,12 +12,6 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
 
-  if (pathname?.startsWith('/admin')) return null
-
-  const market = resolveMarket(pathname)
-  const { displayPhone, phoneE164 } = getPhoneForMarket(market)
-  const tel = `tel:${phoneE164}`
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
@@ -25,6 +19,12 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  if (pathname?.startsWith('/admin')) return null
+
+  const market = resolveMarket(pathname)
+  const { displayPhone, phoneE164 } = getPhoneForMarket(market)
+  const tel = `tel:${phoneE164}`
 
   return (
     <header

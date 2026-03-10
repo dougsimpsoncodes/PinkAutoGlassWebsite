@@ -12,11 +12,6 @@ interface StickyCallbackBarProps {
 
 export default function StickyCallbackBar({ source = 'sticky-callback' }: StickyCallbackBarProps) {
   const pathname = usePathname();
-
-  if (pathname?.startsWith('/admin')) return null;
-
-  const market = resolveMarket(pathname);
-  const { phoneE164, displayPhone } = getPhoneForMarket(market);
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -35,6 +30,11 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
 
     return () => clearTimeout(timer);
   }, []);
+
+  if (pathname?.startsWith('/admin')) return null;
+
+  const market = resolveMarket(pathname);
+  const { phoneE164, displayPhone } = getPhoneForMarket(market);
 
   const handleCall = () => {
     trackCTAClick('call', source);
