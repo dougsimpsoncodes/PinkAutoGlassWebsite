@@ -92,7 +92,6 @@ export default function GridScopePage() {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
 
   // ── Load Google Maps via script tag ─────────────────────────────────────────
