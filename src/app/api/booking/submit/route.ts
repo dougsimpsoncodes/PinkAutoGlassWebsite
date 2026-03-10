@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/validation";
 import { buildAttribution } from "@/lib/attribution";
-import { sendEmail, sendAdminEmail } from "@/lib/notifications/email";
+import { sendEmail, sendAdminAlertEmail } from "@/lib/notifications/email";
 import { sendAdminSMS } from "@/lib/notifications/sms";
 import { sendCustomerSMS } from "@/lib/notifications/beetexting";
 import {
@@ -462,7 +462,7 @@ export async function POST(req: NextRequest) {
         }) : Promise.resolve(true),
 
         // Admin notifications
-        sendAdminEmail(
+        sendAdminAlertEmail(
           `🚨 New Booking: ${validatedData.firstName} ${validatedData.lastName} - ${finalReferenceNumber}`,
           getAdminBookingNotificationEmail(bookingData)
         ).then(success => {

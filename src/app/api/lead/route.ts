@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/validation';
 import { buildAttribution } from '@/lib/attribution';
-import { sendEmail, sendAdminEmail } from '@/lib/notifications/email';
+import { sendEmail, sendAdminAlertEmail } from '@/lib/notifications/email';
 import { sendAdminSMS } from '@/lib/notifications/sms';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
@@ -425,7 +425,7 @@ export async function POST(request: NextRequest) {
     console.log('📧 Attempting to send admin notifications for lead:', leadId);
     try {
       const results = await Promise.all([
-        sendAdminEmail(
+        sendAdminAlertEmail(
           `💬 Quick Quote: ${validatedData.firstName} ${validatedData.lastName}`,
           getAdminQuickQuoteEmail(quoteData)
         ).then(success => {

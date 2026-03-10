@@ -72,3 +72,19 @@ export async function sendAdminEmail(subject: string, html: string): Promise<boo
   // Send one email to all admin addresses (avoids rate limiting)
   return sendEmail({ to: adminEmails, subject, html });
 }
+
+/**
+ * Send routine alert emails (new leads, bookings) to operations team only.
+ * Uses ADMIN_EMAIL_ALERTS env var — a subset of ADMIN_EMAIL that excludes
+ * team members who only want daily reports and critical alerts.
+ * Falls back to ADMIN_EMAIL if ADMIN_EMAIL_ALERTS is not set.
+ */
+export async function sendAdminAlertEmail(subject: string, html: string): Promise<boolean> {
+  const alertEmailsStr = process.env.ADMIN_EMAIL_ALERTS || process.env.ADMIN_EMAIL || 'admin@pinkautoglass.com';
+  const alertEmails = alertEmailsStr.split(',').map(email => email.trim().replace(/\\n/g, ''));
+
+  console.log(`📧 Sending admin alert to: ${alertEmails.join(', ')}`);
+  console.log(`   Subject: ${subject}`);
+
+  return sendEmail({ to: alertEmails, subject, html });
+}
