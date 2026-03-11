@@ -351,8 +351,8 @@ export async function attributeAllCalls(
     .from('ringcentral_calls')
     .select('call_id, from_number, start_time, direction, result, duration')
     .eq('direction', 'Inbound')
-    .gte('start_time', startDate)
-    .lte('start_time', endDate);
+    .gte('start_time', `${startDate}T00:00:00.000Z`)
+    .lte('start_time', `${endDate}T23:59:59.999Z`);
 
   if (error || !calls) {
     console.error('Error fetching calls:', error);
