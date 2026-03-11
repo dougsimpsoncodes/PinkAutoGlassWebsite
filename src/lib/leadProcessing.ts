@@ -104,7 +104,7 @@ export async function fetchUnifiedLeads(
         if (lead.gclid) {
           derivedPlatform = 'google';
         } else if (lead.msclkid) {
-          derivedPlatform = 'bing';
+          derivedPlatform = 'microsoft';
         } else if (lead.utm_source) {
           // Check if organic, otherwise assume direct
           derivedPlatform = lead.utm_medium === 'organic' ? 'organic' : 'direct';
@@ -188,7 +188,7 @@ export async function fetchUnifiedLeads(
         if (googlePhoneSet.has(phoneNumber)) {
           callPlatform = 'google';
         } else if (microsoftPhoneSet.has(phoneNumber)) {
-          callPlatform = 'bing';  // Changed from 'microsoft' to 'bing' to match frontend
+          callPlatform = 'microsoft';
         }
       }
 

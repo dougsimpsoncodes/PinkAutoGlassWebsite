@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Date range: last 7 days (Google Ads data is typically delayed by 1-2 days)
+    // Date range: last 7 days through yesterday for ads metrics (delayed 1-2 days)
     const endDate = new Date();
     endDate.setDate(endDate.getDate() - 1); // Yesterday
     const startDate = new Date(endDate);
@@ -103,7 +103,10 @@ export async function GET(request: NextRequest) {
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
 
-    console.log(`📅 Syncing data from ${startDateStr} to ${endDateStr}`);
+    // Call attribution + lead sync include today (real-time data, no delay)
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    console.log(`📅 Syncing ads data ${startDateStr}→${endDateStr}, calls through ${todayStr}`);
 
     // ========================================
     // 1. Sync RingCentral Call Logs
@@ -741,7 +744,7 @@ export async function GET(request: NextRequest) {
     // Must run after both call_view (step 2.5) and RingCentral (step 1) syncs complete
     try {
       console.log('🔗 Cross-referencing Google Ads calls to RingCentral...');
-      const crossRef = await crossReferenceCallsToRingCentral(supabase, startDateStr, endDateStr);
+      const crossRef = await crossReferenceCallsToRingCentral(supabase, startDateStr, todayStr);
       results.callAttribution.crossReference = {
         success: true,
         matched: crossRef.matched,
@@ -761,7 +764,7 @@ export async function GET(request: NextRequest) {
     // create leads from those calls.
     try {
       console.log('📋 Syncing call-based leads...');
-      const callLeadResult = await syncCallLeads(supabase, startDateStr, endDateStr);
+      const callLeadResult = await syncCallLeads(supabase, startDateStr, todayStr);
       results.callLeadSync = {
         success: true,
         created: callLeadResult.created,
