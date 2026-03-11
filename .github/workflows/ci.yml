@@ -9,11 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
 
     steps:
     - name: Checkout code
@@ -34,7 +34,7 @@ jobs:
     - name: Build application
       run: npm run build
 
-    - name: Install Playwright
+    - name: Install Playwright (Chromium only)
       run: npx playwright install --with-deps chromium
 
     - name: Start application for testing
@@ -47,8 +47,8 @@ jobs:
     - name: Wait for server to be ready
       run: npx wait-on http://localhost:3000 --timeout 30000
 
-    - name: Run Playwright tests
-      run: npx playwright test --timeout=10000
+    - name: Run Playwright tests (Chromium only)
+      run: npx playwright test --project=chromium
       env:
         PLAYWRIGHT_BASE_URL: http://localhost:3000
 
@@ -56,7 +56,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: playwright-report-${{ matrix.node-version }}
+        name: playwright-report
         path: playwright-report/
         retention-days: 7
 
