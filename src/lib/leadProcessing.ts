@@ -145,6 +145,12 @@ export async function fetchUnifiedLeads(
     allLeads.push(...formLeads);
   }
 
+  // Build set of phone numbers already represented as leads (from leads table)
+  // so we don't double-count the same caller from ringcentral_calls
+  const existingLeadPhones = new Set(
+    allLeads.filter(l => l.type === 'call' && l.phone).map(l => l.phone)
+  );
+
   // Process calls — deduplicate by customer phone number
   if (callsRes.ok) {
     const callsData = await callsRes.json();
@@ -170,8 +176,9 @@ export async function fetchUnifiedLeads(
       }
     });
 
-    // Create one lead per unique caller
+    // Create one lead per unique caller, skipping those already in leads table
     customerMap.forEach((customerCalls, phoneNumber) => {
+      if (existingLeadPhones.has(phoneNumber)) return;
       customerCalls.sort(
         (a: any, b: any) =>
           new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
