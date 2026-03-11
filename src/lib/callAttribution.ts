@@ -113,7 +113,6 @@ export async function matchDirectConversions(
     // Only process inbound calls
     if (call.direction !== 'Inbound') continue;
 
-    const normalizedPhone = normalizePhoneNumber(call.from_number);
     const callTime = new Date(call.start_time);
 
     // Look for phone_click events within attribution window before the call
@@ -132,22 +131,32 @@ export async function matchDirectConversions(
       continue;
     }
 
-    // Find matching event by phone number
-    const matchingEvent = events?.find((event: ConversionEvent) => {
-      if (!event.phone_number) return false;
-      const eventPhone = normalizePhoneNumber(event.phone_number);
-      return eventPhone === normalizedPhone;
-    });
+    // Match by timestamp proximity — phone_click fires right before the actual call.
+    // NOTE: phone_click events store the business number (the number displayed on the
+    // website), not the caller's number, so phone-based matching doesn't work here.
+    // Instead, find the closest phone_click event by time (must have gclid or msclkid).
+    const attributedEvents = (events || []).filter(
+      (e: ConversionEvent) => e.gclid || e.msclkid
+    );
 
-    if (matchingEvent) {
-      // Direct match found!
-      const timeDiffMs = Math.abs(callTime.getTime() - new Date(matchingEvent.created_at).getTime());
-      const timeDiffMin = Math.round(timeDiffMs / 60000);
+    let matchingEvent: ConversionEvent | null = null;
+    let bestTimeDiff = Infinity;
+    for (const event of attributedEvents) {
+      const diff = Math.abs(callTime.getTime() - new Date(event.created_at).getTime());
+      if (diff < bestTimeDiff) {
+        bestTimeDiff = diff;
+        matchingEvent = event;
+      }
+    }
+
+    // Only accept matches within 90 seconds (phone_click → dial → connect)
+    if (matchingEvent && bestTimeDiff <= 90_000) {
+      const timeDiffSec = Math.round(bestTimeDiff / 1000);
 
       // Calculate confidence based on time proximity
       let confidence = 100;
-      if (timeDiffMin > 3) confidence = 95;
-      if (timeDiffMin > 4) confidence = 90;
+      if (timeDiffSec > 30) confidence = 95;
+      if (timeDiffSec > 60) confidence = 90;
 
       // Determine platform from click IDs
       // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
@@ -171,7 +180,7 @@ export async function matchDirectConversions(
         utmCampaign: matchingEvent.utm_campaign || null,
         gclid: matchingEvent.gclid || null,
         msclkid: matchingEvent.msclkid || null,
-        matchDetails: `Matched phone_click event ${timeDiffMin}min before call (session: ${matchingEvent.session_id})`
+        matchDetails: `Matched phone_click event ${timeDiffSec}s from call (session: ${matchingEvent.session_id})`
       });
     }
   }
