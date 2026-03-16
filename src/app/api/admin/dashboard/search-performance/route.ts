@@ -6,12 +6,11 @@ import { validateSearchConsoleConfig } from '@/lib/googleSearchConsole';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Get current time in Mountain Time (UTC-7) - business is in Denver
+// Get current time in Mountain Time (DST-aware)
 function getMountainTime(): Date {
   const now = new Date();
-  const mtOffset = -7 * 60;
-  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utcNow + (mtOffset * 60000));
+  const mtString = now.toLocaleString('en-US', { timeZone: 'America/Denver' });
+  return new Date(mtString);
 }
 
 function isMissingColumnError(error: any): boolean {

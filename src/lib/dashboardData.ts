@@ -290,12 +290,8 @@ export async function getPaidPlatformSearchTermInsights(
  */
 export function getMountainTime(): Date {
   const now = new Date();
-  // Mountain Standard Time is UTC-7, Mountain Daylight Time is UTC-6
-  // For simplicity, using UTC-7 (MST). For production, consider using a proper
-  // timezone library like date-fns-tz or luxon for DST handling.
-  const mtOffset = -7 * 60; // Mountain Time offset in minutes
-  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utcNow + (mtOffset * 60000));
+  const mtString = now.toLocaleString('en-US', { timeZone: 'America/Denver' });
+  return new Date(mtString);
 }
 
 /**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getMountainDayBounds, type DateFilter } from '@/lib/dateUtils';
 
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
@@ -94,34 +95,17 @@ export async function GET(req: NextRequest) {
     const dateRange = searchParams.get('range') || '7days';
     const metric = searchParams.get('metric');
 
-    // Calculate date range
-    const now = new Date();
-    let startDate: Date;
-
-    switch (dateRange) {
-      case 'today':
-        startDate = new Date(now.setHours(0, 0, 0, 0));
-        break;
-      case 'yesterday':
-        startDate = new Date(now.setDate(now.getDate() - 1));
-        startDate.setHours(0, 0, 0, 0);
-        break;
-      case '7days':
-        startDate = new Date(now.setDate(now.getDate() - 7));
-        break;
-      case '30days':
-        startDate = new Date(now.setDate(now.getDate() - 30));
-        break;
-      case '90days':
-        startDate = new Date(now.setDate(now.getDate() - 90));
-        break;
-      case 'all':
-        // All time - use a date far in the past
-        startDate = new Date('2020-01-01');
-        break;
-      default:
-        startDate = new Date(now.setDate(now.getDate() - 7));
-    }
+    // Map range param to DateFilter for Mountain Time boundaries
+    const periodMap: Record<string, DateFilter> = {
+      today: 'today', yesterday: 'yesterday',
+      '7days': '7days', '30days': '30days', '90days': '30days',
+      all: 'all',
+    };
+    const bounds = getMountainDayBounds(periodMap[dateRange] || '7days');
+    // For 90days, override the start
+    const startDate = dateRange === '90days'
+      ? new Date(new Date().getTime() - 90 * 86400000)
+      : new Date(bounds.startUTC);
 
     // Fetch different metrics based on request
     switch (metric) {

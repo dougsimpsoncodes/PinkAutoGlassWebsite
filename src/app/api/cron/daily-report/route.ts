@@ -23,6 +23,15 @@ import { sendAdminEmail } from '@/lib/notifications/email';
 import { getRingCentralClient } from '@/lib/notifications/sms';
 import { MIN_CALL_DURATION_SECONDS } from '@/lib/constants';
 
+/** Get Mountain Time offset in minutes (DST-aware). Returns negative value (e.g., -360 for MDT, -420 for MST). */
+function getMtOffset(): number {
+  const now = new Date();
+  const utcNoon = new Date(now.toLocaleDateString('en-CA', { timeZone: 'America/Denver' }) + 'T12:00:00Z');
+  const mtNoonStr = utcNoon.toLocaleString('en-US', { timeZone: 'America/Denver' });
+  const mtNoon = new Date(mtNoonStr);
+  return (mtNoon.getTime() - utcNoon.getTime()) / 60000; // offset in minutes (negative)
+}
+
 // Types
 interface DailyStats {
   date: string;
@@ -182,7 +191,7 @@ async function fetchData() {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   // Use Mountain Time for date boundaries
-  const mtOffset = -7 * 60;
+  const mtOffset = getMtOffset();
   const now = new Date();
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   const mtNow = new Date(utcNow + (mtOffset * 60000));
@@ -345,7 +354,7 @@ function aggregateDataByDay(
   msAdsDataByDate: any
 ): DailyStats[] {
   // Mountain Time is UTC-7
-  const mtOffset = -7 * 60; // Mountain Time offset in minutes
+  const mtOffset = getMtOffset(); // Mountain Time offset in minutes
   const now = new Date();
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   const mtNow = new Date(utcNow + (mtOffset * 60000));
@@ -428,7 +437,7 @@ function getYesterdaysContacts(
   conversionEvents: any[]
 ): Contact[] {
   const now = new Date();
-  const mtOffset = -7 * 60;
+  const mtOffset = getMtOffset();
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   const mtNow = new Date(utcNow + (mtOffset * 60000));
 
@@ -574,7 +583,7 @@ function calculateRevenueStats(
   revenueData: { install_date: string; total_revenue: number; parts_cost?: number; labor_cost?: number }[],
   totalLeadsThisWeek: number
 ): RevenueStats {
-  const mtOffset = -7 * 60;
+  const mtOffset = getMtOffset();
   const now = new Date();
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   const mtNow = new Date(utcNow + (mtOffset * 60000));
@@ -653,7 +662,7 @@ function generateEmailHTML(
   const { trends } = metrics;
 
   // Get yesterday's date for the header (in Mountain Time)
-  const mtOffset = -7 * 60;
+  const mtOffset = getMtOffset();
   const now = new Date();
   const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
   const mtNow = new Date(utcNow + (mtOffset * 60000));
@@ -881,7 +890,9 @@ export async function GET(request: NextRequest) {
     const isWeekday = ![0, 6].includes(new Date(reportDay.date).getDay()); // 0=Sun, 6=Sat
 
     // ALERT 1: Complete data gap (zero everything) - highest severity
-    if (totalActivity === 0) {
+    // Skip on Sundays (day 0) — business is closed, zero activity is expected
+    const isSunday = new Date(reportDay.date).getDay() === 0;
+    if (totalActivity === 0 && !isSunday) {
       console.error('🚨 CRITICAL: Complete data gap yesterday - zero activity across ALL sources!');
 
       const alertHtml = `
@@ -927,7 +938,8 @@ export async function GET(request: NextRequest) {
       console.log('📧 Critical data gap alert email sent');
     }
     // ALERT 2: Zero quote requests specifically (form may be broken)
-    else if (reportDay.quoteRequests === 0) {
+    // Also skip on Sundays — no traffic expected
+    else if (reportDay.quoteRequests === 0 && !isSunday) {
       console.warn('⚠️ ALERT: Zero quote requests yesterday - possible form issue!');
 
       const alertHtml = `
@@ -1012,7 +1024,7 @@ export async function GET(request: NextRequest) {
     const html = generateEmailHTML(metrics, contacts, reportDay, dataStatus, revenueStats);
 
     // Send email - use yesterday's date (in Mountain Time)
-    const mtOffset = -7 * 60;
+    const mtOffset = getMtOffset();
     const nowForSubject = new Date();
     const utcNowForSubject = nowForSubject.getTime() + (nowForSubject.getTimezoneOffset() * 60000);
     const mtNowForSubject = new Date(utcNowForSubject + (mtOffset * 60000));
