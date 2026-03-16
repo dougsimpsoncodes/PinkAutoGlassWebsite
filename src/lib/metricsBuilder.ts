@@ -12,7 +12,7 @@
  * | Ad Spend (Google)   | google_ads_daily          | date           | Ad reporting day (calendar date)    | One row per campaign per day                  |
  * | Ad Spend (Microsoft)| microsoft_ads_daily       | date           | Ad reporting day (calendar date)    | One row per campaign per day                  |
  * | Leads (form/SMS)    | leads                     | created_at     | UTC timestamp, MT day boundaries    | One per DB row (already unique)               |
- * | Leads (call)        | ringcentral_calls         | start_time     | UTC timestamp, MT day boundaries    | Per phone + MT calendar day + channel         |
+ * | Leads (call)        | ringcentral_calls         | start_time     | UTC timestamp, MT day boundaries    | Per phone number (global, matches Leads page) |
  * | Revenue (gross)     | omega_installs            | install_date   | Calendar date (date-only column)    | One per invoice                               |
  * | Revenue (attributed)| leads                     | close_date     | Calendar date (when status=completed)| One per lead                                 |
  * | Click Events        | conversion_events         | created_at     | UTC timestamp, MT day boundaries    | No dedup (every click counts)                 |
@@ -28,9 +28,9 @@
  *
  * ── CALL DEDUP ──────────────────────────────────────────────────────
  *
- * Key: phone_number + MT_calendar_day
- * - Same phone calling twice in one MT day = 1 lead (most recent call used for metadata)
- * - Same phone calling on different MT days = separate leads
+ * Key: phone_number (global — matches Leads page behavior)
+ * - Same phone calling multiple times in any period = 1 lead
+ * - This matches fetchUnifiedLeads() which groups by phone globally
  * - Calls from business number, toll-free, or < 30s duration are excluded
  * - Calls are NOT suppressed when phone exists in leads table (repeat customers are valid)
  */
@@ -309,7 +309,7 @@ function deduplicateCalls(
     return true;
   });
 
-  // Dedup: one lead per phone + MT calendar day
+  // Dedup: one lead per unique phone number (matches Leads page global dedup)
   // Also suppress calls whose phone already exists as a call-type lead in the leads table
   const seen = new Set<string>();
   let deduplicated = 0;
@@ -320,9 +320,7 @@ function deduplicateCalls(
     // Skip if this caller already has a lead record (avoid double-counting)
     if (existingCallPhones.has(call.from_number)) { suppressedByLeadsTable++; continue; }
 
-    const mtDateStr = new Date(call.start_time)
-      .toLocaleDateString('en-CA', { timeZone: 'America/Denver' });
-    const key = `${call.from_number}-${mtDateStr}`;
+    const key = call.from_number;
 
     if (seen.has(key)) {
       deduplicated++;
@@ -353,14 +351,13 @@ function deduplicateCalls(
 async function fetchCallLeadPhones(supabase: SupabaseClient): Promise<Set<string>> {
   const { data } = await supabase
     .from('leads')
-    .select('phone_e164, phone')
+    .select('phone_e164')
     .eq('is_test', false)
     .eq('first_contact_method', 'call');
 
   const phones = new Set<string>();
   for (const row of data || []) {
-    const p = row.phone_e164 || row.phone;
-    if (p) phones.add(p);
+    if (row.phone_e164) phones.add(row.phone_e164);
   }
   return phones;
 }
