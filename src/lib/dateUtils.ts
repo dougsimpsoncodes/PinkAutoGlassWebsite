@@ -8,16 +8,14 @@
 export type DateFilter = 'today' | 'yesterday' | '7days' | '30days' | 'all';
 
 /**
- * Get current time in Mountain Time (UTC-7)
+ * Get current time in Mountain Time (Denver timezone, DST-aware)
  * Business is located in Denver, so all date calculations use Mountain Time
  */
 export function getMountainTime(): Date {
   const now = new Date();
-  // Mountain Standard Time is UTC-7, Mountain Daylight Time is UTC-6
-  // For simplicity, using UTC-7 (MST)
-  const mtOffset = -7 * 60;
-  const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utcNow + (mtOffset * 60000));
+  // Use Intl to get the correct Mountain Time including DST transitions
+  const mtString = now.toLocaleString('en-US', { timeZone: 'America/Denver' });
+  return new Date(mtString);
 }
 
 /**
