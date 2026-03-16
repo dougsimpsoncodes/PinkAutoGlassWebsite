@@ -140,22 +140,27 @@ export default function WebsiteTrafficPage() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [overviewRes, trafficRes, pagesRes, convRes, convDetailRes] = await Promise.all([
-        fetch(`/api/admin/analytics?metric=overview&range=${dateRange}`),
+      const [metricsRes, trafficRes, pagesRes, convDetailRes] = await Promise.all([
+        fetch(`/api/admin/dashboard/metrics?period=${dateRange}`),
         fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}`),
         fetch(`/api/admin/analytics?metric=page_performance&range=${dateRange}`),
-        fetch(`/api/admin/analytics?metric=conversions&range=${dateRange}`),
         fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}`),
       ]);
 
-      if (overviewRes.ok) { const d = await overviewRes.json(); setOverview(d.data); }
+      if (metricsRes.ok) {
+        const d = await metricsRes.json();
+        if (d.ok) {
+          setOverview({
+            total_visitors: d.traffic.visitors,
+            total_page_views: d.traffic.pageViews,
+            total_conversions: d.clickEvents.total,
+            conversion_rate: d.traffic.visitors > 0 ? (d.clickEvents.total / d.traffic.visitors) * 100 : 0,
+          });
+          setLeadTypes({ phone_click: d.clickEvents.phoneClicks, form_submit: d.clickEvents.formSubmits, text_click: d.clickEvents.textClicks });
+        }
+      }
       if (trafficRes.ok) { const d = await trafficRes.json(); setTrafficSources(d.data || []); }
       if (pagesRes.ok) { const d = await pagesRes.json(); setPageData(d.data || []); }
-      if (convRes.ok) {
-        const d = await convRes.json();
-        const byType = d.data?.by_type || {};
-        setLeadTypes({ phone_click: byType.phone_click || 0, form_submit: byType.form_submit || 0, text_click: byType.text_click || 0 });
-      }
       if (convDetailRes.ok) { const d = await convDetailRes.json(); setConversions(d.data || []); }
     } catch (err) {
       console.error('Failed to fetch analytics:', err);
@@ -240,7 +245,7 @@ export default function WebsiteTrafficPage() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Website &amp; Traffic</h1>
-          <p className="text-gray-600 mt-1">Overview · Traffic Sources · Conversions · Pages</p>
+          <p className="text-gray-600 mt-1">Overview · Traffic Sources · Click Events · Pages</p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
           <RadioTower className="w-4 h-4" />
@@ -262,7 +267,7 @@ export default function WebsiteTrafficPage() {
             href={`#${id}`}
             className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-700 transition-colors shadow-sm capitalize"
           >
-            {id === 'overview' ? 'Overview' : id === 'traffic' ? 'Traffic Sources' : id === 'conversions' ? 'Conversions' : 'Pages'}
+            {id === 'overview' ? 'Overview' : id === 'traffic' ? 'Traffic Sources' : id === 'conversions' ? 'Click Events' : 'Pages'}
           </a>
         ))}
       </div>
@@ -277,7 +282,7 @@ export default function WebsiteTrafficPage() {
             { label: 'Unique Visitors', value: overview?.total_visitors?.toLocaleString() ?? '0' },
             { label: 'Page Views', value: overview?.total_page_views?.toLocaleString() ?? '0' },
             { label: 'Pages / Visit', value: overview?.total_visitors ? (overview.total_page_views / overview.total_visitors).toFixed(1) : '0' },
-            { label: 'Conversions', value: overview?.total_conversions?.toLocaleString() ?? '0' },
+            { label: 'Click Events', value: overview?.total_conversions?.toLocaleString() ?? '0' },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white rounded-xl shadow-sm p-4">
               <div className="text-sm font-medium text-gray-600 mb-1">{label}</div>
@@ -292,7 +297,7 @@ export default function WebsiteTrafficPage() {
 
         {/* Lead type breakdown */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Lead Type Breakdown</h3>
+          <h3 className="text-base font-semibold text-gray-900 mb-4">Click Event Breakdown</h3>
           <div className="space-y-3">
             {[
               { label: 'Phone Calls', count: leadTypes.phone_click, color: 'bg-blue-500', icon: <Phone className="w-4 h-4 text-blue-600" /> },
@@ -460,7 +465,7 @@ export default function WebsiteTrafficPage() {
       {/* ══ SECTION 3: CONVERSIONS ════════════════════════════════════════════ */}
       <div id="conversions" className="scroll-mt-8 mb-12">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Conversions</h2>
+          <h2 className="text-xl font-bold text-gray-900">Click Events</h2>
           <div className="flex items-center gap-3">
             <select
               value={convFilter}
@@ -537,12 +542,12 @@ export default function WebsiteTrafficPage() {
           {/* Recent conversions */}
           <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-200">
-              <h3 className="text-base font-semibold text-gray-900">Recent Conversions</h3>
+              <h3 className="text-base font-semibold text-gray-900">Recent Click Events</h3>
               <p className="text-xs text-gray-400 mt-0.5">{filteredConversions.length} shown</p>
             </div>
             <div className="overflow-y-auto max-h-80">
               {filteredConversions.length === 0 ? (
-                <div className="p-6 text-center text-gray-400 text-sm">No conversions for this period</div>
+                <div className="p-6 text-center text-gray-400 text-sm">No click events for this period</div>
               ) : filteredConversions.map(c => {
                 const typeColor = c.event_type === 'phone_click' ? 'bg-blue-500' : c.event_type === 'text_click' ? 'bg-green-500' : 'bg-pink-500';
                 const typeIcon = c.event_type === 'phone_click' ? <Phone className="w-4 h-4" /> : c.event_type === 'text_click' ? <MessageSquare className="w-4 h-4" /> : <FileText className="w-4 h-4" />;

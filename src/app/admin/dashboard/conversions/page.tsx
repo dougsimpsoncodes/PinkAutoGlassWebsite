@@ -131,7 +131,7 @@ export default function ConversionsPage() {
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading conversions...</p>
+            <p className="mt-4 text-gray-600">Loading click events...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -142,8 +142,8 @@ export default function ConversionsPage() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Conversions</h1>
-        <p className="text-gray-600 mt-1">Track all conversion events and analyze performance</p>
+        <h1 className="text-3xl font-bold text-gray-900">Click Events</h1>
+        <p className="text-gray-600 mt-1">Track website engagement: phone clicks, text clicks, form submissions</p>
       </div>
 
       {/* Controls */}
@@ -193,7 +193,7 @@ export default function ConversionsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-pink-500">
-          <div className="text-sm text-gray-600 mb-2">Total Conversions</div>
+          <div className="text-sm text-gray-600 mb-2">Total Click Events</div>
           <div className="text-3xl font-bold text-gray-900">{conversions.length}</div>
           <div className="text-xs text-gray-500 mt-2">
             {filterType !== 'all' ? `Filtered: ${filteredConversions.length}` : 'All types'}
@@ -228,7 +228,7 @@ export default function ConversionsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Conversions by Source */}
         <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Conversions by Source</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Click Events by Source</h2>
           <div className="space-y-3">
             {sourceStats.length === 0 ? (
               <p className="text-gray-500 text-sm">No source data available</p>
@@ -273,16 +273,16 @@ export default function ConversionsPage() {
         {/* Conversion Timeline */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Conversions</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Recent Click Events</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Showing {filteredConversions.length} conversion{filteredConversions.length !== 1 ? 's' : ''}
+              Showing {filteredConversions.length} event{filteredConversions.length !== 1 ? 's' : ''}
             </p>
           </div>
 
           <div className="overflow-y-auto max-h-96">
             {filteredConversions.length === 0 ? (
               <div className="px-6 py-12 text-center text-gray-500">
-                No conversions found for this period
+                No click events found for this period
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
@@ -336,7 +336,7 @@ export default function ConversionsPage() {
       {/* Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">Most Common Conversion</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">Most Common Click Event</h3>
           {conversions.length > 0 && (
             <p className="text-sm text-blue-800">
               <span className="font-bold capitalize">
