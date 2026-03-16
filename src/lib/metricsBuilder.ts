@@ -106,6 +106,7 @@ export interface UnifiedMetrics {
     callsExcludedBusinessNumber: number;
     callsExcludedTollFree: number;
     callsDeduplicated: number;
+    callsSuppressedByLeadsTable: number;
     grossRevenueInvoices: number;
     attributedRevenueLeads: number;
   };
@@ -135,6 +136,7 @@ export async function buildMetrics(
     revenueGrossResult,
     trafficResult,
     clickEventsResult,
+    existingCallPhones,
   ] = await Promise.all([
     fetchSpend(supabase, bounds),
     fetchFormLeads(supabase, bounds),
@@ -142,10 +144,11 @@ export async function buildMetrics(
     fetchGrossRevenue(supabase, bounds),
     fetchTraffic(supabase, bounds),
     fetchClickEvents(supabase, bounds),
+    fetchCallLeadPhones(supabase),
   ]);
 
-  // Process calls into deduplicated leads
-  const callDedup = deduplicateCalls(callsResult.calls, bounds);
+  // Process calls into deduplicated leads, suppressing phones already in leads table
+  const callDedup = deduplicateCalls(callsResult.calls, bounds, existingCallPhones);
 
   // Combine form leads + call leads
   const allLeads = [...formLeadsResult.leads, ...callDedup.leads];
@@ -191,6 +194,7 @@ export async function buildMetrics(
       callsExcludedBusinessNumber: callDedup.excludedBusinessNumber,
       callsExcludedTollFree: callDedup.excludedTollFree,
       callsDeduplicated: callDedup.deduplicated,
+      callsSuppressedByLeadsTable: callDedup.suppressedByLeadsTable,
       grossRevenueInvoices: revenueGrossResult.invoiceCount,
       attributedRevenueLeads: formLeadsResult.leads.filter(l => (l.revenue || 0) > 0).length,
     };
@@ -283,9 +287,14 @@ interface CallDedupResult {
   excludedBusinessNumber: number;
   excludedTollFree: number;
   deduplicated: number;
+  suppressedByLeadsTable: number;
 }
 
-function deduplicateCalls(calls: any[], _bounds: MountainDayBounds): CallDedupResult {
+function deduplicateCalls(
+  calls: any[],
+  _bounds: MountainDayBounds,
+  existingCallPhones: Set<string>
+): CallDedupResult {
   let excludedDuration = 0;
   let excludedBusinessNumber = 0;
   let excludedTollFree = 0;
@@ -301,11 +310,16 @@ function deduplicateCalls(calls: any[], _bounds: MountainDayBounds): CallDedupRe
   });
 
   // Dedup: one lead per phone + MT calendar day
+  // Also suppress calls whose phone already exists as a call-type lead in the leads table
   const seen = new Set<string>();
   let deduplicated = 0;
+  let suppressedByLeadsTable = 0;
   const leads: MetricLead[] = [];
 
   for (const call of qualifying) {
+    // Skip if this caller already has a lead record (avoid double-counting)
+    if (existingCallPhones.has(call.from_number)) { suppressedByLeadsTable++; continue; }
+
     const mtDateStr = new Date(call.start_time)
       .toLocaleDateString('en-CA', { timeZone: 'America/Denver' });
     const key = `${call.from_number}-${mtDateStr}`;
@@ -328,7 +342,27 @@ function deduplicateCalls(calls: any[], _bounds: MountainDayBounds): CallDedupRe
     });
   }
 
-  return { leads, excludedDuration, excludedBusinessNumber, excludedTollFree, deduplicated };
+  return { leads, excludedDuration, excludedBusinessNumber, excludedTollFree, deduplicated, suppressedByLeadsTable };
+}
+
+/**
+ * Fetch phone numbers that already exist as call-type leads in the leads table.
+ * These are suppressed from ringcentral_calls to avoid double-counting —
+ * matches the Leads page behavior in fetchUnifiedLeads().
+ */
+async function fetchCallLeadPhones(supabase: SupabaseClient): Promise<Set<string>> {
+  const { data } = await supabase
+    .from('leads')
+    .select('phone_e164, phone')
+    .eq('is_test', false)
+    .eq('first_contact_method', 'call');
+
+  const phones = new Set<string>();
+  for (const row of data || []) {
+    const p = row.phone_e164 || row.phone;
+    if (p) phones.add(p);
+  }
+  return phones;
 }
 
 async function fetchGrossRevenue(
