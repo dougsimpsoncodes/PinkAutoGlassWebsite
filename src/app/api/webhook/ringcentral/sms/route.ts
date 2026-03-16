@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
+import {
+  classifyMessage,
+  recordOptOut,
+  recordOptIn,
+  isOptedOut,
+  OPT_OUT_CONFIRMATION,
+  OPT_IN_CONFIRMATION,
+  HELP_RESPONSE,
+} from '@/lib/sms-opt-out';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -123,6 +132,77 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
 
+    // ── STOP/START keyword detection (before any other processing) ────
+    const messageClass = classifyMessage(messageText);
+
+    if (messageClass === 'help') {
+      // CTIA requires responding to HELP with business info
+      await sendCustomerSMS({
+        to: fromNumber,
+        message: HELP_RESPONSE,
+        bypassOptOutCheck: true,
+      });
+      console.log(`ℹ️ HELP response sent to ${fromNumber}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (messageClass === 'opt_out' || messageClass === 'opt_in') {
+      // Store the command message for audit trail (idempotent via message_id)
+      await supabase.from('ringcentral_sms').upsert(
+        {
+          message_id: messageId,
+          conversation_id: conversationId,
+          message_time: messageTime,
+          direction: 'Inbound',
+          from_number: fromNumber,
+          from_name: fromName,
+          to_number: toNumber,
+          to_name: toName,
+          message_text: messageText,
+          message_status: messageStatus,
+          read_status: readStatus,
+          raw_data: payload,
+        },
+        { onConflict: 'message_id' }
+      );
+
+      if (messageClass === 'opt_out') {
+        const stateChanged = await recordOptOut(fromNumber);
+        // Only send confirmation on actual state transition (prevents replay duplication)
+        if (stateChanged) {
+          await sendCustomerSMS({
+            to: fromNumber,
+            message: OPT_OUT_CONFIRMATION,
+            bypassOptOutCheck: true,
+          });
+        }
+        console.log(`🛑 SMS opt-out processed for ${fromNumber} (transition=${stateChanged})`);
+      } else {
+        const stateChanged = await recordOptIn(fromNumber);
+        if (stateChanged) {
+          await sendCustomerSMS({
+            to: fromNumber,
+            message: OPT_IN_CONFIRMATION,
+            bypassOptOutCheck: true,
+          });
+        }
+        console.log(`✅ SMS opt-in processed for ${fromNumber} (transition=${stateChanged})`);
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // ── Check if sender is opted out (non-command message) ────
+    // Store message and create/update lead, but skip auto-reply
+    let senderOptedOut = false;
+    if (fromNumber) {
+      try {
+        senderOptedOut = await isOptedOut(fromNumber);
+      } catch {
+        // Non-fatal — default to not opted out
+      }
+    }
+
     // Upsert — idempotent via message_id unique constraint
     const { error } = await supabase
       .from('ringcentral_sms')
@@ -201,7 +281,8 @@ export async function POST(req: NextRequest) {
     // Auto-reply: one greeting per phone number per calendar day (UTC).
     // Uses a deterministic message_id so the DB unique constraint prevents double-sends
     // even under concurrent webhook retries — insert succeeds only once per day.
-    if (fromNumber && isCustomerSmsEnabled()) {
+    // Skip auto-reply for opted-out numbers.
+    if (fromNumber && isCustomerSmsEnabled() && !senderOptedOut) {
       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
       const autoReplyMsgId = `auto-reply-${fromNumber}-${today}`;
       const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';

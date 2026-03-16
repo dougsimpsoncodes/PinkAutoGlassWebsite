@@ -50,6 +50,8 @@ export async function getRingCentralClient() {
 export interface SMSOptions {
   to: string;
   message: string;
+  /** Skip opt-out check — ONLY for TCPA-required confirmation messages (STOP/START replies) */
+  bypassOptOutCheck?: boolean;
 }
 
 /**

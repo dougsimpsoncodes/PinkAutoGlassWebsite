@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
+import { isOptedOut } from '@/lib/sms-opt-out';
 
 const TIMEZONE = 'America/Denver';
 const BUSINESS_OPEN_HOUR = 7;        // 7 AM MT
@@ -161,7 +162,7 @@ export function getNextReviewSendTime(from: Date = new Date()): Date {
 function getSupabaseClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -184,6 +185,18 @@ export async function scheduleDripSequence(
   if (type === 'quick_quote' && !context.smsConsent) {
     console.log(`⏭️ Skipping quick_quote drip for lead ${leadId}: no SMS consent`);
     return { scheduled: 0, skipped: 0 };
+  }
+
+  // Skip if phone is opted out (prevents scheduling messages that will just be skipped)
+  if (context.phone) {
+    try {
+      if (await isOptedOut(context.phone)) {
+        console.log(`⏭️ Skipping drip for lead ${leadId}: phone ${context.phone} is opted out`);
+        return { scheduled: 0, skipped: 0 };
+      }
+    } catch {
+      // Non-fatal — processor will catch it at send time
+    }
   }
 
   const steps = type === 'quick_quote' ? QUICK_QUOTE_STEPS : BOOKING_STEPS;
@@ -271,6 +284,18 @@ export async function scheduleReviewRequest(
     return { scheduled: 0, skipped: 0 };
   }
 
+  // Skip if phone is opted out
+  if (context.phone) {
+    try {
+      if (await isOptedOut(context.phone)) {
+        console.log(`⏭️ Skipping review request for lead ${leadId}: phone ${context.phone} is opted out`);
+        return { scheduled: 0, skipped: 0 };
+      }
+    } catch {
+      // Non-fatal — processor will catch it at send time
+    }
+  }
+
   const supabase = getSupabaseClient();
   const sequenceName = 'review_request';
 
@@ -307,14 +332,15 @@ export async function scheduleReviewRequest(
 
     // Step 1 SMS always targets next 6 PM MT slot.
     // Subsequent steps are offset from that anchor.
-    // Emails get a random 0–5 min stagger to avoid SendGrid rate limits.
+    // Emails get a random 0–5 min stagger to avoid Resend rate limits.
     const anchor = getNextReviewSendTime(now);
     let scheduledFor: Date;
     if (step.sequenceStep === 1) {
       scheduledFor = anchor;
     } else {
       const staggerMs = step.channel === 'email' ? Math.floor(Math.random() * 5 * 60 * 1000) : 0;
-      scheduledFor = new Date(anchor.getTime() + step.delayHours * 60 * 60 * 1000 + staggerMs);
+      const rawTime = new Date(anchor.getTime() + step.delayHours * 60 * 60 * 1000 + staggerMs);
+      scheduledFor = step.channel === 'sms' ? getNextSafeTime(rawTime) : rawTime;
     }
 
     rows.push({

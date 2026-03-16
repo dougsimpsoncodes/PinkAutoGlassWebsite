@@ -1,4 +1,5 @@
 import { SMSOptions, sendSMS as sendViaRingCentral } from './sms';
+import { isOptedOut } from '@/lib/sms-opt-out';
 
 // --- Token cache ---
 let cachedToken: string | null = null;
@@ -83,6 +84,20 @@ const BEETEXTING_SEND_URL = 'https://connect.beetexting.com/prod/message/sendsms
  * Uses the same SMSOptions interface as the RingCentral sendSMS for drop-in swap.
  */
 export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
+  // Check SMS opt-out before sending (unless bypassed for compliance confirmations)
+  if (!options.bypassOptOutCheck && options.to) {
+    try {
+      if (await isOptedOut(options.to)) {
+        console.log(`🚫 SMS blocked: ${options.to} is opted out`);
+        return false;
+      }
+    } catch (err) {
+      // Fail-closed: if we can't verify opt-out status, block the send (TCPA safety)
+      console.error('Opt-out check failed, blocking send for safety:', err);
+      return false;
+    }
+  }
+
   const agentEmail = process.env.BEETEXTING_AGENT_EMAIL;
   const fromNumber = process.env.BEETEXTING_FROM_NUMBER;
   const apiKey = process.env.BEETEXTING_API_KEY;

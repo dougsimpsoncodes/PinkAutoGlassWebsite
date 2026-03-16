@@ -4,6 +4,7 @@ import { sendEmail } from '@/lib/notifications/email';
 import { renderTemplate } from './templates';
 import { isTCPAQuietHours, getNextSafeTime } from './scheduler';
 import { isExcludedPhone, isCustomerSmsEnabled } from '@/lib/constants';
+import { isOptedOut } from '@/lib/sms-opt-out';
 
 const BATCH_SIZE = 50;
 const RETRY_BACKOFF_MINUTES = 15;
@@ -121,6 +122,19 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
         await markSkipped(supabase, msg.id, 'no_sms_consent');
         result.skipped++;
         continue;
+      }
+
+      // Check phone-level SMS opt-out (STOP keyword compliance)
+      if (msg.channel === 'sms' && msg.context.phone) {
+        try {
+          if (await isOptedOut(msg.context.phone)) {
+            await markSkipped(supabase, msg.id, 'sms_opt_out');
+            result.skipped++;
+            continue;
+          }
+        } catch {
+          // Non-fatal — if opt-out check fails, let sendCustomerSMS catch it
+        }
       }
 
       // TCPA check: if SMS is somehow due during quiet hours, reschedule

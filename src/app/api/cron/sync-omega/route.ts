@@ -1,7 +1,7 @@
 /**
  * Nightly Omega EDI Sync Cron
  *
- * Runs nightly at 5:00 UTC (10 PM Mountain Time).
+ * Runs nightly at 5:00 UTC (10 PM MST / 11 PM MDT).
  * 1. Syncs last 2 days of quotes and invoices from Omega EDI
  * 2. Runs lead matching (phone/email)
  * 3. Backfills revenue data onto matched leads
@@ -30,19 +30,19 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // ── Schedule Review Requests for Newly Completed Jobs ────────
+    // ── Schedule Review Requests for Completed Jobs ─────────────
     // Runs regardless of Omega config — only needs Supabase.
-    // Leads are marked completed by fn_backfill_lead_revenue after
-    // invoice upload, so this fires nightly after Doug's upload.
+    // Uses 30-day lookback (not 25h) so missed cron runs can catch up.
+    // scheduleReviewRequest() has built-in dedup — won't double-send.
     let reviewsScheduled = 0;
     try {
-      const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const { data: completedLeads } = await supabase
         .from('leads')
-        .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
+        .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model')
         .eq('status', 'completed')
         .gte('updated_at', since)
-        .not('phone_e164', 'is', null);
+        .or('phone_e164.not.is.null,email.not.is.null');
 
       if (completedLeads && completedLeads.length > 0) {
         console.log(`Omega cron: scheduling review requests for ${completedLeads.length} recently completed leads`);
@@ -50,12 +50,12 @@ export async function GET(request: NextRequest) {
           try {
             const result = await scheduleReviewRequest(lead.id, {
               firstName: lead.first_name || 'there',
-              phone: lead.phone_e164,
+              phone: lead.phone_e164 || '',
               email: lead.email || undefined,
               vehicleYear: lead.vehicle_year || 0,
               vehicleMake: lead.vehicle_make || '',
               vehicleModel: lead.vehicle_model || '',
-              smsConsent: lead.sms_consent ?? true,
+              smsConsent: !!lead.phone_e164,
             });
             reviewsScheduled += result.scheduled;
           } catch (err: any) {

@@ -176,21 +176,21 @@ export async function POST(request: NextRequest) {
         const ids = matchedLeadIds.map((r: any) => r.matched_lead_id);
         const { data: completedLeads } = await supabase
           .from('leads')
-          .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model, sms_consent')
+          .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model')
           .in('id', ids)
           .eq('status', 'completed')
-          .not('phone_e164', 'is', null);
+          .or('phone_e164.not.is.null,email.not.is.null');
 
         for (const lead of completedLeads || []) {
           try {
             const result = await scheduleReviewRequest(lead.id, {
               firstName: lead.first_name || 'there',
-              phone: lead.phone_e164,
+              phone: lead.phone_e164 || '',
               email: lead.email || undefined,
               vehicleYear: lead.vehicle_year || 0,
               vehicleMake: lead.vehicle_make || '',
               vehicleModel: lead.vehicle_model || '',
-              smsConsent: lead.sms_consent ?? true,
+              smsConsent: !!lead.phone_e164,
             });
             reviewsScheduled += result.scheduled;
           } catch (err: any) {

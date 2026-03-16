@@ -213,3 +213,23 @@ Medium — do after the review blast fires (blast is imminent, cleanup is ongoin
 ### Vercel cost reduction (earlier in session):
 - Switched all 30 projects from Turbo → Standard build machines
 - Saves ~$380/year
+
+## 2026-03-10 — Admin email notification filtering
+- **What:** Removed doug@ from routine lead/booking email alerts while keeping daily reports + critical alerts
+- **How:** Added `sendAdminAlertEmail()` function using new `ADMIN_EMAIL_ALERTS` env var (kody@, dan@ only). Lead + booking routes use this; daily report + critical alerts still use `sendAdminEmail()` (all 3)
+- **Env var:** `ADMIN_EMAIL_ALERTS` added to Vercel production and .env.local
+- **NOT done:** AnswerConnect call log emails — user handling via their portal. GitHub notification emails — separate system, not app code.
+- **Also fixed:** `GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN` had `\n` corruption in .env.local — cleaned locally. Vercel source value may also be corrupt (shows as "N").
+- **Verification:** Deployed to Vercel, build succeeded. Waiting for next real lead to confirm doug@ doesn't receive alert.
+
+## 2026-03-10 — Supabase Security + Call Attribution Fix
+- Fixed Supabase security vulnerabilities on PAG (8 errors) and MAL (3 errors) — RLS enabled on all tables, dangerous public policies replaced, autoconfirm disabled on MAL
+- Fixed 4 call attribution bugs: cron excluded today, phone matching used wrong number, date filter truncated to midnight, bing/microsoft string mismatch
+- Result: Google leads 1→8, Microsoft leads 3→6 for the day
+- Detailed log: `tasks/2026-03-10-attribution-fix.md`
+
+## 2026-03-15 — Review Pipeline Fixes + Google Workspace + Invoice Reconciliation
+- Codex audit found review requests silently broken (missing DB column + Sunday TCPA violation). All 7 issues fixed.
+- Set up Google Workspace email for theai-experts.com
+- Reconciled Omega invoices — all 28 aging invoices now in DB
+- Detailed log: `tasks/2026-03-15-session-log.md`
