@@ -533,9 +533,12 @@ export async function getAttributedLeadMetrics(
     .select('id, ad_platform')
     .eq('is_test', false)
     .gte('created_at', startDate.toISOString())
-    .lte('created_at', endDate.toISOString());
+    .lte('created_at', endDate.toISOString())
+    .limit(10000);
 
   // Fetch qualifying calls (exclude business number)
+  // NOTE: Must use explicit limit to avoid PostgREST default max_rows (1000)
+  // which silently truncates results, dropping recent calls from attribution
   const { data: calls } = await supabase
     .from('ringcentral_calls')
     .select('call_id, from_number, start_time, ad_platform')
@@ -543,7 +546,8 @@ export async function getAttributedLeadMetrics(
     .neq('from_number', BUSINESS_PHONE_NUMBER)
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', startDate.toISOString())
-    .lte('start_time', endDate.toISOString());
+    .lte('start_time', endDate.toISOString())
+    .limit(10000);
 
   const callList = calls || [];
   const formList = formLeads || [];
