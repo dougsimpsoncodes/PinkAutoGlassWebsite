@@ -257,6 +257,11 @@ export default function LeadManagementDashboard() {
   const [sortColumn, setSortColumn] = useState<string>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
+  // Platform counts from metrics API — single source of truth (matches Dashboard)
+  const [platformCounts, setPlatformCounts] = useState<{
+    google: number; microsoft: number;
+  } | null>(null);
+
   // Get date range using Mountain Time (consistent with server-side)
   const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
 
@@ -276,17 +281,40 @@ export default function LeadManagementDashboard() {
   // Get filtered leads - computed from cache, no loading spinner
   const leads = getFilteredLeads();
 
+  // Fetch platform counts from metrics API (same source as Dashboard)
+  const fetchPlatformCounts = useCallback(async (period: DateFilter) => {
+    try {
+      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`);
+      if (res.ok) {
+        const d = await res.json();
+        if (d.ok) {
+          setPlatformCounts({
+            google: d.leads.byPlatform.google.total,
+            microsoft: d.leads.byPlatform.microsoft.total,
+          });
+        }
+      }
+    } catch { /* non-critical — falls back to local counts */ }
+  }, []);
+
   // Subscribe to global sync events
   useEffect(() => {
     if (syncVersion > 0) {
       fetchAllLeads();
+      fetchPlatformCounts(dateFilter);
     }
-  }, [syncVersion]);
+  }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initial load only
+  // Initial load + date filter changes
   useEffect(() => {
     fetchAllLeads();
-  }, []);
+    fetchPlatformCounts(dateFilter);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Refresh platform counts when date filter changes
+  useEffect(() => {
+    fetchPlatformCounts(dateFilter);
+  }, [dateFilter, fetchPlatformCounts]);
 
   const fetchAllLeads = async () => {
     try {
@@ -423,27 +451,18 @@ export default function LeadManagementDashboard() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Stats
+  // Stats — platform counts come from metrics API (same source as Dashboard)
   const stats = {
     total: leads.length,
     calls: leads.filter(l => l.type === 'call').length,
     texts: leads.filter(l => l.type === 'text').length,
     forms: leads.filter(l => l.type === 'form').length,
-    googleAds: leads.filter(l => l.ad_platform === 'google').length,
-    microsoftAds: leads.filter(l => l.ad_platform === 'bing' || l.ad_platform === 'microsoft').length,
+    googleAds: platformCounts?.google ?? leads.filter(l => l.ad_platform === 'google').length,
+    microsoftAds: platformCounts?.microsoft ?? leads.filter(l => l.ad_platform === 'bing' || l.ad_platform === 'microsoft').length,
     satelliteSites: leads.filter(l => l.utm_source && SATELLITE_UTM_SOURCES.includes(l.utm_source)).length,
     organic: leads.filter(l => l.ad_platform === 'organic').length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
   };
-  
-  // Debug: Log first few leads to see ad_platform values
-  if (typeof window !== 'undefined' && leads.length > 0) {
-    console.log('Sample leads ad_platform:', leads.slice(0, 5).map(l => ({ 
-      name: l.name, 
-      ad_platform: l.ad_platform, 
-      utm_source: l.utm_source 
-    })));
-  }
 
   // Only show spinner on initial load when we have no cached data
   if (loading && allLeadsCache.length === 0) {
