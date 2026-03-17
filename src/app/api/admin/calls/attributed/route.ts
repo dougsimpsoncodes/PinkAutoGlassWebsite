@@ -23,8 +23,9 @@ export async function GET(_req: NextRequest) {
   );
 
   try {
-    // Use a wide date range to cover all possible calls
-    const startDate = new Date('2024-01-01');
+    // Limit to last 90 days — processing all-time data exceeds PostgREST
+    // row limits and causes recent calls/sessions to be silently truncated
+    const startDate = new Date(Date.now() - 90 * 86400000);
     const endDate = new Date();
 
     const metrics = await getAttributedLeadMetrics(supabase, startDate, endDate);

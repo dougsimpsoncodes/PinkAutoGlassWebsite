@@ -537,8 +537,7 @@ export async function getAttributedLeadMetrics(
     .limit(10000);
 
   // Fetch qualifying calls (exclude business number)
-  // NOTE: Must use explicit limit to avoid PostgREST default max_rows (1000)
-  // which silently truncates results, dropping recent calls from attribution
+  // Order by most recent first so truncation at limit drops old data, not today's
   const { data: calls } = await supabase
     .from('ringcentral_calls')
     .select('call_id, from_number, start_time, ad_platform')
@@ -547,6 +546,7 @@ export async function getAttributedLeadMetrics(
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', startDate.toISOString())
     .lte('start_time', endDate.toISOString())
+    .order('start_time', { ascending: false })
     .limit(10000);
 
   const callList = calls || [];
@@ -579,9 +579,8 @@ export async function getAttributedLeadMetrics(
     const earliestWindowStart = new Date(Math.min(...callTimes) - matchWindowMs);
     const latestCallTime = new Date(Math.max(...callTimes));
 
-    // Fetch sessions with click IDs
-    // NOTE: Must use explicit limit to avoid PostgREST default max_rows (1000)
-    // which silently truncates results, dropping recent sessions from attribution
+    // Fetch sessions with click IDs — order recent first so truncation
+    // at limit drops old sessions, not today's
     const [{ data: googleSessions }, { data: msSessions }] = await Promise.all([
       supabase
         .from('user_sessions')
@@ -589,6 +588,7 @@ export async function getAttributedLeadMetrics(
         .not('gclid', 'is', null)
         .gte('started_at', earliestWindowStart.toISOString())
         .lte('started_at', latestCallTime.toISOString())
+        .order('started_at', { ascending: false })
         .limit(10000),
       supabase
         .from('user_sessions')
@@ -596,6 +596,7 @@ export async function getAttributedLeadMetrics(
         .not('msclkid', 'is', null)
         .gte('started_at', earliestWindowStart.toISOString())
         .lte('started_at', latestCallTime.toISOString())
+        .order('started_at', { ascending: false })
         .limit(10000),
     ]);
 
