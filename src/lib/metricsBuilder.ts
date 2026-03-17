@@ -38,6 +38,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { type DateFilter, getMountainDayBounds, type MountainDayBounds } from './dateUtils';
 import {
+  ATTRIBUTION_WINDOW_MINUTES,
   BUSINESS_PHONE_NUMBER,
   MIN_CALL_DURATION_SECONDS,
 } from './constants';
@@ -137,6 +138,7 @@ export async function buildMetrics(
     trafficResult,
     clickEventsResult,
     existingCallPhones,
+    sessionAttribution,
   ] = await Promise.all([
     fetchSpend(supabase, bounds),
     fetchFormLeads(supabase, bounds),
@@ -145,10 +147,11 @@ export async function buildMetrics(
     fetchTraffic(supabase, bounds),
     fetchClickEvents(supabase, bounds),
     fetchCallLeadPhones(supabase),
+    fetchSessionAttribution(supabase, bounds),
   ]);
 
   // Process calls into deduplicated leads, suppressing phones already in leads table
-  const callDedup = deduplicateCalls(callsResult.calls, bounds, existingCallPhones);
+  const callDedup = deduplicateCalls(callsResult.calls, bounds, existingCallPhones, sessionAttribution);
 
   // Combine form leads + call leads
   const allLeads = [...formLeadsResult.leads, ...callDedup.leads];
@@ -209,6 +212,11 @@ interface MetricLead {
   type: 'form' | 'call' | 'text';
   platform: string | null; // 'google' | 'microsoft' | null
   revenue: number;
+}
+
+interface SessionAttribution {
+  googleSessions: { started_at: string }[];
+  microsoftSessions: { started_at: string }[];
 }
 
 // ── Data fetchers ──────────────────────────────────────────────────
@@ -293,7 +301,8 @@ interface CallDedupResult {
 function deduplicateCalls(
   calls: any[],
   _bounds: MountainDayBounds,
-  existingCallPhones: Set<string>
+  existingCallPhones: Set<string>,
+  sessionAttr: SessionAttribution
 ): CallDedupResult {
   let excludedDuration = 0;
   let excludedBusinessNumber = 0;
@@ -328,7 +337,12 @@ function deduplicateCalls(
     }
     seen.add(key);
 
+    // Platform attribution: DB column first, then session-based matching
     let platform = call.ad_platform;
+    if (!platform || platform === 'direct') {
+      // Session-based attribution: match call to ad-click sessions within time window
+      platform = resolveSessionPlatform(call, sessionAttr);
+    }
     if (platform && platform !== 'google' && platform !== 'microsoft') {
       platform = null;
     }
@@ -360,6 +374,66 @@ async function fetchCallLeadPhones(supabase: SupabaseClient): Promise<Set<string
     if (row.phone_e164) phones.add(row.phone_e164);
   }
   return phones;
+}
+
+/**
+ * Session-based call attribution — matches the logic in getAttributedLeadMetrics().
+ * Fetches user_sessions with gclid/msclkid within the period's time window,
+ * so calls can be attributed to Google/Microsoft even without ad_platform on the RC record.
+ */
+async function fetchSessionAttribution(
+  supabase: SupabaseClient,
+  bounds: MountainDayBounds
+): Promise<SessionAttribution> {
+  const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+  const windowStart = new Date(new Date(bounds.startUTC).getTime() - matchWindowMs).toISOString();
+
+  const [{ data: googleSessions }, { data: msSessions }] = await Promise.all([
+    supabase
+      .from('user_sessions')
+      .select('started_at')
+      .not('gclid', 'is', null)
+      .gte('started_at', windowStart)
+      .lte('started_at', bounds.endUTC)
+      .limit(10000),
+    supabase
+      .from('user_sessions')
+      .select('started_at')
+      .not('msclkid', 'is', null)
+      .gte('started_at', windowStart)
+      .lte('started_at', bounds.endUTC)
+      .limit(10000),
+  ]);
+
+  return {
+    googleSessions: googleSessions || [],
+    microsoftSessions: msSessions || [],
+  };
+}
+
+/**
+ * Resolve platform for a call using session-based time correlation.
+ * If a Google/Microsoft ad-click session happened within ATTRIBUTION_WINDOW_MINUTES
+ * before the call, attribute the call to that platform.
+ */
+function resolveSessionPlatform(call: any, attr: SessionAttribution): string | null {
+  const callTime = new Date(call.start_time).getTime();
+  const windowStart = callTime - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+
+  const hasGoogle = attr.googleSessions.some(s => {
+    const t = new Date(s.started_at).getTime();
+    return t >= windowStart && t <= callTime;
+  });
+
+  const hasMs = attr.microsoftSessions.some(s => {
+    const t = new Date(s.started_at).getTime();
+    return t >= windowStart && t <= callTime;
+  });
+
+  // Only attribute if exactly one platform matches (no conflict)
+  if (hasGoogle && !hasMs) return 'google';
+  if (hasMs && !hasGoogle) return 'microsoft';
+  return null;
 }
 
 async function fetchGrossRevenue(
