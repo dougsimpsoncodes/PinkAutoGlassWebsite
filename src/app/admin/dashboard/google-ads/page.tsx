@@ -15,8 +15,8 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
-import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
-import { getDateRange, isInDateRange } from '@/lib/dateUtils';
+import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
+import { calcROAS, calcCPL } from '@/lib/metricFormulas';
 
 interface GoogleAdsData {
   spend: number;
@@ -72,8 +72,8 @@ export default function GoogleAdsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
 
-  // Lead data — single source of truth for lead counts on this page
-  const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
+  // Lead data from canonical server-side source (same logic as Executive Dashboard)
+  const [googleLeads, setGoogleLeads] = useState<UnifiedLeadRow[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(true);
 
   // Get current data from cache
@@ -81,16 +81,6 @@ export default function GoogleAdsPage() {
 
   // Check if we have ANY cached data (for showing content while loading new period)
   const hasAnyCachedData = Object.values(dataCache).some(d => d !== null);
-
-  // Filter leads to Google platform + current date range
-  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
-
-  const googleLeads = useMemo(() => {
-    return allLeads.filter(lead =>
-      lead.ad_platform === 'google' &&
-      isInDateRange(lead.created_at, dateRangeObj)
-    );
-  }, [allLeads, dateRangeObj]);
 
   const leadCounts = useMemo(() => ({
     total: googleLeads.length,
@@ -100,8 +90,7 @@ export default function GoogleAdsPage() {
   }), [googleLeads]);
 
   const costPerLead = useMemo(() => {
-    if (leadCounts.total === 0) return 0;
-    return (data?.spend ?? 0) / leadCounts.total;
+    return calcCPL(data?.spend ?? 0, leadCounts.total) ?? 0;
   }, [leadCounts.total, data]);
 
   const revenue = useMemo(() => {
@@ -109,16 +98,17 @@ export default function GoogleAdsPage() {
   }, [googleLeads]);
 
   const roi = useMemo(() => {
-    const spend = data?.spend ?? 0;
-    if (spend === 0) return null;
-    return revenue / spend;
+    return calcROAS(revenue, data?.spend ?? 0);
   }, [revenue, data]);
 
-  const fetchLeads = useCallback(async () => {
+  const fetchLeads = useCallback(async (period: DateFilter) => {
     try {
       setLeadsLoading(true);
-      const leads = await fetchUnifiedLeads({ includeAttribution: true });
-      setAllLeads(leads);
+      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${period}&platform=google`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) setGoogleLeads(data.leads || []);
+      }
     } catch (err) {
       console.error('Error fetching leads:', err);
     } finally {
@@ -146,9 +136,9 @@ export default function GoogleAdsPage() {
   const refreshAllData = useCallback(async () => {
     await Promise.all([
       ...ALL_FILTERS.map(filter => fetchData(filter)),
-      fetchLeads(),
+      fetchLeads(dateFilter),
     ]);
-  }, [fetchData, fetchLeads]);
+  }, [fetchData, fetchLeads, dateFilter]);
 
   // Subscribe to global sync events
   useEffect(() => {
@@ -160,6 +150,7 @@ export default function GoogleAdsPage() {
   // When changing date filter, use cached data or fetch if not available
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
+    fetchLeads(filter);
     // If data not in cache, fetch it
     if (!dataCache[filter]) {
       setLoading(true);
@@ -172,7 +163,7 @@ export default function GoogleAdsPage() {
     setLoading(true);
     Promise.all([
       fetchData(dateFilter),
-      fetchLeads(),
+      fetchLeads(dateFilter),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -279,19 +270,19 @@ export default function GoogleAdsPage() {
           <div className="bg-white rounded-lg p-4 shadow-sm border-2 border-green-300">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="w-4 h-4 text-green-600" />
-              <p className="text-sm font-medium text-green-700">Revenue</p>
+              <p className="text-sm font-medium text-green-700">Attributed Revenue</p>
             </div>
             <p className="text-2xl font-bold text-green-600">
               ${revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
-            {revenue === 0 && <p className="text-xs text-gray-400 mt-1">From closed invoices</p>}
+            {revenue === 0 && <p className="text-xs text-gray-400 mt-1">From matched invoices</p>}
           </div>
 
           {/* ROI */}
           <div className={`bg-white rounded-lg p-4 shadow-sm border-2 ${roi === null ? 'border-gray-200' : roi >= 3 ? 'border-green-500' : roi >= 1 ? 'border-yellow-400' : 'border-red-400'}`}>
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className={`w-4 h-4 ${roi === null ? 'text-gray-400' : roi >= 1 ? 'text-green-600' : 'text-red-500'}`} />
-              <p className={`text-sm font-medium ${roi === null ? 'text-gray-600' : roi >= 1 ? 'text-green-700' : 'text-red-600'}`}>ROI</p>
+              <p className={`text-sm font-medium ${roi === null ? 'text-gray-600' : roi >= 1 ? 'text-green-700' : 'text-red-600'}`}>ROAS</p>
             </div>
             {roi === null ? (
               <p className="text-2xl font-bold text-gray-400">—</p>
@@ -300,7 +291,7 @@ export default function GoogleAdsPage() {
                 <p className={`text-2xl font-bold ${roi >= 3 ? 'text-green-600' : roi >= 1 ? 'text-yellow-600' : 'text-red-600'}`}>
                   {roi.toFixed(1)}x
                 </p>
-                <p className="text-xs text-gray-500 mt-1">${roi.toFixed(2)} per $1 spent</p>
+                <p className="text-xs text-gray-500 mt-1">Attributed rev ÷ spend</p>
               </>
             )}
           </div>

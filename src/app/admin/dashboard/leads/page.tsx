@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
-import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import {
   Search,
   DollarSign,
@@ -32,7 +31,7 @@ import {
   ChevronsUpDown,
   RadioTower,
 } from 'lucide-react';
-import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
+import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
 
 function SortIcon({ column, sortColumn, sortDirection }: { column: string; sortColumn: string; sortDirection: 'asc' | 'desc' }) {
   if (sortColumn !== column) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
@@ -188,8 +187,8 @@ function MarkCompleteButton({
   lead,
   onComplete,
 }: {
-  lead: UnifiedLead;
-  onComplete: (lead: UnifiedLead, reviewScheduled: boolean) => void;
+  lead: UnifiedLeadRow;
+  onComplete: (lead: UnifiedLeadRow, reviewScheduled: boolean) => void;
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -244,93 +243,92 @@ export default function LeadManagementDashboard() {
   // Get global sync state
   const { syncVersion } = useSync();
 
-  // Cache all leads - fetch once, filter client-side
-  const [allLeadsCache, setAllLeadsCache] = useState<UnifiedLead[]>([]);
+  // Table rows from server-side unified-leads API
+  const [leads, setLeads] = useState<UnifiedLeadRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'form' | 'call' | 'text'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<UnifiedLeadRow | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
+  const [editData, setEditData] = useState<Partial<UnifiedLeadRow>>({});
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [sortColumn, setSortColumn] = useState<string>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [dateDisplay, setDateDisplay] = useState<string>('');
 
-  // Platform counts from metrics API — single source of truth (matches Dashboard)
-  const [platformCounts, setPlatformCounts] = useState<{
-    google: number; microsoft: number;
+  // KPI counts from the SAME metrics API the Dashboard uses (guaranteed match)
+  const [metricsKPI, setMetricsKPI] = useState<{
+    total: number; calls: number; forms: number; texts: number;
+    google: number; microsoft: number; unattributed: number;
   } | null>(null);
+  const [platformCountsError, setPlatformCountsError] = useState<string | null>(null);
 
-  // Get date range using Mountain Time (consistent with server-side)
-  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
-
-  // Filter leads by date range (client-side, instant) - uses Mountain Time
-  const getFilteredLeads = useCallback(() => {
-    if (allLeadsCache.length === 0) return [];
-
-    const filteredLeads = allLeadsCache.filter(lead =>
-      isInDateRange(lead.created_at, dateRangeObj)
-    );
-
-    return filteredLeads.sort((a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [allLeadsCache, dateRangeObj]);
-
-  // Get filtered leads - computed from cache, no loading spinner
-  const leads = getFilteredLeads();
-
-  // Fetch platform counts from metrics API (same source as Dashboard)
-  const fetchPlatformCounts = useCallback(async (period: DateFilter) => {
+  // Fetch KPI counts from metrics API (exact same endpoint as Executive Dashboard)
+  const fetchMetricsKPI = useCallback(async (period: DateFilter) => {
     try {
-      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`);
-      if (res.ok) {
-        const d = await res.json();
-        if (d.ok) {
-          setPlatformCounts({
-            google: d.leads.byPlatform.google.total,
-            microsoft: d.leads.byPlatform.microsoft.total,
-          });
-        }
-      }
-    } catch { /* non-critical — falls back to local counts */ }
+      setPlatformCountsError(null);
+      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Invalid response');
+
+      setMetricsKPI({
+        total: data.leads.total,
+        calls: data.leads.calls,
+        forms: data.leads.forms,
+        texts: data.leads.texts,
+        google: data.leads.byPlatform.google.total,
+        microsoft: data.leads.byPlatform.microsoft.total,
+        unattributed: data.leads.byPlatform.unattributed.total,
+      });
+      setDateDisplay(data.period?.label || '');
+    } catch (error) {
+      console.error('Metrics KPI fetch failed:', error);
+      setMetricsKPI(null);
+      setPlatformCountsError('Lead counts unavailable. Refresh to retry.');
+    }
   }, []);
+
+  // Fetch table rows from unified-leads API (for the detail table only)
+  const fetchLeadRows = useCallback(async (period: DateFilter) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${period}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Invalid response');
+      setLeads(data.leads || []);
+    } catch (error) {
+      console.error('Error fetching lead rows:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchAllData = useCallback(async (period: DateFilter) => {
+    await Promise.all([fetchMetricsKPI(period), fetchLeadRows(period)]);
+  }, [fetchMetricsKPI, fetchLeadRows]);
 
   // Subscribe to global sync events
   useEffect(() => {
     if (syncVersion > 0) {
-      fetchAllLeads();
-      fetchPlatformCounts(dateFilter);
+      fetchAllData(dateFilter);
     }
   }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initial load + date filter changes
+  // Initial load
   useEffect(() => {
-    fetchAllLeads();
-    fetchPlatformCounts(dateFilter);
+    fetchAllData(dateFilter);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refresh platform counts when date filter changes
+  // Refresh when date filter changes
   useEffect(() => {
-    fetchPlatformCounts(dateFilter);
-  }, [dateFilter, fetchPlatformCounts]);
+    fetchAllData(dateFilter);
+  }, [dateFilter, fetchAllData]);
 
-  const fetchAllLeads = async () => {
-    try {
-      setLoading(true);
-      const allLeads = await fetchUnifiedLeads({ includeAttribution: true });
-      setAllLeadsCache(allLeads);
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  // Use consistent date display from shared utility (Mountain Time)
-  const getDateRangeDisplay = () => dateRangeObj.display;
+  // Date display from metrics response
+  const getDateRangeDisplay = () => dateDisplay;
 
   const updateLead = async () => {
     if (!selectedLead || selectedLead.type !== 'form') return;
@@ -347,7 +345,7 @@ export default function LeadManagementDashboard() {
 
       if (!response.ok) throw new Error('Failed to update lead');
 
-      await fetchAllLeads();
+      await fetchAllData(dateFilter);
       setSelectedLead({ ...selectedLead, ...editData });
       setEditMode(false);
       setEditData({});
@@ -453,19 +451,19 @@ export default function LeadManagementDashboard() {
 
   // Stats — platform counts come from metrics API (same source as Dashboard)
   const stats = {
-    total: leads.length,
-    calls: leads.filter(l => l.type === 'call').length,
-    texts: leads.filter(l => l.type === 'text').length,
-    forms: leads.filter(l => l.type === 'form').length,
-    googleAds: platformCounts?.google ?? leads.filter(l => l.ad_platform === 'google').length,
-    microsoftAds: platformCounts?.microsoft ?? leads.filter(l => l.ad_platform === 'bing' || l.ad_platform === 'microsoft').length,
+    total: metricsKPI?.total ?? leads.length,
+    calls: metricsKPI?.calls ?? leads.filter(l => l.type === 'call').length,
+    texts: metricsKPI?.texts ?? leads.filter(l => l.type === 'text').length,
+    forms: metricsKPI?.forms ?? leads.filter(l => l.type === 'form').length,
+    googleAds: metricsKPI?.google ?? 0,
+    microsoftAds: metricsKPI?.microsoft ?? 0,
     satelliteSites: leads.filter(l => l.utm_source && SATELLITE_UTM_SOURCES.includes(l.utm_source)).length,
-    organic: leads.filter(l => l.ad_platform === 'organic').length,
+    organic: leads.filter(l => !l.ad_platform || (l.ad_platform !== 'google' && l.ad_platform !== 'microsoft')).length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
   };
 
   // Only show spinner on initial load when we have no cached data
-  if (loading && allLeadsCache.length === 0) {
+  if (loading && leads.length === 0) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
@@ -499,6 +497,12 @@ export default function LeadManagementDashboard() {
         dateDisplay={getDateRangeDisplay()}
         color="gray"
       />
+
+      {platformCountsError && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {platformCountsError}
+        </div>
+      )}
 
       {/* Summary Stats - Lead Sources */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
@@ -1035,7 +1039,7 @@ export default function LeadManagementDashboard() {
                   lead={selectedLead}
                   onComplete={(_lead, reviewScheduled) => {
                     setSelectedLead({ ...selectedLead, status: 'completed' });
-                    fetchAllLeads();
+                    fetchAllData(dateFilter);
                     if (reviewScheduled) {
                       alert('Lead marked complete! Review request will be sent automatically.');
                     }

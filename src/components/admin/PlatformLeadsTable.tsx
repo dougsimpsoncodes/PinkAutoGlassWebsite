@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSync } from '@/contexts/SyncContext';
-import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import type { DateFilter } from '@/lib/dateUtils';
 import {
   Search,
@@ -18,13 +17,13 @@ import {
   Play,
   Filter
 } from 'lucide-react';
-import { UnifiedLead, fetchUnifiedLeads } from '@/lib/leadProcessing';
+import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
 
 interface PlatformLeadsTableProps {
   platform: 'google' | 'microsoft';
   dateFilter: DateFilter;
   accentColor?: 'pink' | 'cyan';
-  leads?: UnifiedLead[];       // Pre-loaded, platform+date-filtered leads from parent
+  leads?: UnifiedLeadRow[];    // Server-side filtered leads from parent (required for KPI accuracy)
   leadsLoading?: boolean;      // Loading state from parent
 }
 
@@ -78,71 +77,61 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
   const { syncVersion } = useSync();
 
   // Self-contained fetch state (only used when no external leads provided)
-  const [allLeadsCache, setAllLeadsCache] = useState<UnifiedLead[]>([]);
+  const [internalLeads, setInternalLeads] = useState<UnifiedLeadRow[]>([]);
   const [internalLoading, setInternalLoading] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'form' | 'call'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<UnifiedLeadRow | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState<Partial<UnifiedLead>>({});
+  const [editData, setEditData] = useState<Partial<UnifiedLeadRow>>({});
 
   const hasExternalLeads = externalLeads !== undefined;
-
-  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
 
   const accentClasses = accentColor === 'cyan'
     ? { button: 'bg-cyan-600 text-white', buttonHover: 'hover:bg-cyan-700', text: 'text-cyan-600', hoverText: 'hover:text-cyan-800', border: 'border-cyan-500', spinner: 'border-cyan-600' }
     : { button: 'bg-pink-600 text-white', buttonHover: 'hover:bg-pink-700', text: 'text-pink-600', hoverText: 'hover:text-pink-800', border: 'border-pink-500', spinner: 'border-pink-600' };
 
-  // When external leads provided: use them directly (already platform+date filtered)
-  // When self-contained: filter by platform AND date range
+  // When external leads provided: use them directly (already platform+date filtered by server)
+  // When self-contained: fetch from server-side API (same source of truth)
   const leads = useMemo(() => {
-    if (hasExternalLeads) {
-      return [...(externalLeads || [])].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    }
-
-    if (allLeadsCache.length === 0) return [];
-
-    return allLeadsCache
-      .filter(lead =>
-        lead.ad_platform === platform &&
-        isInDateRange(lead.created_at, dateRangeObj)
-      )
-      .sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-  }, [hasExternalLeads, externalLeads, allLeadsCache, dateRangeObj, platform]);
+    const source = hasExternalLeads ? (externalLeads || []) : internalLeads;
+    return [...source].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [hasExternalLeads, externalLeads, internalLeads]);
 
   const loading = hasExternalLeads ? (externalLoading ?? false) : internalLoading;
 
-  // Subscribe to global sync events (only when self-contained)
-  useEffect(() => {
-    if (!hasExternalLeads && syncVersion > 0) {
-      fetchAllLeads();
-    }
-  }, [syncVersion, hasExternalLeads]);
-
-  // Initial load (only when self-contained)
-  useEffect(() => {
-    if (!hasExternalLeads) {
-      fetchAllLeads();
-    }
-  }, [hasExternalLeads]);
-
-  const fetchAllLeads = async () => {
+  // Fetch from server-side API when no external leads provided
+  const fetchLeadsFromServer = useCallback(async () => {
     try {
       setInternalLoading(true);
-      const allLeads = await fetchUnifiedLeads({ includeAttribution: true });
-      setAllLeadsCache(allLeads);
+      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${dateFilter}&platform=${platform}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) setInternalLeads(data.leads || []);
+      }
     } catch (error) {
       console.error('Error fetching leads:', error);
     } finally {
       setInternalLoading(false);
     }
-  };
+  }, [dateFilter, platform]);
+
+  // Subscribe to global sync events (only when self-contained)
+  useEffect(() => {
+    if (!hasExternalLeads && syncVersion > 0) {
+      fetchLeadsFromServer();
+    }
+  }, [syncVersion, hasExternalLeads, fetchLeadsFromServer]);
+
+  // Initial load + date filter changes (only when self-contained)
+  useEffect(() => {
+    if (!hasExternalLeads) {
+      fetchLeadsFromServer();
+    }
+  }, [hasExternalLeads, fetchLeadsFromServer]);
 
   const updateLead = async () => {
     if (!selectedLead || selectedLead.type !== 'form') return;
@@ -160,7 +149,7 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
       if (!response.ok) throw new Error('Failed to update lead');
 
       if (!hasExternalLeads) {
-        await fetchAllLeads();
+        await fetchLeadsFromServer();
       }
       setSelectedLead({ ...selectedLead, ...editData });
       setEditMode(false);
@@ -197,7 +186,7 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
 
   const platformLabel = platform === 'google' ? 'Google' : 'Microsoft';
 
-  if (loading && (hasExternalLeads || allLeadsCache.length === 0)) {
+  if (loading && (hasExternalLeads || internalLeads.length === 0)) {
     return (
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mb-6">
         <div className="flex items-center justify-center h-32">

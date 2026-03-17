@@ -15,6 +15,7 @@ import {
   MessageSquare,
   AlertCircle,
 } from 'lucide-react';
+import { calcROAS, calcAttributionRate } from '@/lib/metricFormulas';
 
 // Mirrors the shape returned by /api/admin/dashboard/metrics
 interface MetricsResponse {
@@ -74,7 +75,7 @@ export default function AdminDashboard() {
   const fetchMetrics = useCallback(async (period: DateFilter) => {
     try {
       setError(null);
-      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`);
+      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'Unknown error');
@@ -146,10 +147,8 @@ export default function AdminDashboard() {
 
   // Derived values
   const m = metrics!;
-  const roas = m.spend.total > 0 ? m.revenue.attributed / m.spend.total : 0;
-  const attributionRate = m.revenue.gross > 0
-    ? parseFloat(((m.revenue.attributed / m.revenue.gross) * 100).toFixed(1))
-    : 0;
+  const roas = calcROAS(m.revenue.attributed, m.spend.total) ?? 0;
+  const attributionRate = calcAttributionRate(m.revenue.attributed, m.revenue.gross);
 
   // Alerts
   const alerts: Array<{ type: 'warn' | 'ok'; message: string }> = [];
@@ -181,19 +180,19 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
-            Revenue <DollarSign className="w-4 h-4" />
+            Gross Revenue <DollarSign className="w-4 h-4" />
           </div>
           <div className="text-2xl font-bold text-gray-900">{formatCurrency(m.revenue.gross)}</div>
           <div className="text-xs text-gray-500 mt-1">
-            {attributionRate}% attributed
+            {attributionRate}% attributed to leads
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
-            Leads <Users className="w-4 h-4" />
+            Qualifying Leads <Users className="w-4 h-4" />
           </div>
           <div className="text-2xl font-bold text-gray-900">{formatNumber(m.leads.total)}</div>
-          <div className="text-xs text-gray-500 mt-1">Calls + forms + texts</div>
+          <div className="text-xs text-gray-500 mt-1">30s+ calls + forms + texts</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
@@ -207,7 +206,7 @@ export default function AdminDashboard() {
             ROAS <TrendingUp className="w-4 h-4" />
           </div>
           <div className="text-2xl font-bold text-gray-900">{roas > 0 ? `${roas.toFixed(1)}x` : '—'}</div>
-          <div className="text-xs text-gray-500 mt-1">Attributed revenue</div>
+          <div className="text-xs text-gray-500 mt-1">Attributed rev ÷ ad spend</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
@@ -246,7 +245,7 @@ export default function AdminDashboard() {
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(m.spend.google)}</div>
               <div className="text-xs text-blue-700 mt-2">Leads</div>
               <div className="text-lg font-semibold text-blue-900">{formatNumber(m.leads.byPlatform.google.total)}</div>
-              <div className="text-xs text-blue-700 mt-2">Revenue</div>
+              <div className="text-xs text-blue-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(m.revenue.byPlatform.google)}</div>
             </div>
             <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
@@ -255,7 +254,7 @@ export default function AdminDashboard() {
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(m.spend.microsoft)}</div>
               <div className="text-xs text-cyan-700 mt-2">Leads</div>
               <div className="text-lg font-semibold text-cyan-900">{formatNumber(m.leads.byPlatform.microsoft.total)}</div>
-              <div className="text-xs text-cyan-700 mt-2">Revenue</div>
+              <div className="text-xs text-cyan-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(m.revenue.byPlatform.microsoft)}</div>
             </div>
           </div>
@@ -264,7 +263,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Revenue by Source</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Attributed Revenue by Source</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-lg bg-gray-50 p-4">
               <div className="text-xs text-gray-500">Google Ads</div>

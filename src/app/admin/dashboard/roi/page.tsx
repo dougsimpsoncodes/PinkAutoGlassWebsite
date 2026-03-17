@@ -231,7 +231,7 @@ export default function AdPerformancePage() {
             <h2 className="text-xl font-bold mb-5">Financial Summary (Attributed Revenue)</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                <div className="flex items-center gap-2 mb-1 text-sm opacity-90"><DollarSign className="w-4 h-4" />Revenue</div>
+                <div className="flex items-center gap-2 mb-1 text-sm opacity-90"><DollarSign className="w-4 h-4" />Attributed Rev</div>
                 <div className="text-3xl font-bold">${roiData.totals.totalRevenue.toLocaleString()}</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">

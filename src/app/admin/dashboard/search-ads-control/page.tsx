@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter, ALL_DATE_FILTERS } from '@/components/admin/DateFilterBar';
 import { useSync } from '@/contexts/SyncContext';
-import { fetchUnifiedLeads, UnifiedLead } from '@/lib/leadProcessing';
-import { getDateRange, isInDateRange } from '@/lib/dateUtils';
+import { calcROAS, calcCPL } from '@/lib/metricFormulas';
 import {
   DollarSign,
   Users,
@@ -82,42 +81,25 @@ export default function SearchAdsControlRoom() {
     all: null,
   });
 
-  const [allLeads, setAllLeads] = useState<UnifiedLead[]>([]);
+  // Lead counts from canonical server-side source (metrics API)
+  const [leadsSummary, setLeadsSummary] = useState({ total: 0, google: 0, microsoft: 0 });
+  const [revenueSummary, setRevenueSummary] = useState({ google: 0, microsoft: 0 });
+  const [periodDisplay, setPeriodDisplay] = useState('');
 
   const googleData = googleCache[dateFilter];
   const microsoftData = microsoftCache[dateFilter];
   const searchData = searchCache[dateFilter];
   const hasAnyCachedData = Object.values(googleCache).some(d => d) || Object.values(microsoftCache).some(d => d);
 
-  const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
-
-  const filteredLeads = useMemo(() => (
-    allLeads.filter(l => isInDateRange(l.created_at, dateRangeObj))
-  ), [allLeads, dateRangeObj]);
-
-  const googleLeads = useMemo(() => filteredLeads.filter(l => l.ad_platform === 'google'), [filteredLeads]);
-  const microsoftLeads = useMemo(() => filteredLeads.filter(l => l.ad_platform === 'microsoft'), [filteredLeads]);
-
-  const leadsSummary = useMemo(() => ({
-    total: filteredLeads.length,
-    google: googleLeads.length,
-    microsoft: microsoftLeads.length,
-  }), [filteredLeads, googleLeads, microsoftLeads]);
-
-  const revenueSummary = useMemo(() => ({
-    google: googleLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
-    microsoft: microsoftLeads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
-  }), [googleLeads, microsoftLeads]);
-
   const combinedSpend = (googleData?.spend || 0) + (microsoftData?.spend || 0);
   const combinedLeads = leadsSummary.total;
   const combinedRevenue = revenueSummary.google + revenueSummary.microsoft;
 
-  const cpa = combinedLeads > 0 ? combinedSpend / combinedLeads : 0;
-  const roas = combinedSpend > 0 ? combinedRevenue / combinedSpend : 0;
+  const cpa = calcCPL(combinedSpend, combinedLeads) ?? 0;
+  const roas = calcROAS(combinedRevenue, combinedSpend) ?? 0;
 
-  const googleCpa = leadsSummary.google > 0 ? (googleData?.spend || 0) / leadsSummary.google : 0;
-  const microsoftCpa = leadsSummary.microsoft > 0 ? (microsoftData?.spend || 0) / leadsSummary.microsoft : 0;
+  const googleCpa = calcCPL(googleData?.spend || 0, leadsSummary.google) ?? 0;
+  const microsoftCpa = calcCPL(microsoftData?.spend || 0, leadsSummary.microsoft) ?? 0;
 
   const topWinners = useMemo(() => {
     const terms = searchData?.data || [];
@@ -143,12 +125,24 @@ export default function SearchAdsControlRoom() {
 
   const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value || 0);
 
-  const fetchLeads = useCallback(async () => {
+  const fetchLeadCounts = useCallback(async (period: DateFilter) => {
     try {
-      const leads = await fetchUnifiedLeads({ includeAttribution: true });
-      setAllLeads(leads);
+      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.ok) return;
+      setLeadsSummary({
+        total: data.leads.total,
+        google: data.leads.byPlatform.google.total,
+        microsoft: data.leads.byPlatform.microsoft.total,
+      });
+      setRevenueSummary({
+        google: data.revenue.byPlatform.google,
+        microsoft: data.revenue.byPlatform.microsoft,
+      });
+      setPeriodDisplay(data.period?.label || '');
     } catch (err) {
-      console.error('Error fetching leads:', err);
+      console.error('Error fetching lead counts:', err);
     }
   }, []);
 
@@ -182,9 +176,9 @@ export default function SearchAdsControlRoom() {
       ...ALL_DATE_FILTERS.map(filter => fetchGoogle(filter)),
       ...ALL_DATE_FILTERS.map(filter => fetchMicrosoft(filter)),
       fetchSearchPerformance(dateFilter),
-      fetchLeads(),
+      fetchLeadCounts(dateFilter),
     ]);
-  }, [fetchGoogle, fetchMicrosoft, fetchSearchPerformance, fetchLeads, dateFilter]);
+  }, [fetchGoogle, fetchMicrosoft, fetchSearchPerformance, fetchLeadCounts, dateFilter]);
 
   useEffect(() => {
     if (syncVersion > 0) {
@@ -194,6 +188,7 @@ export default function SearchAdsControlRoom() {
 
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
+    fetchLeadCounts(filter);
     if (!googleCache[filter]) {
       setLoading(true);
       Promise.all([
@@ -210,7 +205,7 @@ export default function SearchAdsControlRoom() {
       fetchGoogle(dateFilter),
       fetchMicrosoft(dateFilter),
       fetchSearchPerformance(dateFilter),
-      fetchLeads(),
+      fetchLeadCounts(dateFilter),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -240,7 +235,7 @@ export default function SearchAdsControlRoom() {
       <DateFilterBar
         dateFilter={dateFilter}
         onFilterChange={handleDateFilterChange}
-        dateDisplay={dateRangeObj.display}
+        dateDisplay={periodDisplay}
         color="pink"
       />
 
@@ -250,11 +245,11 @@ export default function SearchAdsControlRoom() {
           <div className="text-2xl font-bold text-gray-900">{formatCurrency(combinedSpend)}</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center justify-between mb-2 text-sm text-gray-500">Leads <Users className="w-4 h-4" /></div>
+          <div className="flex items-center justify-between mb-2 text-sm text-gray-500">Qualifying Leads <Users className="w-4 h-4" /></div>
           <div className="text-2xl font-bold text-gray-900">{formatNumber(combinedLeads)}</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center justify-between mb-2 text-sm text-gray-500">CPA <Target className="w-4 h-4" /></div>
+          <div className="flex items-center justify-between mb-2 text-sm text-gray-500">Cost / Lead <Target className="w-4 h-4" /></div>
           <div className="text-2xl font-bold text-gray-900">{formatCurrency(cpa)}</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -273,7 +268,7 @@ export default function SearchAdsControlRoom() {
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(googleData?.spend || 0)}</div>
               <div className="text-xs text-blue-700 mt-2">Leads</div>
               <div className="text-lg font-semibold text-blue-900">{formatNumber(leadsSummary.google)}</div>
-              <div className="text-xs text-blue-700 mt-2">Revenue</div>
+              <div className="text-xs text-blue-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(revenueSummary.google)}</div>
             </div>
             <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
@@ -282,7 +277,7 @@ export default function SearchAdsControlRoom() {
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(microsoftData?.spend || 0)}</div>
               <div className="text-xs text-cyan-700 mt-2">Leads</div>
               <div className="text-lg font-semibold text-cyan-900">{formatNumber(leadsSummary.microsoft)}</div>
-              <div className="text-xs text-cyan-700 mt-2">Revenue</div>
+              <div className="text-xs text-cyan-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(revenueSummary.microsoft)}</div>
             </div>
           </div>
@@ -292,11 +287,11 @@ export default function SearchAdsControlRoom() {
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Budget Signals</h2>
           <div className="space-y-3 text-sm text-gray-700">
             <div className="flex items-center justify-between">
-              <span>Google CPA</span>
+              <span>Google Cost / Lead</span>
               <span>{formatCurrency(googleCpa)} {googleCpa > 0 && microsoftCpa > 0 && googleCpa < microsoftCpa ? '· Lower' : ''}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Microsoft CPA</span>
+              <span>Microsoft Cost / Lead</span>
               <span>{formatCurrency(microsoftCpa)} {googleCpa > 0 && microsoftCpa > 0 && microsoftCpa < googleCpa ? '· Lower' : ''}</span>
             </div>
             <div className="flex items-center justify-between">
