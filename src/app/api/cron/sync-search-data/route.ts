@@ -36,6 +36,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes max
 const UPSERT_CHUNK_SIZE = 250;
+const SCRAPE_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+};
 
 function getSupabaseClient() {
   return createClient(
@@ -87,6 +90,7 @@ export async function GET(request: NextRequest) {
       },
       gbp: {
         calls: { success: false, records: 0, error: null as string | null },
+        reviewsMeta: { success: false, userRatingCount: 0, averageRating: 0, error: null as string | null },
       },
       googleSearchConsole: {
         queries: { success: false, records: 0, error: null as string | null },
@@ -736,6 +740,75 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.gbp.calls.error = error.message;
       console.error('❌ GBP sync failed:', error.message);
+    }
+
+    // ========================================
+    // 9.6. Sync Google Reviews Meta (count + rating from Places API)
+    // ========================================
+    try {
+      const placesKey = process.env.GOOGLE_PLACES_SERVER_KEY;
+      if (placesKey) {
+        console.log('⭐ Syncing Google Reviews meta...');
+
+        // Resolve Place ID from Google Maps page
+        const defaultPlaceUrl = 'https://www.google.com/maps/place/Pink+Auto+Glass/@39.6700653,-106.2157665,8z/data=!3m1!4b1!4m6!3m5!1s0x6587cd12fed014a3:0xd0b210c48f4d989d!8m2!3d39.6775295!4d-104.8964855!16s%2Fg%2F11y19h096l?entry=ttu';
+        const placeUrl = process.env.GOOGLE_MAPS_PLACE_URL || defaultPlaceUrl;
+        const scrapeResp = await fetch(placeUrl, { headers: SCRAPE_HEADERS, cache: 'no-store' });
+        const html = scrapeResp.ok ? await scrapeResp.text() : '';
+        const previewMatch = html.match(/<link href="([^"]*\/maps\/preview\/place\?[^"]+)" as="fetch"/i);
+
+        let placeId: string | null = null;
+        if (previewMatch) {
+          const previewUrl = new URL(previewMatch[1].replace(/&amp;/g, '&'), 'https://www.google.com').toString();
+          const previewResp = await fetch(previewUrl, { headers: SCRAPE_HEADERS, cache: 'no-store' });
+          if (previewResp.ok) {
+            const raw = await previewResp.text();
+            const idMatch = raw.match(/"(ChIJ[^"]+)"/);
+            placeId = idMatch ? idMatch[1] : null;
+          }
+        }
+
+        if (placeId) {
+          const placesResp = await fetch(
+            `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
+            {
+              cache: 'no-store',
+              headers: {
+                'X-Goog-Api-Key': placesKey,
+                'X-Goog-FieldMask': 'rating,userRatingCount',
+              },
+            }
+          );
+
+          if (placesResp.ok) {
+            const placesData = await placesResp.json();
+            const userRatingCount = Number(placesData.userRatingCount || 0);
+            const averageRating = Number(placesData.rating || 0);
+
+            await supabase.from('google_reviews_meta').insert({
+              user_rating_count: userRatingCount,
+              average_rating: averageRating,
+              place_id: placeId,
+              synced_at: new Date().toISOString(),
+            });
+
+            results.gbp.reviewsMeta = { success: true, userRatingCount, averageRating, error: null };
+            console.log(`✅ Google Reviews meta: ${userRatingCount} reviews, ${averageRating} avg rating`);
+          } else {
+            results.gbp.reviewsMeta.error = `Places API ${placesResp.status}`;
+            console.warn(`⚠️ Places API returned ${placesResp.status}`);
+          }
+        } else {
+          results.gbp.reviewsMeta.error = 'Could not resolve Place ID';
+          console.warn('⚠️ Could not resolve Place ID for reviews meta');
+        }
+      } else {
+        results.gbp.reviewsMeta.error = 'GOOGLE_PLACES_SERVER_KEY not set';
+        console.warn('⚠️ Google Places not configured, skipping reviews meta');
+      }
+    } catch (error: any) {
+      results.gbp.reviewsMeta.error = error.message;
+      console.error('❌ Google Reviews meta sync failed:', error.message);
     }
 
     // ========================================
