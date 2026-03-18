@@ -32,11 +32,10 @@ export async function GET(request: NextRequest) {
 
     // ── Schedule Review Requests for Completed Jobs ─────────────
     // Runs regardless of Omega config — only needs Supabase.
-    // Uses 30-day lookback (not 25h) so missed cron runs can catch up.
-    // scheduleReviewRequest() has built-in dedup — won't double-send.
+    // 7-day lookback survives weekend gaps; dedup prevents double-sends.
     let reviewsScheduled = 0;
     try {
-      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data: completedLeads } = await supabase
         .from('leads')
         .select('id, first_name, phone_e164, email, vehicle_year, vehicle_make, vehicle_model')
