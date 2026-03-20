@@ -17,6 +17,7 @@ import {
   Globe,
   MapPinOff,
   Grid2x2,
+  FileText,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -45,6 +46,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'GridScope', href: '/admin/dashboard/gridscope', icon: Grid2x2 },
     { name: 'Google Reviews', href: '/admin/dashboard/google-reviews', icon: Star },
     { name: 'Invoice Upload', href: '/admin/dashboard/uploads', icon: Upload },
+    { name: 'Invoices', href: '/admin/dashboard/invoices', icon: FileText },
   ];
 
   return (

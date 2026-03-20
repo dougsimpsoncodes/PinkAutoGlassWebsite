@@ -1,0 +1,13 @@
+Blockers that must be fixed before coding:
+
+1. The data-access/security model is not compatible with the repo guardrails.
+   `ARCHITECTURE.md:24-25` and `ARCHITECTURE.md:92-96` assume user-facing admin routes will read `omega_installs` directly with `SUPABASE_SERVICE_ROLE_KEY`. That conflicts with the documented security model in `AGENT_SETUP_GUIDE.md:332-369`, `AGENT_SETUP_GUIDE.md:551-587`, `SECURITY.md:173-176`, and the project guardrail in `AGENTS.md` that says not to use service-role access in application code paths. Before coding, the architecture needs an explicit compliant read path for these features, such as an admin-scoped RPC/view with a clearly defined authorization boundary, instead of direct service-role table access from `/api/admin/*`.
+
+2. The Invoice Audit page will not meet the stated performance requirement as designed.
+   `ARCHITECTURE.md:22-24` and `ARCHITECTURE.md:102-106` fetch all invoice rows into a client page and do search/sort there. `PROJECT-CONTEXT.md:59` explicitly says failure is a listing page that is too slow with hundreds of records. Before coding, the architecture needs server-side pagination, server-side sort/filter/search, and a lighter row payload. `raw_data` and line-item detail should be loaded on demand, not shipped for every row.
+
+3. The XLSX audit path is not specified in a fail-closed way.
+   `PROJECT-CONTEXT.md:31-32` and `PROJECT-CONTEXT.md:58-60` make 100% accurate roster parsing the core success criterion, but `ARCHITECTURE.md:111-113` and `ARCHITECTURE.md:126` only say "parse with SheetJS" and "find header row containing Invoice #". That is not enough to prevent silent false negatives if the Omega export shape changes. Before coding, the architecture needs a deterministic parser contract: required columns, header validation, footer/summary row rejection, duplicate-row handling, and a hard failure mode when the workbook shape does not match expectations. This also needs fixture-based verification against real Omega exports before the feature can be trusted.
+
+4. The screenshot fallback is described as unreliable but is still allowed to produce the same audit verdict.
+   `PROJECT-CONTEXT.md:31-32` and `PROJECT-CONTEXT.md:58` say missed rows are a trust-killer. `ARCHITECTURE.md:116-119` acknowledges screenshot parsing can miss or swap rows, but the current plan still treats that path as a normal audit that returns missing invoices. Before coding, the architecture must separate authoritative and best-effort modes: XLSX/CSV can produce an "All caught up" verdict, while screenshot fallback must be clearly non-authoritative or require explicit confirmation before claiming there are no gaps.

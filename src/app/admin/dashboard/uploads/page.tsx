@@ -2,10 +2,25 @@
 
 import { useState, useCallback } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2, RadioTower } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2, RadioTower, ClipboardCheck } from 'lucide-react';
 import type { ParsedInvoice } from '@/app/api/admin/parse-invoice/route';
 
+type Tab = 'upload' | 'audit';
 type Step = 'upload' | 'preview' | 'results';
+
+interface RosterMissing {
+  job_number: string;
+  customer_name: string;
+  amount: number;
+  vin: string;
+}
+
+interface AuditResults {
+  total: number;
+  uploaded: number;
+  missing: RosterMissing[];
+  source: 'spreadsheet' | 'screenshot';
+}
 
 interface ImportResults {
   imported: number;
@@ -18,6 +33,7 @@ interface ImportResults {
 }
 
 export default function UploadsPage() {
+  const [activeTab, setActiveTab] = useState<Tab>('upload');
   const [step, setStep] = useState<Step>('upload');
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -27,6 +43,62 @@ export default function UploadsPage() {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<ImportResults | null>(null);
   const [parseError, setParseError] = useState('');
+
+  // Roster Audit state
+  const [auditFiles, setAuditFiles] = useState<File[]>([]);
+  const [auditDragging, setAuditDragging] = useState(false);
+  const [auditing, setAuditing] = useState(false);
+  const [auditResults, setAuditResults] = useState<AuditResults | null>(null);
+  const [auditError, setAuditError] = useState('');
+
+  const AUDIT_ALLOWED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
+
+  const handleAuditDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setAuditDragging(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(f =>
+      AUDIT_ALLOWED.includes(f.type) || /\.(xlsx|xls|csv)$/i.test(f.name)
+    );
+    setAuditFiles(prev => [...prev, ...dropped].slice(0, 5));
+  }, []);
+
+  const handleAuditFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selected = Array.from(e.target.files);
+      setAuditFiles(prev => [...prev, ...selected].slice(0, 5));
+    }
+  };
+
+  const handleAudit = async () => {
+    if (auditFiles.length === 0) return;
+    setAuditing(true);
+    setAuditError('');
+    setAuditResults(null);
+
+    try {
+      const formData = new FormData();
+      for (const file of auditFiles) {
+        formData.append('files', file);
+      }
+      const res = await fetch('/api/admin/roster-audit', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Audit failed');
+      setAuditResults(data);
+    } catch (err: any) {
+      setAuditError(err.message);
+    } finally {
+      setAuditing(false);
+    }
+  };
+
+  const resetAudit = () => {
+    setAuditFiles([]);
+    setAuditResults(null);
+    setAuditError('');
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -126,6 +198,186 @@ export default function UploadsPage() {
           </div>
         </div>
 
+        {/* Tab switcher */}
+        <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 max-w-md">
+          <button
+            onClick={() => setActiveTab('upload')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'upload'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            Upload Invoices
+          </button>
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'audit'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            Roster Audit
+          </button>
+        </div>
+
+        {/* ========== ROSTER AUDIT TAB ========== */}
+        {activeTab === 'audit' && (
+          <div className="space-y-6">
+            {!auditResults ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-8">
+                <div
+                  onDrop={handleAuditDrop}
+                  onDragOver={e => { e.preventDefault(); setAuditDragging(true); }}
+                  onDragLeave={() => setAuditDragging(false)}
+                  className={`border-2 border-dashed rounded-xl p-16 text-center transition-colors ${
+                    auditDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  <ClipboardCheck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-700 mb-1">Drop roster export here</p>
+                  <p className="text-sm text-gray-500 mb-6">XLSX or CSV from Omega (recommended) — or a screenshot as fallback</p>
+                  <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+                    Choose File
+                    <input
+                      type="file"
+                      multiple
+                      accept=".xlsx,.xls,.csv,image/png,image/jpeg,image/jpg,image/webp"
+                      className="hidden"
+                      onChange={handleAuditFileSelect}
+                    />
+                  </label>
+                </div>
+
+                {auditFiles.length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-sm font-medium text-gray-700 mb-3">{auditFiles.length} file{auditFiles.length > 1 ? 's' : ''} selected:</p>
+                    <ul className="space-y-2">
+                      {auditFiles.map((f, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          {f.name} ({(f.size / 1024).toFixed(0)}KB)
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {auditError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {auditError}
+                  </div>
+                )}
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={handleAudit}
+                    disabled={auditFiles.length === 0 || auditing}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-2 px-8 rounded-lg transition-colors"
+                  >
+                    {auditing && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {auditing ? 'Checking roster...' : 'Run Audit'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Audit summary */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+                    <p className="text-3xl font-bold text-gray-900">{auditResults.total}</p>
+                    <p className="text-sm text-gray-500 mt-1">On roster</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-green-200 p-6 text-center">
+                    <p className="text-3xl font-bold text-green-600">{auditResults.uploaded}</p>
+                    <p className="text-sm text-gray-500 mt-1">Already uploaded</p>
+                  </div>
+                  <div className={`bg-white rounded-xl border p-6 text-center ${
+                    auditResults.missing.length > 0 ? 'border-red-200' : 'border-green-200'
+                  }`}>
+                    <p className={`text-3xl font-bold ${auditResults.missing.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {auditResults.missing.length}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">Still need to upload</p>
+                  </div>
+                </div>
+
+                {/* Missing invoices or all clear */}
+                {/* Screenshot warning banner */}
+                {auditResults.source === 'screenshot' && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-amber-800">Screenshot audit is best-effort</p>
+                      <p className="text-sm text-amber-600 mt-0.5">AI vision may miss or misread rows. For a complete, reliable audit, use the XLSX export from Omega instead.</p>
+                    </div>
+                  </div>
+                )}
+
+                {auditResults.missing.length === 0 ? (
+                  auditResults.source === 'screenshot' ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
+                      <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+                      <p className="text-xl font-bold text-amber-800">No missing invoices found</p>
+                      <p className="text-sm text-amber-600 mt-1">But screenshot audits can miss rows. Upload the XLSX export for a definitive result.</p>
+                    </div>
+                  ) : (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
+                      <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                      <p className="text-xl font-bold text-green-800">All caught up!</p>
+                      <p className="text-sm text-green-600 mt-1">Every invoice on the roster has been uploaded.</p>
+                    </div>
+                  )
+                ) : (
+                  <div className="bg-white rounded-xl border border-red-200 overflow-hidden">
+                    <div className="px-6 py-4 bg-red-50 border-b border-red-200">
+                      <h3 className="font-semibold text-red-800">Missing Invoices</h3>
+                      <p className="text-sm text-red-600 mt-0.5">These jobs are on the roster but haven&apos;t been uploaded yet</p>
+                    </div>
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+                        <tr>
+                          <th className="px-4 py-3 text-left">Job #</th>
+                          <th className="px-4 py-3 text-left">Customer</th>
+                          <th className="px-4 py-3 text-right">Amount</th>
+                          <th className="px-4 py-3 text-left">VIN</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {auditResults.missing.map((job, i) => (
+                          <tr key={i} className="hover:bg-red-50">
+                            <td className="px-4 py-3 font-mono font-medium text-gray-900">{job.job_number}</td>
+                            <td className="px-4 py-3 text-gray-700">{job.customer_name}</td>
+                            <td className="px-4 py-3 text-right font-medium text-gray-900">
+                              ${job.amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-4 py-3 text-gray-500 font-mono text-xs">{job.vin || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="flex justify-start">
+                  <button
+                    onClick={resetAudit}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-8 rounded-lg transition-colors"
+                  >
+                    Audit Again
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== UPLOAD INVOICES TAB ========== */}
+        {activeTab === 'upload' && <>
         {/* Step indicators */}
         <div className="flex items-center gap-4 mb-8">
           {(['upload', 'preview', 'results'] as Step[]).map((s, i) => (
@@ -461,6 +713,7 @@ export default function UploadsPage() {
             </div>
           </div>
         )}
+        </>}
       </div>
     </DashboardLayout>
   );

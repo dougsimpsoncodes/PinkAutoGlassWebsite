@@ -214,22 +214,76 @@ Medium — do after the review blast fires (blast is imminent, cleanup is ongoin
 - Switched all 30 projects from Turbo → Standard build machines
 - Saves ~$380/year
 
-## 2026-03-10 — Admin email notification filtering
-- **What:** Removed doug@ from routine lead/booking email alerts while keeping daily reports + critical alerts
-- **How:** Added `sendAdminAlertEmail()` function using new `ADMIN_EMAIL_ALERTS` env var (kody@, dan@ only). Lead + booking routes use this; daily report + critical alerts still use `sendAdminEmail()` (all 3)
-- **Env var:** `ADMIN_EMAIL_ALERTS` added to Vercel production and .env.local
-- **NOT done:** AnswerConnect call log emails — user handling via their portal. GitHub notification emails — separate system, not app code.
-- **Also fixed:** `GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN` had `\n` corruption in .env.local — cleaned locally. Vercel source value may also be corrupt (shows as "N").
-- **Verification:** Deployed to Vercel, build succeeded. Waiting for next real lead to confirm doug@ doesn't receive alert.
+---
 
-## 2026-03-10 — Supabase Security + Call Attribution Fix
-- Fixed Supabase security vulnerabilities on PAG (8 errors) and MAL (3 errors) — RLS enabled on all tables, dangerous public policies replaced, autoconfirm disabled on MAL
-- Fixed 4 call attribution bugs: cron excluded today, phone matching used wrong number, date filter truncated to midnight, bing/microsoft string mismatch
-- Result: Google leads 1→8, Microsoft leads 3→6 for the day
-- Detailed log: `tasks/2026-03-10-attribution-fix.md`
+# GEO SEO Enhancement Tools — Plan (2026-03-20)
 
-## 2026-03-15 — Review Pipeline Fixes + Google Workspace + Invoice Reconciliation
-- Codex audit found review requests silently broken (missing DB column + Sunday TCPA violation). All 7 issues fixed.
-- Set up Google Workspace email for theai-experts.com
-- Reconciled Omega invoices — all 28 aging invoices now in DB
-- Detailed log: `tasks/2026-03-15-session-log.md`
+## Context
+- 24 satellite sites getting 9,317 impressions but only 26 clicks (0.28% CTR)
+- All sites pass crawlability audit (no technical blockers)
+- AI-referred traffic growing 527% YoY, converts 4.4x higher than organic
+- Inspired by geo-seo-claude repo but building our own (per "always audit or build our own" rule)
+
+## What We're Building
+
+### Tool 1: GEO Citability Auditor (`scripts/audit-geo-citability.mjs`)
+Scores each satellite site's content for AI citation readiness.
+
+**Checks:**
+- [ ] Passage length analysis (optimal: 134-167 words for AI citation)
+- [ ] Self-contained answer blocks (do passages answer questions without context?)
+- [ ] Statistics/data density (fact-dense content cited 40% more)
+- [ ] Definition blocks ("X is..." patterns — cited 2.1x more)
+- [ ] Question-answer format presence (Q&A sections, FAQ)
+- [ ] Proper noun density (named entities help AI attribute)
+
+**Output:** Markdown report per domain with scores + specific improvement recommendations.
+
+### Tool 2: Brand Mention Scanner (`scripts/audit-geo-brand-mentions.mjs`)
+Checks what AI engines "know" about Pink Auto Glass.
+
+**Checks:**
+- [ ] Query ChatGPT/Perplexity/Google for "Pink Auto Glass" and windshield-related queries
+- [ ] Scan for brand mentions on YouTube, Reddit (AI training data sources)
+- [ ] Check brand entity recognition in schema markup across all 24 sites
+- [ ] Verify `sameAs` links in Organization schema point to real profiles
+- [ ] Check if our sites appear in AI search results for key queries
+
+**Output:** Brand visibility report with gaps and recommendations.
+
+### Tool 3: AI Crawler Rendering Test (`scripts/audit-geo-crawler-access.mjs`)
+Verifies AI crawlers can actually parse our content (beyond robots.txt).
+
+**Checks:**
+- [ ] Verify all 14 AI crawler user-agents are allowed in robots.txt (GPTBot, ClaudeBot, PerplexityBot, etc.)
+- [ ] Test if critical content is in initial HTML (not JS-rendered) — AI bots don't execute JS
+- [ ] Validate llms.txt exists and is well-formed on all 24 sites
+- [ ] Check for `speakable` schema markup (helps voice/AI assistants)
+- [ ] Verify meta tags for AI discovery (description quality, Open Graph completeness)
+- [ ] Check X-Robots-Tag headers don't block AI bots
+
+**Output:** Crawler access report with pass/fail per domain + fix recommendations.
+
+## Architecture Decisions
+- Standalone `.mjs` scripts (matches existing `audit-satellite-*.mjs` pattern)
+- No new dependencies — use native `fetch`, regex for HTML parsing
+- Reports output to `tasks/` directory
+- Process domains in batches of 3-4 to avoid hammering servers
+- Each tool runs independently, ~2-3 min execution time
+
+## What We're NOT Doing
+- Not installing the geo-seo-claude repo (build our own)
+- Not adding proposal/CRM/PDF generation (agency tools, not needed)
+- Not adding new npm dependencies
+- Not modifying existing satellite site code (audit only)
+- Not touching the lead form, database, or API routes
+
+## Execution Order
+1. Tool 3 first (AI Crawler Rendering) — simplest, extends existing crawlability audit
+2. Tool 1 second (Citability) — highest impact, directly addresses CTR problem
+3. Tool 2 third (Brand Mentions) — requires web search, most complex
+
+## Verification
+- Run each script against all 24 domains
+- Verify output reports are accurate by spot-checking 2-3 domains manually
+- Confirm no errors or timeouts during execution
