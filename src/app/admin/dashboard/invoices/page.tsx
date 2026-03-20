@@ -13,6 +13,10 @@ import {
   Loader2,
   AlertCircle,
   Link as LinkIcon,
+  DollarSign,
+  Wrench,
+  Package,
+  Receipt,
 } from 'lucide-react';
 
 interface Invoice {
@@ -131,6 +135,7 @@ export default function InvoicesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [summary, setSummary] = useState({ totalJobs: 0, totalParts: 0, totalLabor: 0, totalTax: 0, totalRevenue: 0 });
 
   // Expanded row detail (loaded on demand)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -155,6 +160,7 @@ export default function InvoicesPage() {
         setInvoices(data.invoices);
         setTotal(data.total);
         setTotalPages(data.totalPages);
+        if (data.summary) setSummary(data.summary);
       } else {
         setError(data.error || 'Failed to load invoices');
       }
@@ -236,6 +242,45 @@ export default function InvoicesPage() {
             <p className="text-sm text-gray-500 mt-1">
               {total} uploaded invoices
             </p>
+          </div>
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
+              Total Jobs <FileText className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{summary.totalJobs.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 mt-1">invoices uploaded</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
+              Parts <Package className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalParts)}</div>
+            <div className="text-xs text-gray-500 mt-1">total parts cost</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
+              Labor <Wrench className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalLabor)}</div>
+            <div className="text-xs text-gray-500 mt-1">total labor cost</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
+              Tax <Receipt className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalTax)}</div>
+            <div className="text-xs text-gray-500 mt-1">total tax collected</div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-2 text-sm text-gray-500">
+              Revenue <DollarSign className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalRevenue)}</div>
+            <div className="text-xs text-gray-500 mt-1">gross revenue</div>
           </div>
         </div>
 

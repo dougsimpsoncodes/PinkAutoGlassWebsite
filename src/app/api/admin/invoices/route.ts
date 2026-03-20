@@ -66,6 +66,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Aggregate totals across ALL matching records (not just current page)
+    let aggQuery = supabase
+      .from('omega_installs')
+      .select('parts_cost, labor_cost, tax_amount, total_revenue');
+
+    if (from) aggQuery = aggQuery.gte('created_at', `${from}T00:00:00`);
+    if (to) aggQuery = aggQuery.lte('created_at', `${to}T23:59:59`);
+    if (search) {
+      aggQuery = aggQuery.or(
+        `customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%,invoice_number.ilike.%${search}%,vin.ilike.%${search}%`
+      );
+    }
+
+    const { data: allRows } = await aggQuery;
+    const summary = {
+      totalJobs: count || 0,
+      totalParts: 0,
+      totalLabor: 0,
+      totalTax: 0,
+      totalRevenue: 0,
+    };
+    for (const row of allRows || []) {
+      summary.totalParts += row.parts_cost || 0;
+      summary.totalLabor += row.labor_cost || 0;
+      summary.totalTax += row.tax_amount || 0;
+      summary.totalRevenue += row.total_revenue || 0;
+    }
+
     return NextResponse.json({
       ok: true,
       invoices: data || [],
@@ -73,6 +101,7 @@ export async function GET(request: NextRequest) {
       page,
       pageSize: PAGE_SIZE,
       totalPages: Math.ceil((count || 0) / PAGE_SIZE),
+      summary,
     });
   } catch (error: any) {
     console.error('invoices route error:', error.message);
