@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, Clock, Star, Shield, Users } from "lucide-react";
 import CTAButtons from "@/components/CTAButtons";
+import QuickCaptureForm from "@/components/QuickCaptureForm";
 import QuoteForm from "@/components/QuoteForm";
 import TrustSignals from "@/components/TrustSignals";
 import { combineSchemas } from "@/lib/schema";
@@ -145,11 +146,16 @@ export default function Home() {
               Quick repairs, quality replacements, professional service.
             </p>
 
-            {/* Primary CTAs */}
+            {/* Quick Capture Form - Above fold lead capture */}
+            <div className="mb-6 md:mb-8">
+              <QuickCaptureForm />
+            </div>
+
+            {/* Secondary CTAs */}
             <div className="mb-6 md:mb-8">
               <CTAButtons source="hero" />
             </div>
-            
+
             {/* Quick Benefits */}
             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/80">
               <div className="flex items-center gap-2">

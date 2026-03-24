@@ -246,12 +246,17 @@ export async function POST(request: NextRequest) {
       // Same customer within 7 days — update existing lead instead of creating duplicate
       leadId = existingLead.id;
       isDuplicate = true;
-      const updateFields: Record<string, any> = {
-        vehicle_year: validatedData.vehicleYear,
-        vehicle_make: validatedData.vehicleMake,
-        vehicle_model: validatedData.vehicleModel,
-        service_type: validatedData.serviceType,
-      };
+      const updateFields: Record<string, any> = {};
+
+      // Only update vehicle data if it's real (not placeholder from QuickCaptureForm)
+      if (validatedData.vehicleMake && validatedData.vehicleMake !== 'Unknown') {
+        updateFields.vehicle_year = validatedData.vehicleYear;
+        updateFields.vehicle_make = validatedData.vehicleMake;
+        updateFields.vehicle_model = validatedData.vehicleModel;
+      }
+      if (validatedData.serviceType) {
+        updateFields.service_type = validatedData.serviceType;
+      }
 
       // Refresh attribution if new submission has a click ID (returning visitor from a new ad click)
       if (attribution.gclid || attribution.msclkid) {

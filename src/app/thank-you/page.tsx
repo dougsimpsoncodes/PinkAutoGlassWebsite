@@ -51,10 +51,24 @@ export default function ThankYouPage() {
               </ol>
             </div>
 
+            {/* Book Now - Push to highest-converting page */}
+            <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">
+                Ready to schedule now?
+              </h2>
+              <p className="text-gray-600 text-sm mb-4">Skip the wait — book your appointment directly.</p>
+              <Link
+                href="/book"
+                className="inline-flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 font-bold py-3 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+              >
+                Book My Appointment →
+              </Link>
+            </div>
+
             {/* Immediate Contact Options */}
             <div className="border-t-2 border-gray-100 pt-8">
               <p className="text-gray-700 mb-6">
-                Can't wait? Reach us now:
+                Can&apos;t wait? Reach us now:
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

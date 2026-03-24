@@ -4,7 +4,6 @@ import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import StickyCallBar from "@/components/StickyCallBar";
 import StickyCallbackBar from "@/components/StickyCallbackBar";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import GlobalPhoneTracker from "@/components/GlobalPhoneTracker";
@@ -88,7 +87,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <StickyCallBar />
+          {/* StickyCallBar removed — one bar only to reduce mobile friction */}
           <StickyCallbackBar />
           <AnalyticsTracker />
           <GlobalPhoneTracker />

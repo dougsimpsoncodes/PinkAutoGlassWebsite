@@ -38,6 +38,7 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
   const router = useRouter();
   const [formStarted, setFormStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedCarrier, setSelectedCarrier] = useState(carrier || '');
 
@@ -96,10 +97,10 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
         await trackFormSubmission(source, { leadId: data.leadId, phone });
         router.push('/thank-you');
       } else {
-        alert(`Something went wrong. Please call us at ${displayPhone}`);
+        setSubmitError(`Something went wrong. Please call us at ${displayPhone}`);
       }
     } catch {
-      alert(`Something went wrong. Please call us at ${displayPhone}`);
+      setSubmitError(`Something went wrong. Please call us at ${displayPhone}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -161,6 +162,13 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
 
         {/* Honeypot */}
         <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
+
+        {/* Error Message */}
+        {submitError && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {submitError}
+          </div>
+        )}
 
         {/* Submit */}
         <button
