@@ -41,12 +41,11 @@ export default function Header() {
       </a>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Mobile Layout: Vertical Stack */}
-        <nav className="md:hidden flex flex-col items-center justify-center py-0.5" role="navigation" aria-label="Main navigation">
-          {/* Logo - Smaller on mobile */}
+        {/* Mobile Layout: Horizontal — logo left, phone right */}
+        <nav className="md:hidden flex items-center justify-between py-2" role="navigation" aria-label="Main navigation">
           <Link
             href="/"
-            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded mb-0"
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
             aria-label="Pink Auto Glass - Go to homepage"
           >
             <Image
@@ -55,19 +54,18 @@ export default function Header() {
               width={500}
               height={500}
               className="w-auto"
-              style={{ height: '170px' }}
+              style={{ height: '56px' }}
               priority
             />
           </Link>
 
-          {/* Phone Number - Below logo on mobile */}
           <a
             href={tel}
-            className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors text-[22px]"
+            className="flex items-center space-x-1.5 text-gray-700 hover:text-pink-600 transition-colors text-base font-medium min-h-[44px] px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
             aria-label="Call Pink Auto Glass"
           >
-            <Phone className="w-6 h-6" />
-            <span className="font-medium">{displayPhone}</span>
+            <Phone className="w-5 h-5" />
+            <span>{displayPhone}</span>
           </a>
         </nav>
 
@@ -89,7 +87,7 @@ export default function Header() {
                 width={500}
                 height={500}
                 className="w-auto"
-                style={{ height: '194px' }}
+                style={{ height: '120px' }}
                 priority
               />
             </Link>
