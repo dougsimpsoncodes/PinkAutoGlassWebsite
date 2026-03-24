@@ -153,14 +153,6 @@ export default function QuoteForm() {
           utmCampaign: utmParams.campaign,
           utmTerm: utmParams.term,
           utmContent: utmParams.content,
-          firstTouch: {
-            utm_source: utmSource,
-            referrer: document.referrer || 'direct'
-          },
-          lastTouch: {
-            utm_source: utmSource,
-            referrer: document.referrer || 'direct'
-          }
         })
       });
 
@@ -168,7 +160,7 @@ export default function QuoteForm() {
         const data = await response.json();
         // Track form submission with GCLID/MSCLKID attribution to conversion_events table
         // This also fires Google Ads and Microsoft Ads conversion tracking
-        trackFormSubmission('homepage_quote_form', { leadId: data.leadId, email: formData.email, phone: formData.phone });
+        await trackFormSubmission('homepage_quote_form', { leadId: data.leadId, email: formData.email, phone: formData.phone });
         router.push('/thank-you');
       } else {
         alert('Something went wrong. Please call us at (720) 918-7465');

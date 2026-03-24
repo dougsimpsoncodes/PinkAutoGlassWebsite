@@ -194,8 +194,8 @@ export async function POST(request: NextRequest) {
       utmSource: utmParams.utm_source ?? validatedData.utmSource,
       utmMedium: utmParams.utm_medium ?? validatedData.utmMedium,
       utmCampaign: utmParams.utm_campaign ?? validatedData.utmCampaign,
-      utmTerm: utmParams.utm_term ?? (validatedData as any).utmTerm,
-      utmContent: utmParams.utm_content ?? (validatedData as any).utmContent,
+      utmTerm: utmParams.utm_term ?? validatedData.utmTerm,
+      utmContent: utmParams.utm_content ?? validatedData.utmContent,
     });
 
     // Build payload for fn_insert_lead RPC using validated data

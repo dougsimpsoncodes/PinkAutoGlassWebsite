@@ -376,7 +376,7 @@ export default function BookingPage() {
 
       // Track form submission with GCLID/MSCLKID attribution to conversion_events table
       // This also fires Google Ads and Microsoft Ads conversion tracking
-      trackFormSubmission('booking_form', { leadId, referenceNumber });
+      await trackFormSubmission('booking_form', { leadId, referenceNumber });
 
     } catch (error) {
       console.error('Submission error:', error);

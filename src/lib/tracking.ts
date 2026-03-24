@@ -486,8 +486,9 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   });
 
   if (error) {
-    console.error('❌ Failed to track conversion:', error);
-    return false;
+    console.error('❌ Failed to track conversion in DB (ad conversions will still fire):', error);
+    // Don't return false here — DB failure shouldn't block ad platform conversions.
+    // Only duplicate blocking (above) should suppress ad conversions.
   }
 
   // Mark form submissions as fired to prevent duplicates
@@ -649,14 +650,17 @@ export function trackTextClick(source: string, buttonText?: string) {
 /**
  * Track form submission
  */
-export function trackFormSubmission(formName: string, metadata?: Record<string, any>) {
-  trackConversion({
+export async function trackFormSubmission(formName: string, metadata?: Record<string, any>) {
+  // Await trackConversion — only fire ad platform conversions if DB insert succeeds
+  const tracked = await trackConversion({
     eventType: 'form_submit',
     buttonLocation: formName,
     metadata,
   });
   // Note: trackConversion already fires analytics.event() via gaEventMap
   // so we don't call analytics.trackFormSubmit() to avoid duplicate GA events
+
+  if (!tracked) return; // DB insert failed or duplicate — don't fire ad conversions
 
   // Fire Google Ads form conversion with leadId or session as transaction_id
   const transactionId = metadata?.leadId || getSessionId();

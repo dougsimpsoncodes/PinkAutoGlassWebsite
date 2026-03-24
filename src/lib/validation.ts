@@ -125,6 +125,8 @@ export const leadFormSchema = z.object({
   utmSource: utmSourceSchema, // Normalized lowercase
   utmMedium: z.string().trim().max(100).transform(val => val?.toLowerCase()).optional(),
   utmCampaign: z.string().trim().max(100).optional(),
+  utmTerm: z.string().trim().max(255).optional(),
+  utmContent: z.string().trim().max(255).optional(),
   referralCode: z.string().trim().max(50).optional(),
   sessionId: sessionIdSchema, // Accepts session_xxx format from tracking.ts
   gclid: gclidSchema, // Google Ads click ID

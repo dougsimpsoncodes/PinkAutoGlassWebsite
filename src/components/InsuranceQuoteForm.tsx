@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Phone, ChevronRight } from 'lucide-react';
-import { trackFormStart, trackFormSubmission, getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
+import { trackFormStart, trackFormSubmission, trackPhoneClick, getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
 
 const CARRIERS = [
   'Progressive',
@@ -88,20 +88,12 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
           utmCampaign: utmParams.campaign,
           utmTerm: utmParams.term,
           utmContent: utmParams.content,
-          firstTouch: {
-            utm_source: utmSource,
-            referrer: document.referrer || 'direct',
-          },
-          lastTouch: {
-            utm_source: utmSource,
-            referrer: document.referrer || 'direct',
-          },
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        trackFormSubmission(source, { leadId: data.leadId, phone });
+        await trackFormSubmission(source, { leadId: data.leadId, phone });
         router.push('/thank-you');
       } else {
         alert(`Something went wrong. Please call us at ${displayPhone}`);
@@ -197,6 +189,7 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
         <p className="text-sm text-gray-500 mb-2">Prefer to call?</p>
         <a
           href={`tel:${phoneE164}`}
+          onClick={() => trackPhoneClick(source, 'Prefer to call?', phoneE164)}
           className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-800 transition-colors"
         >
           <Phone className="w-4 h-4" />
