@@ -583,8 +583,8 @@ export function trackScrollDepth() {
         eventLabel: window.location.pathname,
         eventValue: threshold,
       });
-
-      analytics.trackPageScroll(threshold, window.location.pathname);
+      // Note: trackEvent already fires analytics.event() via eventCategory check
+      // so we don't call analytics.trackPageScroll() to avoid duplicate GA events
     }
   });
 }
@@ -618,8 +618,8 @@ export function trackPhoneClick(source: string, buttonText?: string, phoneNumber
     analytics.trackCallClickConversion(sessionId);
   }
 
-  // Fire Microsoft Ads UET phone call conversion
-  analytics.trackMicrosoftAdsCallClick(source);
+  // Fire Microsoft Ads UET phone call conversion (dedup by session)
+  analytics.trackMicrosoftAdsCallClick(source, sessionId ? `call_${sessionId}` : undefined);
 }
 
 /**
@@ -641,8 +641,9 @@ export function trackTextClick(source: string, buttonText?: string) {
     analytics.trackTextClickConversion(sessionId);
   }
 
-  // Fire Microsoft Ads UET text click conversion
-  analytics.trackMicrosoftAdsTextClick(source);
+  // Fire Microsoft Ads UET text click conversion (dedup by session)
+  const textSessionId = getSessionId();
+  analytics.trackMicrosoftAdsTextClick(source, textSessionId ? `text_${textSessionId}` : undefined);
 }
 
 /**
@@ -654,7 +655,8 @@ export function trackFormSubmission(formName: string, metadata?: Record<string, 
     buttonLocation: formName,
     metadata,
   });
-  analytics.trackFormSubmit(formName);
+  // Note: trackConversion already fires analytics.event() via gaEventMap
+  // so we don't call analytics.trackFormSubmit() to avoid duplicate GA events
 
   // Fire Google Ads form conversion with leadId or session as transaction_id
   const transactionId = metadata?.leadId || getSessionId();
@@ -664,8 +666,8 @@ export function trackFormSubmission(formName: string, metadata?: Record<string, 
     analytics.trackLeadFormConversion(transactionId, { email, phone });
   }
 
-  // Fire Microsoft Ads UET form submission conversion
-  analytics.trackMicrosoftAdsLeadForm(formName);
+  // Fire Microsoft Ads UET form submission conversion (dedup by leadId or session)
+  analytics.trackMicrosoftAdsLeadForm(formName, undefined, transactionId ? `form_${transactionId}` : undefined);
 }
 
 /**
@@ -677,5 +679,6 @@ export function trackFormStart(formName: string) {
     eventCategory: 'lead_generation',
     eventLabel: formName,
   });
-  analytics.trackFormStart(formName);
+  // Note: trackEvent already fires analytics.event() via eventCategory check
+  // so we don't call analytics.trackFormStart() to avoid duplicate GA events
 }

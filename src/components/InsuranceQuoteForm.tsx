@@ -66,7 +66,7 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
       const gclid = getGclid();
       const msclkid = getMsclkid();
       const utmParams = getUTMParams();
-      const utmSource = utmParams.source || 'direct';
+      const utmSource = utmParams.source || null;
 
       const response = await fetch('/api/lead', {
         method: 'POST',

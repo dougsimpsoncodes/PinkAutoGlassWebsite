@@ -278,14 +278,19 @@ export const trackMicrosoftAdsEvent = (
   eventAction: string,
   eventCategory: string = 'conversion',
   eventLabel?: string,
-  eventValue?: number
+  eventValue?: number,
+  transactionId?: string
 ) => {
   if (typeof window !== 'undefined' && window.uetq) {
-    window.uetq.push('event', eventAction, {
+    const eventData: Record<string, any> = {
       event_category: eventCategory,
       event_label: eventLabel,
       event_value: eventValue,
-    });
+    };
+    if (transactionId) {
+      eventData.event_id = transactionId;
+    }
+    window.uetq.push('event', eventAction, eventData);
   }
 };
 
@@ -294,8 +299,8 @@ export const trackMicrosoftAdsEvent = (
  * Maps to "Phone call website click" conversion goal in Microsoft Ads
  * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
  */
-export const trackMicrosoftAdsCallClick = (source: string) => {
-  trackMicrosoftAdsEvent('Phone call website click', 'conversion', source);
+export const trackMicrosoftAdsCallClick = (source: string, transactionId?: string) => {
+  trackMicrosoftAdsEvent('Phone call website click', 'conversion', source, undefined, transactionId);
 };
 
 /**
@@ -303,8 +308,8 @@ export const trackMicrosoftAdsCallClick = (source: string) => {
  * Maps to "Text_click" conversion goal in Microsoft Ads
  * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
  */
-export const trackMicrosoftAdsTextClick = (source: string) => {
-  trackMicrosoftAdsEvent('Text_click', 'conversion', source);
+export const trackMicrosoftAdsTextClick = (source: string, transactionId?: string) => {
+  trackMicrosoftAdsEvent('Text_click', 'conversion', source, undefined, transactionId);
 };
 
 /**
@@ -312,6 +317,6 @@ export const trackMicrosoftAdsTextClick = (source: string) => {
  * Maps to "Quick quote" conversion goal in Microsoft Ads
  * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
  */
-export const trackMicrosoftAdsLeadForm = (formName: string, value?: number) => {
-  trackMicrosoftAdsEvent('Quick quote', 'conversion', formName, value);
+export const trackMicrosoftAdsLeadForm = (formName: string, value?: number, transactionId?: string) => {
+  trackMicrosoftAdsEvent('Quick quote', 'conversion', formName, value, transactionId);
 };

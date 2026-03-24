@@ -126,7 +126,7 @@ export default function QuoteForm() {
       const gclid = getGclid();
       const msclkid = getMsclkid();
       const utmParams = getUTMParams();
-      const utmSource = utmParams.source || 'direct';
+      const utmSource = utmParams.source || null;
 
       // Combine vehicle data into single string for API
       const vehicle = `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`.trim();
