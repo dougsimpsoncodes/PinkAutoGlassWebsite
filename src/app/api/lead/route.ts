@@ -246,16 +246,30 @@ export async function POST(request: NextRequest) {
       // Same customer within 7 days — update existing lead instead of creating duplicate
       leadId = existingLead.id;
       isDuplicate = true;
+      const updateFields: Record<string, any> = {
+        vehicle_year: validatedData.vehicleYear,
+        vehicle_make: validatedData.vehicleMake,
+        vehicle_model: validatedData.vehicleModel,
+        service_type: validatedData.serviceType,
+      };
+
+      // Refresh attribution if new submission has a click ID (returning visitor from a new ad click)
+      if (attribution.gclid || attribution.msclkid) {
+        updateFields.gclid = attribution.gclid;
+        updateFields.msclkid = attribution.msclkid;
+        updateFields.ad_platform = attribution.ad_platform;
+        updateFields.utm_source = attribution.utm_source;
+        updateFields.utm_medium = attribution.utm_medium;
+        updateFields.utm_campaign = attribution.utm_campaign;
+        updateFields.utm_term = attribution.utm_term;
+        updateFields.utm_content = attribution.utm_content;
+      }
+
       await dedupClient
         .from('leads')
-        .update({
-          vehicle_year: validatedData.vehicleYear,
-          vehicle_make: validatedData.vehicleMake,
-          vehicle_model: validatedData.vehicleModel,
-          service_type: validatedData.serviceType,
-        })
+        .update(updateFields)
         .eq('id', existingLead.id);
-      console.log(`📋 Dedup: Updated existing lead ${existingLead.id} (same phone within 7 days)`);
+      console.log(`📋 Dedup: Updated existing lead ${existingLead.id} (same phone within 7 days${attribution.gclid || attribution.msclkid ? ', attribution refreshed' : ''})`);
     } else {
       // Insert new lead via RPC (enforces RLS and business logic)
       const { error: leadError } = await supabase.rpc('fn_insert_lead', {

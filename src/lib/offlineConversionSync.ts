@@ -187,27 +187,38 @@ async function findAttributableCalls(
     const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
     // Strategy 1: Direct phone_click match (highest confidence)
+    // Check for BOTH gclid and msclkid clicks to detect cross-platform conflict
     const { data: clickEvents } = await supabase
       .from('conversion_events')
-      .select('session_id, gclid, created_at')
+      .select('session_id, gclid, msclkid, created_at')
       .eq('event_type', 'phone_click')
-      .not('gclid', 'is', null)
       .gte('created_at', windowStart.toISOString())
       .lte('created_at', callTime.toISOString())
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(5);
 
-    if (clickEvents && clickEvents.length > 0 && clickEvents[0].gclid) {
-      attributedCalls.push({
-        callId: call.call_id,
-        callTime,
-        fromNumber: call.from_number,
-        duration: call.duration,
-        gclid: clickEvents[0].gclid,
-        sessionId: clickEvents[0].session_id,
-        clickTime: new Date(clickEvents[0].created_at),
-      });
-      continue;
+    if (clickEvents && clickEvents.length > 0) {
+      const gclidClicks = clickEvents.filter((e: any) => e.gclid);
+      const msclkidClicks = clickEvents.filter((e: any) => e.msclkid);
+
+      // Only attribute to Google if no Microsoft clicks in the same window
+      // (prevents double-counting the same call to both platforms)
+      if (gclidClicks.length > 0 && msclkidClicks.length === 0) {
+        attributedCalls.push({
+          callId: call.call_id,
+          callTime,
+          fromNumber: call.from_number,
+          duration: call.duration,
+          gclid: gclidClicks[0].gclid,
+          sessionId: gclidClicks[0].session_id,
+          clickTime: new Date(gclidClicks[0].created_at),
+        });
+        continue;
+      }
+      // If both platforms have clicks, skip — don't attribute to either
+      if (gclidClicks.length > 0 && msclkidClicks.length > 0) {
+        continue;
+      }
     }
 
     // Strategy 2: Session-based match (only if no conflict with Microsoft)
@@ -581,27 +592,37 @@ async function findMicrosoftAttributableCalls(
     const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
     // Strategy 1: Direct phone_click match (highest confidence)
-    const { data: clickEvents } = await supabase
+    // Check for BOTH msclkid and gclid clicks to detect cross-platform conflict
+    const { data: msClickEvents } = await supabase
       .from('conversion_events')
-      .select('session_id, msclkid, created_at')
+      .select('session_id, gclid, msclkid, created_at')
       .eq('event_type', 'phone_click')
-      .not('msclkid', 'is', null)
       .gte('created_at', windowStart.toISOString())
       .lte('created_at', callTime.toISOString())
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(5);
 
-    if (clickEvents && clickEvents.length > 0 && clickEvents[0].msclkid) {
-      attributedCalls.push({
-        callId: call.call_id,
-        callTime,
-        fromNumber: call.from_number,
-        duration: call.duration,
-        msclkid: clickEvents[0].msclkid,
-        sessionId: clickEvents[0].session_id,
-        clickTime: new Date(clickEvents[0].created_at),
-      });
-      continue;
+    if (msClickEvents && msClickEvents.length > 0) {
+      const msClicks = msClickEvents.filter((e: any) => e.msclkid);
+      const googleClicks = msClickEvents.filter((e: any) => e.gclid);
+
+      // Only attribute to Microsoft if no Google clicks in the same window
+      if (msClicks.length > 0 && googleClicks.length === 0) {
+        attributedCalls.push({
+          callId: call.call_id,
+          callTime,
+          fromNumber: call.from_number,
+          duration: call.duration,
+          msclkid: msClicks[0].msclkid,
+          sessionId: msClicks[0].session_id,
+          clickTime: new Date(msClicks[0].created_at),
+        });
+        continue;
+      }
+      // If both platforms have clicks, skip — don't attribute to either
+      if (msClicks.length > 0 && googleClicks.length > 0) {
+        continue;
+      }
     }
 
     // Strategy 2: Session-based match (only if no conflict with Google)

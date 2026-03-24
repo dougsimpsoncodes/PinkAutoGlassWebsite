@@ -53,7 +53,7 @@ export async function syncCallLeads(
   // 1. Fetch qualifying inbound calls
   const { data: calls, error: callsError } = await supabase
     .from('ringcentral_calls')
-    .select('call_id, from_number, start_time, ad_platform')
+    .select('call_id, from_number, start_time, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id')
     .eq('direction', 'Inbound')
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', `${startDate}T00:00:00.000Z`)
@@ -72,7 +72,7 @@ export async function syncCallLeads(
   }
 
   // 2. Deduplicate by from_number — keep the call with the best ad_platform
-  const byPhone = new Map<string, { from_number: string; start_time: string; ad_platform: string | null }>();
+  const byPhone = new Map<string, { from_number: string; start_time: string; ad_platform: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; website_session_id: string | null }>();
   for (const call of calls) {
     const phone = call.from_number;
     if (!phone) continue;
@@ -83,6 +83,10 @@ export async function syncCallLeads(
         from_number: phone,
         start_time: call.start_time,
         ad_platform: call.ad_platform,
+        utm_source: call.utm_source || null,
+        utm_medium: call.utm_medium || null,
+        utm_campaign: call.utm_campaign || null,
+        website_session_id: call.website_session_id || null,
       });
     }
   }
@@ -115,12 +119,30 @@ export async function syncCallLeads(
         && call.ad_platform !== 'unknown';
 
       if (weakPlatform && callHasPlatform) {
+        // Copy full attribution from call, not just ad_platform
+        const updateFields: Record<string, any> = {
+          ad_platform: call.ad_platform,
+          updated_at: new Date().toISOString(),
+        };
+        if (call.utm_source) updateFields.utm_source = call.utm_source;
+        if (call.utm_medium) updateFields.utm_medium = call.utm_medium;
+        if (call.utm_campaign) updateFields.utm_campaign = call.utm_campaign;
+
+        // Look up gclid/msclkid from the matched website session if available
+        if (call.website_session_id) {
+          const { data: session } = await supabase
+            .from('user_sessions')
+            .select('gclid, msclkid')
+            .eq('session_id', call.website_session_id)
+            .limit(1)
+            .maybeSingle();
+          if (session?.gclid) updateFields.gclid = session.gclid;
+          if (session?.msclkid) updateFields.msclkid = session.msclkid;
+        }
+
         const { error: updateError } = await supabase
           .from('leads')
-          .update({
-            ad_platform: call.ad_platform,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateFields)
           .eq('id', existingLead.id);
 
         if (updateError) {
@@ -132,19 +154,36 @@ export async function syncCallLeads(
         result.skipped++;
       }
     } else {
-      // No lead exists — create one
+      // No lead exists — create one with full attribution
+      const insertFields: Record<string, any> = {
+        phone_e164: phone,
+        first_name: '',
+        last_name: '',
+        first_contact_method: 'call',
+        ad_platform: call.ad_platform || null,
+        utm_source: call.utm_source || null,
+        utm_medium: call.utm_medium || null,
+        utm_campaign: call.utm_campaign || null,
+        is_test: isTest,
+        status: 'new',
+        created_at: call.start_time,
+      };
+
+      // Look up gclid/msclkid from the matched website session if available
+      if (call.website_session_id) {
+        const { data: session } = await supabase
+          .from('user_sessions')
+          .select('gclid, msclkid')
+          .eq('session_id', call.website_session_id)
+          .limit(1)
+          .maybeSingle();
+        if (session?.gclid) insertFields.gclid = session.gclid;
+        if (session?.msclkid) insertFields.msclkid = session.msclkid;
+      }
+
       const { error: insertError } = await supabase
         .from('leads')
-        .insert({
-          phone_e164: phone,
-          first_name: '',
-          last_name: '',
-          first_contact_method: 'call',
-          ad_platform: call.ad_platform || null,
-          is_test: isTest,
-          status: 'new',
-          created_at: call.start_time,
-        });
+        .insert(insertFields);
 
       if (insertError) {
         // Unique constraint violation = another process created the lead first (race condition).

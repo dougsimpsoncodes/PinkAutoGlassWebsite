@@ -39,6 +39,7 @@ interface AttributionResult {
   utmCampaign: string | null;
   gclid?: string | null;
   msclkid?: string | null;
+  sessionId?: string | null; // The website session_id from the matched conversion event
   matchDetails: string; // Explanation of how attribution was determined
 }
 
@@ -149,14 +150,17 @@ export async function matchDirectConversions(
       }
     }
 
-    // Only accept matches within 90 seconds (phone_click → dial → connect)
-    if (matchingEvent && bestTimeDiff <= 90_000) {
+    // Accept matches within 5 minutes (phone_click → dial → wait → connect)
+    // Previously 90s which was too tight — users often take 2-3 min to dial
+    if (matchingEvent && bestTimeDiff <= 300_000) {
       const timeDiffSec = Math.round(bestTimeDiff / 1000);
 
       // Calculate confidence based on time proximity
       let confidence = 100;
       if (timeDiffSec > 30) confidence = 95;
       if (timeDiffSec > 60) confidence = 90;
+      if (timeDiffSec > 120) confidence = 85;
+      if (timeDiffSec > 180) confidence = 80;
 
       // Determine platform from click IDs
       // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
@@ -180,6 +184,7 @@ export async function matchDirectConversions(
         utmCampaign: matchingEvent.utm_campaign || null,
         gclid: matchingEvent.gclid || null,
         msclkid: matchingEvent.msclkid || null,
+        sessionId: matchingEvent.session_id || null,
         matchDetails: `Matched phone_click event ${timeDiffSec}s from call (session: ${matchingEvent.session_id})`
       });
     }
@@ -413,17 +418,24 @@ export async function saveAttributionResults(
   let failed = 0;
 
   for (const result of results) {
+    const updateData: Record<string, any> = {
+      attribution_method: result.attributionMethod,
+      attribution_confidence: result.attributionConfidence,
+      ad_platform: result.adPlatform,
+      utm_source: result.utmSource,
+      utm_medium: result.utmMedium,
+      utm_campaign: result.utmCampaign,
+    };
+
+    // Store the matched session_id so downstream processes (offlineConversionSync,
+    // callLeadSync) can look up gclid/msclkid from the user_sessions table
+    if (result.sessionId) {
+      updateData.website_session_id = result.sessionId;
+    }
+
     const { error } = await client
       .from('ringcentral_calls')
-      .update({
-        attribution_method: result.attributionMethod,
-        attribution_confidence: result.attributionConfidence,
-        ad_platform: result.adPlatform,
-        utm_source: result.utmSource,
-        utm_medium: result.utmMedium,
-        utm_campaign: result.utmCampaign,
-        // Store match details in a JSON column if it exists, or log it
-      })
+      .update(updateData)
       .eq('call_id', result.callId);
 
     if (error) {
