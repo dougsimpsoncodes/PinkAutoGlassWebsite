@@ -353,11 +353,15 @@ export async function POST(request: NextRequest) {
     // =============================================================================
     let quotePrice: number | undefined;
     try {
+      // Skip pricing if vehicle data is missing (QuickCaptureForm, InsuranceQuoteForm)
+      if (!validatedData.vehicleYear || !validatedData.vehicleMake || !validatedData.vehicleModel) {
+        console.log('⏭️ Skipping pricing lookup — vehicle data not provided');
+      } else {
       const priceResult = await getQuotePrice(
         validatedData.vehicleYear,
         validatedData.vehicleMake,
         validatedData.vehicleModel,
-        validatedData.serviceType
+        validatedData.serviceType || 'repair'
       );
       quotePrice = priceResult.price;
 
@@ -369,6 +373,7 @@ export async function POST(request: NextRequest) {
         .then(({ error }) => {
           if (error) console.error('Failed to update lead quote_amount:', error.message);
         });
+      }
     } catch (err) {
       console.error('Pricing lookup failed, using template default:', err);
     }
@@ -381,9 +386,9 @@ export async function POST(request: NextRequest) {
     const dripCtx = {
       firstName: validatedData.firstName,
       phone: validatedData.phone,
-      vehicleYear: validatedData.vehicleYear,
-      vehicleMake: validatedData.vehicleMake,
-      vehicleModel: validatedData.vehicleModel,
+      vehicleYear: validatedData.vehicleYear || 0,
+      vehicleMake: validatedData.vehicleMake || '',
+      vehicleModel: validatedData.vehicleModel || '',
       smsConsent,
       quotePrice,
     };
@@ -407,7 +412,7 @@ export async function POST(request: NextRequest) {
       if (hasRealEmail) {
         autoReplyPromises.push(
           sendEmail({
-            to: validatedData.email,
+            to: validatedData.email!,
             subject: validatedData.vehicleMake ? `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass` : 'Your Windshield Quote - Pink Auto Glass',
             html: getQuoteInstantEmail(dripCtx),
             leadId,
@@ -427,7 +432,9 @@ export async function POST(request: NextRequest) {
     // =============================================================================
     // DRIP SEQUENCE: Schedule next-day follow-up SMS
     // =============================================================================
-    if (smsConsent && !isDuplicate) {
+    // Only schedule drip if we have vehicle data (drip templates render vehicle info)
+    const hasVehicleData = !!validatedData.vehicleMake && !!validatedData.vehicleModel;
+    if (smsConsent && !isDuplicate && hasVehicleData) {
       try {
         const dripResult = await scheduleDripSequence(leadId, dripCtx, 'quick_quote');
         console.log(`📅 Drip scheduled for lead ${leadId}: ${dripResult.scheduled} messages`);

@@ -30,8 +30,8 @@ export default function QuoteForm() {
   const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
 
   const formatPhoneNumber = (value: string): string => {
-    // Remove all non-numeric characters
-    const phoneNumber = value.replace(/\D/g, '');
+    // Remove all non-numeric characters, strip leading country code '1'
+    const phoneNumber = value.replace(/\D/g, '').replace(/^1/, '').slice(0, 10);
 
     // Format as (XXX) XXX-XXXX
     if (phoneNumber.length <= 3) {

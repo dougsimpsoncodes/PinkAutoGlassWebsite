@@ -43,7 +43,8 @@ export default function InsuranceQuoteForm({ carrier, source = 'insurance_page',
   const [selectedCarrier, setSelectedCarrier] = useState(carrier || '');
 
   const formatPhone = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
+    // Remove all non-numeric characters, strip leading country code '1'
+    const digits = value.replace(/\D/g, '').replace(/^1/, '').slice(0, 10);
     if (digits.length <= 3) return digits;
     if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
