@@ -159,13 +159,13 @@ export function classifyCampaignMarket(campaignName?: string | null): Market | n
   const isColorado = COLORADO_CAMPAIGN_PATTERNS.some(pattern => pattern.test(campaignName));
   const isArizona = ARIZONA_CAMPAIGN_PATTERNS.some(pattern => pattern.test(campaignName));
 
-  // Dual-market match or no match → unclassified (null = included in 'all' but not in either specific market)
-  if (isColorado === isArizona) {
-    if (isColorado) {
-      // Both match — cross-market campaign, log for visibility
-      console.warn(`[market] Campaign "${campaignName}" matches both CO and AZ patterns — excluded from market-specific spend`);
-    }
+  // Dual-market match → unclassified (excluded from market-specific spend)
+  if (isColorado && isArizona) {
+    console.warn(`[market] Campaign "${campaignName}" matches both CO and AZ patterns — excluded from market-specific spend`);
     return null;
   }
+  // No explicit market match → default to Colorado (Denver)
+  // All current campaigns are Denver-only; Phoenix campaigns will be named with "phoenix" when created
+  if (!isColorado && !isArizona) return 'colorado';
   return isColorado ? 'colorado' : 'arizona';
 }
