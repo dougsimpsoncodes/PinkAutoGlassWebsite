@@ -67,8 +67,10 @@ export async function POST(request: NextRequest) {
       transformedBody.zipCode = body.zip;
     }
 
-    // Leave email empty if not provided — no fake placeholder emails
-    // The DB accepts null/empty and downstream code checks for real emails before sending
+    // Convert empty string email to undefined so optional schema validation passes
+    if (!transformedBody.email || transformedBody.email.trim() === '') {
+      delete transformedBody.email;
+    }
 
     // Default serviceType for quick quotes
     if (!transformedBody.serviceType) {
@@ -262,6 +264,11 @@ export async function POST(request: NextRequest) {
         updateFields.utm_campaign = attribution.utm_campaign;
         updateFields.utm_term = attribution.utm_term;
         updateFields.utm_content = attribution.utm_content;
+      }
+
+      // Also persist source on dedup path
+      if (body.source) {
+        updateFields.source = body.source;
       }
 
       await dedupClient

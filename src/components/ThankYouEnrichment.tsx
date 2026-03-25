@@ -27,8 +27,8 @@ export default function ThankYouEnrichment() {
     fetch('/api/vehicles/makes')
       .then(r => r.json())
       .then(data => {
-        if (data && Array.isArray(data)) {
-          setAvailableMakes(data.map((d: { make: string }) => d.make));
+        if (data?.makes && Array.isArray(data.makes)) {
+          setAvailableMakes(data.makes);
         }
       })
       .catch(() => {});
@@ -39,8 +39,8 @@ export default function ThankYouEnrichment() {
     fetch(`/api/vehicles/models?make=${encodeURIComponent(vehicleMake)}`)
       .then(r => r.json())
       .then(data => {
-        if (data && Array.isArray(data)) {
-          setAvailableModels(data.map((d: { model: string }) => d.model));
+        if (data?.models && Array.isArray(data.models)) {
+          setAvailableModels(data.models);
         }
       })
       .catch(() => {});
