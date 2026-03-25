@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildMetrics } from '@/lib/metricsBuilder';
 import { type DateFilter } from '@/lib/dateUtils';
+import { isMarketFilter } from '@/lib/market';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,12 +18,14 @@ const VALID_PERIODS: DateFilter[] = ['today', 'yesterday', '7days', '30days', 'a
  * Query params:
  *   period: today | yesterday | 7days | 30days | all (default: today)
  *   debug:  true — include _debug subtotals for reconciliation
+ *   market: all | colorado | arizona (default: all)
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const period = (searchParams.get('period') || 'today') as DateFilter;
     const debug = searchParams.get('debug') === 'true';
+    const market = searchParams.get('market') || 'all';
 
     if (!VALID_PERIODS.includes(period)) {
       return NextResponse.json(
@@ -31,7 +34,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const metrics = await buildMetrics(period, debug);
+    if (!isMarketFilter(market)) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid market. Must be one of: all, colorado, arizona' },
+        { status: 400 }
+      );
+    }
+
+    const metrics = await buildMetrics(period, debug, market);
 
     return NextResponse.json({ ok: true, ...metrics });
   } catch (error: any) {

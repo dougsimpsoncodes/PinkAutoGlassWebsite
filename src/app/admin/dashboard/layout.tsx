@@ -2,6 +2,7 @@
 
 import { SyncProvider } from '@/contexts/SyncContext';
 import { DashboardCacheProvider } from '@/contexts/DashboardCacheContext';
+import { MarketProvider } from '@/contexts/MarketContext';
 
 export default function DashboardLayout({
   children,
@@ -11,7 +12,9 @@ export default function DashboardLayout({
   return (
     <SyncProvider>
       <DashboardCacheProvider>
-        {children}
+        <MarketProvider>
+          {children}
+        </MarketProvider>
       </DashboardCacheProvider>
     </SyncProvider>
   );

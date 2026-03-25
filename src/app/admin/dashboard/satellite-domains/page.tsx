@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useMarket, type MarketFilter } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import {
   LineChart,
@@ -22,7 +23,7 @@ import {
   Users,
   AlertTriangle,
   ExternalLink,
-  RadioTower,
+  MapPin,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -55,7 +56,51 @@ interface SatelliteApiResponse {
 }
 
 type ChartMetric = 'clicks' | 'impressions' | 'ctr' | 'position';
-type InsightDomain = DomainData & { conversionRate: number; leadShare: number };
+type SatelliteDomainMarket = 'colorado' | 'arizona' | 'national';
+type InsightDomain = DomainData & {
+  conversionRate: number;
+  leadShare: number;
+  market: SatelliteDomainMarket;
+};
+
+const SATELLITE_DOMAINS = [
+  { domain: 'windshieldcostcalculator.com', utmSource: 'windshieldcostcalculator', market: 'colorado' },
+  { domain: 'windshielddenver.com', utmSource: 'windshielddenver', market: 'colorado' },
+  { domain: 'windshieldchiprepairdenver.com', utmSource: 'chiprepairdenver', market: 'colorado' },
+  { domain: 'windshieldchiprepairboulder.com', utmSource: 'chiprepairboulder', market: 'colorado' },
+  { domain: 'aurorawindshield.com', utmSource: 'aurorawindshield', market: 'colorado' },
+  { domain: 'mobilewindshielddenver.com', utmSource: 'mobilewindshielddenver', market: 'colorado' },
+  { domain: 'cheapestwindshieldnearme.com', utmSource: 'cheapestwindshield', market: 'colorado' },
+  { domain: 'newwindshieldcost.com', utmSource: 'newwindshieldcost', market: 'colorado' },
+  { domain: 'getawindshieldquote.com', utmSource: 'getawindshieldquote', market: 'colorado' },
+  { domain: 'newwindshieldnearme.com', utmSource: 'newwindshieldnearme', market: 'colorado' },
+  { domain: 'windshieldpricecompare.com', utmSource: 'windshieldpricecompare', market: 'colorado' },
+  { domain: 'windshieldchiprepairmesa.com', utmSource: 'chiprepairmesa', market: 'arizona' },
+  { domain: 'windshieldchiprepairphoenix.com', utmSource: 'chiprepairphoenix', market: 'arizona' },
+  { domain: 'windshieldchiprepairscottsdale.com', utmSource: 'chiprepairscottsdale', market: 'arizona' },
+  { domain: 'windshieldchiprepairtempe.com', utmSource: 'chiprepairtempe', market: 'arizona' },
+  { domain: 'windshieldcostphoenix.com', utmSource: 'windshieldcostphoenix', market: 'arizona' },
+  { domain: 'mobilewindshieldphoenix.com', utmSource: 'mobilewindshieldphoenix', market: 'arizona' },
+  { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', market: 'national' },
+  { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', market: 'national' },
+  { domain: 'carglassprices.com', utmSource: 'carglassprices', market: 'national' },
+  { domain: 'coloradospringswindshield.com', utmSource: 'coloradospringswindshield', market: 'colorado' },
+  { domain: 'autoglasscoloradosprings.com', utmSource: 'autoglasscoloradosprings', market: 'colorado' },
+  { domain: 'mobilewindshieldcoloradosprings.com', utmSource: 'mobilewindshieldcoloradosprings', market: 'colorado' },
+  { domain: 'windshieldreplacementfortcollins.com', utmSource: 'windshieldreplacementfortcollins', market: 'colorado' },
+] as const;
+
+const SATELLITE_DOMAIN_MARKET_MAP = new Map<string, SatelliteDomainMarket>(
+  SATELLITE_DOMAINS.map((domain) => [domain.utmSource, domain.market])
+);
+
+function getVisibleSatelliteMarkets(market: MarketFilter): Set<SatelliteDomainMarket> {
+  if (market === 'all') {
+    return new Set(['colorado', 'arizona', 'national']);
+  }
+
+  return new Set([market, 'national']);
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -170,6 +215,7 @@ function StatCard({
 // ─── Page Component ───────────────────────────────────────────────────────────
 
 export default function SatelliteDomainsPage() {
+  const { market } = useMarket();
   const { syncVersion } = useSync();
 
   const [dataCache, setDataCache] = useState<Record<DateFilter, SatelliteApiResponse | null>>({
@@ -189,13 +235,16 @@ export default function SatelliteDomainsPage() {
 
   const data = dataCache[dateFilter];
   const hasAnyCachedData = Object.values(dataCache).some((d) => d !== null);
+  const filteredDomains = useMemo(() => {
+    if (!data) return [];
 
-  // Once we have domain data, initialise the selection to all domains
-  useEffect(() => {
-    if (data && selectedDomainKeys === null) {
-      setSelectedDomainKeys(new Set(data.domains.map((d) => d.utmSource)));
-    }
-  }, [data, selectedDomainKeys]);
+    const allowedMarkets = getVisibleSatelliteMarkets(market);
+
+    return data.domains.filter((domain) => {
+      const domainMarket = SATELLITE_DOMAIN_MARKET_MAP.get(domain.utmSource);
+      return domainMarket ? allowedMarkets.has(domainMarket) : false;
+    });
+  }, [data, market]);
 
   // ── Fetch ───────────────────────────────────────────────────────────────────
 
@@ -247,21 +296,20 @@ export default function SatelliteDomainsPage() {
   // ── Sorted domains ──────────────────────────────────────────────────────────
 
   const sortedDomains = useMemo<InsightDomain[]>(() => {
-    if (!data) return [];
-    const totalLeads = data.domains.reduce((s, d) => s + d.leads, 0);
-    const withRates = data.domains.map((d) => ({
+    const totalLeads = filteredDomains.reduce((s, d) => s + d.leads, 0);
+    const withRates = filteredDomains.map((d) => ({
       ...d,
       conversionRate: d.clicks > 0 ? d.leads / d.clicks : 0,
       leadShare: totalLeads > 0 ? d.leads / totalLeads : 0,
+      market: SATELLITE_DOMAIN_MARKET_MAP.get(d.utmSource) ?? 'national',
     }));
     return [...withRates].sort((a, b) => b.impressions - a.impressions);
-  }, [data]);
+  }, [filteredDomains]);
 
   // ── Summary totals ──────────────────────────────────────────────────────────
 
   const totals = useMemo(() => {
-    if (!data) return { clicks: 0, impressions: 0, ctr: 0, position: 0, leads: 0 };
-    const domains = data.domains;
+    const domains = filteredDomains;
     const totalClicks = domains.reduce((s, d) => s + d.clicks, 0);
     const totalImpressions = domains.reduce((s, d) => s + d.impressions, 0);
     const totalLeads = domains.reduce((s, d) => s + d.leads, 0);
@@ -288,7 +336,7 @@ export default function SatelliteDomainsPage() {
       position: weightedPosition,
       leads: totalLeads,
     };
-  }, [data]);
+  }, [filteredDomains]);
 
   const totalConversionRate = totals.clicks > 0 ? totals.leads / totals.clicks : 0;
 
@@ -321,11 +369,23 @@ export default function SatelliteDomainsPage() {
 
   // ── Chart domains (filtered to selected) ────────────────────────────────────
 
+  const effectiveSelectedDomainKeys = useMemo(() => {
+    if (selectedDomainKeys === null) return null;
+
+    const visibleDomainKeys = new Set(filteredDomains.map((domain) => domain.utmSource));
+    const overlappingKeys = [...selectedDomainKeys].filter((key) => visibleDomainKeys.has(key));
+
+    if (overlappingKeys.length === 0) {
+      return selectedDomainKeys.size === 0 ? new Set<string>() : null;
+    }
+
+    return new Set(overlappingKeys);
+  }, [filteredDomains, selectedDomainKeys]);
+
   const chartDomains = useMemo(() => {
-    if (!data) return [];
-    if (selectedDomainKeys === null) return data.domains;
-    return data.domains.filter((d) => selectedDomainKeys.has(d.utmSource));
-  }, [data, selectedDomainKeys]);
+    if (effectiveSelectedDomainKeys === null) return filteredDomains;
+    return filteredDomains.filter((d) => effectiveSelectedDomainKeys.has(d.utmSource));
+  }, [effectiveSelectedDomainKeys, filteredDomains]);
 
   const chartData = useMemo(
     () => buildChartData(chartDomains, selectedMetric),
@@ -333,33 +393,48 @@ export default function SatelliteDomainsPage() {
   );
 
   const allNoData = useMemo(
-    () => data?.domains.every((d) => d.clicks === 0 && d.impressions === 0),
-    [data]
+    () => filteredDomains.length > 0 && filteredDomains.every((d) => d.clicks === 0 && d.impressions === 0),
+    [filteredDomains]
   );
 
   // ── Toggle domain selection ─────────────────────────────────────────────────
 
   const toggleDomain = (utmSource: string) => {
     setSelectedDomainKeys((prev) => {
-      const all = data?.domains.map((d) => d.utmSource) ?? [];
-      const current = prev ?? new Set(all);
+      const all = filteredDomains.map((d) => d.utmSource);
+      const current =
+        prev === null
+          ? new Set(all)
+          : new Set(prev.size === 0 ? [] : [...prev].filter((key) => all.includes(key)));
       const next = new Set(current);
       if (next.has(utmSource)) {
         next.delete(utmSource);
       } else {
         next.add(utmSource);
       }
+
+      if (next.size === all.length) {
+        return null;
+      }
+
       return next;
     });
   };
 
   const selectAll = () => {
-    if (data) setSelectedDomainKeys(new Set(data.domains.map((d) => d.utmSource)));
+    setSelectedDomainKeys(null);
   };
 
   const selectNone = () => {
     setSelectedDomainKeys(new Set());
   };
+
+  const marketLabel =
+    market === 'all'
+      ? 'All Markets'
+      : market === 'colorado'
+      ? 'Denver / CO + National'
+      : 'Phoenix / AZ + National';
 
   // ── Y-axis formatter ────────────────────────────────────────────────────────
 
@@ -432,9 +507,9 @@ export default function SatelliteDomainsPage() {
               </p>
             )}
           </div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-            <RadioTower className="w-4 h-4" />
-            Market toggle coming soon
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4 text-pink-600" />
+            Showing {marketLabel}
           </div>
         </div>
 
@@ -646,10 +721,9 @@ export default function SatelliteDomainsPage() {
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </a>
                           {domain.gscError && (
-                            <AlertTriangle
-                              className="w-3.5 h-3.5 text-amber-500 shrink-0"
-                              title={domain.gscError}
-                            />
+                            <span title={domain.gscError}>
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            </span>
                           )}
                         </div>
                         <div className="text-xs text-gray-400 pl-5 mt-0.5">{domain.label}</div>
@@ -733,8 +807,9 @@ export default function SatelliteDomainsPage() {
               None
             </button>
             <div className="w-px h-4 bg-gray-300 mx-1" />
-            {data.domains.map((domain) => {
-              const isSelected = selectedDomainKeys === null || selectedDomainKeys.has(domain.utmSource);
+            {filteredDomains.map((domain) => {
+              const isSelected =
+                effectiveSelectedDomainKeys === null || effectiveSelectedDomainKeys.has(domain.utmSource);
               return (
                 <button
                   key={domain.utmSource}

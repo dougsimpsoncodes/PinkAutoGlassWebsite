@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import {
   Search,
@@ -29,7 +30,6 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
-  RadioTower,
 } from 'lucide-react';
 import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
 
@@ -240,8 +240,12 @@ const SATELLITE_UTM_SOURCES = [
 ];
 
 export default function LeadManagementDashboard() {
+  const { market, isHydrated } = useMarket();
+
   // Get global sync state
   const { syncVersion } = useSync();
+  const latestSyncVersionRef = useRef(syncVersion);
+  const lastFetchedSyncVersionRef = useRef(0);
 
   // Table rows from server-side unified-leads API
   const [leads, setLeads] = useState<UnifiedLeadRow[]>([]);
@@ -257,6 +261,8 @@ export default function LeadManagementDashboard() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [dateDisplay, setDateDisplay] = useState<string>('');
 
+  latestSyncVersionRef.current = syncVersion;
+
   // KPI counts from the SAME metrics API the Dashboard uses (guaranteed match)
   const [metricsKPI, setMetricsKPI] = useState<{
     total: number; calls: number; forms: number; texts: number;
@@ -268,7 +274,8 @@ export default function LeadManagementDashboard() {
   const fetchMetricsKPI = useCallback(async (period: DateFilter) => {
     try {
       setPlatformCountsError(null);
-      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
+      const params = new URLSearchParams({ period, market });
+      const res = await fetch(`/api/admin/dashboard/metrics?${params.toString()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Invalid response');
@@ -288,13 +295,14 @@ export default function LeadManagementDashboard() {
       setMetricsKPI(null);
       setPlatformCountsError('Lead counts unavailable. Refresh to retry.');
     }
-  }, []);
+  }, [market]);
 
   // Fetch table rows from unified-leads API (for the detail table only)
   const fetchLeadRows = useCallback(async (period: DateFilter) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${period}`, { cache: 'no-store' });
+      const params = new URLSearchParams({ period, market });
+      const res = await fetch(`/api/admin/dashboard/unified-leads?${params.toString()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Invalid response');
@@ -304,28 +312,33 @@ export default function LeadManagementDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [market]);
 
   const fetchAllData = useCallback(async (period: DateFilter) => {
     await Promise.all([fetchMetricsKPI(period), fetchLeadRows(period)]);
   }, [fetchMetricsKPI, fetchLeadRows]);
 
+  // Close lead modal when market changes to avoid showing stale cross-market details
+  useEffect(() => {
+    setSelectedLead(null);
+    setEditMode(false);
+  }, [market]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    lastFetchedSyncVersionRef.current = latestSyncVersionRef.current;
+    fetchAllData(dateFilter);
+  }, [dateFilter, fetchAllData, isHydrated]);
+
   // Subscribe to global sync events
   useEffect(() => {
-    if (syncVersion > 0) {
-      fetchAllData(dateFilter);
+    if (!isHydrated || syncVersion === 0 || syncVersion <= lastFetchedSyncVersionRef.current) {
+      return;
     }
-  }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initial load
-  useEffect(() => {
+    lastFetchedSyncVersionRef.current = syncVersion;
     fetchAllData(dateFilter);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Refresh when date filter changes
-  useEffect(() => {
-    fetchAllData(dateFilter);
-  }, [dateFilter, fetchAllData]);
+  }, [dateFilter, fetchAllData, isHydrated, syncVersion]);
 
   // Date display from metrics response
   const getDateRangeDisplay = () => dateDisplay;
@@ -461,6 +474,7 @@ export default function LeadManagementDashboard() {
     organic: leads.filter(l => !l.ad_platform || (l.ad_platform !== 'google' && l.ad_platform !== 'microsoft')).length,
     totalRevenue: leads.reduce((sum, l) => sum + (l.revenue_amount || 0), 0),
   };
+  const marketLabel = market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ';
 
   // Only show spinner on initial load when we have no cached data
   if (loading && leads.length === 0) {
@@ -484,9 +498,9 @@ export default function LeadManagementDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
           <p className="text-gray-600 mt-1">All leads from calls, texts, and forms</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-          <RadioTower className="w-4 h-4" />
-          Market toggle coming soon
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+          <MapPin className="w-4 h-4 text-pink-600" />
+          Showing {marketLabel}
         </div>
       </div>
 

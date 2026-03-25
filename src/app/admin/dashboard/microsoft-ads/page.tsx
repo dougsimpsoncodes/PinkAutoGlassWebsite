@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import {
   DollarSign,
@@ -13,6 +14,7 @@ import {
   MessageSquare,
   FileText,
   TrendingUp,
+  MapPin,
 } from 'lucide-react';
 import PlatformLeadsTable from '@/components/admin/PlatformLeadsTable';
 import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
@@ -56,6 +58,8 @@ function SyncButtonInline() {
 }
 
 export default function MicrosoftAdsPage() {
+  const { market } = useMarket();
+
   // Get global sync state
   const { syncVersion } = useSync();
 
@@ -103,7 +107,7 @@ export default function MicrosoftAdsPage() {
   const fetchLeads = useCallback(async (period: DateFilter) => {
     try {
       setLeadsLoading(true);
-      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${period}&platform=microsoft`, { cache: 'no-store' });
+      const res = await fetch(`/api/admin/dashboard/unified-leads?period=${period}&platform=microsoft&market=${market}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.ok) setMicrosoftLeads(data.leads || []);
@@ -113,7 +117,7 @@ export default function MicrosoftAdsPage() {
     } finally {
       setLeadsLoading(false);
     }
-  }, []);
+  }, [market]);
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
@@ -157,14 +161,15 @@ export default function MicrosoftAdsPage() {
     }
   };
 
-  // Initial load - fetch current filter + leads
+  // Re-fetch when market changes
   useEffect(() => {
     setLoading(true);
+    setDataCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
     Promise.all([
       fetchData(dateFilter),
       fetchLeads(dateFilter),
     ]).finally(() => setLoading(false));
-  }, []);
+  }, [market]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Only show full-page spinner on initial load (no cached data at all)
   if (loading && !hasAnyCachedData) {
@@ -211,6 +216,10 @@ export default function MicrosoftAdsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Microsoft Ads Performance</h1>
             <p className="text-gray-600 mt-1">Bing, Yahoo & DuckDuckGo advertising analytics</p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4 text-pink-600" />
+            Showing {market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ'}
           </div>
         </div>
       </div>

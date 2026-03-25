@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import {
@@ -12,7 +13,7 @@ import {
   ArrowUpDown,
   ExternalLink,
   TrendingUp,
-  RadioTower,
+  MapPin,
 } from 'lucide-react';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ function exportCSV(headers: string[], rows: (string | number)[][], filename: str
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function WebsiteTrafficPage() {
+  const { market } = useMarket();
   const { syncVersion } = useSync();
 
   const [dateRange, setDateRange] = useState<DateFilter>('7days');
@@ -134,14 +136,15 @@ export default function WebsiteTrafficPage() {
   const [pageSort, setPageSort] = useState<keyof PagePerformance>('views');
   const [pageDesc, setPageDesc] = useState(true);
 
-  useEffect(() => { fetchAll(); }, [dateRange]);
+  useEffect(() => { fetchAll(); }, [dateRange, market]);
   useEffect(() => { if (syncVersion > 0) fetchAll(); }, [syncVersion]);
 
   const fetchAll = async () => {
     setLoading(true);
     try {
       const [metricsRes, trafficRes, pagesRes, convDetailRes] = await Promise.all([
-        fetch(`/api/admin/dashboard/metrics?period=${dateRange}`),
+        fetch(`/api/admin/dashboard/metrics?period=${dateRange}&market=${market}`),
+        // NOTE: /api/admin/analytics does not yet support market filtering — traffic/page data is unfiltered
         fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}`),
         fetch(`/api/admin/analytics?metric=page_performance&range=${dateRange}`),
         fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}`),
@@ -247,9 +250,9 @@ export default function WebsiteTrafficPage() {
           <h1 className="text-3xl font-bold text-gray-900">Website &amp; Traffic</h1>
           <p className="text-gray-600 mt-1">Overview · Traffic Sources · Click Events · Pages</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-          <RadioTower className="w-4 h-4" />
-          Market toggle coming soon
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+          <MapPin className="w-4 h-4 text-pink-600" />
+          Showing {market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ'}
         </div>
       </div>
 

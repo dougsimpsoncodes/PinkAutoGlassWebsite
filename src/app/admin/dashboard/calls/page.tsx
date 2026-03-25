@@ -13,12 +13,13 @@
  * which applies different rules (30s+ duration, phone-number dedup).
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import { getDateRange, isInDateRange } from '@/lib/dateUtils';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight, RadioTower } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Play, Users, CheckCircle, TrendingUp, ChevronDown, ChevronRight, MapPin } from 'lucide-react';
 import { BUSINESS_PHONE_NUMBER } from '@/lib/constants';
 
 const QUALIFYING_DURATION_MIN = 30;
@@ -53,8 +54,12 @@ interface Call {
 }
 
 export default function CallAnalyticsPage() {
+  const { market, isHydrated } = useMarket();
+
   // Get global sync state
   const { syncVersion } = useSync();
+  const latestSyncVersionRef = useRef(syncVersion);
+  const lastFetchedSyncVersionRef = useRef(0);
 
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,17 +67,9 @@ export default function CallAnalyticsPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
+  latestSyncVersionRef.current = syncVersion;
+
   // Subscribe to global sync events
-  useEffect(() => {
-    if (syncVersion > 0) {
-      fetchCalls();
-    }
-  }, [syncVersion]);
-
-  useEffect(() => {
-    fetchCalls();
-  }, []);
-
   // Deduplicate calls - only show one call per session_id
   const deduplicateCalls = (calls: Call[]): Call[] => {
     const sessionMap = new Map<string, Call>();
@@ -97,9 +94,11 @@ export default function CallAnalyticsPage() {
     return Array.from(sessionMap.values());
   };
 
-  const fetchCalls = async () => {
+  const fetchCalls = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/admin/calls?limit=1000', {
+      const params = new URLSearchParams({ limit: '1000', market });
+      const res = await fetch(`/api/admin/calls?${params.toString()}`, {
         credentials: 'include' // Include Basic Auth credentials
       });
       if (!res.ok) return;
@@ -113,7 +112,22 @@ export default function CallAnalyticsPage() {
       console.error('Failed to fetch calls:', error);
       setLoading(false);
     }
-  };
+  }, [market]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    lastFetchedSyncVersionRef.current = latestSyncVersionRef.current;
+    fetchCalls();
+  }, [fetchCalls, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated || syncVersion === 0 || syncVersion <= lastFetchedSyncVersionRef.current) {
+      return;
+    }
+
+    lastFetchedSyncVersionRef.current = syncVersion;
+    fetchCalls();
+  }, [fetchCalls, isHydrated, syncVersion]);
 
 
   // Get date range using Mountain Time (consistent with server-side and other pages)
@@ -252,6 +266,7 @@ export default function CallAnalyticsPage() {
 
   const answerRate = stats.inbound > 0 ? Math.round((stats.answered / stats.inbound) * 100) : 0;
   const uniqueCallerConversionRate = stats.uniqueCallers > 0 ? Math.round((stats.answeredUniqueCallers / stats.uniqueCallers) * 100) : 0;
+  const marketLabel = market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ';
 
   // Determine the chart date range - always show minimum 7 days for short timeframes
   const getChartDateRange = () => {
@@ -377,9 +392,9 @@ export default function CallAnalyticsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Call Analytics</h1>
           <p className="text-gray-600 mt-1">RingCentral call log and analytics</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-          <RadioTower className="w-4 h-4" />
-          Market toggle coming soon
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+          <MapPin className="w-4 h-4 text-pink-600" />
+          Showing {marketLabel}
         </div>
       </div>
 

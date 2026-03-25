@@ -16,6 +16,13 @@ import {
   BUSINESS_PHONE_NUMBER,
   MIN_CALL_DURATION_SECONDS,
 } from './constants';
+import {
+  type Market,
+  type MarketFilter,
+  classifyCallMarket,
+  classifyLeadMarket,
+  normalizePhoneDigits,
+} from './market';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -83,18 +90,31 @@ function getServiceClient(): SupabaseClient {
   );
 }
 
+function matchesMarketFilter(market: MarketFilter, classifiedMarket: Market | null): boolean {
+  return market === 'all' || classifiedMarket === market;
+}
+
+export async function fetchUnifiedLeads(
+  period: DateFilter,
+  platformFilter?: string,
+  market: MarketFilter = 'all'
+): Promise<UnifiedLeadsResult> {
+  return buildUnifiedLeads(period, platformFilter, market);
+}
+
 export async function buildUnifiedLeads(
   period: DateFilter,
-  platformFilter?: string
+  platformFilter?: string,
+  market: MarketFilter = 'all'
 ): Promise<UnifiedLeadsResult> {
   const bounds = getMountainDayBounds(period);
   const supabase = getServiceClient();
 
   // Fetch form/SMS leads, calls, and suppression data in parallel
   const [formLeads, callsData, existingCallPhones, sessionAttr] = await Promise.all([
-    fetchFormLeadRows(supabase, bounds),
-    fetchCallRows(supabase, bounds),
-    fetchCallLeadPhones(supabase),
+    fetchFormLeadRows(supabase, bounds, market),
+    fetchCallRows(supabase, bounds, market),
+    fetchCallLeadPhones(supabase, market),
     fetchSessionAttribution(supabase, bounds),
   ]);
 
@@ -136,7 +156,8 @@ export async function buildUnifiedLeads(
 
 async function fetchFormLeadRows(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<UnifiedLeadRow[]> {
   const { data } = await supabase
     .from('leads')
@@ -146,77 +167,89 @@ async function fetchFormLeadRows(
     .lte('created_at', bounds.endUTC)
     .order('created_at', { ascending: false });
 
-  return (data || []).map((l: any) => {
-    let platform = l.ad_platform;
-    if (!platform) {
-      if (l.gclid) platform = 'google';
-      else if (l.msclkid) platform = 'microsoft';
-    }
-    // Normalize: only google/microsoft count as attributed
-    if (platform && platform !== 'google' && platform !== 'microsoft') {
-      platform = null;
-    }
+  return (data || [])
+    .filter((lead: any) => matchesMarketFilter(market, classifyLeadMarket(lead)))
+    .map((lead: any) => {
+      let platform = lead.ad_platform;
+      if (!platform) {
+        if (lead.gclid) platform = 'google';
+        else if (lead.msclkid) platform = 'microsoft';
+      }
+      // Normalize: only google/microsoft count as attributed
+      if (platform && platform !== 'google' && platform !== 'microsoft') {
+        platform = null;
+      }
 
-    return {
-      id: l.id,
-      type: l.first_contact_method === 'sms' ? 'text' as const
-        : l.first_contact_method === 'call' ? 'call' as const
-        : 'form' as const,
-      name: `${l.first_name || ''} ${l.last_name || ''}`.trim() || 'Unknown',
-      phone: l.phone_e164 || l.phone || '',
-      email: l.email,
-      created_at: l.created_at,
-      status: l.status || 'new',
-      vehicle_year: l.vehicle_year,
-      vehicle_make: l.vehicle_make,
-      vehicle_model: l.vehicle_model,
-      service_type: l.service_type,
-      city: l.city,
-      state: l.state,
-      zip: l.zip,
-      quote_amount: l.quote_amount,
-      revenue_amount: l.revenue_amount,
-      close_date: l.close_date,
-      notes: l.notes,
-      ad_platform: platform,
-      utm_campaign: l.utm_campaign,
-      utm_source: l.utm_source,
-      utm_medium: l.utm_medium,
-      gclid: l.gclid,
-      msclkid: l.msclkid,
-    };
-  });
+      return {
+        id: lead.id,
+        type: lead.first_contact_method === 'sms' ? 'text' as const
+          : lead.first_contact_method === 'call' ? 'call' as const
+          : 'form' as const,
+        name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown',
+        phone: lead.phone_e164 || lead.phone || '',
+        email: lead.email,
+        created_at: lead.created_at,
+        status: lead.status || 'new',
+        vehicle_year: lead.vehicle_year,
+        vehicle_make: lead.vehicle_make,
+        vehicle_model: lead.vehicle_model,
+        service_type: lead.service_type,
+        city: lead.city,
+        state: lead.state,
+        zip: lead.zip,
+        quote_amount: lead.quote_amount,
+        revenue_amount: lead.revenue_amount,
+        close_date: lead.close_date,
+        notes: lead.notes,
+        ad_platform: platform,
+        utm_campaign: lead.utm_campaign,
+        utm_source: lead.utm_source,
+        utm_medium: lead.utm_medium,
+        gclid: lead.gclid,
+        msclkid: lead.msclkid,
+      };
+    });
 }
 
 async function fetchCallRows(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<any[]> {
   const { data } = await supabase
     .from('ringcentral_calls')
-    .select('from_number, from_name, start_time, duration, direction, result, recording_id, ad_platform')
+    .select('from_number, from_name, to_number, start_time, duration, direction, result, recording_id, ad_platform')
     .gte('start_time', bounds.startUTC)
     .lte('start_time', bounds.endUTC)
     .eq('direction', 'Inbound');
 
-  return data || [];
+  return (data || []).filter((call: any) =>
+    matchesMarketFilter(market, classifyCallMarket(call.to_number))
+  );
 }
 
 /**
- * Get ALL call-type lead phone numbers (global, no date filter).
- * Used to suppress calls that already have a lead record.
- * Matches metricsBuilder.fetchCallLeadPhones() exactly.
+ * Get call-type lead phone numbers used for suppression.
+ * When a market filter is active, only suppress call leads that can be
+ * classified into that same market, matching metricsBuilder behavior.
  */
-async function fetchCallLeadPhones(supabase: SupabaseClient): Promise<Set<string>> {
+async function fetchCallLeadPhones(
+  supabase: SupabaseClient,
+  market: MarketFilter
+): Promise<Set<string>> {
   const { data } = await supabase
     .from('leads')
-    .select('phone_e164')
+    .select('phone_e164, state, zip, utm_source')
     .eq('is_test', false)
     .eq('first_contact_method', 'call');
 
   const phones = new Set<string>();
   for (const row of data || []) {
-    if (row.phone_e164) phones.add(row.phone_e164);
+    if (!row.phone_e164) continue;
+    if (!matchesMarketFilter(market, classifyLeadMarket(row))) continue;
+    // Normalize to 11-digit string so comparison works regardless of E.164 formatting
+    const normalized = normalizePhoneDigits(row.phone_e164);
+    if (normalized) phones.add(normalized);
   }
   return phones;
 }
@@ -271,9 +304,11 @@ function deduplicateCallRows(
   const leads: UnifiedLeadRow[] = [];
 
   for (const call of qualifying) {
-    if (existingCallPhones.has(call.from_number)) continue;
-    if (seen.has(call.from_number)) continue;
-    seen.add(call.from_number);
+    // Normalize from_number for consistent comparison (RC may return various formats)
+    const normalizedFrom = normalizePhoneDigits(call.from_number) || call.from_number;
+    if (existingCallPhones.has(normalizedFrom)) continue;
+    if (seen.has(normalizedFrom)) continue;
+    seen.add(normalizedFrom);
 
     // Platform attribution: DB column first, then session-based
     let platform = call.ad_platform;

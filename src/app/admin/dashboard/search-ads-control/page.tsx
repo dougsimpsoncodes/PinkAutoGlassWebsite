@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter, ALL_DATE_FILTERS } from '@/components/admin/DateFilterBar';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import { calcROAS, calcCPL } from '@/lib/metricFormulas';
 import {
@@ -11,7 +12,7 @@ import {
   Target,
   TrendingUp,
   Search,
-  Info,
+  MapPin,
 } from 'lucide-react';
 
 interface AdsData {
@@ -54,6 +55,7 @@ const FILTER_TO_DAYS: Record<DateFilter, number> = {
 };
 
 export default function SearchAdsControlRoom() {
+  const { market } = useMarket();
   const { syncVersion } = useSync();
 
   const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
@@ -127,7 +129,7 @@ export default function SearchAdsControlRoom() {
 
   const fetchLeadCounts = useCallback(async (period: DateFilter) => {
     try {
-      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
+      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}&market=${market}`, { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       if (!data.ok) return;
@@ -144,7 +146,7 @@ export default function SearchAdsControlRoom() {
     } catch (err) {
       console.error('Error fetching lead counts:', err);
     }
-  }, []);
+  }, [market]);
 
   const fetchGoogle = useCallback(async (filter: DateFilter) => {
     const res = await fetch(`/api/admin/dashboard/google-ads?period=${filter}`);
@@ -189,6 +191,7 @@ export default function SearchAdsControlRoom() {
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
     fetchLeadCounts(filter);
+    fetchSearchPerformance(filter);
     if (!googleCache[filter]) {
       setLoading(true);
       Promise.all([
@@ -199,15 +202,19 @@ export default function SearchAdsControlRoom() {
     }
   };
 
+  // Re-fetch when market changes
   useEffect(() => {
     setLoading(true);
+    setGoogleCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
+    setMicrosoftCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
+    setSearchCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
     Promise.all([
       fetchGoogle(dateFilter),
       fetchMicrosoft(dateFilter),
       fetchSearchPerformance(dateFilter),
       fetchLeadCounts(dateFilter),
     ]).finally(() => setLoading(false));
-  }, []);
+  }, [market]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading && !hasAnyCachedData) {
     return (
@@ -226,9 +233,9 @@ export default function SearchAdsControlRoom() {
           <h1 className="text-3xl font-bold text-gray-900">Search Ads Control Room</h1>
           <p className="text-gray-600 mt-1">Budget pacing, efficiency, winners/losers, search-term quality</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-          <Info className="w-4 h-4" />
-          Market toggle coming soon
+        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+          <MapPin className="w-4 h-4 text-pink-600" />
+          Showing {market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ'}
         </div>
       </div>
 

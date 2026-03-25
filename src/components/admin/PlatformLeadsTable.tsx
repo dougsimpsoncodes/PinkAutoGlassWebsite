@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSync } from '@/contexts/SyncContext';
+import { useMarket } from '@/contexts/MarketContext';
 import type { DateFilter } from '@/lib/dateUtils';
 import {
   Search,
@@ -75,6 +76,7 @@ function formatDuration(seconds: number) {
 
 export default function PlatformLeadsTable({ platform, dateFilter, accentColor = 'pink', leads: externalLeads, leadsLoading: externalLoading }: PlatformLeadsTableProps) {
   const { syncVersion } = useSync();
+  const { market } = useMarket();
 
   // Self-contained fetch state (only used when no external leads provided)
   const [internalLeads, setInternalLeads] = useState<UnifiedLeadRow[]>([]);
@@ -85,6 +87,12 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
   const [selectedLead, setSelectedLead] = useState<UnifiedLeadRow | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<UnifiedLeadRow>>({});
+
+  // Close lead modal when market changes to avoid showing stale cross-market details
+  useEffect(() => {
+    setSelectedLead(null);
+    setEditMode(false);
+  }, [market]);
 
   const hasExternalLeads = externalLeads !== undefined;
 

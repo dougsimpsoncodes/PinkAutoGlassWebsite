@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
+import { useMarket } from '@/contexts/MarketContext';
 import { useSync } from '@/contexts/SyncContext';
 import {
   DollarSign,
@@ -14,6 +15,7 @@ import {
   FileText,
   MessageSquare,
   AlertCircle,
+  MapPin,
 } from 'lucide-react';
 import { calcROAS, calcAttributionRate } from '@/lib/metricFormulas';
 
@@ -65,17 +67,23 @@ interface MetricsResponse {
 }
 
 export default function AdminDashboard() {
+  const { market, isHydrated } = useMarket();
   const { syncVersion } = useSync();
+  const latestSyncVersionRef = useRef(syncVersion);
+  const lastFetchedSyncVersionRef = useRef(0);
 
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  latestSyncVersionRef.current = syncVersion;
+
   const fetchMetrics = useCallback(async (period: DateFilter) => {
     try {
       setError(null);
-      const res = await fetch(`/api/admin/dashboard/metrics?period=${period}`, { cache: 'no-store' });
+      const params = new URLSearchParams({ period, market });
+      const res = await fetch(`/api/admin/dashboard/metrics?${params.toString()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'Unknown error');
@@ -84,25 +92,27 @@ export default function AdminDashboard() {
       console.error('Metrics fetch error:', err);
       setError(err.message || 'Failed to load metrics');
     }
-  }, []);
+  }, [market]);
 
-  // Initial load
   useEffect(() => {
+    if (!isHydrated) return;
+    lastFetchedSyncVersionRef.current = latestSyncVersionRef.current;
     setLoading(true);
     fetchMetrics(dateFilter).finally(() => setLoading(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateFilter, fetchMetrics, isHydrated]);
 
   // Refresh on sync
   useEffect(() => {
-    if (syncVersion > 0) {
-      fetchMetrics(dateFilter);
+    if (!isHydrated || syncVersion === 0 || syncVersion <= lastFetchedSyncVersionRef.current) {
+      return;
     }
-  }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    lastFetchedSyncVersionRef.current = syncVersion;
+    fetchMetrics(dateFilter);
+  }, [dateFilter, fetchMetrics, isHydrated, syncVersion]);
 
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
-    setLoading(true);
-    fetchMetrics(filter).finally(() => setLoading(false));
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', {
@@ -112,6 +122,12 @@ export default function AdminDashboard() {
   }).format(value || 0);
 
   const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value || 0);
+  const marketLabel =
+    market === 'all'
+      ? 'All Markets'
+      : market === 'colorado'
+      ? 'Denver / CO'
+      : 'Phoenix / AZ';
 
   if (loading && !metrics) {
     return (
@@ -164,9 +180,9 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Executive Dashboard</h1>
           <p className="text-gray-600 mt-1">30-second morning health check — no drilling</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500">
-          <RadioTower className="w-4 h-4" />
-          Market toggle coming soon
+        <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm">
+          <MapPin className="h-4 w-4 text-pink-600" />
+          <span>{`Market: ${marketLabel}`}</span>
         </div>
       </div>
 

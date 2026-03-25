@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
+import { useMarket } from '@/contexts/MarketContext';
 import SyncButton from '@/components/admin/SyncButton';
 import {
   DollarSign, TrendingUp, Users, Target, AlertCircle,
-  Eye, MousePointerClick, Phone, FileText,
+  Eye, MousePointerClick, Phone, FileText, MapPin,
 } from 'lucide-react';
 import { getDateRange as getMtDateRange, getMountainTime, type DateFilter } from '@/lib/dateUtils';
 
@@ -80,6 +81,7 @@ interface FunnelData {
 }
 
 export default function AdPerformancePage() {
+  const { market } = useMarket();
   const [roiData, setRoiData] = useState<ROIData | null>(null);
   const [funnelData, setFunnelData] = useState<FunnelData | null>(null);
   const [grossData, setGrossData] = useState<GrossRevenueData | null>(null);
@@ -88,7 +90,7 @@ export default function AdPerformancePage() {
 
   useEffect(() => {
     fetchAllData();
-  }, [dateRange]);
+  }, [dateRange, market]);
 
   const getDateRangeParams = () => {
     if (dateRange === '90days') {
@@ -113,9 +115,10 @@ export default function AdPerformancePage() {
       setLoading(true);
       const range = getDateRangeParams();
       const [roiRes, funnelRes, grossRes] = await Promise.all([
-        fetch(`/api/admin/roi?startDate=${range.start}&endDate=${range.end}`),
+        fetch(`/api/admin/roi?startDate=${range.start}&endDate=${range.end}&market=${market}`),
+        // NOTE: /api/admin/funnel uses customerDeduplication — market filtering pending on that endpoint
         fetch(`/api/admin/funnel?startDate=${range.start}&endDate=${range.end}`),
-        fetch('/api/admin/total-revenue'),
+        fetch(`/api/admin/total-revenue?market=${market}&startDate=${range.start}&endDate=${range.end}`),
       ]);
 
       if (roiRes.ok) setRoiData(await roiRes.json());
@@ -158,7 +161,13 @@ export default function AdPerformancePage() {
           <h1 className="text-3xl font-bold text-gray-900">Ad Performance</h1>
           <p className="text-gray-600 mt-1">Funnel, revenue, and ROI by platform</p>
         </div>
-        <SyncButton scope="roi" onSyncComplete={fetchAllData} />
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4 text-pink-600" />
+            Showing {market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ'}
+          </div>
+          <SyncButton scope="roi" onSyncComplete={fetchAllData} />
+        </div>
       </div>
 
       {/* Date Range Selector */}

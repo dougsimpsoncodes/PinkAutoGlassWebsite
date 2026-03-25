@@ -3,6 +3,7 @@
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import MarketSelector from '@/components/admin/MarketSelector';
 import {
   LayoutDashboard,
   LogOut,
@@ -86,6 +87,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Link>
               );
             })}
+          </div>
+
+          <div className="mt-4 border-t border-gray-200 pt-4">
+            <MarketSelector className="w-full" />
           </div>
 
           {/* Logout button */}

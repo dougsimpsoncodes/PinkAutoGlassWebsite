@@ -5,6 +5,7 @@ import {
   type RingCentralCall,
   type FormLead,
 } from '@/lib/customerDeduplication';
+import { classifyLeadMarket, classifyCallMarket, classifyCampaignMarket, type Market } from '@/lib/market';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -61,10 +62,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = searchParams.get('endDate') || new Date().toISOString().split('T')[0];
+    const market = (searchParams.get('market') || 'all') as 'all' | Market;
     const startDateTime = `${startDate}T00:00:00.000Z`;
     const endDateTime = `${endDate}T23:59:59.999Z`;
 
-    console.log(`💰 Fetching ROI data for ${startDate} to ${endDate}...`);
+    console.log(`💰 Fetching ROI data for ${startDate} to ${endDate} (market=${market})...`);
 
     const client = getSupabaseClient();
 
@@ -79,40 +81,40 @@ export async function GET(req: NextRequest) {
       formsResult,
       leadsResult,
     ] = await Promise.allSettled([
-      // Google Ads cost
+      // Google Ads cost (include campaign_name for market filtering)
       client
         .from('google_ads_daily_performance')
-        .select('cost')
+        .select('cost, campaign_name')
         .gte('date', startDate)
         .lte('date', endDate),
 
-      // Microsoft Ads cost
+      // Microsoft Ads cost (include campaign_name for market filtering)
       client
         .from('microsoft_ads_daily_performance')
-        .select('cost')
+        .select('cost, campaign_name')
         .gte('date', startDate)
         .lte('date', endDate),
 
-      // RingCentral calls
+      // RingCentral calls (include to_number for market filtering)
       client
         .from('ringcentral_calls')
-        .select('from_number, start_time, direction, duration, ad_platform, utm_source, utm_medium, utm_campaign')
+        .select('from_number, to_number, start_time, direction, duration, ad_platform, utm_source, utm_medium, utm_campaign')
         .eq('direction', 'Inbound')
         .gte('start_time', startDateTime)
         .lte('start_time', endDateTime),
 
-      // Form submissions
+      // Form submissions (include state, zip for market filtering)
       client
         .from('leads')
-        .select('phone_e164, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid')
+        .select('phone_e164, created_at, ad_platform, utm_source, utm_medium, utm_campaign, gclid, msclkid, state, zip')
         .eq('is_test', false)
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
 
-      // Leads with revenue
+      // Leads with revenue (include state, zip, utm_source for market filtering)
       client
         .from('leads')
-        .select('phone_e164, revenue_amount, ad_platform, created_at')
+        .select('phone_e164, revenue_amount, ad_platform, created_at, state, zip, utm_source')
         .eq('is_test', false)
         .not('revenue_amount', 'is', null)
         .gte('created_at', startDateTime)
@@ -120,23 +122,46 @@ export async function GET(req: NextRequest) {
     ]);
 
     // =============================================================================
-    // CALCULATE COSTS
+    // CALCULATE COSTS (with market filtering via campaign name)
     // =============================================================================
 
-    const googleAdsData = googleAdsResult.status === 'fulfilled' ? googleAdsResult.value.data : [];
-    const googleCost = googleAdsData?.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
+    let googleAdsData = googleAdsResult.status === 'fulfilled' ? (googleAdsResult.value.data || []) : [];
+    let microsoftAdsData = microsoftAdsResult.status === 'fulfilled' ? (microsoftAdsResult.value.data || []) : [];
 
-    const microsoftAdsData = microsoftAdsResult.status === 'fulfilled' ? microsoftAdsResult.value.data : [];
-    const microsoftCost = microsoftAdsData?.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
+    if (market !== 'all') {
+      googleAdsData = googleAdsData.filter((row: any) => {
+        const m = classifyCampaignMarket(row.campaign_name);
+        // Only include campaigns clearly matching this market; exclude cross-market/unclassified
+        return m === market;
+      });
+      microsoftAdsData = microsoftAdsData.filter((row: any) => {
+        const m = classifyCampaignMarket(row.campaign_name);
+        return m === market;
+      });
+    }
+
+    const googleCost = googleAdsData.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
+    const microsoftCost = microsoftAdsData.reduce((sum: number, row: any) => sum + (row.cost || 0), 0) || 0;
 
     // =============================================================================
-    // DEDUPLICATE CUSTOMERS
+    // DEDUPLICATE CUSTOMERS (with market filtering)
     // =============================================================================
 
-    const calls: RingCentralCall[] = callsResult.status === 'fulfilled' ? (callsResult.value.data || []) : [];
-    const forms: FormLead[] = formsResult.status === 'fulfilled'
+    let calls: RingCentralCall[] = callsResult.status === 'fulfilled' ? (callsResult.value.data || []) : [];
+    let forms: FormLead[] = formsResult.status === 'fulfilled'
       ? (formsResult.value.data || []).map((row: any) => ({ ...row, phone: row.phone_e164 }))
       : [];
+
+    if (market !== 'all') {
+      calls = calls.filter((call: any) => {
+        const m = classifyCallMarket(call.to_number);
+        return m === market; // exclude unclassifiable calls from specific-market views
+      });
+      forms = forms.filter((lead: any) => {
+        const m = classifyLeadMarket(lead);
+        return m === market; // exclude unclassifiable leads from specific-market views
+      });
+    }
 
     const allUniqueCustomers = deduplicateCustomers(calls, forms);
 
@@ -153,7 +178,14 @@ export async function GET(req: NextRequest) {
     // CALCULATE REVENUE BY PLATFORM
     // =============================================================================
 
-    const leadsWithRevenue = leadsResult.status === 'fulfilled' ? (leadsResult.value.data || []) : [];
+    let leadsWithRevenue = leadsResult.status === 'fulfilled' ? (leadsResult.value.data || []) : [];
+
+    if (market !== 'all') {
+      leadsWithRevenue = leadsWithRevenue.filter((lead: any) => {
+        const m = classifyLeadMarket(lead);
+        return m === market; // exclude unclassifiable revenue from specific-market views
+      });
+    }
 
     // Group revenue by platform
     // NOTE: Keys must match database ad_platform values from src/lib/attribution.ts

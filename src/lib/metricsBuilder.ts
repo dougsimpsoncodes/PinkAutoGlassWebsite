@@ -42,6 +42,14 @@ import {
   BUSINESS_PHONE_NUMBER,
   MIN_CALL_DURATION_SECONDS,
 } from './constants';
+import {
+  type Market,
+  type MarketFilter,
+  classifyCallMarket,
+  classifyCampaignMarket,
+  classifyLeadMarket,
+  normalizePhoneDigits,
+} from './market';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -124,7 +132,8 @@ function getServiceClient(): SupabaseClient {
 
 export async function buildMetrics(
   period: DateFilter,
-  debug = false
+  debug = false,
+  market: MarketFilter = 'all'
 ): Promise<UnifiedMetrics> {
   const bounds = getMountainDayBounds(period);
   const supabase = getServiceClient();
@@ -140,13 +149,13 @@ export async function buildMetrics(
     existingCallPhones,
     sessionAttribution,
   ] = await Promise.all([
-    fetchSpend(supabase, bounds),
-    fetchFormLeads(supabase, bounds),
-    fetchCalls(supabase, bounds),
-    fetchGrossRevenue(supabase, bounds),
+    fetchSpend(supabase, bounds, market),
+    fetchFormLeads(supabase, bounds, market),
+    fetchCalls(supabase, bounds, market),
+    fetchGrossRevenue(supabase, bounds, market),
     fetchTraffic(supabase, bounds),
     fetchClickEvents(supabase, bounds),
-    fetchCallLeadPhones(supabase),
+    fetchCallLeadPhones(supabase, market),
     fetchSessionAttribution(supabase, bounds),
   ]);
 
@@ -219,74 +228,97 @@ interface SessionAttribution {
   microsoftSessions: { started_at: string }[];
 }
 
+function matchesMarketFilter(market: MarketFilter, classifiedMarket: Market | null): boolean {
+  return market === 'all' || classifiedMarket === market;
+}
+
 // ── Data fetchers ──────────────────────────────────────────────────
 
-async function fetchSpend(supabase: SupabaseClient, bounds: MountainDayBounds) {
+async function fetchSpend(
+  supabase: SupabaseClient,
+  bounds: MountainDayBounds,
+  market: MarketFilter
+) {
   const [{ data: gData }, { data: mData }] = await Promise.all([
     supabase
       .from('google_ads_daily_performance')
-      .select('cost')
+      .select('cost, campaign_name')
       .gte('date', bounds.startDate)
       .lte('date', bounds.endDate),
     supabase
       .from('microsoft_ads_daily_performance')
-      .select('cost')
+      .select('cost, campaign_name')
       .gte('date', bounds.startDate)
       .lte('date', bounds.endDate),
   ]);
 
-  const google = (gData || []).reduce((sum: number, r: any) => sum + (r.cost || 0), 0);
-  const microsoft = (mData || []).reduce((sum: number, r: any) => sum + (r.cost || 0), 0);
+  const googleRows = (gData || []).filter((row: any) =>
+    matchesMarketFilter(market, classifyCampaignMarket(row.campaign_name))
+  );
+  const microsoftRows = (mData || []).filter((row: any) =>
+    matchesMarketFilter(market, classifyCampaignMarket(row.campaign_name))
+  );
+
+  const google = googleRows.reduce((sum: number, row: any) => sum + (row.cost || 0), 0);
+  const microsoft = microsoftRows.reduce((sum: number, row: any) => sum + (row.cost || 0), 0);
 
   return { google, microsoft, total: google + microsoft };
 }
 
 async function fetchFormLeads(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<{ leads: MetricLead[] }> {
   const { data } = await supabase
     .from('leads')
-    .select('first_contact_method, ad_platform, gclid, msclkid, revenue_amount')
+    .select('first_contact_method, ad_platform, gclid, msclkid, revenue_amount, state, zip, utm_source')
     .eq('is_test', false)
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC);
 
-  const leads: MetricLead[] = (data || []).map((l: any) => {
-    let platform = l.ad_platform;
-    if (!platform) {
-      if (l.gclid) platform = 'google';
-      else if (l.msclkid) platform = 'microsoft';
-    }
-    // Normalize platform to just google/microsoft/null
-    if (platform && platform !== 'google' && platform !== 'microsoft') {
-      platform = null;
-    }
+  const leads: MetricLead[] = (data || [])
+    .filter((lead: any) => matchesMarketFilter(market, classifyLeadMarket(lead)))
+    .map((lead: any) => {
+      let platform = lead.ad_platform;
+      if (!platform) {
+        if (lead.gclid) platform = 'google';
+        else if (lead.msclkid) platform = 'microsoft';
+      }
+      // Normalize platform to just google/microsoft/null
+      if (platform && platform !== 'google' && platform !== 'microsoft') {
+        platform = null;
+      }
 
-    return {
-      type: l.first_contact_method === 'sms' ? 'text' as const
-        : l.first_contact_method === 'call' ? 'call' as const
-        : 'form' as const,
-      platform,
-      revenue: l.revenue_amount || 0,
-    };
-  });
+      return {
+        type: lead.first_contact_method === 'sms' ? 'text' as const
+          : lead.first_contact_method === 'call' ? 'call' as const
+          : 'form' as const,
+        platform,
+        revenue: lead.revenue_amount || 0,
+      };
+    });
 
   return { leads };
 }
 
 async function fetchCalls(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<{ calls: any[] }> {
   const { data } = await supabase
     .from('ringcentral_calls')
-    .select('from_number, start_time, duration, direction, result, ad_platform')
+    .select('from_number, to_number, start_time, duration, direction, result, ad_platform')
     .gte('start_time', bounds.startUTC)
     .lte('start_time', bounds.endUTC)
     .eq('direction', 'Inbound');
 
-  return { calls: data || [] };
+  const calls = (data || []).filter((call: any) =>
+    matchesMarketFilter(market, classifyCallMarket(call.to_number))
+  );
+
+  return { calls };
 }
 
 interface CallDedupResult {
@@ -326,10 +358,13 @@ function deduplicateCalls(
   const leads: MetricLead[] = [];
 
   for (const call of qualifying) {
-    // Skip if this caller already has a lead record (avoid double-counting)
-    if (existingCallPhones.has(call.from_number)) { suppressedByLeadsTable++; continue; }
+    // Normalize from_number for consistent comparison (RC may return various formats)
+    const normalizedFrom = normalizePhoneDigits(call.from_number) || call.from_number;
 
-    const key = call.from_number;
+    // Skip if this caller already has a lead record (avoid double-counting)
+    if (existingCallPhones.has(normalizedFrom)) { suppressedByLeadsTable++; continue; }
+
+    const key = normalizedFrom;
 
     if (seen.has(key)) {
       deduplicated++;
@@ -359,19 +394,28 @@ function deduplicateCalls(
 
 /**
  * Fetch phone numbers that already exist as call-type leads in the leads table.
- * These are suppressed from ringcentral_calls to avoid double-counting —
- * matches the Leads page behavior in fetchUnifiedLeads().
+ * These are suppressed from ringcentral_calls to avoid double-counting.
+ * When a market filter is active, only suppress call leads that can be
+ * classified into that same market, so unclassified persisted call leads
+ * do not hide otherwise-valid filtered RingCentral rows.
  */
-async function fetchCallLeadPhones(supabase: SupabaseClient): Promise<Set<string>> {
+async function fetchCallLeadPhones(
+  supabase: SupabaseClient,
+  market: MarketFilter
+): Promise<Set<string>> {
   const { data } = await supabase
     .from('leads')
-    .select('phone_e164')
+    .select('phone_e164, state, zip, utm_source')
     .eq('is_test', false)
     .eq('first_contact_method', 'call');
 
   const phones = new Set<string>();
   for (const row of data || []) {
-    if (row.phone_e164) phones.add(row.phone_e164);
+    if (!row.phone_e164) continue;
+    if (!matchesMarketFilter(market, classifyLeadMarket(row))) continue;
+    // Normalize to 11-digit string so comparison works regardless of E.164 formatting
+    const normalized = normalizePhoneDigits(row.phone_e164);
+    if (normalized) phones.add(normalized);
   }
   return phones;
 }
@@ -438,15 +482,48 @@ function resolveSessionPlatform(call: any, attr: SessionAttribution): string | n
 
 async function fetchGrossRevenue(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<{ total: number; invoiceCount: number }> {
   const { data } = await supabase
     .from('omega_installs')
-    .select('parts_cost, labor_cost')
+    .select('parts_cost, labor_cost, matched_lead_id')
     .gte('install_date', bounds.startDate)
     .lte('install_date', bounds.endDate);
 
-  const rows = data || [];
+  let rows = data || [];
+
+  if (market !== 'all') {
+    const leadIds = [...new Set(rows.map((row: any) => row.matched_lead_id).filter(Boolean))];
+
+    let allowedLeadIds = new Set<string>();
+    if (leadIds.length > 0) {
+      // Batch in groups of 100 to avoid PostgREST URL length limits
+      const BATCH_SIZE = 100;
+      const allLeads: any[] = [];
+      for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
+        const batch = leadIds.slice(i, i + BATCH_SIZE);
+        const { data: batchLeads } = await supabase
+          .from('leads')
+          .select('id, state, zip, utm_source')
+          .in('id', batch);
+        allLeads.push(...(batchLeads || []));
+      }
+      allowedLeadIds = new Set(
+        allLeads
+          .filter((lead: any) => classifyLeadMarket(lead) === market)
+          .map((lead: any) => lead.id)
+      );
+    }
+
+    // Keep rows that EITHER match the market OR have no matched_lead_id (unclassifiable)
+    // Unmatched installs (cash jobs, walk-ins) cannot be attributed to a market,
+    // so they are included in both market views rather than silently dropped.
+    rows = rows.filter((row: any) =>
+      !row.matched_lead_id || allowedLeadIds.has(row.matched_lead_id)
+    );
+  }
+
   const total = rows.reduce((sum: number, r: any) =>
     sum + (r.parts_cost || 0) + (r.labor_cost || 0), 0);
 
