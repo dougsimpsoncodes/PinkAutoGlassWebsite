@@ -48,9 +48,21 @@ export async function POST(request: NextRequest) {
     if (vehicleModel && typeof vehicleModel === 'string' && vehicleModel.trim()) {
       updates.vehicle_model = vehicleModel.trim();
     }
+    // Fetch existing lead first — needed for notes append and vehicle guard
+    const { data: existingLead } = await supabase
+      .from('leads')
+      .select('id, vehicle_make, notes')
+      .eq('id', leadId)
+      .maybeSingle();
+
+    if (!existingLead) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
     if (hasInsurance && ['yes', 'no', 'unsure'].includes(hasInsurance)) {
       const insuranceNote = hasInsurance === 'yes' ? 'Has insurance' : hasInsurance === 'no' ? 'No insurance (out of pocket)' : 'Insurance status unknown';
-      updates.notes = insuranceNote;
+      // Append to existing notes instead of overwriting
+      updates.notes = existingLead.notes ? `${existingLead.notes}; ${insuranceNote}` : insuranceNote;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -58,18 +70,6 @@ export async function POST(request: NextRequest) {
     }
 
     updates.updated_at = new Date().toISOString();
-
-    // Only update if the lead exists and vehicle fields are currently empty
-    // This prevents the enrichment from overwriting data entered via the full QuoteForm
-    const { data: existingLead } = await supabase
-      .from('leads')
-      .select('id, vehicle_make')
-      .eq('id', leadId)
-      .maybeSingle();
-
-    if (!existingLead) {
-      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
-    }
 
     // Only enrich if vehicle data is currently empty
     if (existingLead.vehicle_make && existingLead.vehicle_make !== 'Unknown') {
