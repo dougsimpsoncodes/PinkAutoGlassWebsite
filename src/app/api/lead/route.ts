@@ -283,6 +283,19 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+
+      // Persist source field (fn_insert_lead doesn't include it)
+      // Use dedupClient (service role) since anon client may be RLS-blocked for updates
+      if (body.source) {
+        const serviceClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        await serviceClient
+          .from('leads')
+          .update({ source: body.source })
+          .eq('id', leadId);
+      }
     }
 
     // =============================================================================
@@ -388,7 +401,7 @@ export async function POST(request: NextRequest) {
         autoReplyPromises.push(
           sendEmail({
             to: validatedData.email,
-            subject: `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass`,
+            subject: validatedData.vehicleMake ? `Your ${validatedData.vehicleMake} ${validatedData.vehicleModel} Quote - Pink Auto Glass` : 'Your Windshield Quote - Pink Auto Glass',
             html: getQuoteInstantEmail(dripCtx),
             leadId,
           })

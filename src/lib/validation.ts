@@ -113,7 +113,7 @@ export const leadFormSchema = z.object({
   firstName: nameSchema,
   lastName: nameSchema,
   phone: phoneSchema,
-  email: emailSchema,
+  email: emailSchema.optional(),
   vehicleYear: vehicleYearSchema.optional(),
   vehicleMake: vehicleMakeModelSchema.optional(),
   vehicleModel: vehicleMakeModelSchema.optional(),

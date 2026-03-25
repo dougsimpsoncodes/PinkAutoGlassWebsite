@@ -1,5 +1,6 @@
 import { Phone, MessageSquare, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import ThankYouEnrichment from '@/components/ThankYouEnrichment';
 
 export const metadata = {
   title: "Thank You! | Pink Auto Glass Denver",
@@ -50,6 +51,9 @@ export default function ThankYouPage() {
                 </li>
               </ol>
             </div>
+
+            {/* Progressive Capture - Collect vehicle info if missing */}
+            <ThankYouEnrichment />
 
             {/* Book Now - Push to highest-converting page */}
             <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-8">
