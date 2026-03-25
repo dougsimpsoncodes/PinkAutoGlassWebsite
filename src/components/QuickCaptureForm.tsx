@@ -22,8 +22,12 @@ export default function QuickCaptureForm() {
   const market = resolveMarket(pathname);
   const { displayPhone, phoneE164 } = getPhoneForMarket(market);
 
+  const normalizePhoneDigits = (value: string) => {
+    return value.replace(/\D/g, '').replace(/^1/, '').slice(0, 10);
+  };
+
   const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, '');
+    const digits = normalizePhoneDigits(value);
     if (digits.length <= 3) return digits;
     if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
@@ -41,7 +45,7 @@ export default function QuickCaptureForm() {
     e.preventDefault();
     if (isSubmitting) return;
 
-    const digits = phone.replace(/\D/g, '');
+    const digits = normalizePhoneDigits(phone);
     if (digits.length !== 10) {
       setError('Please enter a valid 10-digit phone number');
       return;
@@ -66,7 +70,7 @@ export default function QuickCaptureForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'Quick Quote',
-          phone: `+1${digits}`,
+          phone,
           zip,
           hasInsurance: 'unsure',
           source: 'hero_quick_capture',
@@ -84,7 +88,7 @@ export default function QuickCaptureForm() {
 
       if (response.ok) {
         const data = await response.json();
-        await trackFormSubmission('hero_quick_capture', { leadId: data.leadId, phone: `+1${digits}` });
+        await trackFormSubmission('hero_quick_capture', { leadId: data.leadId, phone });
         router.push('/thank-you');
       } else {
         setError(`Something went wrong. Call us at ${displayPhone}`);

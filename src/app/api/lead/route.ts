@@ -67,10 +67,8 @@ export async function POST(request: NextRequest) {
       transformedBody.zipCode = body.zip;
     }
 
-    // Default email to optional placeholder if not provided (QuoteForm doesn't collect email)
-    if (!transformedBody.email) {
-      transformedBody.email = `quote-${Date.now()}@temp.pinkautoglass.com`;
-    }
+    // Leave email empty if not provided — no fake placeholder emails
+    // The DB accepts null/empty and downstream code checks for real emails before sending
 
     // Default serviceType for quick quotes
     if (!transformedBody.serviceType) {
@@ -363,7 +361,7 @@ export async function POST(request: NextRequest) {
     // CUSTOMER AUTO-REPLY: Instant SMS + Email
     // =============================================================================
     const smsConsent = validatedData.smsConsent === true;
-    const hasRealEmail = validatedData.email && !validatedData.email.includes('@temp.pinkautoglass.com');
+    const hasRealEmail = !!validatedData.email;
     const dripCtx = {
       firstName: validatedData.firstName,
       phone: validatedData.phone,
