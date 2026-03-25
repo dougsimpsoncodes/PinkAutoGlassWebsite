@@ -75,12 +75,8 @@ export async function POST(request: NextRequest) {
       transformedBody.serviceType = 'repair';
     }
 
-    // Default vehicle fields for insurance-only forms (carrier + phone, no vehicle collected)
-    if (!transformedBody.vehicleYear) {
-      transformedBody.vehicleYear = 2000;
-      transformedBody.vehicleMake = 'Unknown';
-      transformedBody.vehicleModel = 'Unknown';
-    }
+    // Vehicle fields are optional — QuickCaptureForm and InsuranceQuoteForm don't collect them.
+    // No placeholder values — empty stays empty.
 
     // Default consents to true if smsConsent checkbox was checked (legacy behavior)
     if (body.smsConsent === true && !transformedBody.privacyAcknowledgment) {
@@ -203,10 +199,10 @@ export async function POST(request: NextRequest) {
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
       phoneE164: validatedData.phone, // Already normalized to E.164 by zod
-      email: validatedData.email,
-      vehicleYear: validatedData.vehicleYear,
-      vehicleMake: validatedData.vehicleMake,
-      vehicleModel: validatedData.vehicleModel,
+      email: validatedData.email || null,
+      vehicleYear: validatedData.vehicleYear || null,
+      vehicleMake: validatedData.vehicleMake || null,
+      vehicleModel: validatedData.vehicleModel || null,
       mobileService: validatedData.mobileService,
       city: validatedData.city || null,
       state: validatedData.state || null,
