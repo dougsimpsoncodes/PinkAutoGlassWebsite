@@ -368,6 +368,6 @@ export function getAdminBookingNotificationSMS(data: BookingData): string {
  */
 export function getAdminQuickQuoteSMS(data: Partial<BookingData>): string {
   const name = [data.firstName, data.lastName].filter(Boolean).join(' ');
-  const vehicle = [data.vehicleYear, data.vehicleMake, data.vehicleModel].filter(Boolean).join(' ') || 'Vehicle TBD';
+  const vehicle = [data.vehicleYear, data.vehicleMake, data.vehicleModel].filter(Boolean).join(' ') || 'Vehicle N/A';
   return `💬 QUICK QUOTE: ${name} | ${vehicle} | ${data.phone}`;
 }
