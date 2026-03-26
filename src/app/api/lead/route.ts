@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (body.name && !body.firstName) {
       const nameParts = body.name.trim().split(' ');
       transformedBody.firstName = nameParts[0] || '';
-      transformedBody.lastName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name as last if only one name
+      transformedBody.lastName = nameParts.slice(1).join(' ') || ''; // Empty string if only one name provided
     }
 
     // Handle 'vehicle' string -> vehicleYear/Make/Model (e.g., "2024 Toyota Camry")
