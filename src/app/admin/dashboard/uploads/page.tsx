@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2, RadioTower, ClipboardCheck } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Loader2, RadioTower, ClipboardCheck, RotateCcw } from 'lucide-react';
 import type { ParsedInvoice } from '@/app/api/admin/parse-invoice/route';
+import { supabase } from '@/lib/supabase';
 
 type Tab = 'upload' | 'audit';
 type Step = 'upload' | 'preview' | 'results';
@@ -43,6 +44,17 @@ export default function UploadsPage() {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<ImportResults | null>(null);
   const [parseError, setParseError] = useState('');
+  const [retryingIndex, setRetryingIndex] = useState<number | null>(null);
+  const [recentUploads, setRecentUploads] = useState<{ invoice_number: number; customer_name: string; total_revenue: number; created_at: string }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('omega_installs')
+      .select('invoice_number, customer_name, total_revenue, created_at')
+      .order('invoice_number', { ascending: false })
+      .limit(10)
+      .then(({ data }: { data: typeof recentUploads | null }) => { if (data) setRecentUploads(data); });
+  }, [step]);
 
   // Roster Audit state
   const [auditFiles, setAuditFiles] = useState<File[]>([]);
@@ -180,6 +192,29 @@ export default function UploadsPage() {
     setResults(null);
     setParseError('');
     setExpandedRows(new Set());
+  };
+
+  const handleRetryInvoice = async (index: number) => {
+    const file = files[index];
+    if (!file) return;
+    setRetryingIndex(index);
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+      const res = await fetch('/api/admin/parse-invoice', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Retry failed');
+      const retried = data.invoices?.[0];
+      if (!retried) throw new Error('No invoice returned from retry');
+      setInvoices(prev => prev.map((inv, i) => i === index ? retried : inv));
+    } catch (err: any) {
+      console.error('Retry failed:', err.message);
+    } finally {
+      setRetryingIndex(null);
+    }
   };
 
   const validInvoices = invoices.filter(i => !i.parse_error);
@@ -397,6 +432,35 @@ export default function UploadsPage() {
           ))}
         </div>
 
+        {/* Recent uploads — visible on upload step so you know where you left off */}
+        {step === 'upload' && recentUploads.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 mb-6 overflow-hidden">
+            <div className="px-6 py-3 border-b border-gray-100 bg-gray-50">
+              <h2 className="text-sm font-semibold text-gray-700">Last 10 Uploaded Invoices</h2>
+            </div>
+            <table className="w-full text-sm">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left">Invoice #</th>
+                  <th className="px-4 py-2 text-left">Customer</th>
+                  <th className="px-4 py-2 text-right">Amount</th>
+                  <th className="px-4 py-2 text-left">Uploaded</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recentUploads.map((u) => (
+                  <tr key={u.invoice_number} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 font-medium text-gray-900">{u.invoice_number}</td>
+                    <td className="px-4 py-2 text-gray-700">{u.customer_name}</td>
+                    <td className="px-4 py-2 text-right text-gray-900">${u.total_revenue?.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Step 1: Upload */}
         {step === 'upload' && (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
@@ -488,9 +552,8 @@ export default function UploadsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {invoices.map((inv, i) => (
-                    <>
+                    <React.Fragment key={i}>
                       <tr
-                        key={i}
                         className={`cursor-pointer hover:bg-gray-50 ${inv.parse_error ? 'bg-red-50' : ''}`}
                         onClick={() => !inv.parse_error && toggleRow(i)}
                       >
@@ -520,8 +583,18 @@ export default function UploadsPage() {
                       </tr>
                       {inv.parse_error && (
                         <tr key={`${i}-error`} className="bg-red-50">
-                          <td colSpan={8} className="px-8 py-2 text-xs text-red-600">
-                            Error: {inv.parse_error}
+                          <td colSpan={8} className="px-8 py-2 text-xs text-red-600 flex items-center justify-between">
+                            <span>Error: {inv.parse_error}</span>
+                            <button
+                              onClick={() => handleRetryInvoice(i)}
+                              disabled={retryingIndex !== null || importing}
+                              className="ml-4 inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-pink-700 bg-pink-100 hover:bg-pink-200 disabled:opacity-50 rounded-md transition-colors"
+                            >
+                              {retryingIndex === i
+                                ? <><Loader2 className="w-3 h-3 animate-spin" />Retrying...</>
+                                : <><RotateCcw className="w-3 h-3" />Retry</>
+                              }
+                            </button>
                           </td>
                         </tr>
                       )}
@@ -571,7 +644,7 @@ export default function UploadsPage() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
@@ -590,7 +663,7 @@ export default function UploadsPage() {
               </button>
               <button
                 onClick={handleImport}
-                disabled={validInvoices.length === 0 || importing}
+                disabled={validInvoices.length === 0 || importing || retryingIndex !== null}
                 className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 disabled:bg-gray-300 text-white font-semibold py-2 px-8 rounded-lg transition-colors"
               >
                 {importing && <Loader2 className="w-4 h-4 animate-spin" />}
