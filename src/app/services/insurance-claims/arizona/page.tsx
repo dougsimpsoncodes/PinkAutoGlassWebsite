@@ -314,9 +314,9 @@ export default function ArizonaInsuranceClaimsPage() {
                 <p className="text-xl mb-6 text-orange-100">
                   We handle all paperwork. Arizona law means $0 out of pocket. Same-day service across Phoenix metro.
                 </p>
-                <a href="tel:+17209187465" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl text-lg hover:bg-teal-50 transition-colors">
+                <a href="tel:+14807127465" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl text-lg hover:bg-teal-50 transition-colors">
                   <Phone className="w-5 h-5" />
-                  Call (720) 918-7465
+                  Call (480) 712-7465
                 </a>
               </section>
             </div>

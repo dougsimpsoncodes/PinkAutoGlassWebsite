@@ -26,53 +26,63 @@ const AZ_CITIES = [
 
 interface ServiceAreaLinksProps {
   heading?: string;
+  /** 'colorado' = CO only, 'arizona' = AZ only, 'both' = show both (default) */
+  market?: 'colorado' | 'arizona' | 'both';
 }
 
-export default function ServiceAreaLinks({ heading = 'Our Service Areas' }: ServiceAreaLinksProps) {
+export default function ServiceAreaLinks({ heading = 'Our Service Areas', market = 'both' }: ServiceAreaLinksProps) {
+  const showCO = market === 'colorado' || market === 'both';
+  const showAZ = market === 'arizona' || market === 'both';
+  const singleMarket = market !== 'both';
+
   return (
     <section className="mt-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">{heading}</h2>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-3">Colorado Front Range</h3>
-          <div className="flex flex-wrap gap-2">
-            {CO_CITIES.map((city) => (
+      <div className={singleMarket ? '' : 'grid md:grid-cols-2 gap-6'}>
+        {showCO && (
+          <div>
+            {!singleMarket && <h3 className="font-semibold text-gray-900 mb-3">Colorado Front Range</h3>}
+            <div className="flex flex-wrap gap-2">
+              {CO_CITIES.map((city) => (
+                <Link
+                  key={city.slug}
+                  href={`/locations/${city.slug}`}
+                  className="text-sm bg-pink-50 text-pink-700 hover:bg-pink-100 px-3 py-1 rounded-full transition-colors"
+                >
+                  {city.name}
+                </Link>
+              ))}
               <Link
-                key={city.slug}
-                href={`/locations/${city.slug}`}
-                className="text-sm bg-pink-50 text-pink-700 hover:bg-pink-100 px-3 py-1 rounded-full transition-colors"
+                href="/locations"
+                className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
-                {city.name}
+                + 35 more cities
               </Link>
-            ))}
-            <Link
-              href="/locations"
-              className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
-            >
-              + 35 more cities
-            </Link>
+            </div>
           </div>
-        </div>
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-3">Phoenix AZ Metro</h3>
-          <div className="flex flex-wrap gap-2">
-            {AZ_CITIES.map((city) => (
+        )}
+        {showAZ && (
+          <div>
+            {!singleMarket && <h3 className="font-semibold text-gray-900 mb-3">Phoenix AZ Metro</h3>}
+            <div className="flex flex-wrap gap-2">
+              {AZ_CITIES.map((city) => (
+                <Link
+                  key={city.slug}
+                  href={`/locations/${city.slug}`}
+                  className="text-sm bg-orange-50 text-orange-700 hover:bg-orange-100 px-3 py-1 rounded-full transition-colors"
+                >
+                  {city.name}
+                </Link>
+              ))}
               <Link
-                key={city.slug}
-                href={`/locations/${city.slug}`}
-                className="text-sm bg-orange-50 text-orange-700 hover:bg-orange-100 px-3 py-1 rounded-full transition-colors"
+                href="/locations"
+                className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
-                {city.name}
+                + 12 more cities
               </Link>
-            ))}
-            <Link
-              href="/locations"
-              className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
-            >
-              + 12 more cities
-            </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
