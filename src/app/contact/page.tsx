@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Clock, MessageSquare, Calendar } from 'lucide-react';
+import { MapPin, Clock, Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import CTAButtons from '@/components/CTAButtons';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
+import ContactCards from '@/components/ContactCards';
 
 export const metadata: Metadata = {
   title: 'Contact Pink Auto Glass | Denver Mobile Windshield Service',
@@ -46,50 +47,8 @@ export default function ContactPage() {
             <AboveFoldCTA location="contact-hero" />
           </div>
 
-          {/* Quick Contact Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            {/* Call Us */}
-            <a
-              href="tel:+17209187465"
-              className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow border-2 border-transparent hover:border-pink-200"
-            >
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-pink-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Call Us</h2>
-              <p className="text-gray-600 mb-3">Speak with our team now</p>
-              <p className="text-3xl font-bold text-pink-600">(720) 918-7465</p>
-              <p className="text-sm text-gray-500 mt-2">Monday - Saturday, 7am - 7pm</p>
-            </a>
-
-            {/* Text Us */}
-            <a
-              href="sms:+17209187465"
-              className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-200"
-            >
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-8 h-8 text-blue-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Text Us</h2>
-              <p className="text-gray-600 mb-3">Quick questions? Send a text</p>
-              <p className="text-3xl font-bold text-blue-600">(720) 918-7465</p>
-              <p className="text-sm text-gray-500 mt-2">Fast response times</p>
-            </a>
-
-            {/* Email Us */}
-            <a
-              href="mailto:service@pinkautoglass.com"
-              className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-200"
-            >
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Email Us</h2>
-              <p className="text-gray-600 mb-3">Detailed inquiries welcome</p>
-              <p className="text-lg font-semibold text-purple-600 break-all">service@pinkautoglass.com</p>
-              <p className="text-sm text-gray-500 mt-2">Response within 24 hours</p>
-            </a>
-          </div>
+          {/* Quick Contact Cards — tracked client component */}
+          <ContactCards />
 
           {/* Get a Quote CTA */}
           <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl shadow-xl p-8 md:p-12 text-center text-white mb-16">

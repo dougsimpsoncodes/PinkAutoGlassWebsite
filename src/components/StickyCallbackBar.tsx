@@ -37,7 +37,7 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
   const { phoneE164, displayPhone } = getPhoneForMarket(market);
 
   const handleCall = () => {
-    trackPhoneClick(`sticky-callback-${source}`, 'Call Now', phoneE164);
+    trackPhoneClick(source, 'Call Now', phoneE164);
   };
 
   const handleDismiss = () => {
