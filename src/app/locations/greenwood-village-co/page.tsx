@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Greenwood Village Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Greenwood Village auto glass repair & windshield replacement. Mobile service to DTC offices and homes. Often $0 with insurance. ADAS calibration for luxury vehicles. Same-day appointments. Call (720) 918-7465.',
+  title: 'Windshield Replacement Greenwood Village | Mobile',
+  description: 'Mobile windshield replacement & repair in Greenwood Village CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair greenwood village, windshield replacement greenwood village, auto glass greenwood village co, mobile windshield service greenwood village, ADAS calibration greenwood village, DTC auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/greenwood-village-co',
   },
   openGraph: {
-    title: 'Greenwood Village Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Greenwood Village\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Greenwood Village | Mobile',
+    description: 'Mobile windshield replacement & repair in Greenwood Village CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/greenwood-village-co',
     type: 'website',
   },

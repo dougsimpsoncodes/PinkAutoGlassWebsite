@@ -7,15 +7,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import ContactCards from '@/components/ContactCards';
 
 export const metadata: Metadata = {
-  title: 'Contact Pink Auto Glass | Denver Mobile Windshield Service',
-  description: 'Get in touch with Pink Auto Glass. Call (720) 918-7465 for same-day mobile windshield service in Denver. Available Monday - Saturday, 7am-7pm.',
+  title: 'Contact Pink Auto Glass | Free Quote & Scheduling',
+  description: 'Get a free quote or schedule mobile windshield service. CO: (720) 918-7465, AZ: (480) 712-7465. Same-day appointments available.',
   keywords: 'contact Pink Auto Glass, Denver auto glass contact, windshield repair contact, mobile glass service Denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/contact',
   },
   openGraph: {
-    title: 'Contact Pink Auto Glass | Denver Mobile Windshield Service',
-    description: 'Get in touch with Pink Auto Glass. Call (720) 918-7465 for same-day service.',
+    title: 'Contact Pink Auto Glass | Free Quote & Scheduling',
+    description: 'Get a free quote or schedule mobile windshield service. CO: (720) 918-7465, AZ: (480) 712-7465.',
     url: 'https://pinkautoglass.com/contact',
     type: 'website',
   },

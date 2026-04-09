@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Wheat Ridge Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Wheat Ridge auto glass repair & windshield replacement. Mobile service to Applewood, Clear Creek Crossing & all neighborhoods. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Wheat Ridge CO | $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Wheat Ridge CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair wheat ridge, windshield replacement wheat ridge, auto glass wheat ridge co, mobile windshield service wheat ridge, auto glass applewood, i-70 windshield damage',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/wheat-ridge-co',
   },
   openGraph: {
-    title: 'Wheat Ridge Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Wheat Ridge\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Wheat Ridge CO | $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Wheat Ridge CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/wheat-ridge-co',
     type: 'website',
   },

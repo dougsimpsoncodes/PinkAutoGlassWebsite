@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Golden, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Golden, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
+  title: 'Windshield Replacement Golden CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Golden CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair golden, windshield replacement golden, auto glass golden, mobile windshield service golden co',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/golden-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Golden, CO | Pink Auto Glass',
-    description: 'Golden\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Golden CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Golden CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/golden-co',
     type: 'website',
   },

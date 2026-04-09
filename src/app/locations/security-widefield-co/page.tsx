@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Security-Widefield, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Security-Widefield, Colorado. Mobile service for Fort Carson and Peterson SFB military families. Same-day appointments throughout Security, Widefield, and Stratmoor. Call (720) 918-7465 for a free quote.',
+  title: 'Windshield Replacement Security Widefield | Mobile',
+  description: 'Mobile windshield replacement & repair in Security Widefield CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair security-widefield co, windshield replacement security widefield, auto glass security widefield colorado, mobile windshield service security widefield, fort carson windshield, peterson sfb auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/security-widefield-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Security-Widefield, CO | Pink Auto Glass',
-    description: 'Security-Widefield\'s trusted auto glass experts. Mobile service for military families and all local neighborhoods. Same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Security Widefield | Mobile',
+    description: 'Mobile windshield replacement & repair in Security Widefield CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/security-widefield-co',
     type: 'website',
   },

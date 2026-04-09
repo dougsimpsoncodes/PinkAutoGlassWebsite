@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Parker, CO | Pink Auto Glass',
-  description: 'Parker windshield replacement & repair - same-day mobile service to Stonegate, Pinery, Meridian & all Parker neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Parker CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Parker CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair parker, windshield replacement parker, auto glass parker co, mobile windshield service parker, windshield replacement near me parker, stonegate windshield repair, pinery auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/parker-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Parker, CO | Pink Auto Glass',
-    description: 'Parker\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Parker CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Parker CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/parker-co',
     type: 'website',
   },

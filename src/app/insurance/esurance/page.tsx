@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Esurance Windshield Replacement Colorado — Auto Glass Claim Guide',
-  description: 'Esurance (now Allstate) comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill Esurance directly. Same-day service.',
+  title: 'Esurance Windshield Replacement CO | $0 Deductible',
+  description: 'Esurance covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Esurance directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/esurance',
   },
   openGraph: {
-    title: 'Esurance Windshield Replacement Colorado — $0 Deductible Available',
-    description: 'Esurance is now owned by Allstate. Comprehensive covers glass in Colorado. $0 deductible under CO law. Direct billing, same-day service.',
+    title: 'Esurance Windshield Replacement CO | $0 Deductible',
+    description: 'Esurance covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Esurance directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/esurance',
     type: 'website',
   },

@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair Boulder CO | Chip Repair & Replacement | (720) 918-7465',
-  description: 'Windshield repair & chip repair in Boulder CO. Mobile service to CU Boulder, Pearl Street, Table Mesa, Gunbarrel. $0 deductible often. Mountain driving specialists. Call (720) 918-7465!',
+  title: 'Windshield Replacement Boulder CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Boulder CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair boulder, boulder windshield repair, boulder chip repair, windshield replacement boulder, auto glass boulder co, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/boulder-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Boulder, CO | Pink Auto Glass',
-    description: 'Boulder\'s trusted auto glass experts. Mobile service to CU campus, Pearl Street, Table Mesa & all neighborhoods. Same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Boulder CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Boulder CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/boulder-co',
     type: 'website',
   },

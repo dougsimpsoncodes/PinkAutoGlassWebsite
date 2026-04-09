@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Frederick Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Frederick auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Frederick CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Frederick CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair frederick, windshield replacement frederick, auto glass frederick co, mobile windshield service frederick, frederick colorado windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/frederick-co',
   },
   openGraph: {
-    title: 'Frederick Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Frederick\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Frederick CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Frederick CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/frederick-co',
     type: 'website',
   },

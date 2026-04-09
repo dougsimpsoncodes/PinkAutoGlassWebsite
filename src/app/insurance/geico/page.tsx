@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Geico Windshield Replacement Colorado — $0 with Comprehensive Coverage',
-  description: 'Geico comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill Geico directly. Same-day mobile service.',
+  title: 'Geico Windshield Replacement CO | $0 Deductible',
+  description: 'Geico covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Geico directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/geico',
   },
   openGraph: {
-    title: 'Geico Windshield Replacement Colorado — $0 Deductible Available',
-    description: 'Geico covers windshield replacement under comprehensive. $0 deductible under CO law. Direct billing, no rate increase.',
+    title: 'Geico Windshield Replacement CO | $0 Deductible',
+    description: 'Geico covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Geico directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/geico',
     type: 'website',
   },

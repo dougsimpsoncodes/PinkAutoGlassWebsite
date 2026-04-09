@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Sheridan Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Sheridan auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Sheridan CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Sheridan CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair sheridan, windshield replacement sheridan, auto glass sheridan co, mobile windshield service sheridan, sheridan co windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/sheridan-co',
   },
   openGraph: {
-    title: 'Sheridan Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Sheridan\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Sheridan CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Sheridan CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/sheridan-co',
     type: 'website',
   },

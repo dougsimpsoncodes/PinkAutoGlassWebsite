@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Manitou Springs, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Manitou Springs, Colorado. Mobile service for Pikes Peak area residents. Same-day appointments in El Paso County. Call (720) 918-7465 for a free quote.',
+  title: 'Windshield Replacement Manitou Springs CO | Mobile',
+  description: 'Mobile windshield replacement & repair in Manitou Springs CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair manitou springs, windshield replacement manitou springs, auto glass manitou springs co, mobile windshield service manitou springs colorado, pikes peak auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/manitou-springs-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Manitou Springs, CO | Pink Auto Glass',
-    description: 'Manitou Springs\' trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Manitou Springs CO | Mobile',
+    description: 'Mobile windshield replacement & repair in Manitou Springs CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/manitou-springs-co',
     type: 'website',
   },

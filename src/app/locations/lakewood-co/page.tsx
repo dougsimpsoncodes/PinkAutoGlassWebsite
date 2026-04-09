@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Lakewood CO | Mobile Auto Glass | $0 Deductible | (720) 918-7465',
-  description: 'Windshield replacement & auto glass repair in Lakewood CO. Same-day mobile service to Bear Valley, Belmar, Green Mountain & all neighborhoods. $0 deductible often. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Lakewood CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield replacement lakewood co, windshield repair lakewood, auto glass lakewood co, mobile windshield service lakewood, belmar windshield repair, bear valley auto glass, windshield replacement near me lakewood',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/lakewood-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Lakewood, CO | Pink Auto Glass',
-    description: 'Lakewood\'s trusted auto glass experts. Mobile service to all neighborhoods, same-day appointments, lifetime warranty. Serving Bear Valley, Belmar, Green Mountain & more.',
+    title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Lakewood CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/lakewood-co',
     type: 'website',
   },

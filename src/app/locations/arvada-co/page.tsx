@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Arvada, CO | Pink Auto Glass',
-  description: 'Arvada windshield replacement & repair - same-day mobile service to Old Town Arvada, Ralston Valley, Leyden Rock & all Arvada neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Arvada CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Arvada CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair arvada, windshield replacement arvada, auto glass arvada co, mobile windshield service arvada, windshield replacement near me arvada, old town arvada windshield repair, candelas auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/arvada-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Arvada, CO | Pink Auto Glass',
-    description: 'Arvada\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Arvada CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Arvada CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/arvada-co',
     type: 'website',
   },

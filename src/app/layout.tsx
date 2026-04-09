@@ -24,15 +24,15 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pinkautoglass.com'),
-  title: "Mobile Windshield Replacement Denver | Pink Auto Glass | Same Day Service",
-  description: "Denver's #1 mobile auto glass service. We come to you! Windshield repair from professional service, replacement from professional service. Insurance handled. Same-day service. Call (720) 918-7465",
+  title: "Mobile Windshield Replacement CO & AZ | Pink Auto Glass",
+  description: "Mobile windshield replacement across Colorado & Phoenix AZ. Same-day service, $0 deductible often, we come to you. Call (720) 918-7465.",
   keywords: "windshield replacement Denver, mobile auto glass Denver, windshield repair Denver, auto glass repair Denver, same day windshield replacement, insurance windshield replacement",
   alternates: {
     canonical: 'https://pinkautoglass.com',
   },
   openGraph: {
-    title: "Mobile Windshield Replacement Denver | Pink Auto Glass",
-    description: "Denver's #1 mobile auto glass service. Same-day repair & replacement. We handle your insurance.",
+    title: "Mobile Windshield Replacement CO & AZ | Pink Auto Glass",
+    description: "Mobile windshield replacement across Colorado & Phoenix AZ. Same-day service, $0 deductible often, we come to you.",
     url: "https://pinkautoglass.com",
     siteName: "Pink Auto Glass",
     locale: "en_US",
@@ -48,8 +48,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mobile Windshield Replacement Denver | Pink Auto Glass",
-    description: "Denver's #1 mobile auto glass service. Same-day repair & replacement.",
+    title: "Mobile Windshield Replacement CO & AZ | Pink Auto Glass",
+    description: "Mobile windshield replacement across Colorado & Phoenix AZ. Same-day service, $0 deductible often.",
     images: ['/og-image.png'],
   },
   verification: {

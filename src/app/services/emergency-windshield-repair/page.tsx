@@ -7,15 +7,15 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: "24/7 Emergency Windshield Repair Denver | Same-Day Service | Pink Auto Glass",
-  description: "Emergency windshield repair and replacement in Denver. Available 24/7 for urgent auto glass needs. Same-day mobile service. Fast response for safety-critical damage.",
+  title: "Emergency Windshield Repair | Same-Day 24/7 Mobile",
+  description: "Urgent windshield repair and replacement. Available 24/7 with same-day mobile service. We come to you. Call (720) 918-7465 now.",
   keywords: "emergency windshield repair denver, 24/7 auto glass, same day windshield replacement, urgent windshield repair",
   alternates: {
     canonical: 'https://pinkautoglass.com/services/emergency-windshield-repair',
   },
   openGraph: {
-    title: "24/7 Emergency Windshield Repair Denver | Pink Auto Glass",
-    description: "Fast emergency windshield service in Denver. Same-day appointments. We come to you.",
+    title: "Emergency Windshield Repair | Same-Day 24/7 Mobile",
+    description: "Urgent windshield repair and replacement. Available 24/7 with same-day mobile service across CO & AZ.",
     url: "https://pinkautoglass.com/services/emergency-windshield-repair",
     siteName: "Pink Auto Glass",
     type: "website",

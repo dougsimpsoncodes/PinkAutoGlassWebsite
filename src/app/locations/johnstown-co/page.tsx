@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Johnstown Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Johnstown auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Johnstown neighborhoods. Call (720) 918-7465.',
+  title: 'Windshield Replacement Johnstown CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Johnstown CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair johnstown, windshield replacement johnstown, auto glass johnstown co, mobile windshield service johnstown, auto glass repair johnstown colorado',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/johnstown-co',
   },
   openGraph: {
-    title: 'Johnstown Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Johnstown\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Johnstown CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Johnstown CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/johnstown-co',
     type: 'website',
   },

@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Liberty Mutual Windshield Replacement Colorado — Auto Glass Claim Guide',
-  description: 'Liberty Mutual comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill Liberty Mutual directly. RightTrack won\'t be affected.',
+  title: 'Liberty Mutual Windshield Replacement CO | $0 Deductible',
+  description: 'Liberty Mutual covers windshield replacement in Colorado — often $0. We handle all paperwork and bill Liberty Mutual directly. (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/liberty-mutual',
   },
   openGraph: {
-    title: 'Liberty Mutual Windshield Replacement Colorado — $0 Available',
-    description: 'Liberty Mutual covers glass under comprehensive. $0 deductible under CO law. Direct billing, RightTrack unaffected.',
+    title: 'Liberty Mutual Windshield Replacement CO | $0 Deductible',
+    description: 'Liberty Mutual covers windshield replacement in Colorado — often $0. We handle all paperwork and bill Liberty Mutual directly. (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/liberty-mutual',
     type: 'website',
   },

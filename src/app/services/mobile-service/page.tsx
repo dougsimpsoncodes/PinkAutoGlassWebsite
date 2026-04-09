@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Mobile Windshield Replacement Denver | FREE We Come To You | (720) 918-7465',
-  description: 'NO extra charge for mobile windshield replacement. We come to your home or office. Same-day available. Fully equipped vans. Denver, Aurora, Boulder, Fort Collins. Call (720) 918-7465.',
+  title: 'Mobile Windshield Replacement | We Come to You Free',
+  description: 'No extra charge for mobile service in 65+ cities across CO & AZ. Same-day windshield replacement at your home or office. Call (720) 918-7465.',
   keywords: 'mobile windshield replacement denver, mobile windshield repair denver, mobile windshield service denver, mobile auto glass denver, windshield replacement at home, mobile glass repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/mobile-service',
   },
   openGraph: {
-    title: 'FREE Mobile Windshield Replacement Denver | We Come To You',
-    description: 'Mobile windshield replacement in Denver • NO extra charge • Same-day available • Fully equipped • Call (720) 918-7465',
+    title: 'Mobile Windshield Replacement | We Come to You Free',
+    description: 'No extra charge for mobile service in 65+ cities across CO & AZ. Same-day windshield replacement at your home or office.',
     url: 'https://pinkautoglass.com/services/mobile-service',
     type: 'website',
   },

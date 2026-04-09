@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'USAA Windshield Replacement Colorado — Military Auto Glass Claims',
-  description: 'USAA comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We serve military members and families. Direct billing, same-day service.',
+  title: 'USAA Windshield Replacement CO | $0 Deductible',
+  description: 'USAA covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill USAA directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/usaa',
   },
   openGraph: {
-    title: 'USAA Windshield Replacement Colorado — Military Auto Glass',
-    description: 'USAA covers glass under comprehensive. $0 deductible under CO law. Serving military members at Fort Carson, Peterson SFB, Buckley SFB. Direct billing.',
+    title: 'USAA Windshield Replacement CO | $0 Deductible',
+    description: 'USAA covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill USAA directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/usaa',
     type: 'website',
   },

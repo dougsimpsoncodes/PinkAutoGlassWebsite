@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Firestone Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Firestone auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Firestone CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Firestone CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair firestone, windshield replacement firestone, auto glass firestone co, mobile windshield service firestone, firestone co windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/firestone-co',
   },
   openGraph: {
-    title: 'Firestone Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Firestone\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Firestone CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Firestone CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/firestone-co',
     type: 'website',
   },

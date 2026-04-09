@@ -8,15 +8,15 @@ import { getTopVehicles, getAllMakes, getVehiclesByMake } from '@/data/makes-mod
 import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement by Vehicle | Denver Auto Glass Pricing | Pink Auto Glass',
-  description: 'Get exact windshield replacement pricing for your vehicle. OEM glass, ADAS calibration available. Serving all makes and models in Denver metro. Professional Service.',
+  title: 'Windshield Replacement by Vehicle | Pricing & Info',
+  description: 'Find windshield replacement options and pricing for your vehicle. All makes and models in Colorado and Arizona. Get a fast quote!',
   keywords: 'windshield replacement by vehicle, auto glass pricing by car, vehicle windshield cost, adas calibration by make model',
   alternates: {
     canonical: 'https://pinkautoglass.com/vehicles',
   },
   openGraph: {
-    title: 'Windshield Replacement Pricing by Vehicle | Pink Auto Glass',
-    description: 'Find exact pricing for your vehicle make and model. ADAS calibration available.',
+    title: 'Windshield Replacement by Vehicle | Pricing & Info',
+    description: 'Find windshield replacement options and pricing for your vehicle. All makes and models in Colorado and Arizona.',
     url: 'https://pinkautoglass.com/vehicles',
     type: 'website',
   },

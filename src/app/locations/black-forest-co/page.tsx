@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Black Forest, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Black Forest, Colorado. Mobile service on dirt roads, gravel driveways, and rural properties. Same-day appointments at 7,000+ feet elevation. Serving the community that rebuilt after the 2013 fire. Call (720) 918-7465.',
+  title: 'Windshield Replacement Black Forest CO | Mobile',
+  description: 'Mobile windshield replacement & repair in Black Forest CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair black forest co, windshield replacement black forest, auto glass black forest colorado, mobile windshield service black forest, black forest co auto glass, rural auto glass el paso county',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/black-forest-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Black Forest, CO | Pink Auto Glass',
-    description: 'Black Forest\'s trusted auto glass experts. Mobile service to rural properties and all Black Forest neighborhoods. Same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Black Forest CO | Mobile',
+    description: 'Mobile windshield replacement & repair in Black Forest CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/black-forest-co',
     type: 'website',
   },

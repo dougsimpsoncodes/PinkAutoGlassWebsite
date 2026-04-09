@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Allstate Windshield Replacement Colorado — Auto Glass Claims Guide',
-  description: 'Allstate comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available. We bill Allstate directly. Glass claims won\'t affect your Safe Driving Bonus.',
+  title: 'Allstate Windshield Replacement CO | $0 Deductible',
+  description: 'Allstate covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Allstate directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/allstate',
   },
   openGraph: {
-    title: 'Allstate Windshield Replacement Colorado — $0 Deductible Available',
-    description: 'Allstate covers glass under comprehensive. $0 deductible under CO law. Direct billing, no effect on Safe Driving Bonus.',
+    title: 'Allstate Windshield Replacement CO | $0 Deductible',
+    description: 'Allstate covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Allstate directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/allstate',
     type: 'website',
   },

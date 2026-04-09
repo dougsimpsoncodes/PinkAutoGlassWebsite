@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Does Progressive Cover Windshield Replacement in Colorado? Yes — Here\'s How',
-  description: 'Progressive comprehensive coverage pays for windshield replacement in Colorado. $0 deductible with glass buyback option. We bill Progressive directly. Same-day service.',
+  title: 'Progressive Windshield Replacement CO | $0 Deductible',
+  description: 'Progressive covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Progressive directly. (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/progressive',
   },
   openGraph: {
-    title: 'Does Progressive Cover Windshield Replacement in Colorado?',
-    description: 'Yes — Progressive comprehensive covers glass. $0 deductible with Glass Buyback option. We bill Progressive directly.',
+    title: 'Progressive Windshield Replacement CO | $0 Deductible',
+    description: 'Progressive covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Progressive directly. (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/progressive',
     type: 'website',
   },

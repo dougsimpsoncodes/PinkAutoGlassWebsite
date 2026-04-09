@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Cherry Hills Village Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Cherry Hills Village auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Cherry Hills CO | Mobile',
+  description: 'Mobile windshield replacement & repair in Cherry Hills Village CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair cherry hills village, windshield replacement cherry hills village, auto glass cherry hills village co, mobile windshield service cherry hills village',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/cherry-hills-village-co',
   },
   openGraph: {
-    title: 'Cherry Hills Village Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Cherry Hills Village\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Cherry Hills CO | Mobile',
+    description: 'Mobile windshield replacement & repair in Cherry Hills Village CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/cherry-hills-village-co',
     type: 'website',
   },

@@ -5,14 +5,14 @@ import { Phone } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 
 export const metadata: Metadata = {
-  title: 'About Us | Pink Auto Glass - Mobile Windshield Repair Colorado',
-  description: 'Learn about Pink Auto Glass, Colorado\'s trusted mobile windshield repair and replacement service. We\'re proud supporters of breast cancer awareness.',
+  title: 'About Pink Auto Glass | Mobile Windshield Experts',
+  description: 'Colorado & Arizona\'s trusted mobile windshield replacement and auto glass repair experts. Same-day service, insurance accepted.',
   alternates: {
     canonical: 'https://pinkautoglass.com/about',
   },
   openGraph: {
-    title: 'About Pink Auto Glass',
-    description: 'Colorado\'s mobile windshield repair experts and breast cancer awareness supporters',
+    title: 'About Pink Auto Glass | Mobile Windshield Experts',
+    description: 'Colorado & Arizona\'s trusted mobile windshield replacement and auto glass repair experts.',
     url: 'https://pinkautoglass.com/about',
     type: 'website',
   },

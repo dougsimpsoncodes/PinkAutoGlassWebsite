@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Chip Repair Denver | Lifetime Warranty | Insurance Accepted | (720) 918-7465',
-  description: 'Denver\'s fastest windshield chip repair. 30-min service. Often $0 with insurance. Serving Denver, Aurora, Boulder, Colorado Springs. Prevents cracks from spreading. Same-day mobile service. Lifetime warranty. Call now!',
+  title: 'Windshield Chip & Crack Repair | $0 With Insurance',
+  description: 'Fast windshield chip and crack repair. Often $0 with insurance. Mobile service — we come to you. Lifetime warranty. Call (720) 918-7465.',
   keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost, windshield repair near me, mobile windshield repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/windshield-repair',
   },
   openGraph: {
-    title: 'Windshield Repair Denver | Pink Auto Glass',
-    description: 'Fast windshield chip repair. Often covered 100% by insurance. Same-day mobile service available.',
+    title: 'Windshield Chip & Crack Repair | $0 With Insurance',
+    description: 'Fast windshield chip and crack repair. Often $0 with insurance. Mobile service — we come to you. Lifetime warranty.',
     url: 'https://pinkautoglass.com/services/windshield-repair',
     type: 'website',
   },

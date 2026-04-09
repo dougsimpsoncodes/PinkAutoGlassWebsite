@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Denver | Same-Day Mobile Service | $0 Deductible | (720) 918-7465',
-  description: 'Professional windshield replacement in Denver. Same-day mobile service, OEM quality glass, $0 deductible often, lifetime warranty. We come to you! Call (720) 918-7465.',
+  title: 'Windshield Replacement | Mobile Service CO & AZ',
+  description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you. Call (720) 918-7465.',
   keywords: 'windshield replacement denver, windshield replacement cost, mobile windshield replacement, same day windshield replacement, auto glass replacement denver, windshield replacement near me',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/windshield-replacement',
   },
   openGraph: {
-    title: 'Windshield Replacement Denver | Same-Day Mobile Service | $0 Deductible',
-    description: 'Professional windshield replacement in Denver. Same-day mobile service, OEM glass, $0 deductible often. Call (720) 918-7465.',
+    title: 'Windshield Replacement | Mobile Service CO & AZ',
+    description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you.',
     url: 'https://pinkautoglass.com/services/windshield-replacement',
     type: 'website',
   },

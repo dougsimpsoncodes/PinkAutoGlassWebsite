@@ -7,15 +7,15 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Mobile Windshield Service Locations Colorado & Arizona | Pink Auto Glass',
-  description: 'Mobile windshield repair and replacement throughout Colorado and Arizona. Serving Denver metro, Phoenix metro, and 40+ cities. We come to you — no extra charge. Call (720) 918-7465.',
+  title: 'Service Locations | 65+ Cities in CO & AZ',
+  description: 'Find Pink Auto Glass mobile windshield service near you. 65+ cities across Colorado Front Range and Phoenix AZ metro. We come to you.',
   keywords: 'windshield repair locations colorado arizona, mobile auto glass denver phoenix metro, windshield replacement near me, auto glass service areas colorado arizona',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations',
   },
   openGraph: {
-    title: 'Mobile Windshield Service Locations Colorado & Arizona | Pink Auto Glass',
-    description: 'We come to you anywhere in Denver or Phoenix metro. Mobile windshield service with no extra charge. Now serving Arizona!',
+    title: 'Service Locations | 65+ Cities in CO & AZ',
+    description: 'Find Pink Auto Glass mobile windshield service near you. 65+ cities across Colorado Front Range and Phoenix AZ metro.',
     url: 'https://pinkautoglass.com/locations',
     type: 'website',
   },

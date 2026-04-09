@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Thornton, CO | Pink Auto Glass',
-  description: 'Thornton windshield replacement & repair - same-day mobile service to Thornton Town Center, Eastlake, Riverdale & all Thornton neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Thornton CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Thornton CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair thornton, windshield replacement thornton, auto glass thornton co, mobile windshield service thornton, windshield replacement near me thornton, eastlake windshield repair, thornton town center auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/thornton-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Thornton, CO | Pink Auto Glass',
-    description: 'Thornton\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Thornton CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Thornton CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/thornton-co',
     type: 'website',
   },

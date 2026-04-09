@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Lone Tree Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Lone Tree auto glass repair & windshield replacement. Mobile service to RidgeGate, Park Meadows & all neighborhoods. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Lone Tree CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Lone Tree CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair lone tree, windshield replacement lone tree, auto glass lone tree co, mobile windshield service lone tree, auto glass ridgegate, park meadows windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/lone-tree-co',
   },
   openGraph: {
-    title: 'Lone Tree Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Lone Tree\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Lone Tree CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Lone Tree CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/lone-tree-co',
     type: 'website',
   },

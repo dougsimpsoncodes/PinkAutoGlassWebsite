@@ -197,6 +197,9 @@ After completing any non-trivial session, append a review section:
 - Work spans many files across multiple repos (e.g. 19 satellite sites)
 - Log file: `tasks/YYYY-MM-DD-topic.md`, pointer in MEMORY.md
 
+### Neville Handoff (Required)
+After updating `tasks/todo.md`, also follow the workspace handoff protocol in `~/.openclaw/workspace/CLAUDE.md` — update `PROJECT-STATE.md` and append to `handoff-log.md` so Neville stays in sync.
+
 ---
 
 ## Direct Observation Over Indirect Inference

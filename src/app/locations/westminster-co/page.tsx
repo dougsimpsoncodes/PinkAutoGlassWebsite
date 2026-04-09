@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Westminster, CO | Pink Auto Glass',
-  description: 'Westminster windshield replacement & repair - same-day mobile service to The Orchard, Westminster Station, Legacy Ridge & all Westminster neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Westminster CO | $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Westminster CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair westminster, windshield replacement westminster, auto glass westminster co, mobile windshield service westminster, windshield replacement near me westminster, legacy ridge windshield repair, westminster station auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/westminster-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Westminster, CO | Pink Auto Glass',
-    description: 'Westminster\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Westminster CO | $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Westminster CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/westminster-co',
     type: 'website',
   },

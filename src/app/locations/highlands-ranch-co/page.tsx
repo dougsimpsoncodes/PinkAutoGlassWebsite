@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Highlands Ranch, CO | Pink Auto Glass',
-  description: 'Highlands Ranch windshield replacement & repair - same-day mobile service to Backcountry, Northridge, Westridge & all Highlands Ranch neighborhoods. Insurance accepted. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Highlands Ranch | Mobile',
+  description: 'Mobile windshield replacement & repair in Highlands Ranch CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair highlands ranch, windshield replacement highlands ranch, auto glass highlands ranch co, mobile windshield service highlands ranch, windshield replacement near me highlands ranch, backcountry windshield repair, westridge auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/highlands-ranch-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Highlands Ranch, CO | Pink Auto Glass',
-    description: 'Highlands Ranch\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Highlands Ranch | Mobile',
+    description: 'Mobile windshield replacement & repair in Highlands Ranch CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/highlands-ranch-co',
     type: 'website',
   },

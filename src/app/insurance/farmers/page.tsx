@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Farmers Insurance Windshield Replacement Colorado',
-  description: 'Farmers comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill Farmers directly. Glass claims won\'t raise your rates.',
+  title: 'Farmers Windshield Replacement CO | $0 Deductible',
+  description: 'Farmers covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Farmers directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/farmers',
   },
   openGraph: {
-    title: 'Farmers Insurance Windshield Replacement Colorado — $0 Available',
-    description: 'Farmers covers glass under comprehensive. $0 deductible under CO law. Direct billing, same-day service across the Front Range.',
+    title: 'Farmers Windshield Replacement CO | $0 Deductible',
+    description: 'Farmers covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Farmers directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/farmers',
     type: 'website',
   },

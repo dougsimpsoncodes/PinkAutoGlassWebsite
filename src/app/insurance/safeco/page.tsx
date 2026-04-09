@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Safeco Windshield Replacement Colorado — Liberty Mutual Auto Glass Claims',
-  description: 'Safeco (a Liberty Mutual company) comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill Safeco directly.',
+  title: 'Safeco Windshield Replacement CO | $0 Deductible',
+  description: 'Safeco covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Safeco directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/safeco',
   },
   openGraph: {
-    title: 'Safeco Windshield Replacement Colorado — $0 Deductible Available',
-    description: 'Safeco is owned by Liberty Mutual. Comprehensive covers glass in Colorado. $0 deductible under CO law. Direct billing, same-day service.',
+    title: 'Safeco Windshield Replacement CO | $0 Deductible',
+    description: 'Safeco covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Safeco directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/safeco',
     type: 'website',
   },

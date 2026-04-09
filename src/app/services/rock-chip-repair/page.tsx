@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Rock Chip Repair Denver | Windshield Chip Repair | (720) 918-7465',
-  description: 'Rock chip & windshield chip repair. Often $0 with insurance. Prevents spreading. 30-minute service. Mobile repair available. Denver, Aurora, Boulder. Call (720) 918-7465 now.',
+  title: 'Rock Chip Repair | Mobile, Often $0 With Insurance',
+  description: 'Rock chip repair stops cracks from spreading. 30-minute mobile service, often $0 with insurance. Denver, Aurora, Boulder. (720) 918-7465.',
   keywords: 'rock chip repair, windshield chip repair, rock chip windshield repair, progressive rock chip repair, windshield rock chip repair denver, mobile windshield chip repair',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/rock-chip-repair',
   },
   openGraph: {
-    title: 'Rock Chip Repair Denver | Often $0 with Insurance',
-    description: 'Fast rock chip repair • Prevents spreading • Often free with insurance • Mobile service • Call (720) 918-7465',
+    title: 'Rock Chip Repair | Mobile, Often $0 With Insurance',
+    description: 'Rock chip repair stops cracks from spreading. 30-minute mobile service, often $0 with insurance.',
     url: 'https://pinkautoglass.com/services/rock-chip-repair',
     type: 'website',
   },

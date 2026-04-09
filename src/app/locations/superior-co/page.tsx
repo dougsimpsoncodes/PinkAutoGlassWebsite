@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Superior, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Superior, Colorado. Mobile service to your home or office. Same-day appointments in Boulder County. Call (720) 918-7465 for a free quote.',
+  title: 'Windshield Replacement Superior CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Superior CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair superior, windshield replacement superior, auto glass superior co, mobile windshield service superior colorado, boulder county auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/superior-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Superior, CO | Pink Auto Glass',
-    description: 'Superior\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Superior CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Superior CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/superior-co',
     type: 'website',
   },

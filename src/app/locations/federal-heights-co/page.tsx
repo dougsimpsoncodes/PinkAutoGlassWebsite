@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Federal Heights Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Federal Heights auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Federal Heights CO | Mobile',
+  description: 'Mobile windshield replacement & repair in Federal Heights CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair federal heights, windshield replacement federal heights, auto glass federal heights co, mobile windshield service federal heights',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/federal-heights-co',
   },
   openGraph: {
-    title: 'Federal Heights Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Federal Heights\' trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Federal Heights CO | Mobile',
+    description: 'Mobile windshield replacement & repair in Federal Heights CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/federal-heights-co',
     type: 'website',
   },

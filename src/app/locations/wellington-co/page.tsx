@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Wellington Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Wellington auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Call (720) 918-7465.',
+  title: 'Windshield Replacement Wellington CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Wellington CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair wellington, windshield replacement wellington, auto glass wellington co, mobile windshield service wellington, wellington co windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/wellington-co',
   },
   openGraph: {
-    title: 'Wellington Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Wellington\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Wellington CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Wellington CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/wellington-co',
     type: 'website',
   },

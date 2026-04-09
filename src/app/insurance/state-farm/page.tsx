@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'State Farm Windshield Replacement Colorado — File Your Glass Claim',
-  description: 'State Farm comprehensive coverage pays for windshield replacement in Colorado. $0 deductible often available. We bill State Farm directly. Glass claims won\'t raise your rates.',
+  title: 'State Farm Windshield Replacement CO | $0 Deductible',
+  description: 'State Farm covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill State Farm directly. (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/state-farm',
   },
   openGraph: {
-    title: 'State Farm Windshield Replacement Colorado — $0 Deductible Available',
-    description: 'State Farm covers glass under comprehensive. $0 deductible under CO law. Direct billing, no rate increase for glass claims.',
+    title: 'State Farm Windshield Replacement CO | $0 Deductible',
+    description: 'State Farm covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill State Farm directly. (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/state-farm',
     type: 'website',
   },

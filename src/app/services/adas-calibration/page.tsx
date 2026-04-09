@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'ADAS Calibration Denver - Professional Camera Calibration Service',
-  description: 'Professional ADAS camera calibration in Denver after windshield replacement. Required for lane assist, collision warning. Call (720) 918-7465.',
+  title: 'ADAS Calibration | After Windshield Replacement',
+  description: 'ADAS camera calibration required after windshield replacement. Lane assist, collision warning, auto-braking recalibrated. Mobile service. (720) 918-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/adas-calibration',
   },
   openGraph: {
-    title: 'ADAS Calibration Denver | Pink Auto Glass',
-    description: 'ADAS calibration after windshield replacement. Certified technicians, OEM-spec equipment.',
+    title: 'ADAS Calibration | After Windshield Replacement',
+    description: 'ADAS camera calibration required after windshield replacement. Lane assist, collision warning recalibrated. Mobile service.',
     url: 'https://pinkautoglass.com/services/adas-calibration',
     type: 'website',
   },

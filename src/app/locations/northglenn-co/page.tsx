@@ -9,15 +9,15 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Northglenn Windshield Repair | Auto Glass Replacement | Same-Day | (720) 918-7465',
-  description: 'Northglenn auto glass repair & windshield replacement. Mobile service to your home or office. Often $0 with insurance. Same-day appointments. Lifetime warranty. Serving all Northglenn neighborhoods. Call (720) 918-7465.',
+  title: 'Windshield Replacement Northglenn CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Northglenn CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair northglenn, windshield replacement northglenn, auto glass northglenn co, mobile windshield service northglenn, auto glass repair northglenn colorado',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/northglenn-co',
   },
   openGraph: {
-    title: 'Northglenn Windshield Repair & Replacement CO | Pink Auto Glass',
-    description: 'Northglenn\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Northglenn CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Northglenn CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/northglenn-co',
     type: 'website',
   },

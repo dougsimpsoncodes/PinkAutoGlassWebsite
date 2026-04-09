@@ -6,14 +6,14 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'AAA Windshield Claim Colorado — How to File & Get $0 Service',
-  description: 'AAA comprehensive coverage pays for windshield replacement in Colorado. $0 deductible available under CO law. We bill AAA directly. Same-day mobile service.',
+  title: 'AAA Windshield Replacement CO | $0 Deductible',
+  description: 'AAA covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill AAA directly. Call (720) 918-7465.',
   alternates: {
     canonical: 'https://pinkautoglass.com/insurance/aaa',
   },
   openGraph: {
-    title: 'AAA Windshield Claim Colorado — $0 Out of Pocket',
-    description: 'We handle your AAA auto glass claim start to finish. $0 deductible available under Colorado law. Direct billing, same-day service.',
+    title: 'AAA Windshield Replacement CO | $0 Deductible',
+    description: 'AAA covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill AAA directly. Call (720) 918-7465.',
     url: 'https://pinkautoglass.com/insurance/aaa',
     type: 'website',
   },

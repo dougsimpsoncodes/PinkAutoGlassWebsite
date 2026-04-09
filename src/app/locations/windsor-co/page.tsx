@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Repair & Replacement Windsor, CO | Pink Auto Glass',
-  description: 'Professional windshield repair and replacement in Windsor, Colorado. Mobile service to your home or office. Same-day appointments. Call (720) 918-7465 for a free quote.',
+  title: 'Windshield Replacement Windsor CO | Mobile, $0 Deductible',
+  description: 'Mobile windshield replacement & repair in Windsor CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair windsor, windshield replacement windsor, auto glass windsor, mobile windshield service windsor co',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/windsor-co',
   },
   openGraph: {
-    title: 'Windshield Repair & Replacement Windsor, CO | Pink Auto Glass',
-    description: 'Windsor\'s trusted auto glass experts. Mobile service, same-day appointments, lifetime warranty.',
+    title: 'Windshield Replacement Windsor CO | Mobile, $0 Deductible',
+    description: 'Mobile windshield replacement & repair in Windsor CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/windsor-co',
     type: 'website',
   },
