@@ -287,3 +287,11 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 - Run each script against all 24 domains
 - Verify output reports are accurate by spot-checking 2-3 domains manually
 - Confirm no errors or timeouts during execution
+
+## 2026-04-09 — Ad Campaign Review & Conversion Tracking Overhaul
+- Full session log: [tasks/2026-04-09-ad-campaign-review.md](2026-04-09-ad-campaign-review.md)
+- Fixed conversion double-counting (phone clicks + Ring Central offline upload)
+- Set data-driven conversion values from actual close rates × avg ticket
+- Uploaded 83 negative keywords to Microsoft Ads
+- Tightened match types (25 broad → 2 broad + 19 phrase)
+- Deployed: commit e6ca81d
