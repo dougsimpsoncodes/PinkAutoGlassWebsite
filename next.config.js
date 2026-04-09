@@ -172,6 +172,12 @@ const nextConfig = {
         destination: '/insurance/:carrier',
         permanent: true,
       },
+      // Windshield replacement cost → pricing page (2026-04-09)
+      {
+        source: '/windshield-replacement-cost',
+        destination: '/pricing',
+        permanent: true,
+      },
       // Rock chip repair consolidated into windshield repair (2026-04-09)
       {
         source: '/services/rock-chip-repair',
