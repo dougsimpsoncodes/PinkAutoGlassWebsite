@@ -4,9 +4,9 @@ import { Phone, MapPin, Clock, Shield, CheckCircle, AlertTriangle } from "lucide
 import PhoenixClickTracker from "@/components/PhoenixClickTracker";
 
 export const metadata: Metadata = {
-  title: "Phoenix Windshield Replacement | $0 Out of Pocket | Mobile Service | (480) 712-7465",
+  title: "Phoenix Windshield Replacement | $0 Out of Pocket",
   description:
-    "Arizona law requires your insurer to replace your windshield with ZERO deductible. Pink Auto Glass serves all Phoenix metro — we come to you. Call (480) 712-7465.",
+    "AZ law means $0 deductible for windshield replacement. Pink Auto Glass serves all Phoenix metro. Same-day mobile service. (480) 712-7465.",
   keywords: [
     "windshield replacement phoenix az",
     "auto glass phoenix arizona",
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
     "same day windshield phoenix",
   ],
   openGraph: {
-    title: "Phoenix Windshield Replacement | $0 Out of Pocket | Pink Auto Glass",
+    title: "Phoenix Windshield Replacement | $0 Out of Pocket",
     description:
-      "Arizona law requires $0 deductible windshield replacement. We handle everything — mobile service throughout Phoenix metro. Call (480) 712-7465.",
+      "AZ law means $0 deductible for windshield replacement. Pink Auto Glass serves all Phoenix metro. Same-day mobile service. (480) 712-7465.",
     url: "https://pinkautoglass.com/phoenix",
     siteName: "Pink Auto Glass",
     type: "website",

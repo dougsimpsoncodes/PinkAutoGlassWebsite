@@ -7,15 +7,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Arizona Windshield Insurance Claims | $0 Deductible | | Pink Auto Glass',
-  description: 'Arizona law means your windshield replacement costs $0. protects your rates. means you choose your shop — not Safelite. We handle all paperwork. Call (480) 712-7465!',
+  title: 'Arizona Windshield Insurance Claims | $0 Deductible',
+  description: 'AZ law means your windshield replacement costs $0 with comprehensive coverage. We handle all paperwork. Call (480) 712-7465.',
   keywords: 'arizona windshield insurance claims, zero deductible arizona, arizona glass coverage law, $0 windshield arizona, no rate increase, choose your shop, phoenix windshield insurance',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/arizona',
   },
   openGraph: {
-    title: 'Arizona Windshield Insurance Claims | $0 Deductible |',
-    description: 'Arizona law requires $0 deductible glass coverage. Your rates can\'t go up. You choose your shop. We handle all paperwork for Phoenix metro drivers.',
+    title: 'Arizona Windshield Insurance Claims | $0 Deductible',
+    description: 'AZ law means your windshield replacement costs $0 with comprehensive coverage. We handle all paperwork. Call (480) 712-7465.',
     url: 'https://pinkautoglass.com/services/insurance-claims/arizona',
     type: 'website',
   },

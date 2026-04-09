@@ -7,14 +7,14 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'AAA Windshield Replacement | AAA Approved Shop | (720) 918-7465',
+  title: 'AAA Windshield Replacement | $0 Deductible CO',
   description: 'AAA approved auto repair shop. We handle your AAA windshield claim. Direct billing. Often $0 deductible. Same-day mobile service. Won\'t raise rates. Call (720) 918-7465.',
   keywords: 'aaa windshield claim, aaa windshield replacement, aaa auto glass, aaa approved auto repair, aaa glass claims, triple aaa windshield repair',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/aaa',
   },
   openGraph: {
-    title: 'AAA Windshield Replacement Denver | AAA Approved Shop',
+    title: 'AAA Windshield Replacement | $0 Deductible CO',
     description: 'AAA approved • We file your claim • Direct billing • Often $0 deductible • Call (720) 918-7465',
     url: 'https://pinkautoglass.com/services/insurance-claims/aaa',
     type: 'website',

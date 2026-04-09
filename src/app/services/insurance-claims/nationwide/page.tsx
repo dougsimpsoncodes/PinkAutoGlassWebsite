@@ -7,14 +7,14 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Nationwide Windshield Replacement | $0 Deductible CO | (720) 918-7465',
+  title: 'Nationwide Windshield Replacement CO | $0 Deductible',
   description: 'Nationwide approved shop. Often $0 deductible for glass in Colorado. We file your claim. Direct billing. Same-day mobile service. Won\'t raise rates. Call (720) 918-7465.',
   keywords: 'state farm windshield replacement, state farm glass claim, state farm auto glass, state farm windshield claim, state farm comprehensive glass coverage',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims/nationwide',
   },
   openGraph: {
-    title: 'Nationwide Windshield Replacement Denver | $0 Deductible Often',
+    title: 'Nationwide Windshield Replacement CO | $0 Deductible',
     description: 'Nationwide approved • We file your claim • Direct billing • Often $0 deductible • Call (720) 918-7465',
     url: 'https://pinkautoglass.com/services/insurance-claims/nationwide',
     type: 'website',

@@ -6,15 +6,15 @@ import TrustBadges from '@/components/TrustBadges';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const metadata: Metadata = {
-  title: "Windshield Replacement Cost Denver 2025 | Pricing Guide | Pink Auto Glass",
-  description: "See windshield replacement costs in Denver by vehicle type. Transparent pricing, insurance coverage info, and instant quotes. Most customers pay $0 with insurance.",
+  title: "Windshield Replacement Cost | Pricing Guide CO & AZ",
+  description: "Windshield replacement costs by vehicle type. Transparent pricing, insurance info. All makes and models in CO & AZ. Get a quote!",
   keywords: "windshield replacement cost denver, auto glass prices denver, windshield cost, insurance windshield replacement",
   alternates: {
     canonical: 'https://pinkautoglass.com/pricing',
   },
   openGraph: {
-    title: "Windshield Replacement Cost Denver | Pink Auto Glass",
-    description: "Transparent pricing for windshield replacement in Denver. Get instant quote. Most pay $0 with insurance.",
+    title: "Windshield Replacement Cost | Pricing Guide CO & AZ",
+    description: "Windshield replacement costs by vehicle type. Transparent pricing, insurance info. All makes and models.",
     url: "https://pinkautoglass.com/pricing",
     siteName: "Pink Auto Glass",
     type: "website",
@@ -59,8 +59,8 @@ export default function PricingPage() {
 
   const costFactors = [
     {
-      title: 'Vehicle Size',
-      description: 'Larger windshields require more glass and labor. Trucks and SUVs typically cost more than compact sedans.',
+      title: 'Windshield Replacement Cost | Pricing Guide CO & AZ',
+      description: 'Windshield replacement costs by vehicle type. Transparent pricing, insurance info. All makes and models in CO & AZ. Get a quote!',
       impact: 'Moderate'
     },
     {
