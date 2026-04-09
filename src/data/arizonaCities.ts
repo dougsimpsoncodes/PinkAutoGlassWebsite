@@ -1045,7 +1045,18 @@ export const arizonaCities: ArizonaCity[] = [
 ];
 
 export function getArizonaCity(slug: string): ArizonaCity {
-  const city = arizonaCities.find(c => c.slug === slug);
+  // Support both old slugs (phoenix-az) and new slugs (phoenix)
+  const city = arizonaCities.find(c => c.slug === slug || c.slug === `${slug}-az`);
   if (!city) throw new Error(`Arizona city not found: ${slug}`);
   return city;
+}
+
+/** Get city slug without the -az suffix (for new URL structure) */
+export function getArizonaCitySlug(fullSlug: string): string {
+  return fullSlug.replace(/-az$/, '');
+}
+
+/** Get all city slugs without -az suffix (for generateStaticParams) */
+export function getAllArizonaCitySlugs(): string[] {
+  return arizonaCities.map(c => c.slug.replace(/-az$/, ''));
 }

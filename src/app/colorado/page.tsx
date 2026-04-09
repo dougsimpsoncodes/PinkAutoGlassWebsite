@@ -1,0 +1,422 @@
+import Image from "next/image";
+import Link from "next/link";
+import { Phone, MapPin, Clock, Star, Shield, Users } from "lucide-react";
+import CTAButtons from "@/components/CTAButtons";
+import QuickCaptureForm from "@/components/QuickCaptureForm";
+import QuoteForm from "@/components/QuoteForm";
+import TrustSignals from "@/components/TrustSignals";
+import { combineSchemas } from "@/lib/schema";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false }, // Phase 1: noindex during coexistence
+  title: "Colorado Mobile Auto Glass Repair & Replacement | Pink Auto Glass",
+  description: "Colorado's #1 mobile auto glass service. Same-day windshield repair & replacement at your home or office. Lifetime warranty. (720) 918-7465.",
+  openGraph: {
+    title: "Colorado Mobile Auto Glass Repair & Replacement | Pink Auto Glass",
+    description: "Colorado's #1 mobile auto glass service. Same-day windshield repair & replacement at your home or office.",
+    url: "https://pinkautoglass.com/colorado/",
+    siteName: "Pink Auto Glass",
+    type: "website",
+  },
+  alternates: {
+    canonical: "https://pinkautoglass.com/colorado/",
+  },
+};
+
+export default function ColoradoPage() {
+  const schemaData = {
+    "@type": "AutoRepair",
+    "name": "Pink Auto Glass",
+    "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
+    "@id": "https://pinkautoglass.com",
+    "url": "https://pinkautoglass.com",
+    "telephone": "+17209187465",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Denver",
+      "addressRegion": "CO",
+      "postalCode": "80202",
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 39.7392,
+      "longitude": -104.9903
+    },
+    "areaServed": [
+      { "@type": "State", "name": "Colorado" },
+      { "@type": "City", "name": "Denver" },
+      { "@type": "City", "name": "Aurora" },
+      { "@type": "City", "name": "Lakewood" },
+      { "@type": "City", "name": "Boulder" },
+      { "@type": "City", "name": "Colorado Springs" },
+      { "@type": "City", "name": "Fort Collins" },
+      { "@type": "City", "name": "Highlands Ranch" },
+      { "@type": "City", "name": "Thornton" },
+      { "@type": "City", "name": "Arvada" },
+      { "@type": "City", "name": "Westminster" },
+      { "@type": "City", "name": "Centennial" },
+      { "@type": "State", "name": "Arizona" },
+      { "@type": "City", "name": "Phoenix" },
+      { "@type": "City", "name": "Mesa" },
+      { "@type": "City", "name": "Scottsdale" },
+      { "@type": "City", "name": "Tempe" },
+      { "@type": "City", "name": "Chandler" },
+      { "@type": "City", "name": "Gilbert" },
+      { "@type": "City", "name": "Glendale" },
+      { "@type": "City", "name": "Peoria" }
+    ],
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "07:00",
+      "closes": "19:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/PinkAutoGlassDenver",
+      "https://www.instagram.com/pinkautoglassdenver",
+      "https://www.linkedin.com/company/pink-auto-glass"
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Auto Glass Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Windshield Repair",
+            "description": "Professional windshield chip and crack repair"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Windshield Replacement",
+            "description": "Full windshield replacement with OEM quality glass"
+          }
+        }
+      ]
+    }
+  };
+
+  const faqSchema = {
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do you come to my location?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! We're 100% mobile. We come to your home, office, or anywhere in the Denver metro area."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does insurance cover windshield replacement?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most comprehensive insurance policies in Colorado cover windshield replacement. We handle all insurance paperwork for you."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does windshield replacement take?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most windshield repairs take under 30 minutes. Full replacements typically take 1-2 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you offer same-day service?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! We offer same-day mobile windshield service throughout the Denver metro area, 7 days a week."
+        }
+      }
+    ]
+  };
+
+  const combinedSchema = combineSchemas(schemaData, faqSchema);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
+      />
+      {/* Compact Hero Section - Lead Generation Focused */}
+      <div className="page-top-padding">
+      <section className="bg-gradient-hero py-3 md:py-20 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-[30px] leading-tight md:text-6xl font-bold mb-3 md:mb-6">
+              Colorado's #1
+              <span className="block">Mobile Auto Glass</span>
+              <span className="block">Repair & Replacement</span>
+            </h1>
+
+            <p className="text-[15px] leading-snug md:text-xl mb-6 md:mb-8 text-white/90 max-w-2xl mx-auto">
+              We come to you! Professional windshield service at your home or office.
+              Quick repairs, quality replacements, professional service.
+            </p>
+
+            {/* Quick Capture Form - Above fold lead capture */}
+            <div className="mb-6 md:mb-8">
+              <QuickCaptureForm />
+            </div>
+
+            {/* Secondary CTAs */}
+            <div className="mb-6 md:mb-8">
+              <CTAButtons source="hero" />
+            </div>
+
+            {/* Quick Benefits */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Same Day Service
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Mobile Service
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Lifetime Warranty
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      </div>
+
+      {/* Quote Form & Trust Signals Section */}
+      <section className="py-12 bg-white border-t-4 border-pink-500">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+            {/* Quote Form */}
+            <div>
+              <QuoteForm />
+            </div>
+
+            {/* Trust Signals */}
+            <div>
+              <TrustSignals visible={true} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section - Social Proof */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Why Colorado Chooses Pink Auto Glass</h2>
+            <p className="text-xl text-gray-600">Over 5,000 satisfied customers trust us with their auto glass needs</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Mobile Convenience */}
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow">
+              <div className="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <MapPin className="w-10 h-10 text-pink-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">We Come to You</h3>
+              <p className="text-gray-600 mb-4">No need to drive with a damaged windshield. We provide mobile service at your home, office, or anywhere in Colorado.</p>
+              <div className="text-sm text-pink-600 font-semibold">Available 7 Days a Week</div>
+            </div>
+            
+            {/* Speed & Quality */}
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Fast & Professional</h3>
+              <p className="text-gray-600 mb-4">Most repairs completed in under 30 minutes. Replacements done in 1-2 hours using OEM quality glass and professional techniques.</p>
+              <div className="text-sm text-green-600 font-semibold">Same Day Service Available</div>
+            </div>
+            
+            {/* Warranty & Trust */}
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Lifetime Warranty</h3>
+              <p className="text-gray-600 mb-4">We stand behind our work with a lifetime warranty on all installations. Licensed, insured, and trusted by 200+ 5-star reviews.</p>
+              <div className="text-sm text-blue-600 font-semibold">Fully Licensed & Insured</div>
+            </div>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="bg-white p-8 rounded-xl shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div>
+                <div className="text-3xl font-bold text-pink-600 mb-2">5,000+</div>
+                <div className="text-sm text-gray-600">Happy Customers</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">Same Day</div>
+                <div className="text-sm text-gray-600">Service Available</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">Lifetime</div>
+                <div className="text-sm text-gray-600">Warranty</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Answers FAQ Section - Optimized for Featured Snippets */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Quick Answers About Auto Glass Service</h2>
+
+            <div className="space-y-8">
+              {/* FAQ 1 (no pricing) */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">How do I get a quote?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Get a fast, accurate quote online or by phone. Your exact quote depends on your vehicle's year/trim, glass type, and whether ADAS calibration is required.
+                </p>
+                <p className="text-gray-700">
+                  We’ll also verify your insurance and help schedule service — often same‑day mobile in the Denver metro area.
+                </p>
+              </div>
+
+              {/* FAQ 2 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">Is ADAS calibration required after windshield replacement?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Yes, federal law requires ADAS calibration for vehicles with Advanced Driver Assistance Systems (typically 2018+ models). This includes:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
+                  <li>Lane departure warning</li>
+                  <li>Automatic emergency braking</li>
+                  <li>Adaptive cruise control</li>
+                  <li>Forward collision warning</li>
+                </ul>
+                <p className="text-gray-700">
+                  <strong>We include ADAS calibration at no extra charge</strong> when required for your vehicle.
+                </p>
+              </div>
+
+              {/* FAQ 3 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">Do you offer mobile windshield replacement in Denver?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  Yes! Mobile service is our specialty. We provide:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2 mb-3">
+                  <li>Free mobile service (no extra charge)</li>
+                  <li>Same-day appointments available</li>
+                  <li>Service at your home or office</li>
+                  <li>Coverage throughout Denver metro area</li>
+                  <li>ADAS calibration performed on-site</li>
+                </ul>
+              </div>
+
+              {/* FAQ 4 */}
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="text-2xl font-bold mb-4">How long does windshield replacement take?</h3>
+                <div className="text-lg text-gray-700">
+                  <table className="w-full border-collapse mb-3">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Service Type</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Time Required</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Windshield chip repair</td>
+                        <td className="border border-gray-300 px-4 py-2">20-30 minutes</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Standard windshield replacement</td>
+                        <td className="border border-gray-300 px-4 py-2">60-90 minutes</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-2">Replacement + ADAS calibration</td>
+                        <td className="border border-gray-300 px-4 py-2">90-150 minutes</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p className="text-gray-700">
+                    After installation, we recommend waiting 1-2 hours before driving to allow the adhesive to cure properly.
+                  </p>
+                </div>
+              </div>
+
+              {/* FAQ 5 */}
+              <div className="pb-6">
+                <h3 className="text-2xl font-bold mb-4">Will filing a windshield claim raise my insurance rates?</h3>
+                <p className="text-lg text-gray-700 mb-3">
+                  No, windshield claims typically don't raise your insurance rates in Colorado. Here's why:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
+                  <li>Glass claims are comprehensive (not at-fault) claims</li>
+                  <li>They're treated differently than collision claims</li>
+                  <li>Most insurers don't count glass-only claims against you</li>
+                  <li>Colorado has favorable glass coverage laws</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-pink-600 to-pink-700 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Your Windshield Fixed?</h2>
+          <p className="text-xl mb-8 text-pink-100">Join thousands of satisfied customers in Colorado</p>
+          
+          {/* Primary Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Link href="/book" className="bg-white text-pink-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
+              📱 Book Online Now
+            </Link>
+            <a href="tel:+17209187465" className="bg-pink-800 hover:bg-pink-900 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all">
+              📞 Call (720) 918-7465
+            </a>
+          </div>
+          
+          {/* Contact Info Grid */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-pink-100">
+            <div className="flex flex-col items-center">
+              <Phone className="w-8 h-8 text-pink-300 mb-3" />
+              <h3 className="text-lg font-semibold mb-2 text-white">Call or Text</h3>
+              <a href="tel:+17209187465" className="text-pink-200 hover:text-white transition-colors text-lg">
+                (720) 918-7465
+              </a>
+              <div className="text-sm mt-1">Available 7 days a week</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <MapPin className="w-8 h-8 text-pink-300 mb-3" />
+              <h3 className="text-lg font-semibold mb-2 text-white">Service Area</h3>
+              <p className="text-lg">Statewide Colorado</p>
+              <div className="text-sm mt-1">Mobile service available</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <Clock className="w-8 h-8 text-pink-300 mb-3" />
+              <h3 className="text-lg font-semibold mb-2 text-white">Quick Response</h3>
+              <p className="text-lg">Same Day Service</p>
+              <div className="text-sm mt-1">Emergency repairs available</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
