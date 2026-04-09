@@ -172,6 +172,12 @@ const nextConfig = {
         destination: '/insurance/:carrier',
         permanent: true,
       },
+      // Rock chip repair consolidated into windshield repair (2026-04-09)
+      {
+        source: '/services/rock-chip-repair',
+        destination: '/services/windshield-repair',
+        permanent: true, // 301 redirect
+      },
       // Common 404 URLs Google tries to crawl → redirect to relevant pages
       {
         source: '/quote',

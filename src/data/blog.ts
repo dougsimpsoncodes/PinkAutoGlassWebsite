@@ -3071,7 +3071,7 @@ export const blogPosts: BlogPost[] = [
     author: 'Dan Shikiar',
     category: 'Insurance',
     tags: ['denver', 'colorado', 'hail season', 'windshield replacement', 'rock chip repair', 'insurance', 'mobile service'],
-    relatedServices: ['windshield-replacement', 'rock-chip-repair', 'insurance-claims'],
+    relatedServices: ['windshield-replacement', 'windshield-repair', 'insurance-claims'],
     relatedLocations: ['denver-co', 'aurora-co', 'boulder-co', 'fort-collins-co', 'colorado-springs-co', 'lakewood-co', 'arvada-co', 'westminster-co'],
     content: [
       {

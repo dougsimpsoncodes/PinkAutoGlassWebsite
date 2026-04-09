@@ -25,12 +25,24 @@ export const metadata: Metadata = {
 export default function WindshieldRepairPage() {
   const faqs = [
     {
-      question: 'Does insurance cover windshield repair in Denver?',
-      answer: 'Most comprehensive insurance policies in Colorado cover windshield repair with zero deductible - meaning you pay nothing out of pocket. We can verify your coverage before scheduling. Repair is significantly more affordable than replacement and takes only 30 minutes.'
+      question: 'Does insurance cover windshield repair in Colorado?',
+      answer: 'Most comprehensive insurance policies in Colorado cover windshield repair with zero deductible - meaning you pay nothing out of pocket. We work with Progressive, State Farm, Geico, Allstate, USAA, Farmers, and all major carriers. We can verify your coverage before scheduling.'
     },
     {
       question: 'When should I repair vs replace my windshield?',
       answer: 'Repair is suitable when: the chip is smaller than a quarter, cracks are less than 6 inches long, damage is not in the driver\'s direct line of sight, and the damage hasn\'t penetrated the inner layer of glass. Replace when: damage is larger than a dollar bill, cracks extend to the windshield edge, you have multiple chips, or damage obstructs the driver\'s view. We\'ll assess your damage honestly and recommend the safest, most cost-effective solution.'
+    },
+    {
+      question: 'How much does rock chip repair cost?',
+      answer: 'Rock chip repair typically costs between $50-$100 if paying out of pocket. However, most comprehensive insurance policies in Colorado cover chip repair with $0 deductible - meaning it\'s completely free for you. We\'ll verify your insurance coverage before starting work.'
+    },
+    {
+      question: 'Will the chip still be visible after repair?',
+      answer: 'While rock chip repair dramatically improves the appearance, a faint mark may still be visible upon close inspection. However, the chip will be sealed and stabilized to prevent spreading. Most customers report that the repair is barely noticeable and far better than the original damage.'
+    },
+    {
+      question: 'What happens if I don\'t repair a rock chip?',
+      answer: 'Rock chips can quickly spread into long cracks due to vibrations, temperature changes, and road stress. Once a chip becomes a crack longer than 6 inches, it usually can\'t be repaired and requires full windshield replacement (much more expensive). It\'s best to repair chips immediately to prevent spreading.'
     },
   ];
 
@@ -74,7 +86,7 @@ export default function WindshieldRepairPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Fast Windshield Chip Repair in Denver
+                Fast Windshield Chip & Crack Repair
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
                 Windshield chip repair in Denver takes about 30 minutes and most Colorado drivers pay nothing out of pocket. Under Colorado comprehensive insurance policies, windshield repair is typically covered with zero deductible, meaning your insurer pays the full cost. Pink Auto Glass offers same-day mobile chip repair across the entire Front Range. We come to your home, office, or wherever you are with our fully equipped mobile units. Our technicians inject advanced resin into the damaged area using vacuum and pressure cycles, then cure it under UV light to restore up to 90 percent of your windshield's original strength. Repairing a chip early prevents it from spreading into a long crack that would require a full replacement. Colorado's dramatic temperature swings between day and night can turn a small rock chip into an irreparable crack within days. Every repair is backed by our lifetime warranty on workmanship, and we handle all insurance paperwork so you can focus on your day.
@@ -125,39 +137,45 @@ export default function WindshieldRepairPage() {
                 </p>
               </section>
 
-              {/* How It Works (Repair) */}
+              {/* Pricing — merged from rock-chip-repair page */}
               <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">How Our Rock Chip Repair Works</h2>
-                <ol className="list-decimal list-inside space-y-3 text-gray-700">
-                  <li><strong>Clean & Inspect:</strong> We clean the chip and confirm it’s safe to repair (quarter‑sized chips and short cracks are good candidates).</li>
-                  <li><strong>Resin Injection:</strong> We apply specialized resin and use vacuum/pressure cycles to fill micro‑fractures.</li>
-                  <li><strong>UV Cure:</strong> The resin is cured under UV light to restore strength and help prevent spreading.</li>
-                  <li><strong>Polish & Finish:</strong> We polish the area for clarity. Some faint marks may remain, but the goal is structural integrity.</li>
-                  <li><strong>Safety Check:</strong> We verify visibility and advise if replacement would be safer in the future.</li>
-                </ol>
-              </section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                  Chip & Crack Repair Pricing
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 border-2 border-green-500 rounded-lg p-6 text-center">
+                    <DollarSign className="w-12 h-12 text-green-600 mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">With Insurance</h3>
+                    <div className="text-4xl font-bold text-green-600 mb-3">$0</div>
+                    <p className="text-gray-700 mb-4">
+                      Most comprehensive policies in Colorado cover chip repair with zero deductible
+                    </p>
+                    <ul className="text-sm text-left text-gray-700 space-y-1">
+                      <li>✓ We bill insurance directly</li>
+                      <li>✓ No out-of-pocket cost</li>
+                      <li>✓ Won’t raise your rates</li>
+                      <li>✓ All paperwork handled</li>
+                    </ul>
+                  </div>
 
-              {/* FAQs (Repair) */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Repair FAQs</h2>
-                <div className="space-y-4 text-gray-700">
-                  <div>
-                    <h3 className="font-semibold">What chips can be repaired?</h3>
-                    <p>Chips smaller than a quarter and cracks under ~6 inches not in the driver’s primary view are usually repairable.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Will it be invisible?</h3>
-                    <p>You’ll likely see some faint cosmetic marks. The purpose of repair is to stop spreading and restore strength.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Is it safe to drive right away?</h3>
-                    <p>Yes—repairs are drive‑ready immediately after curing.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Is repair covered by insurance?</h3>
-                    <p>Often 100% in Colorado under comprehensive coverage. We’ll help you confirm.</p>
+                  <div className="bg-blue-50 border-2 border-blue-500 rounded-lg p-6 text-center">
+                    <DollarSign className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Without Insurance</h3>
+                    <div className="text-4xl font-bold text-blue-600 mb-3">$50-$100</div>
+                    <p className="text-gray-700 mb-4">
+                      Affordable pricing if paying out-of-pocket
+                    </p>
+                    <ul className="text-sm text-left text-gray-700 space-y-1">
+                      <li>✓ Same quality service</li>
+                      <li>✓ Lifetime warranty included</li>
+                      <li>✓ Much cheaper than replacement</li>
+                      <li>✓ Mobile service available</li>
+                    </ul>
                   </div>
                 </div>
+                <p className="mt-6 text-center text-gray-700">
+                  <strong>Compare to windshield replacement:</strong> $300-$800+ · Not always covered · Takes 90+ minutes
+                </p>
               </section>
 
               {/* Service Area Section */}
