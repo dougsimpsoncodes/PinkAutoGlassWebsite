@@ -295,3 +295,14 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 - Uploaded 83 negative keywords to Microsoft Ads
 - Tightened match types (25 broad → 2 broad + 19 phrase)
 - Deployed: commit e6ca81d
+
+## 2026-04-09 (Session 2) — Franchise Restructure Phase 1 + Google Ads Fix
+- Full session log: [tasks/2026-04-09-session2-franchise-restructure-and-ads.md](2026-04-09-session2-franchise-restructure-and-ads.md)
+- **Franchise Phase 1:** 136 new state-prefixed routes (/colorado/, /arizona/) coexisting with old URLs. All noindexed. Commit 1b934ec.
+- **Blog links:** Markdown link parser + 2-3 contextual links per post (12 posts). Commit 4bcafad.
+- **CWV audit:** Homepage 72 (tracking scripts), location/service pages 96-97. No actionable fixes.
+- **Google Ads — offline conversion action:** Old action was UPLOAD_CALLS type receiving click data (100% failures). New UPLOAD_CLICKS action created (ID 7568909259).
+- **Google Ads — tCPA removed:** $78 target was too restrictive (avg CPA $84). Ads had 0 impressions all day. Removed tCPA → ads resumed immediately.
+- **Google Ads — final URL:** Updated http:// → https:// via API.
+- Verification: Gemini confirmed all changes correct. Codex quota exceeded.
+- Deliberately NOT done: national homepage change (deferred to Phase 2), budget increase (rank is the problem, not budget)
