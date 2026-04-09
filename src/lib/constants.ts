@@ -18,10 +18,18 @@ export const BUSINESS_PHONE_NUMBER = '+17209187465';
 // Calls shorter than this are excluded from lead counts (hangups, robocalls).
 export const MIN_CALL_DURATION_SECONDS = 30;
 
+// Dedup window (in minutes): how close a phone_click must be to a
+// RingCentral call to consider them the same event. When matched,
+// the offline upload is skipped because the phone click already
+// fired a real-time conversion. Data shows 93% of click-to-call
+// happens within 60 seconds; 3 min captures 96.7%.
+export const DEDUP_WINDOW_MINUTES = 3;
+
 // Attribution window for session-based matching (in minutes).
-// If an ad click session started within this window before a call,
-// the call is attributed to that ad platform.
-export const ATTRIBUTION_WINDOW_MINUTES = 15;
+// For calls WITHOUT a phone_click, how far back we look for a
+// website session with a GCLID/MSCLKID to attribute the call
+// to an ad. 60 min captures the browse-then-call funnel.
+export const ATTRIBUTION_WINDOW_MINUTES = 60;
 
 // Customer-facing SMS kill switch. Set ENABLE_CUSTOMER_SMS=false to disable all
 // automated SMS to customers (instant replies, drip follow-ups, review requests,

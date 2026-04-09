@@ -32,15 +32,16 @@ import {
 } from './microsoftAds';
 import {
   ATTRIBUTION_WINDOW_MINUTES,
+  DEDUP_WINDOW_MINUTES,
   MIN_CALL_DURATION_SECONDS,
   isExcludedPhone,
   isTestPhone,
 } from './constants';
 
-// Default conversion value for phone calls
-const DEFAULT_CALL_VALUE = 150;
-// Default conversion value for form leads (fallback when no revenue available)
-const DEFAULT_FORM_VALUE = 150;
+// Default conversion value for phone calls (15.3% close rate × $360 avg ticket)
+const DEFAULT_CALL_VALUE = 55;
+// Default conversion value for form leads (25.2% close rate × $360 avg ticket)
+const DEFAULT_FORM_VALUE = 91;
 
 // Optional: separate conversion action for form leads
 const GOOGLE_ADS_FORM_CONVERSION_ACTION_ID = process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
@@ -180,20 +181,46 @@ async function findAttributableCalls(
   console.log(`📞 Found ${realCalls.length} calls to check for Google Ads attribution`);
 
   const attributedCalls: AttributedCall[] = [];
-  const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+  const dedupWindowMs = DEDUP_WINDOW_MINUTES * 60 * 1000;
+  const attributionWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
   for (const call of realCalls) {
     const callTime = new Date(call.start_time);
-    const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
-    // Strategy 1: Direct phone_click match (highest confidence)
-    // Check for BOTH gclid and msclkid clicks to detect cross-platform conflict
+    // Strategy 1: Check for phone_click within DEDUP window
+    // If a phone_click fired, the real-time conversion already counted this call.
+    // Skip the offline upload to avoid double-counting.
+    const dedupWindowStart = new Date(callTime.getTime() - dedupWindowMs);
+    const { data: dedupClickEvents } = await supabase
+      .from('conversion_events')
+      .select('session_id, gclid, msclkid, created_at')
+      .eq('event_type', 'phone_click')
+      .gte('created_at', dedupWindowStart.toISOString())
+      .lte('created_at', callTime.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (dedupClickEvents && dedupClickEvents.length > 0) {
+      const hasAdClick = dedupClickEvents.some((e: any) => e.gclid || e.msclkid);
+      if (hasAdClick) {
+        // Phone click already fired real-time conversion — skip offline upload
+        console.log(`⏭️ Dedup: skipping call ${call.call_id} — phone_click with ad click ID fired within ${DEDUP_WINDOW_MINUTES}min`);
+        continue;
+      }
+    }
+
+    // Strategy 2: No phone_click match — try session-based attribution
+    // Use the wider ATTRIBUTION window for calls that didn't originate from a website click
+    const attributionWindowStart = new Date(callTime.getTime() - attributionWindowMs);
+
+    // Check for GCLID sessions (Google Ads)
+    // First check phone_click events outside the dedup window but within attribution window
     const { data: clickEvents } = await supabase
       .from('conversion_events')
       .select('session_id, gclid, msclkid, created_at')
       .eq('event_type', 'phone_click')
-      .gte('created_at', windowStart.toISOString())
-      .lte('created_at', callTime.toISOString())
+      .gte('created_at', attributionWindowStart.toISOString())
+      .lt('created_at', dedupWindowStart.toISOString())
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -201,8 +228,6 @@ async function findAttributableCalls(
       const gclidClicks = clickEvents.filter((e: any) => e.gclid);
       const msclkidClicks = clickEvents.filter((e: any) => e.msclkid);
 
-      // Only attribute to Google if no Microsoft clicks in the same window
-      // (prevents double-counting the same call to both platforms)
       if (gclidClicks.length > 0 && msclkidClicks.length === 0) {
         attributedCalls.push({
           callId: call.call_id,
@@ -215,18 +240,17 @@ async function findAttributableCalls(
         });
         continue;
       }
-      // If both platforms have clicks, skip — don't attribute to either
       if (gclidClicks.length > 0 && msclkidClicks.length > 0) {
         continue;
       }
     }
 
-    // Strategy 2: Session-based match (only if no conflict with Microsoft)
+    // Strategy 3: Session-based match (only if no conflict with Microsoft)
     const { data: googleSessions } = await supabase
       .from('user_sessions')
       .select('session_id, gclid, started_at')
       .not('gclid', 'is', null)
-      .gte('started_at', windowStart.toISOString())
+      .gte('started_at', attributionWindowStart.toISOString())
       .lte('started_at', callTime.toISOString())
       .order('started_at', { ascending: false })
       .limit(1);
@@ -237,7 +261,7 @@ async function findAttributableCalls(
         .from('user_sessions')
         .select('session_id')
         .not('msclkid', 'is', null)
-        .gte('started_at', windowStart.toISOString())
+        .gte('started_at', attributionWindowStart.toISOString())
         .lte('started_at', callTime.toISOString())
         .limit(1);
 
@@ -256,7 +280,7 @@ async function findAttributableCalls(
     }
   }
 
-  console.log(`✅ Attributed ${attributedCalls.length} calls to Google Ads`);
+  console.log(`✅ Attributed ${attributedCalls.length} calls to Google Ads (${realCalls.length - attributedCalls.length} skipped/unmatched)`);
 
   return attributedCalls;
 }
@@ -585,20 +609,39 @@ async function findMicrosoftAttributableCalls(
   console.log(`📞 Found ${realCallsMs.length} calls to check for Microsoft Ads attribution`);
 
   const attributedCalls: MicrosoftAttributedCall[] = [];
-  const matchWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+  const dedupWindowMs = DEDUP_WINDOW_MINUTES * 60 * 1000;
+  const attributionWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
   for (const call of realCallsMs) {
     const callTime = new Date(call.start_time);
-    const windowStart = new Date(callTime.getTime() - matchWindowMs);
 
-    // Strategy 1: Direct phone_click match (highest confidence)
-    // Check for BOTH msclkid and gclid clicks to detect cross-platform conflict
+    // Strategy 1: Dedup check — phone_click within tight window already fired real-time conversion
+    const dedupWindowStart = new Date(callTime.getTime() - dedupWindowMs);
+    const { data: dedupClickEvents } = await supabase
+      .from('conversion_events')
+      .select('session_id, gclid, msclkid, created_at')
+      .eq('event_type', 'phone_click')
+      .gte('created_at', dedupWindowStart.toISOString())
+      .lte('created_at', callTime.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (dedupClickEvents && dedupClickEvents.length > 0) {
+      const hasAdClick = dedupClickEvents.some((e: any) => e.gclid || e.msclkid);
+      if (hasAdClick) {
+        console.log(`⏭️ Dedup: skipping call ${call.call_id} — phone_click with ad click ID fired within ${DEDUP_WINDOW_MINUTES}min (Microsoft)`);
+        continue;
+      }
+    }
+
+    // Strategy 2: Check for phone_click with MSCLKID outside dedup window but within attribution window
+    const attributionWindowStart = new Date(callTime.getTime() - attributionWindowMs);
     const { data: msClickEvents } = await supabase
       .from('conversion_events')
       .select('session_id, gclid, msclkid, created_at')
       .eq('event_type', 'phone_click')
-      .gte('created_at', windowStart.toISOString())
-      .lte('created_at', callTime.toISOString())
+      .gte('created_at', attributionWindowStart.toISOString())
+      .lt('created_at', dedupWindowStart.toISOString())
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -606,7 +649,6 @@ async function findMicrosoftAttributableCalls(
       const msClicks = msClickEvents.filter((e: any) => e.msclkid);
       const googleClicks = msClickEvents.filter((e: any) => e.gclid);
 
-      // Only attribute to Microsoft if no Google clicks in the same window
       if (msClicks.length > 0 && googleClicks.length === 0) {
         attributedCalls.push({
           callId: call.call_id,
@@ -619,18 +661,17 @@ async function findMicrosoftAttributableCalls(
         });
         continue;
       }
-      // If both platforms have clicks, skip — don't attribute to either
       if (msClicks.length > 0 && googleClicks.length > 0) {
         continue;
       }
     }
 
-    // Strategy 2: Session-based match (only if no conflict with Google)
+    // Strategy 3: Session-based match (only if no conflict with Google)
     const { data: msSessions } = await supabase
       .from('user_sessions')
       .select('session_id, msclkid, started_at')
       .not('msclkid', 'is', null)
-      .gte('started_at', windowStart.toISOString())
+      .gte('started_at', attributionWindowStart.toISOString())
       .lte('started_at', callTime.toISOString())
       .order('started_at', { ascending: false })
       .limit(1);
@@ -641,7 +682,7 @@ async function findMicrosoftAttributableCalls(
         .from('user_sessions')
         .select('session_id')
         .not('gclid', 'is', null)
-        .gte('started_at', windowStart.toISOString())
+        .gte('started_at', attributionWindowStart.toISOString())
         .lte('started_at', callTime.toISOString())
         .limit(1);
 
@@ -660,7 +701,7 @@ async function findMicrosoftAttributableCalls(
     }
   }
 
-  console.log(`✅ Attributed ${attributedCalls.length} calls to Microsoft Ads`);
+  console.log(`✅ Attributed ${attributedCalls.length} calls to Microsoft Ads (${realCallsMs.length - attributedCalls.length} skipped/unmatched)`);
 
   return attributedCalls;
 }

@@ -1,0 +1,84 @@
+Keyword,Match Type,Category
+"glass of america",Phrase,Competitor
+"a&a glass",Phrase,Competitor
+"rocky auto body",Phrase,Competitor
+"timberwolf auto glass",Phrase,Competitor
+"timberwolf",Phrase,Competitor
+"edirectglass",Phrase,Competitor
+"glass doctor",Phrase,Competitor
+"novus glass",Phrase,Competitor
+"novus",Phrase,Competitor
+"gerber collision",Phrase,Competitor
+"js auto glass",Phrase,Competitor
+"anders auto glass",Phrase,Competitor
+"new vision auto glass",Phrase,Competitor
+"action auto glass",Phrase,Competitor
+"safelite",Phrase,Competitor
+"safelight",Phrase,Competitor
+"safelitesolutions",Phrase,Competitor
+"safe lite",Phrase,Competitor
+"autoglass.co.uk",Phrase,Competitor
+"classy auto glass",Phrase,Competitor
+"american glass repair",Phrase,Competitor
+"performanceautoglass",Phrase,Competitor
+"performance auto glass",Phrase,Competitor
+"autoglassnow",Phrase,Competitor
+"auto glass now",Phrase,Competitor
+"valley glass",Phrase,Competitor
+"quick set auto glass",Phrase,Competitor
+"quickset auto glass",Phrase,Competitor
+"speedy autoglass",Phrase,Competitor
+"native auto glass",Phrase,Competitor
+"lakeside autobrokers",Phrase,Competitor
+"glass yes",Phrase,Competitor
+"alan's auto glass",Phrase,Competitor
+"cheyenne",Phrase,Out of Area
+"annandale",Phrase,Out of Area
+"canon city",Phrase,Out of Area
+"longmont",Phrase,Out of Area
+"colorado springs",Phrase,REMOVED — Colorado Springs is in service area
+"fort collins",Phrase,Out of Area
+"salt lake",Phrase,Out of Area
+"santa fe",Phrase,Out of Area
+"black forest",Phrase,Out of Area
+"granby",Phrase,Out of Area
+"greeley",Phrase,Out of Area
+"berthoud",Phrase,Out of Area
+"pueblo",Phrase,Out of Area
+"woodland park",Phrase,Out of Area
+"boulder",Phrase,Out of Area
+"logan utah",Phrase,Out of Area
+"grand junction",Phrase,Out of Area
+"johannesburg",Phrase,Out of Area
+"crestwood",Phrase,Out of Area
+"window tint",Phrase,Wrong Service
+"window tinting",Phrase,Wrong Service
+"calibration services",Phrase,Wrong Service
+"wiper blades",Phrase,Wrong Service
+"sunroof glass",Phrase,Wrong Service
+"liftgate glass seal",Phrase,Wrong Service
+"auto body",Phrase,Wrong Service
+"body shop",Phrase,Wrong Service
+"mirror repair",Phrase,Wrong Service
+"glass supplier",Phrase,Wrong Service/Wholesale
+"auto glass supplier",Phrase,Wrong Service/Wholesale
+"windshield specs",Phrase,Wrong Service/Parts
+"anybody make decent",Phrase,Informational
+"how much does",Phrase,Informational
+"how much is",Phrase,Informational
+"how to fix",Phrase,Informational
+"cost of",Phrase,Informational
+"cost to repair",Phrase,Informational
+"what to repair",Phrase,Informational
+"list of companies",Phrase,Informational
+"companies that fix",Phrase,Informational
+"best place to get",Phrase,Informational
+"nationwide warranty",Phrase,Informational/Generic
+"glass companies",Phrase,Too Generic
+"auto glass shops",Phrase,Too Generic
+"reviews",Exact,Informational
+"jobs",Phrase,Job Seekers
+"careers",Phrase,Job Seekers
+"hiring",Phrase,Job Seekers
+"employment",Phrase,Job Seekers
+"pink auto glass",Exact,Own Brand (save paid spend)
