@@ -6,6 +6,8 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import ServiceAreaLinks from '@/components/ServiceAreaLinks';
+import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
   title: 'Windshield Chip & Crack Repair | $0 With Insurance',
@@ -82,7 +84,7 @@ export default function WindshieldRepairPage() {
 
       <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero */}
-        <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
+<section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -338,6 +340,10 @@ export default function WindshieldRepairPage() {
                   ))}
                 </div>
               </section>
+
+              
+              <ServiceAreaLinks />
+              <RelatedServices currentSlug="/services/windshield-repair" />
 
               <section className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Stop That Chip From Spreading</h2>

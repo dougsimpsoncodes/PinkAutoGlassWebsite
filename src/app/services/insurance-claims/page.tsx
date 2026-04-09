@@ -5,6 +5,8 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import ServiceAreaLinks from '@/components/ServiceAreaLinks';
+import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
   title: 'Auto Glass Insurance Claims Colorado | $0 Deductible',
@@ -68,7 +70,7 @@ export default function InsuranceClaimsPage() {
       />
 
       <article className="min-h-screen bg-gradient-to-b from-white to-green-50 page-top-padding">
-        <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
+<section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
@@ -252,6 +254,10 @@ export default function InsuranceClaimsPage() {
                   ))}
                 </div>
               </section>
+
+              
+              <ServiceAreaLinks />
+              <RelatedServices currentSlug="/services/insurance-claims" />
 
               <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to File Your Claim?</h2>

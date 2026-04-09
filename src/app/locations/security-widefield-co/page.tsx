@@ -159,6 +159,34 @@ export default function SecurityWidefieldLocationPage() {
                 </ul>
               </section>
 
+              {/* Our Services */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Our Services in Security Widefield
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  We bring a full range of auto glass services directly to you in Security Widefield:
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Windshield Replacement</span>
+                    <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
+                  </Link>
+                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
+                    <span className="block text-sm text-gray-600">30-minute service, often $0</span>
+                  </Link>
+                  <Link href="/services/adas-calibration" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">ADAS Calibration</span>
+                    <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
+                  </Link>
+                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Insurance Claims</span>
+                    <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
+                  </Link>
+                </div>
+              </section>
+
                 <p className="text-lg text-gray-700 mb-4">
                   Pink Auto Glass has deep roots in the Security-Widefield community. Many of our customers are military families stationed at Fort Carson or Peterson Space Force Base, and we designed our mobile service to fit the unpredictable schedules that come with military life. We arrive at your driveway in Stratmoor Hills, your parking lot near Widefield Estates, or wherever is convenient. Our technicians use OEM-quality glass and adhesives engineered for Colorado conditions, and every replacement includes ADAS calibration when your vehicle requires it. We process insurance claims directly with USAA, GEICO Military, and all major providers so you never have to chase paperwork.
                 </p>

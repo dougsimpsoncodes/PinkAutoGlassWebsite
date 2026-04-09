@@ -159,6 +159,34 @@ export default function BlackForestLocationPage() {
                 </ul>
               </section>
 
+              {/* Our Services */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Our Services in Black Forest
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  We bring a full range of auto glass services directly to you in Black Forest:
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Windshield Replacement</span>
+                    <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
+                  </Link>
+                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
+                    <span className="block text-sm text-gray-600">30-minute service, often $0</span>
+                  </Link>
+                  <Link href="/services/adas-calibration" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">ADAS Calibration</span>
+                    <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
+                  </Link>
+                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Insurance Claims</span>
+                    <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
+                  </Link>
+                </div>
+              </section>
+
                 <p className="text-lg text-gray-700 mb-4">
                   Pink Auto Glass built our mobile service for communities exactly like Black Forest. When the nearest auto glass shop is a 20-30 minute drive into Colorado Springs, having a technician come to your property is not a convenience - it is a necessity. Our mobile units navigate Black Forest&#39;s dirt roads daily, arriving at your driveway with OEM-quality glass, professional-grade adhesives rated for extreme temperature swings, and ADAS calibration equipment for modern trucks and SUVs. We understand that Black Forest residents drive larger vehicles designed for rural terrain, and we stock glass sizes to match. Insurance paperwork is handled entirely by us, so you can get back to the land and the lifestyle that brought you here.
                 </p>

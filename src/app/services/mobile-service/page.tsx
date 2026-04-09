@@ -6,6 +6,8 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import ServiceAreaLinks from '@/components/ServiceAreaLinks';
+import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Replacement | We Come to You Free',
@@ -59,7 +61,7 @@ export default function MobileServicePage() {
       />
 
       <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 page-top-padding">
-        <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
+<section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -238,6 +240,10 @@ export default function MobileServicePage() {
                   ))}
                 </div>
               </section>
+
+              
+              <ServiceAreaLinks />
+              <RelatedServices currentSlug="/services/mobile-service" />
 
               <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready for Mobile Service?</h2>

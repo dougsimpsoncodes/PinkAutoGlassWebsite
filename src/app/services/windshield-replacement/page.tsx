@@ -6,6 +6,8 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import ServiceAreaLinks from '@/components/ServiceAreaLinks';
+import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement | Mobile Service CO & AZ',
@@ -95,7 +97,7 @@ export default function WindshieldReplacementPage() {
 
       <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
+<section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -430,6 +432,10 @@ export default function WindshieldReplacementPage() {
               </section>
 
               {/* CTA Section */}
+              
+              <ServiceAreaLinks />
+              <RelatedServices currentSlug="/services/windshield-replacement" />
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Replace Your Windshield?</h2>
                 <p className="text-xl mb-6 text-pink-100">

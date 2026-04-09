@@ -139,6 +139,34 @@ export default function WellingtonLocationPage() {
                 </ul>
               </section>
 
+              {/* Our Services */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Our Services in Wellington
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  We bring a full range of auto glass services directly to you in Wellington:
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Windshield Replacement</span>
+                    <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
+                  </Link>
+                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
+                    <span className="block text-sm text-gray-600">30-minute service, often $0</span>
+                  </Link>
+                  <Link href="/services/adas-calibration" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">ADAS Calibration</span>
+                    <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
+                  </Link>
+                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Insurance Claims</span>
+                    <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
+                  </Link>
+                </div>
+              </section>
+
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting south on I-25 to Fort Collins for work, picking up supplies in Old Town Wellington along Cleveland Avenue, or heading home to one of the newer subdivisions like Mountain View Ranch or Sage Meadows, Pink Auto Glass brings professional mobile service directly to your door. We understand the challenges Wellington drivers face—from I-25 semi-truck debris to gravel road damage on surrounding Larimer County roads.
                 </p>

@@ -144,6 +144,34 @@ export default function GreenwooodVillageLocationPage() {
                 </ul>
               </section>
 
+              {/* Our Services */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Our Services in Greenwood Village
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  We bring a full range of auto glass services directly to you in Greenwood Village:
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Windshield Replacement</span>
+                    <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
+                  </Link>
+                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
+                    <span className="block text-sm text-gray-600">30-minute service, often $0</span>
+                  </Link>
+                  <Link href="/services/adas-calibration" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">ADAS Calibration</span>
+                    <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
+                  </Link>
+                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                    <span className="font-semibold text-gray-900">Insurance Claims</span>
+                    <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
+                  </Link>
+                </div>
+              </section>
+
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Greenwood Village life. You&apos;re commuting on I-25 to a DTC office, dropping kids at Cherry Creek Schools, or heading to Fiddler&apos;s Green for a concert. That&apos;s why we bring our fully equipped mobile units directly to your office parking garage, your driveway in Sundance Hills, or wherever you are. With the highest density of vehicles requiring ADAS calibration after windshield replacement, our technicians are experts at handling the BMW, Tesla, Mercedes, and Audi models that dominate Greenwood Village driveways.
                 </p>

@@ -5,6 +5,8 @@ import CTAButtons from '@/components/CTAButtons';
 import TrustBadges from '@/components/TrustBadges';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema } from '@/lib/schema';
+import ServiceAreaLinks from '@/components/ServiceAreaLinks';
+import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
   title: "Emergency Windshield Repair | Same-Day 24/7 Mobile",
@@ -415,6 +417,9 @@ export default function EmergencyWindshieldRepairPage() {
               ))}
             </div>
           </section>
+
+          <ServiceAreaLinks />
+          <RelatedServices currentSlug="/services/emergency-windshield-repair" />
 
           {/* Final Emergency CTA */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-8 md:p-12 text-center text-white">
