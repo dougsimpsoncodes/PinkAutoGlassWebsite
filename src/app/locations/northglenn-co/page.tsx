@@ -45,6 +45,10 @@ export default function NorthglennLocationPage() {
       question: 'Why do Northglenn cars get so many windshield chips?',
       answer: 'Northglenn sits directly along the I-25 corridor between 104th and 120th Avenue, where legacy pavement and heavy commuter traffic generate constant debris. The city\'s 1950s-era street infrastructure creates rough surfaces, and Adams County road sand from winter treatments stays on streets well into spring. Combined with minimal tree canopy that leaves vehicles exposed to hail, windshield damage is extremely common in Northglenn.'
     },
+    {
+      question: 'Can Pink Auto Glass provide service if I\'m at the Northglenn Recreation Center?',
+      answer: 'Absolutely! Our mobile units serve all of Northglenn, including convenient locations like the Northglenn Recreation Center. We can perform your windshield repair or replacement while you\'re inside, making the process seamless and hassle-free.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function NorthglennLocationPage() {
                 Northglenn&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Northglenn\'s central location along I-25 and its busy suburban streets mean constant exposure to road hazards. The frequent flow of traffic, combined with Colorado\'s often intense hailstorms, makes windshield damage a common concern for local drivers.
               </p>
               <CTAButtons source="northglenn-co-hero" />
             </div>
@@ -114,6 +118,31 @@ export default function NorthglennLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-northglenn-co" />
+
+              {/* Windshield Damage in Northglenn */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Northglenn
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks kicked up by vehicles on I-25 and major thoroughfares.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hailstorms that can cause widespread glass damage.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from ongoing road maintenance and construction projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Smaller stones from residential landscaping work.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Northglenn life. You&apos;re commuting on I-25 to downtown Denver, shopping along the 104th Avenue corridor, or enjoying the community events at the Northglenn Recreation Center. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the Original Northglenn neighborhoods near Malley Drive, the Huron Hills area, or the newer developments near Eastlake. No need to fight 104th Avenue traffic to reach a shop when we bring the shop to your driveway.
@@ -302,6 +331,19 @@ export default function NorthglennLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/thornton-co" className="text-pink-600 hover:underline font-medium">Thornton</Link>
+                  <Link href="/locations/westminster-co" className="text-pink-600 hover:underline font-medium">Westminster</Link>
+                  <Link href="/locations/federal-heights-co" className="text-pink-600 hover:underline font-medium">Federal Heights</Link>
+                  <Link href="/locations/henderson-co" className="text-pink-600 hover:underline font-medium">Henderson</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Northglenn?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Northglenn. Call now for a free quote.</p>

@@ -40,6 +40,10 @@ export default function BroomfieldLocationPage() {
       question: 'Does insurance cover windshield replacement in Broomfield?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Broomfield residents.'
     },
+    {
+      question: 'What if I need a windshield replacement while shopping at Flatiron Crossing Mall?',
+      answer: 'Our mobile service is perfect for this! We can meet you in the parking lot of Flatiron Crossing or any other commercial area in Broomfield. You can finish your shopping or errands, and return to a safely repaired or replaced windshield.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function BroomfieldLocationPage() {
                 Broomfield's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Broomfield\'s strategic location along US-36 (Boulder Turnpike) and I-25 means heavy commuter traffic and constant exposure to road hazards. Combined with unpredictable Colorado weather, windshield chips and cracks are a common frustration for drivers in this thriving city.
               </p>
               <CTAButtons source="broomfield-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function BroomfieldLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-broomfield-co" />
+
+              {/* Windshield Damage in Broomfield */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Broomfield
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from high-speed US-36 and I-25 traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hailstorms during the spring and summer months.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from new office parks and residential areas.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and sand used on winter roads around the city.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Broomfield. Our mobile units are fully equipped to handle all your auto glass needs.

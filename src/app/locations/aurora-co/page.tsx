@@ -40,6 +40,10 @@ export default function AuroraLocationPage() {
       question: 'Does insurance cover windshield replacement in Aurora?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Aurora residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Does Pink Auto Glass offer mobile service to specific areas like the Southlands shopping district or near Buckley Space Force Base in Aurora?',
+      answer: 'Yes, we proudly serve all areas of Aurora, including the Southlands, Aurora Highlands, and neighborhoods surrounding Buckley Space Force Base. Our mobile service makes it easy for you to get your windshield repaired or replaced at your convenience, wherever you are in Aurora.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function AuroraLocationPage() {
                 Aurora's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                From the sprawling neighborhoods near Southlands to the busy stretches of E-470 and I-225, Aurora drivers cover a lot of ground. With significant daily commutes and the proximity to Buckley Space Force Base, your windshield is constantly exposed to typical Colorado road hazards and the occasional debris from expansive construction.
               </p>
               <CTAButtons source="aurora-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function AuroraLocationPage() {
                   Welcome to Colorado's third-largest city with 390,000+ residents! Aurora stretches from Denver's eastern border all the way to Denver International Airport (DIA), encompassing vibrant communities like Stapleton (now Central Park), Green Valley Ranch, the massive Southlands Town Center (Colorado's largest Lifestyle District with 150+ shops), and the Fitzsimons Innovation District. With 8,000 acres of parks and open space, Aurora combines urban convenience with outdoor recreation—but that means unique windshield challenges too.
                 </p>
                 <AboveFoldCTA location="location-aurora" />
+
+              {/* Windshield Damage in Aurora */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Aurora
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>High-speed traffic on E-470 and I-225, often leading to stone chips from other vehicles.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing residential and commercial development throughout the city generating construction debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe weather patterns, including strong winds and hailstorms common on the eastern plains.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Increased gravel and sand usage on icy roads during winter months, causing abrasive damage.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on E-470 (the 75mph toll road), traveling to DIA (just 15 minutes from southeast Aurora), shopping at Southlands' 150+ retailers, working in the Fitzsimons medical/tech corridor, driving near Buckley Space Force Base, or navigating I-225 and I-70 through Aurora's 154 square miles, we bring mobile service directly to you. From historic Aurora neighborhoods to brand-new developments, we serve every corner of Colorado's most diverse city.
                 </p>
@@ -201,6 +230,20 @@ export default function AuroraLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/locations/parker-co" className="text-pink-600 hover:underline font-medium">Parker</Link>
+                  <Link href="/locations/commerce-city-co" className="text-pink-600 hover:underline font-medium">Commerce City</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
                 </div>
               </section>
 

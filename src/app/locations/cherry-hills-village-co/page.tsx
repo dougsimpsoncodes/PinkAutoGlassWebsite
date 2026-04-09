@@ -45,6 +45,10 @@ export default function CherryHillsVillageLocationPage() {
       question: 'Why is ADAS calibration important for luxury vehicles?',
       answer: 'Most 2018+ luxury vehicles have cameras and sensors mounted to the windshield that control lane-keeping, automatic braking, and adaptive cruise control. After replacement, these systems must be professionally recalibrated to ensure they function correctly. We include ADAS calibration with every replacement that requires it.'
     },
+    {
+      question: 'Can Pink Auto Glass replace specialty windshields for luxury vehicles common in Cherry Hills Village?',
+      answer: 'Yes, our technicians are highly trained and equipped to handle windshield replacements for all types of luxury and high-end vehicles. We use OEM or equivalent quality glass and ensure precise calibration for advanced driver-assistance systems (ADAS), maintaining your vehicle\'s safety and integrity.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function CherryHillsVillageLocationPage() {
                 Cherry Hills Village's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Residents of Cherry Hills Village enjoy pristine surroundings, but driving still involves exposure to major thoroughfares like I-25. Upscale vehicles often face unique challenges from road debris and Denver\'s variable weather, demanding high-quality auto glass solutions.
               </p>
               <CTAButtons source="cherry-hills-village-co-hero" />
             </div>
@@ -108,6 +112,31 @@ export default function CherryHillsVillageLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-cherry-hills-village-co" />
+
+              {/* Windshield Damage in Cherry Hills Village */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Cherry Hills Village
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from nearby I-25, often kicked up by high-speed traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Occasional golf course hazards or landscaping debris near roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, which can impact this affluent Denver suburb significantly.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Temperature fluctuations that can exacerbate existing chips into larger cracks.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Cherry Hills Village residents drive some of the highest-value vehicles on the Front Range—BMW, Mercedes, Audi, Porsche, and other luxury brands with advanced ADAS windshield systems. Pink Auto Glass specializes in OEM-quality replacements with professional ADAS calibration, delivered via mobile service right to your estate driveway, golf club parking, or office.
@@ -301,6 +330,19 @@ export default function CherryHillsVillageLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/greenwood-village-co" className="text-pink-600 hover:underline font-medium">Greenwood Village</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
                 </div>
               </section>
 

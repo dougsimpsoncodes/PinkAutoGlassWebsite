@@ -40,6 +40,10 @@ export default function LovelandLocationPage() {
       question: 'Does insurance cover windshield replacement in Loveland?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Loveland residents.'
     },
+    {
+      question: 'If my windshield gets chipped on my way to Estes Park from Loveland, can Pink Auto Glass meet me?',
+      answer: 'While our primary service area is within Loveland city limits and its immediate surroundings, we understand mountain adventures can be tough on glass. We encourage you to contact us as soon as possible after damage occurs. We can often meet you at a convenient and safe location within our service radius upon your return to Loveland or before you head up the canyon.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function LovelandLocationPage() {
                 Loveland's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                As \'The Sweetheart City\' and a gateway to Estes Park and Rocky Mountain National Park via US-34, Loveland\'s roads present unique challenges for windshields. From the bustling I-25 corridor to the scenic drives towards the mountains, drivers often encounter everything from construction debris to gravel kicked up by larger vehicles and the inevitable Colorado weather.
               </p>
               <CTAButtons source="loveland-hero" />
             </div>
@@ -121,6 +125,31 @@ export default function LovelandLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-loveland" />
+
+              {/* Windshield Damage in Loveland */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Loveland
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy tourist and commuter traffic on US-34 (towards Estes Park) and I-25, prone to debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Proximity to mountain recreation areas increases risk of rockfall and gravel from canyon roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing commercial and residential expansion, especially along the I-25 corridor, generating construction debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hail and strong winds, common in Northern Colorado, causing sudden impact damage.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're at the Chapungu Sculpture Park at Centerra (featuring 82 monumental stone sculptures across 26 acres), enjoying Boyd Lake State Park, shopping in downtown Loveland's art galleries, or commuting to CSU in Fort Collins, we bring professional windshield service directly to you. We serve all Loveland neighborhoods including Centerra, Campion, Little Dam, and downtown—often same-day.

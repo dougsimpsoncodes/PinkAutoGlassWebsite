@@ -40,6 +40,10 @@ export default function BoulderLocationPage() {
       question: 'Does insurance cover windshield replacement in Boulder?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Boulder residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Can Pink Auto Glass accommodate my schedule if I commute primarily by bicycle in Boulder but need my car serviced?',
+      answer: 'Absolutely! We understand Boulder\'s unique commuting culture. Our mobile service means you don\'t need to disrupt your bike commute. We can come to your home, workplace, or another convenient location in Boulder to repair or replace your windshield, allowing you to stay on two wheels.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function BoulderLocationPage() {
                 Boulder's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Boulder, whether you\'re cruising down US-36 with views of the Flatirons or navigating the bustling Pearl Street Mall area, often means encountering unique challenges for your windshield. The blend of busy urban routes, access to mountain recreational areas, and a community focused on outdoor activities can expose your glass to unexpected debris.
               </p>
               <CTAButtons source="boulder-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function BoulderLocationPage() {
                   Welcome to Boulder—105,000+ residents, home of the University of Colorado Boulder, and the iconic Pearl Street Mall (a 4-block pedestrian mall featuring 300+ businesses, 85% locally owned, including beloved Boulder Book Store since 1973 and Black Diamond climbing gear). Nestled at 5,430 feet elevation against the stunning Flatirons, Boulder combines college town energy with outdoor adventure—but that means unique windshield challenges. From University Hill ("The Hill" on 13th Street near CU campus) to the Chautauqua neighborhood at the base of the Flatirons, from Gunbarrel's tech corridor to Table Mesa's family neighborhoods, Pink Auto Glass serves every corner of Boulder.
                 </p>
                 <AboveFoldCTA location="location-boulder-co" />
+
+              {/* Windshield Damage in Boulder */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Boulder
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>High-speed traffic on US-36 (Denver-Boulder Turnpike) frequently kicks up rocks from other vehicles.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Proximity to canyons and mountain roads (e.g., Boulder Canyon Drive) increases risk of rockfall and gravel.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing infrastructure projects and utility work in the city\'s historic districts generating debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Vulnerable to hailstorms and strong winds sweeping down from the mountains, especially during spring and summer.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on Highway 36 (Boulder Turnpike) to Denver, exploring Boulder Canyon's scenic mountain route, navigating Baseline Road to Chautauqua's hiking trails, shopping on Pearl Street Mall, grabbing food on The Hill near CU, working in the Gunbarrel tech offices, or hiking in the Flatirons, we bring fully equipped mobile service directly to you. Our technicians understand Boulder's unique blend of urban living and mountain proximity.
                 </p>
@@ -281,6 +310,20 @@ export default function BoulderLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/longmont-co" className="text-pink-600 hover:underline font-medium">Longmont</Link>
+                  <Link href="/locations/louisville-co" className="text-pink-600 hover:underline font-medium">Louisville</Link>
+                  <Link href="/locations/lafayette-co" className="text-pink-600 hover:underline font-medium">Lafayette</Link>
+                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
                 </div>
               </section>
 

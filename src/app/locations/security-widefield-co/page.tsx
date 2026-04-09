@@ -93,7 +93,7 @@ export default function SecurityWidefieldLocationPage() {
                 Security-Widefield&#39;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service for Fort Carson & Peterson SFB Families and All Local Neighborhoods
+                Security-Widefield\'s close proximity to Fort Carson and I-25 creates a high volume of diverse traffic, from military vehicles to daily commuters. This environment, coupled with the region\'s intense weather, consistently exposes windshields to potential damage.
               </p>
               <CTAButtons source="security-widefield-co-hero" />
             </div>
@@ -133,6 +133,31 @@ export default function SecurityWidefieldLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-security-widefield-co" />
+
+              {/* Windshield Damage in Security-Widefield */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Security-Widefield
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from heavy traffic on I-25 and nearby main roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel or dirt kicked up by military vehicles operating in the area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Sudden hailstorms, a frequent occurrence in the southern Colorado Springs region.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from construction or road maintenance projects within the community.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Pink Auto Glass has deep roots in the Security-Widefield community. Many of our customers are military families stationed at Fort Carson or Peterson Space Force Base, and we designed our mobile service to fit the unpredictable schedules that come with military life. We arrive at your driveway in Stratmoor Hills, your parking lot near Widefield Estates, or wherever is convenient. Our technicians use OEM-quality glass and adhesives engineered for Colorado conditions, and every replacement includes ADAS calibration when your vehicle requires it. We process insurance claims directly with USAA, GEICO Military, and all major providers so you never have to chase paperwork.
@@ -347,6 +372,20 @@ export default function SecurityWidefieldLocationPage() {
               </section>
 
               {/* Pink CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/fountain-co" className="text-pink-600 hover:underline font-medium">Fountain</Link>
+                  <Link href="/locations/fort-carson-co" className="text-pink-600 hover:underline font-medium">Fort Carson</Link>
+                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/locations/cimarron-hills-co" className="text-pink-600 hover:underline font-medium">Cimarron Hills</Link>
+                  <Link href="/locations/falcon-co" className="text-pink-600 hover:underline font-medium">Falcon</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Security-Widefield?</h2>
                 <p className="text-xl mb-6 text-pink-100">

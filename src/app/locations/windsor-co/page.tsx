@@ -40,6 +40,10 @@ export default function WindsorLocationPage() {
       question: 'Does insurance cover windshield replacement in Windsor?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Windsor residents.'
     },
+    {
+      question: 'Can Pink Auto Glass accommodate fleet services for businesses in Windsor, given its mixed industrial and residential base?',
+      answer: 'Yes, Pink Auto Glass is well-equipped to provide comprehensive fleet services for businesses across Windsor. We understand the importance of keeping your commercial vehicles operational and offer efficient, reliable mobile windshield replacements and repairs to minimize your downtime.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function WindsorLocationPage() {
                 Windsor's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Windsor\'s growth and strategic location near I-25, Fort Collins, and Greeley mean drivers frequently encounter a mix of construction, agricultural, and highway traffic. These diverse conditions, along with Northern Colorado\'s active weather, create a high potential for windshield damage.
               </p>
               <CTAButtons source="windsor-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function WindsorLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-windsor-co" />
+
+              {/* Windshield Damage in Windsor */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Windsor
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from I-25, a major commuter and commercial route.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction debris from ongoing residential and business development.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from agricultural vehicles on roads surrounding farmlands.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Intense hailstorms, a common occurrence in the Northern Front Range.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Windsor. Our mobile units are fully equipped to handle all your auto glass needs.

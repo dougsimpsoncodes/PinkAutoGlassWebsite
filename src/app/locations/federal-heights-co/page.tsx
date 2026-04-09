@@ -45,6 +45,10 @@ export default function FederalHeightsLocationPage() {
       question: 'Why is windshield damage so common in Federal Heights?',
       answer: 'Federal Boulevard carries 30,000-40,000 vehicles per day through this 1.8-square-mile city. The heavy traffic volume creates constant road surface wear, pothole cycles, and airborne debris. Combined with I-25 access ramp traffic and Front Range hailstorms, windshield damage is extremely common here.'
     },
+    {
+      question: 'Does Pink Auto Glass provide service for commercial vehicles that operate frequently in Federal Heights?',
+      answer: 'Yes, Pink Auto Glass proudly serves both residential and commercial clients in Federal Heights. Whether you have a fleet of delivery vans or a single work truck, our technicians are equipped to handle various commercial vehicle windshield replacements, minimizing downtime for your business.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function FederalHeightsLocationPage() {
                 Federal Heights' Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Navigating the busy streets and major intersections of Federal Heights, especially near US-36 and I-25, often exposes drivers to heavy traffic and road debris. This dense urban environment, combined with Colorado\'s unpredictable weather, can quickly lead to windshield damage.
               </p>
               <CTAButtons source="federal-heights-co-hero" />
             </div>
@@ -108,6 +112,31 @@ export default function FederalHeightsLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-federal-heights-co" />
+
+              {/* Windshield Damage in Federal Heights */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Federal Heights
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from heavy traffic on I-25 and US-36.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Urban construction and infrastructure projects causing localized debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, which are a recurring threat in the Denver Metro area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Sudden temperature changes that can turn minor chips into significant cracks.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   The city is home to Water World, one of the largest water parks in the United States, spanning 70 acres. But for residents, the defining feature is Federal Boulevard's extreme traffic volume. All that traffic means constant road debris, pothole cycles, and rock chips. Pink Auto Glass brings professional mobile service right to your home or anywhere in the city—no need to navigate the busy boulevard to get your windshield fixed.
@@ -290,6 +319,19 @@ export default function FederalHeightsLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/westminster-co" className="text-pink-600 hover:underline font-medium">Westminster</Link>
+                  <Link href="/locations/thornton-co" className="text-pink-600 hover:underline font-medium">Thornton</Link>
+                  <Link href="/locations/northglenn-co" className="text-pink-600 hover:underline font-medium">Northglenn</Link>
+                  <Link href="/locations/arvada-co" className="text-pink-600 hover:underline font-medium">Arvada</Link>
                 </div>
               </section>
 

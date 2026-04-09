@@ -45,6 +45,10 @@ export default function GreenwooodVillageLocationPage() {
       question: 'Do you handle ADAS calibration for luxury vehicles common in Greenwood Village?',
       answer: 'Absolutely. Greenwood Village has one of the highest concentrations of ADAS-equipped luxury vehicles in the Denver metro. We provide professional ADAS calibration for all makes including BMW, Mercedes-Benz, Tesla, Audi, and Lexus. Calibration is included when required after windshield replacement.'
     },
+    {
+      question: 'Can Pink Auto Glass accommodate a mobile windshield replacement for busy professionals in Greenwood Village?',
+      answer: 'Absolutely. Our mobile service is designed for maximum convenience, allowing us to perform windshield replacements at your office during work hours or at your home. We understand the demanding schedules of Greenwood Village professionals and strive to make the process as seamless and time-efficient as possible.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function GreenwooodVillageLocationPage() {
                 Greenwood Village&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Greenwood Village means navigating the busy Denver Tech Center (DTC) area and high-traffic corridors like I-25. These conditions, combined with Denver\'s notorious hail season, make windshield damage a frequent concern for residents and commuters.
               </p>
               <CTAButtons source="greenwood-village-co-hero" />
             </div>
@@ -114,6 +118,31 @@ export default function GreenwooodVillageLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-greenwood-village-co" />
+
+              {/* Windshield Damage in Greenwood Village */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Greenwood Village
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris and gravel kicked up by heavy traffic on I-25 and surrounding DTC roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from ongoing commercial and residential developments.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Intense hailstorms, which regularly cause significant auto glass damage in this area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Road salt and sand used in winter, which can contain abrasive particles.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Greenwood Village life. You&apos;re commuting on I-25 to a DTC office, dropping kids at Cherry Creek Schools, or heading to Fiddler&apos;s Green for a concert. That&apos;s why we bring our fully equipped mobile units directly to your office parking garage, your driveway in Sundance Hills, or wherever you are. With the highest density of vehicles requiring ADAS calibration after windshield replacement, our technicians are experts at handling the BMW, Tesla, Mercedes, and Audi models that dominate Greenwood Village driveways.
@@ -302,6 +331,19 @@ export default function GreenwooodVillageLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/cherry-hills-village-co" className="text-pink-600 hover:underline font-medium">Cherry Hills Village</Link>
+                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/locations/lone-tree-co" className="text-pink-600 hover:underline font-medium">Lone Tree</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Greenwood Village?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Greenwood Village. Call now for a free quote.</p>

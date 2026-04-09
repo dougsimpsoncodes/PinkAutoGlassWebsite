@@ -40,6 +40,10 @@ export default function FortCollinsLocationPage() {
       question: 'Does insurance cover windshield replacement in Fort Collins?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement for the price of your deductible. We work with all major insurance companies and assist with filing all paperwork for Fort Collins residents.'
     },
+    {
+      question: 'How quickly can Pink Auto Glass service my vehicle near Old Town or CSU?',
+      answer: 'Our mobile service aims to reach you swiftly across Fort Collins, whether you\'re at the CSU campus, enjoying Old Town, or at home. We understand the need for quick repairs to keep your Northern Colorado adventures on track.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function FortCollinsLocationPage() {
                 Fort Collins' Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Fort Collins often means navigating I-25 for commutes or exploring the scenic routes around Horsetooth Reservoir. These diverse driving conditions, combined with Colorado\'s unpredictable weather, make windshield damage a common occurrence for local drivers.
               </p>
               <CTAButtons source="fort-collins-hero" />
             </div>
@@ -121,6 +125,31 @@ export default function FortCollinsLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-fort-collins" />
+
+              {/* Windshield Damage in Fort Collins */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Fort Collins
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks kicked up by semi-trucks on I-25.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms common during spring and summer months.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from construction projects around CSU or new developments.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and sand used on winter roads, especially towards the foothills.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Fort Collins life. You're commuting on College Avenue, catching a CSU Rams game at Canvas Stadium, grabbing coffee in Old Town Square (near Library Park and the Historic Mosman House), exploring the shops and art galleries on Pearl Street, working in the Harmony Corridor tech offices, or hiking at Horsetooth Reservoir. That's why we bring our mobile service directly to you—whether you're in University Acres near CSU, family-friendly Rigden Farm, downtown Old Town, the Harmony Club master-planned community, or anywhere else in Northern Colorado's largest city.
@@ -339,6 +368,19 @@ export default function FortCollinsLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/locations/wellington-co" className="text-pink-600 hover:underline font-medium">Wellington</Link>
+                  <Link href="/locations/laporte-co" className="text-pink-600 hover:underline font-medium">Laporte</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Fort Collins?</h2>
                 <p className="text-xl mb-6 text-pink-100">

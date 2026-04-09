@@ -40,6 +40,10 @@ export default function EnglewoodLocationPage() {
       question: 'Does insurance cover windshield replacement in Englewood?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Englewood residents.'
     },
+    {
+      question: 'Can Pink Auto Glass assist if my car is parked at the Englewood Light Rail station?',
+      answer: 'Yes, our mobile service offers maximum convenience for commuters. We can meet you at the Englewood Light Rail station or any other public parking area, performing the windshield repair or replacement while you\'re away.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function EnglewoodLocationPage() {
                 Englewood's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Englewood means navigating a dense urban environment with busy streets like Broadway and Santa Fe Drive, increasing the risk of windshield damage. From flying debris in traffic to sudden hailstorms, your vehicle\'s glass is often vulnerable to unexpected impacts.
               </p>
               <CTAButtons source="englewood-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function EnglewoodLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-englewood-co" />
+
+              {/* Windshield Damage in Englewood */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Englewood
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Road debris from heavy urban traffic on major avenues.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hailstorms, a common occurrence in the Denver metro area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from redevelopment projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Pothole-related debris from older road infrastructure.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Englewood. Our mobile units are fully equipped to handle all your auto glass needs.

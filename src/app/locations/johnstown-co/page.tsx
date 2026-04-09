@@ -45,6 +45,10 @@ export default function JohnstownLocationPage() {
       question: 'Why do Johnstown residents get so many windshield chips?',
       answer: 'Johnstown sits along the I-25 corridor between Fort Collins and Denver, one of the busiest freight routes in Colorado. The combination of heavy truck traffic at exits 252-254, open plains crosswinds that blow agricultural dust and debris, and constant new-construction gravel from the town\'s rapid growth makes windshield damage extremely common here.'
     },
+    {
+      question: 'Does Pink Auto Glass service the range of vehicles found in Johnstown, from family cars to farm trucks?',
+      answer: 'Yes, our expert technicians are equipped to handle windshield replacements for a diverse array of vehicles common in Johnstown, including family sedans, SUVs, trucks, and even some light commercial or agricultural vehicles. We ensure high-quality service and durable glass for every customer.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function JohnstownLocationPage() {
                 Johnstown&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Johnstown, situated between Loveland and Greeley and near I-25, experiences a unique mix of rural and developing area driving conditions. This blend exposes windshields to both agricultural debris and high-speed highway impacts, alongside Colorado\'s unpredictable weather.
               </p>
               <CTAButtons source="johnstown-co-hero" />
             </div>
@@ -114,6 +118,31 @@ export default function JohnstownLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-johnstown-co" />
+
+              {/* Windshield Damage in Johnstown */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Johnstown
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from I-25, a main artery for Johnstown commuters.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from agricultural vehicles on surrounding rural roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a prevalent risk for Northern Colorado vehicles during summer months.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Dust and small stones from unpaved roads and construction zones.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Johnstown life. You&apos;re commuting on I-25 to Loveland, Fort Collins, or Denver, shopping at the Crossroads Blvd retail area, or settling into one of the many new master-planned communities like Thompson River Ranch or Pioneer Ridge. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the established Johnstown Village core, out in the new Stroh Farm or Harvest Village neighborhoods, or anywhere in between. No need to drive to Loveland or Fort Collins for auto glass service.
@@ -302,6 +331,20 @@ export default function JohnstownLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                  <Link href="/locations/greeley-co" className="text-pink-600 hover:underline font-medium">Greeley</Link>
+                  <Link href="/locations/milliken-co" className="text-pink-600 hover:underline font-medium">Milliken</Link>
+                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/locations/berthoud-co" className="text-pink-600 hover:underline font-medium">Berthoud</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Johnstown?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Johnstown. Call now for a free quote.</p>

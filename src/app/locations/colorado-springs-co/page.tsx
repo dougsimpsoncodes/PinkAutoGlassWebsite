@@ -40,6 +40,10 @@ export default function ColoradoSpringsLocationPage() {
       question: 'Does insurance cover windshield replacement in Colorado Springs?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement for the price of your deductible. We work with all major insurance companies and assist with filing all paperwork for Colorado Springs residents.'
     },
+    {
+      question: 'Does Pink Auto Glass offer service on or near military installations like Fort Carson or Peterson Space Force Base in Colorado Springs?',
+      answer: 'While we cannot directly access secure military bases, we frequently provide mobile service to the surrounding areas and housing communities just outside Fort Carson, Peterson Space Force Base, and the Air Force Academy. We\'ll find a convenient, accessible location nearby to service your vehicle.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function ColoradoSpringsLocationPage() {
                 Colorado Springs' Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Navigating Colorado Springs, from the shadow of Pikes Peak to the daily commutes along I-25 or the stunning drives near Garden of the Gods, puts your windshield to the test. The unique blend of military traffic, rapid growth, and direct access to mountain terrain creates a perfect storm for chips and cracks.
               </p>
               <CTAButtons source="colorado-springs-hero" />
             </div>
@@ -121,6 +125,31 @@ export default function ColoradoSpringsLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-colorado-springs" />
+
+              {/* Windshield Damage in Colorado Springs */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Colorado Springs
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy traffic on I-25, especially with military personnel commuting to bases like Fort Carson or Peterson Space Force Base.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Proximity to mountain ranges (Pikes Peak) leads to increased rockfall and gravel from US-24 and other mountain roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rapid urban expansion and ongoing road construction throughout the city, a source of debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hail storms and high winds, typical of the southern Front Range, causing sudden damage.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Colorado Springs life. You're busy at Peterson Space Force Base, working downtown, or exploring Garden of the Gods. That's why we bring our services to you - whether you're at home in Briargate, at your office in the Powers Corridor, or anywhere else in the Olympic City.
@@ -305,6 +334,18 @@ export default function ColoradoSpringsLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/fountain-co" className="text-pink-600 hover:underline font-medium">Fountain</Link>
+                  <Link href="/locations/manitou-springs-co" className="text-pink-600 hover:underline font-medium">Manitou Springs</Link>
+                  <Link href="/locations/security-widefield-co" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Colorado Springs?</h2>
                 <p className="text-xl mb-6 text-pink-100">

@@ -45,6 +45,10 @@ export default function TimnathLocationPage() {
       question: 'Why does Timnath seem to have so much windshield damage compared to other towns?',
       answer: 'Timnath is the fastest-growing town in Larimer County, and that explosive growth means road infrastructure is perpetually under construction. New subdivisions are going up constantly, construction vehicles are on every road, and freshly graded surfaces shed loose gravel for months. Add I-25 semi traffic, eastern plains winds gusting 50+ mph, and Cache la Poudre gravel deposits, and Timnath drivers face a uniquely high rate of windshield damage compared to more established communities.'
     },
+    {
+      question: 'With Timnath\'s growth, do you have experience working with a wide range of newer vehicle models?',
+      answer: 'Absolutely. Our technicians are continuously trained on the latest vehicle technologies and windshield designs, ensuring we can expertly service all new models hitting the road in Timnath. We use high-quality glass and proper installation techniques for every replacement.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -86,7 +90,7 @@ export default function TimnathLocationPage() {
                 Timnath&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service &bull; Same-Day Appointments &bull; Lifetime Warranty
+                Timnath\'s rapid expansion means drivers frequently encounter construction zones and exposure to I-25, leading to various types of windshield damage. The blend of new development and adjacent rural areas creates a dynamic environment for auto glass challenges.
               </p>
               <CTAButtons source="timnath-hero" />
             </div>
@@ -126,6 +130,31 @@ export default function TimnathLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-timnath" />
+
+              {/* Windshield Damage in Timnath */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Timnath
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and debris from widespread construction projects throughout Timnath.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks kicked up by high-speed traffic on nearby I-25.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Agricultural debris from the remaining farmlands and adjacent rural roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a common and damaging weather event for Northern Colorado.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Timnath&apos;s growing pains. Whether you&apos;re commuting to Fort Collins or Denver on I-25, running errands along the rapidly expanding Harmony Road commercial corridor, enjoying the trails around Timnath Reservoir, or just navigating the maze of construction zones between subdivisions, your windshield is constantly under assault. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the established homes of Timnath Ranch and Summerfields, the newer communities of Wildwing and Landmark, or anywhere else in this fast-growing town. No shop visit required.
@@ -343,6 +372,20 @@ export default function TimnathLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/fort-collins-co" className="text-pink-600 hover:underline font-medium">Fort Collins</Link>
+                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                  <Link href="/locations/wellington-co" className="text-pink-600 hover:underline font-medium">Wellington</Link>
+                  <Link href="/locations/greeley-co" className="text-pink-600 hover:underline font-medium">Greeley</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Timnath?</h2>
                 <p className="text-xl mb-6 text-pink-100">

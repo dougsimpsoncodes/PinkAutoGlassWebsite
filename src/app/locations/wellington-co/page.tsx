@@ -45,6 +45,10 @@ export default function WellingtonLocationPage() {
       question: 'Why are Wellington windshields so prone to damage?',
       answer: 'Wellington sits on the open high plains at 5,201 feet with no natural windbreaks. I-25 semi-truck traffic kicks up debris at high speed, surrounding Larimer County gravel roads generate loose aggregate, and the area is directly in Hail Alley—the highest hail-frequency zone in North America. Chinook wind events can also cause 30-40 degree temperature swings in hours, rapidly spreading existing chips.'
     },
+    {
+      question: 'Can Pink Auto Glass provide mobile service to homes located on more rural or unpaved roads outside of central Wellington?',
+      answer: 'Yes, our mobile windshield replacement service extends to all areas of Wellington, including homes on rural or unpaved roads. We bring our fully equipped vehicles directly to your location, ensuring you receive convenient and professional service regardless of your specific address.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function WellingtonLocationPage() {
                 Wellington's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Wellington\'s rural charm, combined with its location along the I-25 corridor, means drivers face a unique set of challenges for their windshields. High winds and agricultural activity often contribute to debris, alongside the constant threat of highway impacts.
               </p>
               <CTAButtons source="wellington-co-hero" />
             </div>
@@ -109,6 +113,31 @@ export default function WellingtonLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-wellington-co" />
+
+              {/* Windshield Damage in Wellington */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Wellington
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from high-speed traffic on I-25, a daily route for many.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from agricultural fields and farm equipment on rural roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Strong winds common in Northern Colorado, kicking up various small objects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Sudden and severe hailstorms, a frequent weather event in the region.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting south on I-25 to Fort Collins for work, picking up supplies in Old Town Wellington along Cleveland Avenue, or heading home to one of the newer subdivisions like Mountain View Ranch or Sage Meadows, Pink Auto Glass brings professional mobile service directly to your door. We understand the challenges Wellington drivers face—from I-25 semi-truck debris to gravel road damage on surrounding Larimer County roads.
@@ -314,6 +343,20 @@ export default function WellingtonLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/fort-collins-co" className="text-pink-600 hover:underline font-medium">Fort Collins</Link>
+                  <Link href="/locations/timnath-co" className="text-pink-600 hover:underline font-medium">Timnath</Link>
+                  <Link href="/locations/laporte-co" className="text-pink-600 hover:underline font-medium">Laporte</Link>
+                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Wellington?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Wellington. Call now for a free quote.</p>

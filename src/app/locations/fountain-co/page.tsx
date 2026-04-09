@@ -93,7 +93,7 @@ export default function FountainLocationPage() {
                 Fountain&#39;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service to Fort Carson Families & All Fountain Neighborhoods
+                Fountain drivers experience the daily hustle of I-25 traffic and the unique demands of being near Fort Carson, often leading to increased road debris. The combination of military traffic, busy highways, and rural fringes creates a prime environment for windshield damage.
               </p>
               <CTAButtons source="fountain-co-hero" />
             </div>
@@ -133,6 +133,31 @@ export default function FountainLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-fountain-co" />
+
+              {/* Windshield Damage in Fountain */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Fountain
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from high-speed I-25 traffic, a common commute route.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris kicked up by military vehicles or heavy-duty trucks near Fort Carson.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a frequent occurrence in the southern Colorado Springs region.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Dust and small stones from unpaved sections or gravel shoulders on rural roads.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   A large share of Fountain&#39;s population is connected to Fort Carson, and we built our mobile service model with military families in mind. Whether you are at home in Lorson Ranch waiting for a deployment brief, at work near the base gates, or picking up kids at Fountain-Fort Carson High School, we bring the shop to you. Our technicians carry OEM-quality glass, professional-grade adhesives rated for Colorado&#39;s temperature extremes, and the ADAS calibration tools modern vehicles require. Same-day appointments are the norm, and we handle all insurance paperwork so you can focus on what matters.
@@ -347,6 +372,20 @@ export default function FountainLocationPage() {
               </section>
 
               {/* Pink CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/locations/security-widefield-co" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
+                  <Link href="/locations/fort-carson-co" className="text-pink-600 hover:underline font-medium">Fort Carson</Link>
+                  <Link href="/locations/pueblo-co" className="text-pink-600 hover:underline font-medium">Pueblo</Link>
+                  <Link href="/locations/monument-co" className="text-pink-600 hover:underline font-medium">Monument</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Fountain?</h2>
                 <p className="text-xl mb-6 text-pink-100">

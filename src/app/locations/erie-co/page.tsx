@@ -45,6 +45,10 @@ export default function ErieLocationPage() {
       question: 'Why do Erie windshields get damaged so often?',
       answer: 'Erie\'s explosive growth means constant construction traffic dropping gravel on CO-7 and local roads. Combined with 23+ documented hail events within 10 miles in 2023 alone, wind-driven grit from the open plains, and high-speed I-25 commutes, windshield damage is one of Erie\'s most common vehicle issues.'
     },
+    {
+      question: 'Given Erie\'s growth, how quickly can Pink Auto Glass typically schedule a mobile windshield replacement?',
+      answer: 'We understand the fast pace of life in growing communities like Erie. Pink Auto Glass prioritizes quick scheduling and efficient mobile service, often able to complete replacements within 24-48 hours. Our goal is to get you back on the road safely and swiftly, minimizing disruption to your day.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function ErieLocationPage() {
                 Erie's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Erie\'s rapid growth means a constant presence of construction vehicles and new road developments, adding to the risks of windshield damage. Commuting along Highway 7 or through expanding neighborhoods can expose your vehicle to unexpected road hazards.
               </p>
               <CTAButtons source="erie-co-hero" />
             </div>
@@ -108,6 +112,31 @@ export default function ErieLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-erie-co" />
+
+              {/* Windshield Damage in Erie */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Erie
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction debris and gravel from ongoing development projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and pebbles kicked up from agricultural roads transitioning to paved ones.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a common meteorological event in northern Colorado during spring and summer.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from I-25 for those commuting south towards Denver or north towards Fort Collins.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   But Erie's rapid growth comes with a cost for windshields. Constant construction traffic on CO-7 and CO-52, frequent hailstorms (23+ documented events within 10 miles in 2023), and high-speed commutes on I-25 make windshield damage one of the most common vehicle issues in town. Whether you're in Colliers Hill, Flatiron Meadows, or Old Town Erie, Pink Auto Glass brings same-day mobile service right to your door.
@@ -290,6 +319,20 @@ export default function ErieLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/lafayette-co" className="text-pink-600 hover:underline font-medium">Lafayette</Link>
+                  <Link href="/locations/frederick-co" className="text-pink-600 hover:underline font-medium">Frederick</Link>
+                  <Link href="/locations/firestone-co" className="text-pink-600 hover:underline font-medium">Firestone</Link>
+                  <Link href="/locations/longmont-co" className="text-pink-600 hover:underline font-medium">Longmont</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
                 </div>
               </section>
 

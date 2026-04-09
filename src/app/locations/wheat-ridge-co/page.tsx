@@ -45,6 +45,10 @@ export default function WheatRidgeLocationPage() {
       question: 'Why is windshield damage so common in Wheat Ridge?',
       answer: 'Wheat Ridge sits at the gateway to the mountains along I-70, one of Colorado\'s most heavily traveled highways. Mountain-bound vehicles carry gravel, ski equipment, and construction materials that fall onto the roadway. Wadsworth Boulevard\'s chip-seal surface creates airborne debris, Clear Creek flooding leaves road debris, and the foothills-edge location means hailstorms hit with particular intensity.'
     },
+    {
+      question: 'Does Pink Auto Glass offer quick service for older vehicle models still prevalent in Wheat Ridge?',
+      answer: 'Absolutely. While we service the newest models, we also have extensive experience with older vehicles that are still a common sight in Wheat Ridge. We maintain a broad inventory of glass to ensure we can provide fast and reliable windshield replacements for a wide range of makes and models, new or old.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function WheatRidgeLocationPage() {
                 Wheat Ridge&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Wheat Ridge means navigating busy commuter routes like I-70 and Wadsworth Blvd, exposing windshields to constant road debris. This well-established Denver suburb\'s diverse driving conditions, coupled with Colorado\'s volatile weather, often lead to auto glass damage.
               </p>
               <CTAButtons source="wheat-ridge-co-hero" />
             </div>
@@ -114,6 +118,31 @@ export default function WheatRidgeLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-wheat-ridge-co" />
+
+              {/* Windshield Damage in Wheat Ridge */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Wheat Ridge
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from heavy traffic on I-70 and US-36.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Urban construction and road maintenance projects causing localized hazards.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, a regular threat to vehicles in the Denver Metro area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Small impacts from heavy urban traffic and parking lot incidents.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Wheat Ridge life. You&apos;re commuting on I-70, shopping at the new Clear Creek Crossing development, browsing the antique shops along 44th Avenue, or heading up to the mountains for a weekend ski trip. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the charming Applewood neighborhood, the established Prospect Park area, or anywhere along the Wadsworth and Kipling corridors. No need to fight I-70 traffic to get your windshield fixed when we come to your driveway.
@@ -302,6 +331,20 @@ export default function WheatRidgeLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/arvada-co" className="text-pink-600 hover:underline font-medium">Arvada</Link>
+                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
+                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/locations/golden-co" className="text-pink-600 hover:underline font-medium">Golden</Link>
+                  <Link href="/locations/edgewater-co" className="text-pink-600 hover:underline font-medium">Edgewater</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Wheat Ridge?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Wheat Ridge. Call now for a free quote.</p>

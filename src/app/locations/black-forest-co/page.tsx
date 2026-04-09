@@ -93,7 +93,7 @@ export default function BlackForestLocationPage() {
                 Black Forest&#39;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service to Rural Properties, Dirt Roads & All Black Forest Neighborhoods
+                Driving in Black Forest often means navigating scenic, tree-lined roads and occasional unpaved sections, which can kick up unexpected debris. The unique blend of rural charm and proximity to Colorado Springs means diverse driving challenges for your windshield.
               </p>
               <CTAButtons source="black-forest-co-hero" />
             </div>
@@ -133,6 +133,31 @@ export default function BlackForestLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-black-forest-co" />
+
+              {/* Windshield Damage in Black Forest */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Black Forest
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and rocks from unpaved or dirt roads common in the area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Falling branches or pinecones, especially during strong winds or storms.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Wildlife encounters (deer, elk) near roadways, leading to sudden stops or debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a frequent occurrence in the Colorado Springs region, causing widespread damage.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Pink Auto Glass built our mobile service for communities exactly like Black Forest. When the nearest auto glass shop is a 20-30 minute drive into Colorado Springs, having a technician come to your property is not a convenience - it is a necessity. Our mobile units navigate Black Forest&#39;s dirt roads daily, arriving at your driveway with OEM-quality glass, professional-grade adhesives rated for extreme temperature swings, and ADAS calibration equipment for modern trucks and SUVs. We understand that Black Forest residents drive larger vehicles designed for rural terrain, and we stock glass sizes to match. Insurance paperwork is handled entirely by us, so you can get back to the land and the lifestyle that brought you here.
@@ -347,6 +372,19 @@ export default function BlackForestLocationPage() {
               </section>
 
               {/* Pink CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/locations/monument-co" className="text-pink-600 hover:underline font-medium">Monument</Link>
+                  <Link href="/locations/falcon-co" className="text-pink-600 hover:underline font-medium">Falcon</Link>
+                  <Link href="/locations/peyton-co" className="text-pink-600 hover:underline font-medium">Peyton</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Black Forest?</h2>
                 <p className="text-xl mb-6 text-pink-100">

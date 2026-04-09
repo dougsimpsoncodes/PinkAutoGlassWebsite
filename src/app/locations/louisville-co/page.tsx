@@ -45,6 +45,10 @@ export default function LouisvilleLocationPage() {
       question: 'Is windshield damage more common in Louisville because of the old coal mines?',
       answer: 'It genuinely is. Louisville was built over a network of underground coal mine shafts, and the gradual settling of these voids causes irregular pavement shifts, potholes, and cracking across the city. Combined with Coal Creek aggregate on roadways and heavy US-36 debris, Louisville drivers experience above-average windshield damage. The Marshall Fire aftermath has only added to the problem with destabilized land and ongoing construction.'
     },
+    {
+      question: 'As Louisville residents often value convenience, can Pink Auto Glass provide Saturday or Sunday mobile service?',
+      answer: 'We understand the need for flexible scheduling, especially for busy individuals in Louisville. While our standard operating hours are weekdays, we do offer limited weekend appointments based on availability. Please contact us to inquire about weekend service options for your mobile windshield replacement.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -86,7 +90,7 @@ export default function LouisvilleLocationPage() {
                 Louisville&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service &bull; Same-Day Appointments &bull; Lifetime Warranty
+                Louisville drivers experience the daily commute to Boulder or Denver on busy highways like US-36, exposing windshields to fast-moving debris. The blend of a vibrant community with Colorado\'s variable mountain weather patterns frequently tests the durability of auto glass.
               </p>
               <CTAButtons source="louisville-hero" />
             </div>
@@ -126,6 +130,31 @@ export default function LouisvilleLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-louisville" />
+
+              {/* Windshield Damage in Louisville */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Louisville
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from heavy commuter traffic on US-36.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, a common threat in Boulder County during warmer months.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from nearby open spaces, bike paths, and recreational areas.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Freeze-thaw cycles that can rapidly expand small chips into large cracks.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We know Louisville. Whether you&apos;re strolling Main Street in the Downtown Historic District, catching a show at the Louisville Center for the Arts, commuting to Boulder or Denver on US-36, exploring the trails at Harper Lake, or shuttling kids to activities in Governors Ranch, your windshield is constantly at risk. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the established streets of Old Town Louisville, the family-friendly neighborhoods of Centennial Valley and Coyote Run, or the newer homes at Legacy and Sagamore. No shop visit needed.
@@ -343,6 +372,20 @@ export default function LouisvilleLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/lafayette-co" className="text-pink-600 hover:underline font-medium">Lafayette</Link>
+                  <Link href="/locations/superior-co" className="text-pink-600 hover:underline font-medium">Superior</Link>
+                  <Link href="/locations/boulder-co" className="text-pink-600 hover:underline font-medium">Boulder</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Louisville?</h2>
                 <p className="text-xl mb-6 text-pink-100">

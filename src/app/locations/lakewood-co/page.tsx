@@ -40,6 +40,10 @@ export default function LakewoodLocationPage() {
       question: 'Does insurance cover windshield replacement in Lakewood?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Lakewood residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'If my windshield is damaged while attending a concert at Red Rocks, can Pink Auto Glass come to me in Lakewood?',
+      answer: 'Absolutely! Pink Auto Glass understands that unexpected damage can happen anywhere, even after a great show. We provide convenient mobile service throughout Lakewood, so whether you\'re at home or work, we can repair or replace your windshield without you needing to drive to us.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function LakewoodLocationPage() {
                 Lakewood's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving through Lakewood, whether you\'re commuting along US-6 to downtown or heading out to the foothills near Red Rocks Amphitheatre, your windshield takes a beating. The mix of city streets and gateway roads to mountain adventures means encountering diverse road conditions, from construction zones to gravel kick-up.
               </p>
               <CTAButtons source="lakewood-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function LakewoodLocationPage() {
                   As Colorado's 5th largest city with over 155,000 residents, Lakewood is Denver's immediate western neighbor and home to iconic attractions like Dinosaur Ridge (rated the #1 dinosaur track site in the United States!), Bear Creek Lake Park, and the Belmar town center. From Bear Valley to Green Mountain, Eiber to Foothills neighborhoods, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Lakewood. We bring our mobile service directly to you—whether you're at home, work, shopping at Belmar, visiting Heritage Lakewood Belmar Park, or even exploring Colorado Mills.
                 </p>
                 <AboveFoldCTA location="location-lakewood-co" />
+
+              {/* Windshield Damage in Lakewood */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Lakewood
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy commuter traffic on US-6, C-470, and Wadsworth Boulevard generating constant road debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Proximity to mountain access routes increases chances of encountering gravel and larger rocks.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing development and infrastructure projects along major arteries contributing to flying debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Seasonal weather impacts, including hail and icy road treatments that can damage glass.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on US-6 (6th Avenue)—one of Denver's busiest east-west corridors—navigating Wadsworth Boulevard's commercial stretch, or accessing I-70 for ski trips, our fully equipped mobile units serve all Lakewood neighborhoods including Glennon Heights, Academy Park, Morrison Road, and Kendrick Lake. We understand the unique challenges Lakewood drivers face as Denver's western gateway to the mountains.
                 </p>
@@ -247,6 +276,20 @@ export default function LakewoodLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/locations/golden-co" className="text-pink-600 hover:underline font-medium">Golden</Link>
+                  <Link href="/locations/wheat-ridge-co" className="text-pink-600 hover:underline font-medium">Wheat Ridge</Link>
+                  <Link href="/locations/littleton-co" className="text-pink-600 hover:underline font-medium">Littleton</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
                 </div>
               </section>
 

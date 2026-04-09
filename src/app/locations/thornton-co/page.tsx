@@ -40,6 +40,10 @@ export default function ThorntonLocationPage() {
       question: 'Does insurance cover windshield replacement in Thornton?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Thornton residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Does Pink Auto Glass provide mobile service across the entire Thornton area, including newer developments further north?',
+      answer: 'Yes, Pink Auto Glass proudly serves all neighborhoods within Thornton, from the established areas near Northglenn to the rapidly expanding communities further north towards E-470. Our mobile service ensures we can reach you wherever you are in Thornton for convenient windshield repair or replacement.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function ThorntonLocationPage() {
                 Thornton's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Navigating Thornton\'s busy streets, from the I-25 corridor to US-85 or Huron Street, means your windshield faces constant exposure to road hazards. This rapidly growing northern Denver suburb experiences significant commuter traffic and ongoing development, leading to frequent encounters with kicked-up debris and construction materials.
               </p>
               <CTAButtons source="thornton-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function ThorntonLocationPage() {
                   Thornton's rapidly growing community needs reliable auto glass service. As Colorado's 6th largest city with over 145,000 residents, Thornton's fast-paced northern suburb expansion creates unique windshield challenges. From Thornton Town Center to Eastlake to Riverdale, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Thornton.
                 </p>
                 <AboveFoldCTA location="location-thornton-co" />
+
+              {/* Windshield Damage in Thornton */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Thornton
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy commuter traffic on I-25 and US-85 (Brighton Road) frequently causes stone chips.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Extensive ongoing residential and commercial construction throughout the city.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Road treatments during winter months often include sand and gravel, contributing to damage.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent strong winds that can blow debris and intensify the impact of hail storms.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on I-25, traveling along E-470, navigating Washington Street, or shopping at Town Center, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Thornton.
                 </p>
@@ -231,6 +260,20 @@ export default function ThorntonLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/northglenn-co" className="text-pink-600 hover:underline font-medium">Northglenn</Link>
+                  <Link href="/locations/westminster-co" className="text-pink-600 hover:underline font-medium">Westminster</Link>
+                  <Link href="/locations/brighton-co" className="text-pink-600 hover:underline font-medium">Brighton</Link>
+                  <Link href="/locations/commerce-city-co" className="text-pink-600 hover:underline font-medium">Commerce City</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
                 </div>
               </section>
 

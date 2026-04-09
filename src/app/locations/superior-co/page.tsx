@@ -45,6 +45,10 @@ export default function SuperiorLocationPage() {
       question: 'Is windshield damage worse in Superior because of the Marshall Fire rebuild?',
       answer: 'Unfortunately, yes. The December 2021 Marshall Fire destroyed over 1,000 homes in Superior and Louisville, and the community is still mid-rebuild years later. Construction vehicles -- dump trucks, concrete mixers, heavy haulers -- are a constant presence on Superior roads. They kick up gravel, drop debris, and create road damage that generates windshield chips at far higher rates than normal. We see significantly more windshield claims from Superior than from similarly-sized towns without active reconstruction.'
     },
+    {
+      question: 'Does Pink Auto Glass offer Advanced Driver-Assistance Systems (ADAS) calibration for newer vehicles in Superior?',
+      answer: 'Yes, for newer vehicles common in Superior that are equipped with ADAS features like lane departure warning or automatic emergency braking, proper windshield replacement often requires camera recalibration. Our technicians are trained and equipped to perform precise ADAS calibration, ensuring your safety systems function correctly.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -86,7 +90,7 @@ export default function SuperiorLocationPage() {
                 Superior&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service &bull; Same-Day Appointments &bull; Lifetime Warranty
+                Superior residents commuting on US-36 to Boulder or Denver face the constant threat of road debris from high-speed traffic. As a newer, developing community, construction activity also adds to the risks your windshield encounters daily.
               </p>
               <CTAButtons source="superior-hero" />
             </div>
@@ -126,6 +130,31 @@ export default function SuperiorLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-superior" />
+
+              {/* Windshield Damage in Superior */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Superior
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from fast-moving vehicles on US-36.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from ongoing residential and commercial expansion.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, which frequently impact Boulder County.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>High winds prevalent in the Front Range, kicking up various road debris.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand what Superior is going through. Whether you&apos;re living in one of the rebuilt homes in Sagamore, commuting from Rock Creek Ranch to Denver on US-36, walking the trails around Rock Creek, dropping kids at Eldorado K-8, or exploring the new Downtown Superior development, your windshield is at risk from construction debris and road hazards every day. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the established neighborhoods of Saddlebrooke and The Hamlet, the newer communities of Anthem and Lanterns, or anywhere else in Superior. No shop visit required.
@@ -343,6 +372,20 @@ export default function SuperiorLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/louisville-co" className="text-pink-600 hover:underline font-medium">Louisville</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/locations/lafayette-co" className="text-pink-600 hover:underline font-medium">Lafayette</Link>
+                  <Link href="/locations/boulder-co" className="text-pink-600 hover:underline font-medium">Boulder</Link>
+                  <Link href="/locations/westminster-co" className="text-pink-600 hover:underline font-medium">Westminster</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Superior?</h2>
                 <p className="text-xl mb-6 text-pink-100">

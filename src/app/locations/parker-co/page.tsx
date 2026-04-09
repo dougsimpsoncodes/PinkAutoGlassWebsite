@@ -40,6 +40,10 @@ export default function ParkerLocationPage() {
       question: 'Does insurance cover windshield replacement in Parker?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Parker residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Can Pink Auto Glass service my vehicle if I\'m near Mainstreet or the Cherry Creek Trail?',
+      answer: 'Yes, our mobile units cover all of Parker, from the bustling Mainstreet area to quieter residential neighborhoods near the Cherry Creek Trail. We bring our full replacement and repair services right to your location, wherever is most convenient.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function ParkerLocationPage() {
                 Parker's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Parker\'s rapid growth and popular commuter routes like E-470 and Parker Road mean your windshield is frequently exposed to road hazards. This, coupled with Colorado\'s notorious hailstorms, makes windshield damage a common occurrence for drivers in this expanding community.
               </p>
               <CTAButtons source="parker-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function ParkerLocationPage() {
                   Parker's growing suburban community needs reliable auto glass service. With over 58,000 residents, Parker's unique location near the Denver Tech Center and rapid development create specific windshield challenges. From Stonegate to Pinery to Meridian, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Parker.
                 </p>
                 <AboveFoldCTA location="location-parker-co" />
+
+              {/* Windshield Damage in Parker */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Parker
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from high-speed E-470 traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, often hitting Parker particularly hard.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from numerous new housing developments.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and sand used on winter roads, especially in outer areas.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on E-470, traveling along I-25, navigating Parker Road, or shopping at Southlands, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Parker.
                 </p>
@@ -231,6 +260,19 @@ export default function ParkerLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline font-medium">Castle Rock</Link>
+                  <Link href="/locations/aurora-co" className="text-pink-600 hover:underline font-medium">Aurora</Link>
+                  <Link href="/locations/lone-tree-co" className="text-pink-600 hover:underline font-medium">Lone Tree</Link>
+                  <Link href="/locations/franktown-co" className="text-pink-600 hover:underline font-medium">Franktown</Link>
                 </div>
               </section>
 

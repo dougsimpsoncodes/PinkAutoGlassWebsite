@@ -40,6 +40,10 @@ export default function BrightonLocationPage() {
       question: 'Does insurance cover windshield replacement in Brighton?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Brighton residents.'
     },
+    {
+      question: 'Can Pink Auto Glass service my vehicle if I\'m at Barr Lake State Park in Brighton?',
+      answer: 'Absolutely! Our mobile service extends throughout Brighton, including popular recreational spots like Barr Lake State Park. We can come directly to your location, so you can continue enjoying the park while we take care of your windshield.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function BrightonLocationPage() {
                 Brighton's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Brighton\'s rapidly expanding community, situated at the intersection of I-76 and US-85, experiences significant traffic and ongoing development. This, combined with its exposure to plains weather, frequently leads to windshield damage from road debris and hailstorms.
               </p>
               <CTAButtons source="brighton-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function BrightonLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-brighton-co" />
+
+              {/* Windshield Damage in Brighton */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Brighton
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from heavy truck traffic on I-76 and US-85.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, common across the eastern plains of Colorado.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from numerous new housing and commercial construction sites.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Agricultural equipment kicking up stones on rural roads.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Brighton. Our mobile units are fully equipped to handle all your auto glass needs.

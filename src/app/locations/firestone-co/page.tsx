@@ -45,6 +45,10 @@ export default function FirestoneLocationPage() {
       question: 'Why do Firestone windshields get damaged so often?',
       answer: 'Firestone faces a double hazard: active oil and gas extraction means heavy truck traffic on gravel county roads, while the ongoing residential construction boom brings chip-seal and gravel haulers through town daily. Add in I-25 corridor debris at 75+ mph and the area\'s position in Hail Alley, and windshield damage is extremely common.'
     },
+    {
+      question: 'How does Pink Auto Glass ensure the new windshield fits perfectly, especially with Firestone\'s blend of vehicle types?',
+      answer: 'We use precision installation techniques and source high-quality glass that meets or exceeds OEM standards for all vehicle makes and models. Our experienced technicians ensure a perfect seal and fit, regardless of whether you drive a newer SUV, a work truck, or a family sedan, guaranteeing optimal safety and clarity.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function FirestoneLocationPage() {
                 Firestone's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                As a rapidly expanding community, Firestone drivers frequently encounter construction traffic and the challenges of I-25 commutes. The mix of new development and agricultural roots means your windshield is constantly exposed to varied debris and Colorado\'s intense weather.
               </p>
               <CTAButtons source="firestone-co-hero" />
             </div>
@@ -109,6 +113,31 @@ export default function FirestoneLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-firestone-co" />
+
+              {/* Windshield Damage in Firestone */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Firestone
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel and debris from numerous construction sites across the growing town.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks kicked up by high-speed traffic on nearby I-25.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from agricultural vehicles on roads near farmlands.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Unpredictable hailstorms, particularly during the late spring and summer months.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   But Firestone's rapid growth and Weld County location create a perfect storm for windshield damage. Active oil and gas operations bring heavy truck traffic on gravel county roads, ongoing residential construction generates debris on local streets, and the town sits directly in Hail Alley—the highest hail-frequency zone in North America. Whether you're in Barefoot Lakes, heading to the Firestone City Centre shops along the I-25 frontage road, or commuting south on I-25 to Denver, Pink Auto Glass brings professional mobile service right to your door.
@@ -314,6 +343,20 @@ export default function FirestoneLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/frederick-co" className="text-pink-600 hover:underline font-medium">Frederick</Link>
+                  <Link href="/locations/dacono-co" className="text-pink-600 hover:underline font-medium">Dacono</Link>
+                  <Link href="/locations/longmont-co" className="text-pink-600 hover:underline font-medium">Longmont</Link>
+                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                  <Link href="/locations/brighton-co" className="text-pink-600 hover:underline font-medium">Brighton</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Firestone?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Firestone. Call now for a free quote.</p>

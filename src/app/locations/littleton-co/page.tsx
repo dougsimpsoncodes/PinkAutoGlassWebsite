@@ -40,6 +40,10 @@ export default function LittletonLocationPage() {
       question: 'Does insurance cover windshield replacement in Littleton?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Littleton residents.'
     },
+    {
+      question: 'Does Pink Auto Glass service vehicles near Downtown Littleton\'s historic district?',
+      answer: 'Absolutely! Our mobile technicians are fully equipped to service your vehicle anywhere in Littleton, including the charming Downtown area. We can repair or replace your windshield while you shop, dine, or run errands.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function LittletonLocationPage() {
                 Littleton's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Littleton\'s combination of suburban thoroughfares like C-470 and Santa Fe Drive, along with its proximity to outdoor recreational areas, creates frequent opportunities for windshield damage. From highway debris to unexpected hailstorms, keeping your glass intact can be a constant battle.
               </p>
               <CTAButtons source="littleton-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function LittletonLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-littleton-co" />
+
+              {/* Windshield Damage in Littleton */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Littleton
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from C-470 and Santa Fe Drive traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Common hailstorms during Colorado\'s spring and summer.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from ongoing residential and commercial construction.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Dust and small stones from areas near Chatfield State Park.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Littleton. Our mobile units are fully equipped to handle all your auto glass needs.

@@ -40,6 +40,10 @@ export default function GoldenLocationPage() {
       question: 'Does insurance cover windshield replacement in Golden?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Golden residents.'
     },
+    {
+      question: 'Does Pink Auto Glass handle windshield damage caused by off-road adventures near Golden?',
+      answer: 'While we specialize in auto glass for all vehicles, damage from off-roading can sometimes be extensive. We can assess any chip or crack, and our mobile service can meet you in Golden to provide a convenient repair or replacement, getting you ready for your next adventure.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function GoldenLocationPage() {
                 Golden's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Golden\'s unique blend of mountain access via I-70 and Clear Creek Canyon, combined with its historic downtown and Colorado School of Mines campus, presents specific windshield challenges. From rockfall hazards to heavy mountain traffic debris, drivers here need reliable glass protection.
               </p>
               <CTAButtons source="golden-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function GoldenLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-golden-co" />
+
+              {/* Windshield Damage in Golden */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Golden
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and sand from I-70 mountain corridor traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from Clear Creek Canyon roads and rockfall.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, which can be intense in the foothills.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials around the School of Mines campus.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Golden. Our mobile units are fully equipped to handle all your auto glass needs.

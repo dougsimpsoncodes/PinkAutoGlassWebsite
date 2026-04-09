@@ -40,6 +40,10 @@ export default function WestminsterLocationPage() {
       question: 'Does insurance cover windshield replacement in Westminster?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Westminster residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Does Pink Auto Glass offer same-day service for residents near the Westminster Promenade?',
+      answer: 'We strive to offer prompt and often same-day service for windshield replacements and repairs across Westminster. Give us a call, and we\'ll do our best to get you back on the road quickly, even if you\'re out shopping.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function WestminsterLocationPage() {
                 Westminster's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Navigating Westminster\'s major corridors like US-36 and I-25, alongside its growing commercial and residential areas, exposes your vehicle to various road hazards. The combination of high traffic volume and unpredictable Colorado weather makes windshield damage a frequent concern for residents.
               </p>
               <CTAButtons source="westminster-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function WestminsterLocationPage() {
                   Westminster's strategic location needs reliable auto glass service. With over 116,000 residents positioned between Denver and Boulder, Westminster's unique commuter patterns and major shopping centers create specific windshield challenges. From The Orchard to Westminster Station to Legacy Ridge, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Westminster.
                 </p>
                 <AboveFoldCTA location="location-westminster-co" />
+
+              {/* Windshield Damage in Westminster */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Westminster
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from heavy commuter traffic on US-36 and I-25.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Sudden and intense hailstorms, especially in late spring.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction site materials from new developments.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks thrown by landscaping vehicles in suburban neighborhoods.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on US-36, traveling along I-25, navigating Sheridan Boulevard, or shopping at major centers, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Westminster.
                 </p>
@@ -231,6 +260,19 @@ export default function WestminsterLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/locations/thornton-co" className="text-pink-600 hover:underline font-medium">Thornton</Link>
+                  <Link href="/locations/northglenn-co" className="text-pink-600 hover:underline font-medium">Northglenn</Link>
+                  <Link href="/locations/arvada-co" className="text-pink-600 hover:underline font-medium">Arvada</Link>
                 </div>
               </section>
 

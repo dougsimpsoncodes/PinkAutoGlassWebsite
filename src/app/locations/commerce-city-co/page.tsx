@@ -40,6 +40,10 @@ export default function CommerceCityLocationPage() {
       question: 'Does insurance cover windshield replacement in Commerce City?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Commerce City residents.'
     },
+    {
+      question: 'Can Pink Auto Glass help if my vehicle is damaged while working at the Rocky Mountain Arsenal NWR?',
+      answer: 'Yes, our mobile service extends to all parts of Commerce City, including the Rocky Mountain Arsenal National Wildlife Refuge area. We can come directly to your workplace or a convenient meeting spot to address your windshield damage.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function CommerceCityLocationPage() {
                 Commerce City's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Commerce City\'s busy industrial areas and major interstate access via I-70 and I-270 expose vehicles to a high volume of heavy truck traffic and debris. This, paired with its plains weather patterns, often results in windshield damage from impacts and hailstorms.
               </p>
               <CTAButtons source="commerce-city-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function CommerceCityLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-commerce-city-co" />
+
+              {/* Windshield Damage in Commerce City */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Commerce City
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from heavy industrial and semi-truck traffic on I-70 and I-270.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, common across the flatlands of Commerce City.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from ongoing development and revitalization projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from unpaved roads near industrial sites.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Commerce City. Our mobile units are fully equipped to handle all your auto glass needs.

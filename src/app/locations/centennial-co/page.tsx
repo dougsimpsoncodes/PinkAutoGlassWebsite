@@ -40,6 +40,10 @@ export default function CentennialLocationPage() {
       question: 'Does insurance cover windshield replacement in Centennial?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Centennial residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'If my vehicle is parked at my office in the Denver Tech Center (DTC) in Centennial, can Pink Auto Glass provide mobile service there?',
+      answer: 'Yes, the Denver Tech Center is a prime service area for Pink Auto Glass! Many of our Centennial customers choose to have their windshield repaired or replaced right at their DTC office during work hours, making the process incredibly convenient and hassle-free.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function CentennialLocationPage() {
                 Centennial's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                As one of the newer, primarily residential cities in the Denver metro area, Centennial drivers often navigate busy thoroughfares like C-470 and I-25, or commute to the Denver Tech Center (DTC). The constant flow of traffic, combined with ongoing suburban development, makes your windshield vulnerable to the common Colorado culprits of chips and cracks.
               </p>
               <CTAButtons source="centennial-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function CentennialLocationPage() {
                   With over 108,000 residents, Centennial is one of Colorado's most desirable suburbs. From Southglenn to Dry Creek, Walnut Hills to Piney Creek, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Centennial. We bring our mobile service directly to you - whether you're at home, at your office park, or shopping at the Streets at SouthGlenn.
                 </p>
                 <AboveFoldCTA location="location-centennial-co" />
+
+              {/* Windshield Damage in Centennial */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Centennial
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy commuter traffic on I-25 and C-470, notorious for kicked-up road debris and rocks.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing residential and commercial construction in this rapidly growing suburb.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Winter road treatments (sand/gravel) contributing to windshield damage after snowstorms.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Vulnerable to springtime hailstorms, a frequent occurrence in the South Metro area.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on I-25, E-470, or Arapahoe Road, our fully equipped mobile units serve all Centennial neighborhoods. We understand the unique challenges Centennial drivers face and provide expert windshield care tailored to your needs.
                 </p>
@@ -231,6 +260,20 @@ export default function CentennialLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/highlands-ranch-co" className="text-pink-600 hover:underline font-medium">Highlands Ranch</Link>
+                  <Link href="/locations/littleton-co" className="text-pink-600 hover:underline font-medium">Littleton</Link>
+                  <Link href="/locations/lone-tree-co" className="text-pink-600 hover:underline font-medium">Lone Tree</Link>
+                  <Link href="/locations/parker-co" className="text-pink-600 hover:underline font-medium">Parker</Link>
+                  <Link href="/locations/greenwood-village-co" className="text-pink-600 hover:underline font-medium">Greenwood Village</Link>
                 </div>
               </section>
 

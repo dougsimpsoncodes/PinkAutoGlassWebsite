@@ -40,6 +40,10 @@ export default function CastleRockLocationPage() {
       question: 'Does insurance cover windshield replacement in Castle Rock?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Castle Rock residents.'
     },
+    {
+      question: 'If I\'m visiting the Outlets at Castle Rock and notice a windshield chip, can Pink Auto Glass provide service there?',
+      answer: 'Yes, we absolutely can! The Outlets at Castle Rock are a frequent service location for our mobile technicians. Just give us a call, and we can dispatch a technician to repair or replace your windshield while you continue your shopping, making it incredibly convenient.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function CastleRockLocationPage() {
                 Castle Rock's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Castle Rock, with its iconic \'The Rock\' landmark and the constant flow of traffic along I-25 to the Outlets, means your windshield is exposed to significant wear and tear. This rapidly growing community experiences a blend of high-speed highway travel and local road construction, making chips and cracks a common occurrence for residents.
               </p>
               <CTAButtons source="castle-rock-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function CastleRockLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-castle-rock-co" />
+
+              {/* Windshield Damage in Castle Rock */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Castle Rock
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>High-speed traffic and large commercial vehicles on I-25, a prime source of rock chips.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Extensive ongoing residential and commercial development generating construction debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Winter weather conditions requiring sand and gravel for traction, which often leads to damage.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Strong winds unique to the elevated terrain, blowing loose debris across roadways.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Castle Rock. Our mobile units are fully equipped to handle all your auto glass needs.

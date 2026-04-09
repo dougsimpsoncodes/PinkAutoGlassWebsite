@@ -45,6 +45,10 @@ export default function LafayetteLocationPage() {
       question: 'Are Lafayette\'s old brick streets really hard on windshields?',
       answer: 'Yes, Old Town Lafayette\'s historic brick-paved streets and aging infrastructure create persistent pothole and loose aggregate hazards. Combined with heavy US-287 truck traffic kicking up debris, windshield chips are extremely common for Lafayette drivers. We recommend prompt repair before temperature swings turn chips into full cracks.'
     },
+    {
+      question: 'With Lafayette\'s focus on sustainability, does Pink Auto Glass offer eco-friendly disposal of old windshields?',
+      answer: 'Pink Auto Glass is committed to environmentally responsible practices, including the proper recycling and disposal of old windshields whenever possible. We strive to minimize our environmental footprint while providing top-notch auto glass services to the Lafayette community.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -86,7 +90,7 @@ export default function LafayetteLocationPage() {
                 Lafayette&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service &bull; Same-Day Appointments &bull; Lifetime Warranty
+                Lafayette\'s active community, with its proximity to Boulder and commuter routes like US-287, means vehicles are frequently exposed to varied road conditions. From busy suburban streets to high-altitude weather patterns, windshields face unique challenges.
               </p>
               <CTAButtons source="lafayette-hero" />
             </div>
@@ -126,6 +130,31 @@ export default function LafayetteLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-lafayette" />
+
+              {/* Windshield Damage in Lafayette */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Lafayette
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and debris from heavy commuter traffic on US-287 and CO-7.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a frequent occurrence in Boulder County, particularly in spring and summer.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from nearby open spaces and recreational areas, including gravel and dirt.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Temperature fluctuations that can quickly turn small chips into extensive cracks.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Lafayette life. Whether you&apos;re picking up groceries at the Waneka Lake shopping area, walking the trails along Coal Creek, grabbing dinner on Public Road in Old Town, commuting to Boulder on CO-7, or heading south on US-287 to Broomfield, your windshield takes a beating. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the established neighborhoods of Centaur Village and Hearthwood, the newer communities of Legacy Park and Silver Creek, or anywhere else in Lafayette. No shop visit required.
@@ -343,6 +372,20 @@ export default function LafayetteLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/louisville-co" className="text-pink-600 hover:underline font-medium">Louisville</Link>
+                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                  <Link href="/locations/boulder-co" className="text-pink-600 hover:underline font-medium">Boulder</Link>
+                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/locations/superior-co" className="text-pink-600 hover:underline font-medium">Superior</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Lafayette?</h2>
                 <p className="text-xl mb-6 text-pink-100">

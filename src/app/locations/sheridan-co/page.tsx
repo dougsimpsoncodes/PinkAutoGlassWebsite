@@ -45,6 +45,10 @@ export default function SheridanLocationPage() {
       question: 'Why do so many Sheridan windshields get damaged?',
       answer: 'Sheridan sits at the intersection of three high-speed highways: US-285, US-85 (Santa Fe Drive), and Federal Boulevard. Heavy truck traffic on these routes kicks up road debris at high velocity. Combined with CDOT chip-seal resurfacing, freeze-thaw pothole cycles, and Front Range hailstorms, windshield damage is extremely common here.'
     },
+    {
+      question: 'Is it possible to get a mobile windshield replacement in a tight parking situation typical of Sheridan\'s commercial areas?',
+      answer: 'Our mobile service is designed to be highly adaptable. Our technicians are skilled at performing replacements in various settings, including tighter parking spots found in Sheridan\'s commercial or apartment complexes. We simply require enough space to safely access and work around your vehicle.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -80,7 +84,7 @@ export default function SheridanLocationPage() {
                 Sheridan's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving through Sheridan, with its dense urban landscape and proximity to busy routes like US-285, often means navigating heavy traffic and road hazards. This inner-ring suburb\'s mix of commercial areas and residential streets creates numerous opportunities for windshield damage.
               </p>
               <CTAButtons source="sheridan-co-hero" />
             </div>
@@ -109,6 +113,31 @@ export default function SheridanLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-sheridan-co" />
+
+              {/* Windshield Damage in Sheridan */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Sheridan
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris and rocks from high-traffic roadways like US-285.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from ongoing urban development and maintenance projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, a common threat to vehicles in the Denver Metro area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Loose gravel and dirt from urban alleys or unpaved parking areas.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're shopping at River Point, catching the light rail at Oxford Station for your downtown Denver commute, or navigating the busy Federal Boulevard corridor, Pink Auto Glass brings professional mobile service directly to you. We understand Sheridan's unique position—bordered by Denver and Englewood, crisscrossed by high-speed traffic—and we're ready to fix your windshield wherever you are in the city.
@@ -314,6 +343,20 @@ export default function SheridanLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/locations/littleton-co" className="text-pink-600 hover:underline font-medium">Littleton</Link>
+                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
+                  <Link href="/locations/glendale-co" className="text-pink-600 hover:underline font-medium">Glendale</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Sheridan?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Sheridan. Call now for a free quote.</p>

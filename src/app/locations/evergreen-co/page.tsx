@@ -40,6 +40,10 @@ export default function EvergreenLocationPage() {
       question: 'Does insurance cover windshield replacement in Evergreen?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Evergreen residents.'
     },
+    {
+      question: 'Does Pink Auto Glass offer cold-weather installation for Evergreen\'s winter conditions?',
+      answer: 'Our technicians are experienced in performing installations in various Colorado weather conditions, including Evergreen\'s colder climate. We take necessary precautions to ensure a proper bond, although ideal temperatures are always preferred for optimal curing.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function EvergreenLocationPage() {
                 Evergreen's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving in Evergreen means navigating scenic but challenging mountain roads, including sections of I-70, where rockfall and wildlife encounters are common. The drastic temperature swings and occasional heavy snow also contribute to unique windshield stress and damage risks.
               </p>
               <CTAButtons source="evergreen-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function EvergreenLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-evergreen-co" />
+
+              {/* Windshield Damage in Evergreen */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Evergreen
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and sand from I-70 mountain pass maintenance.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Impacts from wildlife, such as deer and elk on mountain roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rapid temperature fluctuations causing small chips to spread into cracks.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Smaller rockfall and debris on winding canyon roads.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Evergreen. Our mobile units are fully equipped to handle all your auto glass needs.

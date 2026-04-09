@@ -45,6 +45,10 @@ export default function LoneTreeLocationPage() {
       question: 'Why is windshield damage so common in Lone Tree?',
       answer: 'Lone Tree sits at the C-470/E-470/I-25 interchange triangle at 5,950 feet elevation -- one of the highest communities in the south metro. The combination of high-speed interchange traffic, elevation-driven wind and temperature extremes, and massive exposed parking lots like Park Meadows makes windshield damage extremely common here.'
     },
+    {
+      question: 'Can Pink Auto Glass provide efficient service for a mobile windshield replacement while I\'m at work or shopping in Lone Tree?',
+      answer: 'Absolutely. Our mobile service is ideal for your busy schedule in Lone Tree. We can come to your office in the business district, or even meet you at a location like Park Meadows while you shop or run errands, ensuring minimal interruption to your day.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function LoneTreeLocationPage() {
                 Lone Tree&apos;s Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Drivers in Lone Tree navigate a bustling retail environment around Park Meadows and major highways like I-25 and E-470 daily. The high volume of traffic, combined with ongoing commercial development, creates a constant risk of windshield damage.
               </p>
               <CTAButtons source="lone-tree-co-hero" />
             </div>
@@ -114,6 +118,31 @@ export default function LoneTreeLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-lone-tree-co" />
+
+              {/* Windshield Damage in Lone Tree */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Lone Tree
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris and rocks from high-speed traffic on I-25 and E-470.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from continuous expansion in the commercial and residential areas.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Hailstorms, which frequently impact the southern Denver Metro region.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Parking lot incidents or accidental impacts near busy shopping centers.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Lone Tree life. You&apos;re commuting on I-25 or C-470, working in the RidgeGate office parks, shopping at Park Meadows, or heading to Sky Ridge for an appointment. That&apos;s why we bring our fully equipped mobile units directly to you -- whether you&apos;re parked at your Heritage Hills home, at a Lincoln Avenue office, or in the massive Park Meadows parking lot. With Lone Tree&apos;s high concentration of late-model vehicles requiring ADAS calibration, our technicians are experienced with every make and model.
@@ -302,6 +331,20 @@ export default function LoneTreeLocationPage() {
               </section>
 
               {/* CTA */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/highlands-ranch-co" className="text-pink-600 hover:underline font-medium">Highlands Ranch</Link>
+                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/locations/parker-co" className="text-pink-600 hover:underline font-medium">Parker</Link>
+                  <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline font-medium">Castle Rock</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Lone Tree?</h2>
                 <p className="text-xl mb-6 text-pink-100">Same-day mobile service anywhere in Lone Tree. Call now for a free quote.</p>

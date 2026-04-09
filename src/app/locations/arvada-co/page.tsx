@@ -40,6 +40,10 @@ export default function ArvadaLocationPage() {
       question: 'Does insurance cover windshield replacement in Arvada?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Arvada residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'Can Pink Auto Glass replace my windshield if I\'m near Olde Town Arvada?',
+      answer: 'Absolutely! Our mobile team serves all of Arvada, including the historic Olde Town district. We can come to your home, office, or even while you\'re parked enjoying the shops and restaurants.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function ArvadaLocationPage() {
                 Arvada's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Arvada\'s bustling suburban streets and proximity to major arteries like I-70 and US-36 mean your windshield faces daily challenges. From commuter traffic to sudden hailstorms, chips and cracks are an unfortunate reality for many drivers in this vibrant community.
               </p>
               <CTAButtons source="arvada-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function ArvadaLocationPage() {
                   Arvada's historic community needs reliable auto glass service. With over 125,000 residents, Arvada's unique blend of old-town charm and modern development creates specific windshield challenges. From Old Town Arvada to the new Candelas and Leyden Rock developments, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Arvada.
                 </p>
                 <AboveFoldCTA location="location-arvada-co" />
+
+              {/* Windshield Damage in Arvada */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Arvada
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Road debris from heavy I-70 and US-36 traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent spring and summer hailstorms in the Denver metro area.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Construction materials from ongoing development projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Gravel from unpaved roads near parks or older areas.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on US-36, traveling along Wadsworth Boulevard, navigating I-70, or exploring historic Olde Town, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Arvada.
                 </p>
@@ -231,6 +260,19 @@ export default function ArvadaLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/golden-co" className="text-pink-600 hover:underline font-medium">Golden</Link>
+                  <Link href="/locations/wheat-ridge-co" className="text-pink-600 hover:underline font-medium">Wheat Ridge</Link>
+                  <Link href="/locations/westminster-co" className="text-pink-600 hover:underline font-medium">Westminster</Link>
+                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
                 </div>
               </section>
 

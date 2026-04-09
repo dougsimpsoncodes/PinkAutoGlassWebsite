@@ -40,6 +40,10 @@ export default function HighlandsRanchLocationPage() {
       question: 'Does insurance cover windshield replacement in Highlands Ranch?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Highlands Ranch residents. We can verify your coverage and bill your insurance directly.'
     },
+    {
+      question: 'What if I need a windshield replacement while at the Highlands Ranch Rec Center?',
+      answer: 'Our mobile service is designed for maximum convenience, so we can certainly come to you at any of the Highlands Ranch Rec Centers or your workplace. Just let us know your location, and we\'ll handle the repair while you continue your day.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -75,7 +79,7 @@ export default function HighlandsRanchLocationPage() {
                 Highlands Ranch's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving through Highlands Ranch involves navigating busy routes like C-470 and University Blvd, exposing your windshield to a range of hazards. From daily commuter debris to intense hailstorms, protecting your vehicle\'s glass is a regular challenge for residents.
               </p>
               <CTAButtons source="highlands-ranch-co-hero" />
             </div>
@@ -101,6 +105,31 @@ export default function HighlandsRanchLocationPage() {
                   Highlands Ranch's affluent master-planned community needs reliable auto glass service. With over 105,000 residents, Highlands Ranch's unique suburban layout and commuter patterns create specific windshield challenges. From Backcountry to Northridge to Westridge, Pink Auto Glass provides fast, professional windshield repair and replacement throughout Highlands Ranch.
                 </p>
                 <AboveFoldCTA location="location-highlands-ranch-co" />
+
+              {/* Windshield Damage in Highlands Ranch */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Highlands Ranch
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from C-470 traffic.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent hailstorms during the spring and summer.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from ongoing suburban construction projects.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Minor impacts from landscaping equipment in residential areas.</span>
+                  </li>
+                </ul>
+              </section>
                 <p className="text-lg text-gray-700 mb-4">
                   Whether you're commuting on C-470, traveling along I-25, navigating Santa Fe Drive, or shopping at Town Center, we come to you. Our fully equipped mobile units handle everything on-site - at your home, office, or anywhere in Highlands Ranch.
                 </p>
@@ -231,6 +260,19 @@ export default function HighlandsRanchLocationPage() {
                       <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
                     </details>
                   ))}
+                </div>
+              </section>
+
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/littleton-co" className="text-pink-600 hover:underline font-medium">Littleton</Link>
+                  <Link href="/locations/lone-tree-co" className="text-pink-600 hover:underline font-medium">Lone Tree</Link>
+                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/locations/castle-pines-co" className="text-pink-600 hover:underline font-medium">Castle Pines</Link>
                 </div>
               </section>
 

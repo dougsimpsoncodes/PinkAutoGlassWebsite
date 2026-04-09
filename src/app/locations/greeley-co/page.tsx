@@ -40,6 +40,10 @@ export default function GreeleyLocationPage() {
       question: 'Does insurance cover windshield replacement in Greeley?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Greeley residents.'
     },
+    {
+      question: 'Can Pink Auto Glass service my farm equipment windshield in the Greeley area?',
+      answer: 'While we primarily focus on automotive windshields, we encourage you to call us to discuss your specific farm equipment needs. We might be able to assist or point you in the right direction for specialized agricultural glass services in the Greeley area.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -81,7 +85,7 @@ export default function GreeleyLocationPage() {
                 Greeley's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Greeley\'s unique mix of agricultural routes, heavy US-34 and US-85 traffic, and exposure to plains weather can be tough on windshields. From farm equipment kicking up debris to severe hailstorms, drivers often find themselves in need of glass repair.
               </p>
               <CTAButtons source="greeley-hero" />
             </div>
@@ -121,6 +125,31 @@ export default function GreeleyLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-greeley" />
+
+              {/* Windshield Damage in Greeley */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Greeley
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris from agricultural vehicles on rural roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel from heavy truck traffic on US-34 and US-85.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Severe hailstorms, common in Northern Colorado.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Dust and small stones from unpaved roads and construction sites.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Greeley life. Whether you're commuting to work, visiting the UNC campus, or heading to one of Greeley's many community events, we bring our services to you. Our mobile units serve all of Greeley and surrounding areas.

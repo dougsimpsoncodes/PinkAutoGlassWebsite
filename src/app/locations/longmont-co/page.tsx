@@ -40,6 +40,10 @@ export default function LongmontLocationPage() {
       question: 'Does insurance cover windshield replacement in Longmont?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Longmont residents.'
     },
+    {
+      question: 'Given Longmont\'s mix of urban and agricultural areas, are your mobile technicians equipped for various road conditions?',
+      answer: 'Absolutely. Our mobile technicians are fully equipped and experienced in navigating Longmont\'s diverse environment, from bustling main streets to more rural routes. We prioritize safety and efficiency, ensuring your auto glass service is performed expertly, regardless of your location within Longmont.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -79,7 +83,7 @@ export default function LongmontLocationPage() {
                 Longmont's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Driving through Longmont, whether you\'re on US-287 heading north, taking the Diagonal Highway towards Boulder, or enjoying the scenic views of Longs Peak, means encountering diverse road conditions. This thriving northern Front Range community sees plenty of traffic, agricultural vehicles, and rapid development, all of which contribute to potential windshield damage.
               </p>
               <CTAButtons source="longmont-co-hero" />
             </div>
@@ -113,6 +117,31 @@ export default function LongmontLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-longmont-co" />
+
+              {/* Windshield Damage in Longmont */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Longmont
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy traffic on US-287 and the Diagonal Highway (SH-119), leading to regular debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Proximity to agricultural areas means more farm-related gravel and dirt on roads.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Ongoing residential and commercial construction projects throughout the city.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Strong winds that can blow debris and intensify hail during storms, especially across the plains.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We bring our services to you - whether you're at home, at work, or anywhere in Longmont. Our mobile units are fully equipped to handle all your auto glass needs.

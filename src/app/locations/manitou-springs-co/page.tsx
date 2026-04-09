@@ -45,6 +45,10 @@ export default function ManitouSpringsLocationPage() {
       question: 'Does driving on Pikes Peak Highway really damage windshields?',
       answer: 'Yes, the Pikes Peak Highway is one of the most demanding roads in Colorado for windshield glass. Sections of the road feature loose gravel, and vehicles ascending and descending kick stones at close range on the narrow switchbacks. Canyon rockfall from the surrounding walls adds another hazard. The extreme elevation change -- from 7,400 feet at the gate to 14,115 feet at the summit -- also creates dramatic temperature swings that stress glass. Manitou Springs is the only city where residents routinely drive on the Pikes Peak Hill Climb course as part of daily life, and we see the windshield damage to prove it.'
     },
+    {
+      question: 'Does Pink Auto Glass have experience with vehicles that regularly navigate the challenging roads around Pikes Peak?',
+      answer: 'Yes, our technicians are highly experienced with the unique demands of mountain driving, including vehicles that frequently travel Pikes Peak Highway or other challenging routes. We ensure your new windshield is installed with the utmost precision and durability, ready for Manitou Springs\' diverse conditions.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -86,7 +90,7 @@ export default function ManitouSpringsLocationPage() {
                 Manitou Springs&apos; Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service &bull; Same-Day Appointments &bull; Lifetime Warranty
+                Driving in Manitou Springs, at the base of Pikes Peak, means navigating winding mountain roads and experiencing diverse weather. The unique terrain, combined with heavy tourist traffic, presents specific challenges for windshield integrity.
               </p>
               <CTAButtons source="manitou-springs-hero" />
             </div>
@@ -126,6 +130,31 @@ export default function ManitouSpringsLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-manitou-springs" />
+
+              {/* Windshield Damage in Manitou Springs */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Manitou Springs
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Rocks and gravel loosened from mountain roads and embankments.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Debris kicked up by heavy tourist traffic, especially larger vehicles.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Sudden hailstorms, which can form rapidly in mountainous regions.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Freeze-thaw cycles and temperature extremes that stress auto glass.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Manitou Springs life. Whether you&apos;re navigating the tight switchbacks of Ruxton Avenue to the Cog Railway, shopping along Manitou Avenue in Old Town, commuting to Colorado Springs on US-24, exploring Red Rock Canyon, or heading up Pikes Peak for a weekend drive, your windshield is constantly at risk. That&apos;s why we bring our mobile service directly to you -- whether you&apos;re in the historic homes along Serpentine Drive, the hillside community of Crystal Park, the canyon neighborhoods of Iron Springs and Beckers Lane, or anywhere else in this one-of-a-kind mountain town. No shop visit required.
@@ -343,6 +372,20 @@ export default function ManitouSpringsLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/locations/old-colorado-city-co" className="text-pink-600 hover:underline font-medium">Old Colorado City</Link>
+                  <Link href="/locations/cascade-co" className="text-pink-600 hover:underline font-medium">Cascade</Link>
+                  <Link href="/locations/green-mountain-falls-co" className="text-pink-600 hover:underline font-medium">Green Mountain Falls</Link>
+                  <Link href="/locations/woodland-park-co" className="text-pink-600 hover:underline font-medium">Woodland Park</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Manitou Springs?</h2>
                 <p className="text-xl mb-6 text-pink-100">

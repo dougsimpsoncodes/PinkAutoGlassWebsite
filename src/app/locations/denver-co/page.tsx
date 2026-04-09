@@ -42,6 +42,10 @@ export default function DenverLocationPage() {
       question: 'Does insurance cover windshield replacement in Denver?',
       answer: 'Yes, most comprehensive insurance policies in Colorado cover windshield replacement with zero deductible. We work with all major insurance companies and handle all the paperwork for Denver residents.'
     },
+    {
+      question: 'Can Pink Auto Glass provide mobile service directly to my office building in downtown Denver?',
+      answer: 'Absolutely! Our mobile technicians frequently service vehicles in downtown Denver, whether you\'re parked near Union Station, the 16th Street Mall, or on Capitol Hill. We\'ll coordinate with you for convenient on-site repair or replacement, often even in accessible parking garages.'
+    },
   ];
 
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -83,7 +87,7 @@ export default function DenverLocationPage() {
                 Denver's Trusted Windshield Repair & Replacement
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
-                Mobile Service • Same-Day Appointments • Lifetime Warranty
+                Navigating Denver\'s bustling streets, from the confluence of I-25 and I-70 to the daily grind on Speer Boulevard, means your windshield faces constant threats. The bright Colorado sun combined with the sheer volume of vehicles makes even a small chip a dangerous distraction, especially during rush hour commutes.
               </p>
               <CTAButtons source="denver-hero" />
             </div>
@@ -123,6 +127,31 @@ export default function DenverLocationPage() {
                 </p>
 
                 <AboveFoldCTA location="location-denver" />
+
+              {/* Windshield Damage in Denver */}
+              <section className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Why Windshields Get Damaged in Denver
+                </h2>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Heavy traffic on I-25, I-70, and C-470 causing significant debris kick-up.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Frequent construction projects downtown and throughout the metro area, often leading to flying debris.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Seasonal hailstorms, a common threat across the Front Range, causing widespread glass damage.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-500 mr-2">•</span>
+                    <span>Potholes and general road wear and tear contributing to loosened road debris.</span>
+                  </li>
+                </ul>
+              </section>
 
                 <p className="text-lg text-gray-700 mb-4">
                   We understand Denver life. You're busy commuting on I-70, working downtown, or enjoying the mountains. That's why we bring our services to you - whether you're at home in Capitol Hill, at your office in LoDo, or anywhere else in the Mile High City.
@@ -277,6 +306,20 @@ export default function DenverLocationPage() {
               </section>
 
               {/* CTA Section */}
+              {/* Nearby Cities */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  We Also Serve Nearby
+                </h2>
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/locations/aurora-co" className="text-pink-600 hover:underline font-medium">Aurora</Link>
+                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
+                  <Link href="/locations/golden-co" className="text-pink-600 hover:underline font-medium">Golden</Link>
+                  <Link href="/locations/wheat-ridge-co" className="text-pink-600 hover:underline font-medium">Wheat Ridge</Link>
+                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                </div>
+              </section>
+
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Get Started in Denver?</h2>
                 <p className="text-xl mb-6 text-pink-100">
