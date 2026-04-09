@@ -39,7 +39,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'If you\'ve ever gotten a crack or chip in your windshield in Colorado, you\'ve probably wondered: "How much will this cost me?" The good news? In Colorado, there\'s a strong chance you\'ll pay nothing at all. Here\'s everything you need to know about windshield replacement costs and insurance coverage in the Centennial State.'
+        content: 'If you\'ve ever gotten a crack or chip in your windshield in Colorado, you\'ve probably wondered: "How much will this cost me?" The good news? In Colorado, there\'s a strong chance you\'ll pay nothing at all. Here\'s everything you need to know about [windshield replacement](/services/windshield-replacement) costs and [insurance coverage](/services/insurance-claims) in the Centennial State.'
       },
       {
         type: 'heading',
@@ -61,7 +61,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'The price variation depends on several factors: the size and complexity of the windshield, whether your vehicle has Advanced Driver Assistance Systems (ADAS) that require calibration, and whether you need OEM (Original Equipment Manufacturer) glass versus aftermarket options.'
+        content: 'The price variation depends on several factors: the size and complexity of the windshield, whether your vehicle has [Advanced Driver Assistance Systems (ADAS)](/services/adas-calibration) that require calibration, and whether you need OEM (Original Equipment Manufacturer) glass versus aftermarket options.'
       },
       {
         type: 'heading',
@@ -213,7 +213,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'If you\'re replacing a windshield on a vehicle built in 2018 or later, the answer is almost certainly yes - you need ADAS calibration. This isn\'t optional, it\'s not a "nice to have," and it\'s not a shop upsell. It\'s a federal safety requirement. Here\'s everything you need to know about why ADAS calibration matters and what happens if you skip it.'
+        content: 'If you\'re replacing a windshield on a vehicle built in 2018 or later, the answer is almost certainly yes - you need [ADAS calibration](/services/adas-calibration). This isn\'t optional, it\'s not a "nice to have," and it\'s not a shop upsell. It\'s a federal safety requirement. Here\'s everything you need to know about why ADAS calibration matters and what happens if you skip it.'
       },
       {
         type: 'heading',
@@ -293,11 +293,11 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'ADAS calibration equipment is expensive - calibration rigs cost affordable,000-expensive. Additionally, technicians need manufacturer-specific training and certification. This is why many shops charge Contact for Quote for ADAS calibration as a separate line item.'
+        content: 'ADAS calibration equipment is expensive - calibration rigs cost affordable,000-expensive. Additionally, technicians need manufacturer-specific training and certification. This is why many shops charge Contact for Quote for [ADAS calibration](/adas-calibration-cost) as a separate line item.'
       },
       {
         type: 'paragraph',
-        content: 'However, quality auto glass companies provide ADAS calibration with windshield replacement. Why? Because it\'s not an optional extra - it\'s a required part of proper windshield replacement on modern vehicles. When getting quotes, always ask: "Is ADAS calibration included in this price?" If not, you\'re likely being upsold or the shop is cutting corners.'
+        content: 'However, quality auto glass companies provide ADAS calibration with [windshield replacement](/services/windshield-replacement). Why? Because it\'s not an optional extra - it\'s a required part of proper windshield replacement on modern vehicles. When getting quotes, always ask: "Is ADAS calibration included in this price?" If not, you\'re likely being upsold or the shop is cutting corners.'
       },
       {
         type: 'heading',
@@ -399,7 +399,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'Colorado winters are beautiful - but brutal on windshields. Those small chips and tiny cracks that seemed harmless in summer? They can spider across your entire windshield overnight when temperatures drop. Here\'s how to protect your windshield through Colorado\'s harsh winter and prevent a affordable chip repair from becoming a professional service replacement.'
+        content: 'Colorado winters are beautiful - but brutal on windshields. Those small chips and tiny cracks that seemed harmless in summer? They can spider across your entire windshield overnight when temperatures drop. Here\'s how to protect your windshield through Colorado\'s harsh winter and prevent a affordable [chip repair](/services/windshield-repair) from becoming a professional service [replacement](/services/windshield-replacement).'
       },
       {
         type: 'heading',
@@ -486,7 +486,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Additionally, insurance companies cover chip repair with zero deductible in Colorado - there\'s literally no financial reason to delay. A 30-minute repair appointment saves you from a 90-minute replacement appointment (and potential Contact for Quote cost) later.'
+        content: 'Additionally, [insurance companies cover chip repair](/services/insurance-claims) with zero deductible in Colorado - there\'s literally no financial reason to delay. A 30-minute repair appointment saves you from a 90-minute replacement appointment (and potential Contact for Quote cost) later.'
       },
       {
         type: 'heading',
@@ -594,7 +594,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'You\'ve got a chip or crack in your windshield, and now you\'re facing a critical decision: Can it be repaired, or do you need a full replacement? The answer isn\'t always obvious, and making the wrong choice can cost you time, money, and potentially your safety. Here\'s your complete guide to understanding when windshield repair works and when replacement is necessary in Colorado.'
+        content: 'You\'ve got a chip or crack in your windshield, and now you\'re facing a critical decision: Can it be [repaired](/services/windshield-repair), or do you need a full [replacement](/services/windshield-replacement)? The answer isn\'t always obvious, and making the wrong choice can cost you time, money, and potentially your safety. Here\'s your complete guide to understanding when windshield repair works and when replacement is necessary in Colorado.'
       },
       {
         type: 'heading',
@@ -685,7 +685,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'This is especially true for vehicles with complex ADAS systems like Tesla, Subaru EyeSight, Honda Sensing, and Toyota Safety Sense. These systems are highly sensitive to optical imperfections. When in doubt, consult with a shop that has manufacturer-specific ADAS training - they can advise whether repair will affect your safety systems.'
+        content: 'This is especially true for vehicles with complex ADAS systems like Tesla, Subaru EyeSight, Honda Sensing, and Toyota Safety Sense. These systems are highly sensitive to optical imperfections. When in doubt, consult with a shop that has manufacturer-specific [ADAS calibration](/services/adas-calibration) training - they can advise whether repair will affect your safety systems.'
       },
       {
         type: 'heading',
@@ -825,7 +825,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'Advanced Driver Assistance Systems (ADAS) have become standard equipment on most vehicles built since 2018, yet many Colorado drivers don\'t fully understand what these systems are, how they work, or what happens when their windshield is replaced. This lack of understanding has created a minefield of myths and misconceptions - some merely incorrect, others potentially dangerous. Let\'s separate fact from fiction.'
+        content: 'Advanced Driver Assistance Systems (ADAS) have become standard equipment on most vehicles built since 2018, yet many Colorado drivers don\'t fully understand what these systems are, how they work, or what happens when their [windshield is replaced](/services/windshield-replacement). This lack of understanding has created a minefield of myths and misconceptions - some merely incorrect, others potentially dangerous. Let\'s separate fact from fiction.'
       },
       {
         type: 'heading',
@@ -900,7 +900,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'If a shop offers to skip calibration to save you money, leave immediately. They\'re violating federal safety regulations and putting you at risk. Reputable shops include ADAS calibration as part of the windshield replacement process - not as an optional add-on.'
+        content: 'If a shop offers to skip calibration to save you money, leave immediately. They\'re violating federal safety regulations and putting you at risk. Reputable shops include [ADAS calibration](/services/adas-calibration) as part of the windshield replacement process - not as an optional add-on.'
       },
       {
         type: 'heading',
@@ -1090,7 +1090,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Rock chips don\'t stay small in Colorado. Our extreme weather, altitude, and temperature swings create the perfect conditions for chips to spread into full cracks - often within days or even hours. Here\'s everything you need to know about preventing rock chip spread and the urgent timeline you\'re working against.'
+        content: 'Rock chips don\'t stay small in Colorado. Our extreme weather, altitude, and temperature swings create the perfect conditions for chips to spread into full cracks - often within days or even hours. Here\'s everything you need to know about preventing rock chip spread and the urgent timeline you\'re working against. If you already have a chip, schedule [mobile windshield repair](/services/mobile-service) right away.'
       },
       {
         type: 'heading',
@@ -1164,7 +1164,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Step 5: Schedule repair immediately. Don\'t wait. Call a professional mobile windshield repair service and schedule repair for the next available appointment - ideally within 24-48 hours. In Colorado, time is not on your side.'
+        content: 'Step 5: Schedule repair immediately. Don\'t wait. Call a professional [mobile windshield repair](/services/windshield-repair) service and schedule repair for the next available appointment - ideally within 24-48 hours. In Colorado, time is not on your side.'
       },
       {
         type: 'heading',
@@ -1326,7 +1326,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'You\'re driving down I-25 when a rock from the truck ahead hits your windshield. Now you have a crack or chip staring at you from your line of sight. The question everyone asks: Can this be repaired, or do I need a full replacement? The answer affects both your wallet and your safety. This comprehensive guide will help you make the right decision.'
+        content: 'You\'re driving down I-25 when a rock from the truck ahead hits your windshield. Now you have a crack or chip staring at you from your line of sight. The question everyone asks: Can this be [repaired](/services/windshield-repair), or do I need a full [replacement](/services/windshield-replacement)? The answer affects both your wallet and your safety. This comprehensive guide will help you make the right decision.'
       },
       {
         type: 'heading',
@@ -1335,7 +1335,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Choosing repair vs replacement isn\'t just about cost - it\'s about three critical factors: safety (your windshield provides 30% of your vehicle\'s structural integrity in a rollover), legality (Colorado requires unobstructed driver vision), and finances (repair costs $50-150 while replacement costs $200-800+). Making the wrong choice can compromise your safety, fail state inspection, or waste money on a repair that won\'t last.'
+        content: 'Choosing repair vs replacement isn\'t just about cost - it\'s about three critical factors: safety (your windshield provides 30% of your vehicle\'s structural integrity in a rollover), legality (Colorado requires unobstructed driver vision), and finances (repair costs $50-150 while replacement costs $200-800+). Making the wrong choice can compromise your safety, fail state inspection, or waste money on a repair that won\'t last. [Check your insurance coverage](/services/insurance-claims) to understand your out-of-pocket costs.'
       },
       {
         type: 'heading',
@@ -1705,7 +1705,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'When a rock cracks your windshield, the first question is always: "How much is this going to cost me?" The answer isn\'t simple because windshield replacement costs vary dramatically based on your specific vehicle, the type of glass, whether you have advanced safety systems, and your insurance coverage. This comprehensive guide breaks down every cost factor so you know exactly what to expect - and why many Colorado drivers pay absolutely nothing out of pocket.'
+        content: 'When a rock cracks your windshield, the first question is always: "How much is this going to cost me?" The answer isn\'t simple because [windshield replacement](/services/windshield-replacement) costs vary dramatically based on your specific vehicle, the type of glass, whether you have advanced safety systems, and your [insurance coverage](/services/insurance-claims). This comprehensive guide breaks down every cost factor so you know exactly what to expect - and why many Colorado drivers pay absolutely nothing out of pocket.'
       },
       {
         type: 'heading',
@@ -1894,7 +1894,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Many customers assume mobile service costs more. Good news: at Pink Auto Glass and most reputable mobile services, mobile replacement costs the same as shop service. We bring the shop to you with the same tools, materials, and expertise. The convenience is free. Our mobile technicians have climate-controlled vans with all necessary equipment for proper installation and adhesive curing, even in Colorado\'s temperature extremes.'
+        content: 'Many customers assume [mobile service](/services/mobile-service) costs more. Good news: at Pink Auto Glass and most reputable mobile services, mobile replacement costs the same as shop service. We bring the shop to you with the same tools, materials, and expertise. The convenience is free. Our mobile technicians have climate-controlled vans with all necessary equipment for proper installation and adhesive curing, even in Colorado\'s temperature extremes.'
       },
       {
         type: 'paragraph',
@@ -2175,7 +2175,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'If your vehicle has lane departure warning, automatic emergency braking, adaptive cruise control, or similar safety features, your windshield isn\'t just glass - it\'s a critical component of an advanced safety system. When that windshield is replaced, those safety features stop working correctly until the system is recalibrated. This comprehensive guide explains everything you need to know about ADAS calibration: what it is, why it\'s required, how it works, what it costs, and why skipping it is illegal and dangerous.'
+        content: 'If your vehicle has lane departure warning, automatic emergency braking, adaptive cruise control, or similar safety features, your windshield isn\'t just glass - it\'s a critical component of an advanced safety system. When that [windshield is replaced](/services/windshield-replacement), those safety features stop working correctly until the system is recalibrated. This comprehensive guide explains everything you need to know about [ADAS calibration](/services/adas-calibration): what it is, why it\'s required, how it works, [what it costs](/adas-calibration-cost), and why skipping it is illegal and dangerous.'
       },
       {
         type: 'heading',
@@ -2698,7 +2698,7 @@ export const blogPosts: BlogPost[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'If you drive in Colorado, rock chips are a fact of life. Between I-25 construction debris, gravel roads in the foothills, and sand trucks in winter, your windshield takes a beating. The good news: most Colorado drivers with comprehensive auto insurance can get windshield chip repair — and often full replacement — at zero cost out of pocket. Here\'s exactly how it works, which insurers offer $0 deductible glass coverage, and how to file your claim the easy way.'
+        content: 'If you drive in Colorado, rock chips are a fact of life. Between I-25 construction debris, gravel roads in the foothills, and sand trucks in winter, your windshield takes a beating. The good news: most Colorado drivers with comprehensive auto insurance can get [windshield chip repair](/services/windshield-repair) — and often full [replacement](/services/windshield-replacement) — at zero cost out of pocket. Here\'s exactly how it works, which insurers offer $0 deductible glass coverage, and how to file your claim the easy way.'
       },
       {
         type: 'heading',
@@ -2737,7 +2737,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Important note: even if your policy has a standard $500 or $1,000 comprehensive deductible, many carriers waive that deductible specifically for glass claims in Colorado. The only way to know for sure is to check your policy or call your insurer. Better yet, call us — we verify your coverage for free and can tell you your exact out-of-pocket cost in minutes.'
+        content: 'Important note: even if your policy has a standard $500 or $1,000 comprehensive deductible, many carriers waive that deductible specifically for glass claims in Colorado. The only way to know for sure is to check your policy or call your insurer. Better yet, call us — we [verify your coverage](/services/insurance-claims) for free and can tell you your exact out-of-pocket cost in minutes.'
       },
       {
         type: 'heading',
@@ -2853,7 +2853,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Most states treat windshield replacement as a standard insurance claim subject to your deductible. Arizona is different. Three statutes specifically protect Arizona drivers and give them rights that most policyholders never use.'
+        content: 'Most states treat [windshield replacement](/services/windshield-replacement) as a standard insurance claim subject to your deductible. Arizona is different. Three statutes specifically protect Arizona drivers and give them rights that most policyholders never use.'
       },
       {
         type: 'heading',
@@ -2967,7 +2967,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Pink Auto Glass provides mobile windshield repair and replacement across all 20 Phoenix metro cities in Maricopa County. Technicians are dispatched directly to the customer\'s location — no shop visit required.'
+        content: 'Pink Auto Glass provides [mobile windshield repair and replacement](/services/mobile-service) across all 20 [Phoenix metro](/locations/phoenix-az) cities in Maricopa County. Technicians are dispatched directly to the customer\'s location — no shop visit required.'
       },
       {
         type: 'list',
@@ -3138,7 +3138,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Colorado does not have a mandatory zero-deductible glass law like Arizona. However, most major insurers offering comprehensive coverage in Colorado either include zero-deductible glass coverage as a standard feature or offer it as a low-cost add-on. The result is the same: most Colorado drivers with comprehensive coverage pay nothing for windshield replacement or chip repair.'
+        content: 'Colorado does not have a mandatory zero-deductible glass law like Arizona. However, most major insurers offering comprehensive coverage in Colorado either include zero-deductible glass coverage as a standard feature or offer it as a low-cost add-on. The result is the same: most Colorado drivers with comprehensive coverage pay nothing for [windshield replacement](/services/windshield-replacement) or [chip repair](/services/windshield-repair).'
       },
       {
         type: 'list',
@@ -3180,7 +3180,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'paragraph',
-        content: 'Pink Auto Glass provides same-day mobile windshield repair and replacement across the entire Denver metro area and Front Range. Certified technicians come to your home, office, or any location — no shop visit required. A portion of every job supports breast cancer awareness charities.'
+        content: 'Pink Auto Glass provides same-day [mobile windshield repair and replacement](/services/mobile-service) across the entire [Denver metro area](/locations/denver-co) and Front Range. Certified technicians come to your home, office, or any location — no shop visit required. A portion of every job supports breast cancer awareness charities.'
       },
       {
         type: 'list',

@@ -61,6 +61,23 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
   };
 }
 
+function renderTextWithLinks(text: string) {
+  const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => {
+    const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (match) {
+      const [, linkText, href] = match;
+      const isInternal = href.startsWith('/');
+      if (isInternal) {
+        return <Link key={i} href={href} className="text-pink-600 hover:text-pink-800 underline">{linkText}</Link>;
+      }
+      return <a key={i} href={href} className="text-pink-600 hover:text-pink-800 underline" target="_blank" rel="noopener noreferrer">{linkText}</a>;
+    }
+    return part;
+  });
+}
+
 function renderContent(content: BlogContent, index: number) {
   switch (content.type) {
     case 'heading':
@@ -78,7 +95,7 @@ function renderContent(content: BlogContent, index: number) {
     case 'paragraph':
       return (
         <p key={index} className="text-lg text-gray-700 mb-6 leading-relaxed">
-          {content.content as string}
+          {renderTextWithLinks(content.content as string)}
         </p>
       );
 
@@ -87,7 +104,7 @@ function renderContent(content: BlogContent, index: number) {
         <ul key={index} className="list-disc list-inside space-y-3 mb-6 text-gray-700">
           {(content.content as string[]).map((item, i) => (
             <li key={i} className="text-lg leading-relaxed ml-4">
-              {item}
+              {renderTextWithLinks(item)}
             </li>
           ))}
         </ul>
