@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Clock, MessageSquare, Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import CTAButtons from '@/components/CTAButtons';
+import AboveFoldCTA from '@/components/AboveFoldCTA';
 
 export const metadata: Metadata = {
   title: 'Contact Pink Auto Glass | Denver Mobile Windshield Service',
@@ -41,6 +43,7 @@ export default function ContactPage() {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We're here to help! Reach out for a free quote, schedule service, or get answers to your windshield questions.
             </p>
+            <AboveFoldCTA location="contact-hero" />
           </div>
 
           {/* Quick Contact Cards */}
@@ -202,6 +205,11 @@ export default function ContactPage() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* CTA before FAQ */}
+          <div className="text-center mb-16">
+            <CTAButtons source="contact-bottom" />
           </div>
 
           {/* FAQ Section */}

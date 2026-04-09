@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Phone, X } from 'lucide-react';
-import { trackCTAClick } from '@/lib/analytics';
+import { trackPhoneClick } from '@/lib/tracking';
 import { resolveMarket, getPhoneForMarket } from '@/lib/market';
 
 interface StickyCallbackBarProps {
@@ -37,7 +37,7 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
   const { phoneE164, displayPhone } = getPhoneForMarket(market);
 
   const handleCall = () => {
-    trackCTAClick('call', source);
+    trackPhoneClick(`sticky-callback-${source}`, 'Call Now', phoneE164);
   };
 
   const handleDismiss = () => {
