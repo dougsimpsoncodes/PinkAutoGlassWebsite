@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 import { jsonrepair } from 'jsonrepair';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,15 +36,23 @@ interface RosterEntry {
 
 const REQUIRED_COLUMNS = ['Invoice #', 'Customer Name', 'Open Balance', 'VIN'];
 
-function parseSpreadsheet(buffer: ArrayBuffer): RosterEntry[] {
-  const workbook = XLSX.read(buffer, { type: 'array' });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+async function parseSpreadsheet(buffer: ArrayBuffer): Promise<RosterEntry[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(Buffer.from(buffer));
+  const worksheet = workbook.worksheets[0];
 
-  // The Omega export has an empty first row — find the actual header row
-  const rawRows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, defval: '' });
+  if (!worksheet) {
+    throw new Error('Spreadsheet does not contain any worksheets.');
+  }
+
+  const rawRows: string[][] = [];
+  worksheet.eachRow((row) => {
+    rawRows.push(row.values.slice(1).map((cell) => String(cell ?? '')));
+  });
+
   let headerIdx = -1;
   for (let i = 0; i < Math.min(rawRows.length, 10); i++) {
-    if (rawRows[i].some((cell: any) => String(cell).includes('Invoice #'))) {
+    if (rawRows[i].some((cell) => String(cell).includes('Invoice #'))) {
       headerIdx = i;
       break;
     }
@@ -54,21 +62,19 @@ function parseSpreadsheet(buffer: ArrayBuffer): RosterEntry[] {
     throw new Error('Could not find header row with "Invoice #" column. Is this an Omega Accounts Aging Detail export?');
   }
 
-  // Re-parse with correct header row
-  const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, {
-    defval: '',
-    range: headerIdx,
-  });
-
-  if (rows.length === 0) {
-    throw new Error('Spreadsheet has a header row but no data rows.');
-  }
-
-  // Validate required columns exist
-  const headers = Object.keys(rows[0]);
+  const headers = rawRows[headerIdx].map((header) => String(header).trim());
   const missingCols = REQUIRED_COLUMNS.filter(col => !headers.includes(col));
   if (missingCols.length > 0) {
     throw new Error(`Missing required columns: ${missingCols.join(', ')}. Found: ${headers.join(', ')}`);
+  }
+
+  const rows: Record<string, any>[] = rawRows
+    .slice(headerIdx + 1)
+    .map((cells) => Object.fromEntries(headers.map((header, idx) => [header, cells[idx] ?? ''])))
+    .filter((row) => Object.values(row).some((value) => String(value).trim() !== ''));
+
+  if (rows.length === 0) {
+    throw new Error('Spreadsheet has a header row but no data rows.');
   }
 
   console.log(`Spreadsheet: header at row ${headerIdx}, ${rows.length} data rows, columns: ${headers.join(', ')}`);
@@ -229,7 +235,7 @@ export async function POST(request: NextRequest) {
     if (spreadsheetFiles.length === 1) {
       source = 'spreadsheet';
       const buffer = await spreadsheetFiles[0].arrayBuffer();
-      allEntries = parseSpreadsheet(buffer);
+      allEntries = await parseSpreadsheet(buffer);
       console.log(`Roster spreadsheet parsed: ${allEntries.length} entries from ${spreadsheetFiles[0].name}`);
     } else {
       source = 'screenshot';

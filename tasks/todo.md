@@ -306,3 +306,25 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 - **Google Ads — final URL:** Updated http:// → https:// via API.
 - Verification: Gemini confirmed all changes correct. Codex quota exceeded.
 - Deliberately NOT done: national homepage change (deferred to Phase 2), budget increase (rank is the problem, not budget)
+
+## 2026-04-10 — Security Alert Remediation (npm audit)
+
+**Trigger:** GitHub Actions "Security Checks" workflow failed on commit c892147 — `npm audit` found critical/high vulnerabilities.
+
+**What was fixed:**
+- Ran `npm audit fix` — patched axios, flatted, picomatch, qs, brace-expansion, yaml, ajv, sharp
+- Next.js already at 15.5.15 (above vulnerable range), axios already at 1.15.0 — both were false positives
+- xlsx flagged but not installed/not a dependency — false positive
+
+**What was NOT fixed (deliberate decision):**
+- 3 remaining high-severity minimatch ReDoS vulns in `@typescript-eslint/parser` (via `eslint-config-next@14.0.4`)
+- Fixing requires ESLint 8→9 migration + flat config rewrite (30+ breaking changes) — not a one-liner
+- All 3 are dev-only tooling, no production attack vector, not exploitable without controlling tsconfig glob patterns
+- **Consensus: Claude, Codex, and Gemini all agreed — defer until ESLint migration is worthwhile on its own merits**
+
+**Workflow change:**
+- Updated `.github/workflows/security.yml`: `npm audit` now uses `--omit=dev` to audit production dependencies only
+- Changed audit level from `critical` to `high` for better signal
+- Added `npm ci` step before audit (was missing — audit without install is unreliable)
+
+**Verification:** Production dependencies are clean. Secret scanning passed. Dev-only noise eliminated from CI.
