@@ -296,27 +296,27 @@ export const trackMicrosoftAdsEvent = (
 
 /**
  * Track phone call click for Microsoft Ads
- * Maps to "Phone call website click" conversion goal in Microsoft Ads
- * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ * Maps to "Phone call website click" conversion goal in Microsoft Ads (ActionExpression: phone_click)
+ * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
 export const trackMicrosoftAdsCallClick = (source: string, transactionId?: string) => {
-  trackMicrosoftAdsEvent('Phone call website click', 'conversion', source, undefined, transactionId);
+  trackMicrosoftAdsEvent('phone_click', 'conversion', source, undefined, transactionId);
 };
 
 /**
  * Track text/SMS click for Microsoft Ads
- * Maps to "Text_click" conversion goal in Microsoft Ads
- * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ * Maps to "Text_click" conversion goal in Microsoft Ads (ActionExpression: text_click)
+ * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
 export const trackMicrosoftAdsTextClick = (source: string, transactionId?: string) => {
-  trackMicrosoftAdsEvent('Text_click', 'conversion', source, undefined, transactionId);
+  trackMicrosoftAdsEvent('text_click', 'conversion', source, undefined, transactionId);
 };
 
 /**
  * Track lead form submission for Microsoft Ads
- * Maps to "Quick quote" conversion goal in Microsoft Ads
- * IMPORTANT: Event name must match EXACTLY what's configured in Microsoft Ads dashboard
+ * Maps to "Quick quote" conversion goal in Microsoft Ads (ActionExpression: form_submit)
+ * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
 export const trackMicrosoftAdsLeadForm = (formName: string, value?: number, transactionId?: string) => {
-  trackMicrosoftAdsEvent('Quick quote', 'conversion', formName, value, transactionId);
+  trackMicrosoftAdsEvent('form_submit', 'conversion', formName, value, transactionId);
 };
