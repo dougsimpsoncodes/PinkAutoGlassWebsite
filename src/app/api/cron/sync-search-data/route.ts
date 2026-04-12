@@ -289,34 +289,43 @@ export async function GET(request: NextRequest) {
     // ========================================
     // 2.5. Sync Google Ads Call Conversions + Call View
     // ========================================
+    // 2.5a and 2.5b are wrapped in SEPARATE inner try blocks so a failure in
+    // one step does not cascade into skipping the other. Previously a single
+    // try covered both, and a fetchCallConversions throw silently swallowed
+    // the entire call_view sync — the table went 42 days without new rows.
     try {
       const configValid = validateGoogleAdsConfig();
       if (configValid.isValid) {
         // 2.5a: Aggregate call conversions by conversion action
-        console.log('📞 Syncing Google Ads call conversions...');
-        const conversions = await fetchCallConversions(startDateStr, endDateStr);
-        if (conversions.length > 0) {
-          const dbRecords = conversions.map(c => ({
-            date: c.date,
-            campaign_id: c.campaign_id,
-            campaign_name: c.campaign_name,
-            conversion_action_id: c.conversion_action_id,
-            conversion_action_name: c.conversion_action_name,
-            call_conversions: c.conversions,
-            call_conversions_value: c.conversions_value,
-            sync_timestamp: new Date().toISOString(),
-          }));
-          const { error } = await supabase
-            .from('google_ads_call_conversions')
-            .upsert(dbRecords, { onConflict: 'date,campaign_id,conversion_action_id' });
-          if (!error) {
-            results.googleAds.callConversions = { success: true, records: dbRecords.length, error: null };
-            console.log(`✅ Synced ${dbRecords.length} call conversion records`);
+        try {
+          console.log('📞 Syncing Google Ads call conversions...');
+          const conversions = await fetchCallConversions(startDateStr, endDateStr);
+          if (conversions.length > 0) {
+            const dbRecords = conversions.map(c => ({
+              date: c.date,
+              campaign_id: c.campaign_id,
+              campaign_name: c.campaign_name,
+              conversion_action_id: c.conversion_action_id,
+              conversion_action_name: c.conversion_action_name,
+              call_conversions: c.conversions,
+              call_conversions_value: c.conversions_value,
+              sync_timestamp: new Date().toISOString(),
+            }));
+            const { error } = await supabase
+              .from('google_ads_call_conversions')
+              .upsert(dbRecords, { onConflict: 'date,campaign_id,conversion_action_id' });
+            if (!error) {
+              results.googleAds.callConversions = { success: true, records: dbRecords.length, error: null };
+              console.log(`✅ Synced ${dbRecords.length} call conversion records`);
+            } else {
+              results.googleAds.callConversions.error = error.message;
+            }
           } else {
-            results.googleAds.callConversions.error = error.message;
+            results.googleAds.callConversions = { success: true, records: 0, error: null };
           }
-        } else {
-          results.googleAds.callConversions = { success: true, records: 0, error: null };
+        } catch (ccError: any) {
+          results.googleAds.callConversions.error = ccError.message;
+          console.warn(`⚠️ call_conversions sync failed (non-fatal): ${ccError.message}`);
         }
 
         // 2.5b: Individual call records via call_view (yesterday only to avoid timeout)
