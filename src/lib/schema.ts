@@ -322,7 +322,11 @@ export function generateHowToSchema(params: {
 export function combineSchemas(...schemas: any[]) {
   return {
     "@context": "https://schema.org",
-    "@graph": schemas
+    "@graph": schemas.map((schema) => {
+      if (!schema || typeof schema !== 'object') return schema;
+      const { ['@context']: _context, ...rest } = schema;
+      return rest;
+    })
   };
 }
 
