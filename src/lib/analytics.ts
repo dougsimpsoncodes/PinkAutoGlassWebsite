@@ -8,6 +8,14 @@ export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
 export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
 export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
 
+// Expected conversion value per event (USD). Must match DEFAULT_FORM_VALUE /
+// DEFAULT_CALL_VALUE in offlineConversionSync.ts — Smart Bidding trains on both
+// the live events fired here and the offline uploads, so drift breaks bidding.
+// Form: 25.2% close × $360 avg ticket. Call/text: 15.3% close × $360 avg ticket.
+export const FORM_CONVERSION_VALUE_USD = 91;
+export const CALL_CONVERSION_VALUE_USD = 55;
+export const TEXT_CONVERSION_VALUE_USD = 55;
+
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
@@ -209,12 +217,15 @@ export const trackQuoteValue = (
 // Transaction ID prevents duplicate conversions when the same form is submitted multiple times
 export const trackGoogleAdsConversion = (
   transactionId: string,
-  conversionLabel: string = GOOGLE_ADS_LEAD_FORM_LABEL
+  conversionLabel: string,
+  value: number
 ) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', 'conversion', {
       'send_to': `${GOOGLE_ADS_CONVERSION_ID}/${conversionLabel}`,
       'transaction_id': transactionId,
+      'value': value,
+      'currency': 'USD',
     });
   }
 };
@@ -242,19 +253,19 @@ export const setEnhancedConversionData = (userData: { email?: string; phone?: st
 // Track lead form submission conversion (booking form, quote form)
 export const trackLeadFormConversion = (leadId: string, userData?: { email?: string; phone?: string }) => {
   if (userData) setEnhancedConversionData(userData);
-  trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL);
+  trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL, FORM_CONVERSION_VALUE_USD);
 };
 
 // Track text/SMS click conversion
 // Uses session-based transaction_id to prevent duplicate conversions from same session
 export const trackTextClickConversion = (sessionId: string) => {
-  trackGoogleAdsConversion(`text_${sessionId}`, GOOGLE_ADS_TEXT_LABEL);
+  trackGoogleAdsConversion(`text_${sessionId}`, GOOGLE_ADS_TEXT_LABEL, TEXT_CONVERSION_VALUE_USD);
 };
 
 // Track phone call click conversion
 // Uses session-based transaction_id to prevent duplicate conversions from same session
 export const trackCallClickConversion = (sessionId: string) => {
-  trackGoogleAdsConversion(`call_${sessionId}`, GOOGLE_ADS_CALL_LABEL);
+  trackGoogleAdsConversion(`call_${sessionId}`, GOOGLE_ADS_CALL_LABEL, CALL_CONVERSION_VALUE_USD);
 };
 
 // ============================================================================
