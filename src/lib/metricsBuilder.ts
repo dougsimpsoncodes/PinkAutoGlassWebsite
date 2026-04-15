@@ -309,7 +309,7 @@ async function fetchCalls(
 ): Promise<{ calls: any[] }> {
   const { data } = await supabase
     .from('ringcentral_calls')
-    .select('from_number, to_number, start_time, duration, direction, result, ad_platform')
+    .select('from_number, to_number, start_time, duration, direction, result, ad_platform, attribution_method, attribution_confidence')
     .gte('start_time', bounds.startUTC)
     .lte('start_time', bounds.endUTC)
     .eq('direction', 'Inbound');
@@ -372,11 +372,23 @@ function deduplicateCalls(
     }
     seen.add(key);
 
-    // Platform attribution: DB column first, then session-based matching
-    let platform = call.ad_platform;
-    if (!platform || platform === 'direct') {
-      // Session-based attribution: match call to ad-click sessions within time window
-      platform = resolveSessionPlatform(call, sessionAttr);
+    // Platform attribution precedence:
+    //   1. Canonical resolver (attribution_method + ad_platform written together)
+    //      Only honor canonical methods that represent real evidence — never
+    //      heuristic methods like time_correlation/statistical_probability.
+    //   2. Legacy ad_platform column (still written by callAttributionSync.ts)
+    //   3. Session-based fallback within the existing 60-min window
+    let platform: string | null = null;
+    const hasCanonicalMethod =
+      call.attribution_method === 'google_call_view' ||
+      call.attribution_method === 'direct_match';
+    if (hasCanonicalMethod && call.ad_platform) {
+      platform = call.ad_platform;
+    } else {
+      platform = call.ad_platform;
+      if (!platform || platform === 'direct') {
+        platform = resolveSessionPlatform(call, sessionAttr);
+      }
     }
     if (platform && platform !== 'google' && platform !== 'microsoft') {
       platform = null;
