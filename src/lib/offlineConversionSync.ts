@@ -286,7 +286,13 @@ async function findAttributableCalls(
 }
 
 /**
- * Mark calls as uploaded to Google Ads and set ad_platform
+ * Mark calls as uploaded to Google Ads.
+ *
+ * Bookkeeping only — sets the upload timestamp so the next sync run knows
+ * not to re-upload the same call. Does NOT write ad_platform: that's the
+ * canonical attribution resolver's job (src/lib/callAttribution.ts), and
+ * letting the upload path also write it created the last-writer-wins
+ * corruption documented in tasks/2026-04-14-attribution-remediation.md.
  */
 async function markCallsAsUploaded(
   supabase: SupabaseClient,
@@ -298,7 +304,6 @@ async function markCallsAsUploaded(
     .from('ringcentral_calls')
     .update({
       google_ads_uploaded_at: new Date().toISOString(),
-      ad_platform: 'google', // Mark as Google Ads attributed
     })
     .in('call_id', callIds);
 
@@ -707,7 +712,13 @@ async function findMicrosoftAttributableCalls(
 }
 
 /**
- * Mark calls as uploaded to Microsoft Ads and set ad_platform
+ * Mark calls as uploaded to Microsoft Ads.
+ *
+ * Bookkeeping only — sets the upload timestamp so the next sync run knows
+ * not to re-upload the same call. Does NOT write ad_platform: that's the
+ * canonical attribution resolver's job (src/lib/callAttribution.ts), and
+ * letting the upload path also write it created the last-writer-wins
+ * corruption documented in tasks/2026-04-14-attribution-remediation.md.
  */
 async function markCallsAsUploadedToMicrosoft(
   supabase: SupabaseClient,
@@ -719,7 +730,6 @@ async function markCallsAsUploadedToMicrosoft(
     .from('ringcentral_calls')
     .update({
       microsoft_ads_uploaded_at: new Date().toISOString(),
-      ad_platform: 'microsoft', // Mark as Microsoft Ads attributed (database stores 'microsoft', not 'bing')
     })
     .in('call_id', callIds);
 
