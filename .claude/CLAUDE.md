@@ -214,3 +214,36 @@ Use the simplest direct test — don't query the database to verify a frontend e
 | UI rendering | Look at the screen |
 
 Use the same tool that diagnosed the problem to verify the fix.
+
+---
+
+## Mygrant API Integration — User-Agent Rule
+
+Every outbound HTTP request to Mygrant Glass MUST set this exact `User-Agent` header value:
+
+```
+PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)
+```
+
+**Why:** Mygrant uses this string to filter our traffic in their logs and troubleshoot issues on our behalf. Per Leon Staub's 2026-04-14 email (api-support@mygrantglass.com), they are not IP-allowlisting — User-Agent is how they identify us. If the header is missing or genericized, support becomes "we can't find your traffic."
+
+### This is an enforced invariant, not a memory aid
+
+CLAUDE.md is memory, not a control. The rule only holds if the code enforces it. When any Mygrant client code lands (first PR touching `src/lib/mygrant/` or equivalent), ALL of the following must be true in the same PR:
+
+1. **Central client module** — `src/lib/mygrant/client.ts` (or the agreed location) is the ONLY place in the repo that imports `fetch`/Axios for Mygrant calls. All Mygrant endpoints go through it.
+2. **Single source constant** — `export const MYGRANT_USER_AGENT = 'PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)';` lives in that module. No other file defines or hardcodes the string.
+3. **Unit test** — asserts the *exact* header value is sent on every request through the client (mock the transport, intercept the request, compare `User-Agent` value). Enforce the value; do NOT enforce casing of the header *name* — HTTP header names are case-insensitive and some runtimes normalize them.
+4. **Repo guard** — a test, lint rule, or CI grep that fails the build if any file outside `src/lib/mygrant/` references `mygrantglass.com` in a `fetch`/Axios call, OR if any file outside the client module redefines `MYGRANT_USER_AGENT`.
+5. **No Edge Runtime** — keep Mygrant calls in Node.js / Vercel Functions runtime. Vercel's Edge Runtime and Middleware do not participate in Vercel's static-networking features (relevant if we ever move to Static IPs / Secure Compute), and they have a different fetch stack.
+
+Until that client PR lands, this section IS the rule. After it lands, shrink this section to "see `src/lib/mygrant/client.ts` — the constant, the test, and the guard are the rule."
+
+### Ops rules
+
+- Do NOT strip, rename, lowercase the header value, or genericize it in a refactor.
+- Do NOT let a generic `fetch`/Axios default overwrite it — always set explicitly via the central client.
+- Do NOT bump the `1.0` version on every app release. The version in the UA is the *integration identity version*, not the deploy version — changing it frequently makes Mygrant's log filters worse. Only bump on a deliberate contract change (new auth, new base URL, new identity).
+- If the string ever needs to change (new contact, new integration version), coordinate with `api-support@mygrantglass.com` first, then update the constant, the test, this file, and every call site in the same PR.
+
+**Vendor context:** Integration setup form submitted 2026-04-15. Vendor contact: api-support@mygrantglass.com (Leon Staub, Mark Wright, Tim Veilleux). Mygrant is NOT IP-allowlisting today. Vercel Static IPs / Secure Compute remain an option if that ever changes.

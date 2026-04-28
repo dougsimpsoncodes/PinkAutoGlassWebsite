@@ -131,3 +131,69 @@ If picking this up in a future session:
 2. Read `src/lib/callAttribution.ts` end to end (499 lines, the orphaned resolver).
 3. Check git log for which PRs have shipped: `git log --oneline main..` from any of the `fix/attribution-*` branches.
 4. PR2 starts by extracting the Google call_view logic from `src/lib/callAttributionSync.ts:30-170` into a new function in `callAttribution.ts`, then adding the shared `isQualifyingCall()` helper.
+
+---
+
+## Resume here — 2026-04-15
+
+PR1 is merged to main (commit `3e9ac57`) and the migration is live in the DB. Session paused before PR2.
+
+### Status snapshot
+
+| Item | State |
+|---|---|
+| PR1 branch | merged + deleted (`fix/attribution-stop-bleeding-and-schema`) |
+| PR1 merge commit | `3e9ac57` on `main` |
+| Live migration | `20260414_expand_attribution_constraints.sql` applied via Management API, both CHECK constraints verified |
+| Dashboard reads | Already prefer canonical attribution when present (no-op until PR2 starts writing) |
+| `ad_platform` writers remaining | 1 (`callAttributionSync.ts:145` — Google call_view, kept until PR2 folds it into the resolver) |
+| PR2 | NOT STARTED |
+| PR3 | NOT STARTED |
+| Known followup | Stale `POSTGRES_URL` credential (Codex flagged) |
+
+### When you resume — start here
+
+1. `git checkout main && git pull`
+2. Read this whole file end-to-end — it has the audit findings, the 3-PR plan, the review history, and PR1's actual changelog
+3. Read `src/lib/callAttribution.ts` end-to-end (499 lines, the orphaned resolver)
+4. Read `src/lib/callAttributionSync.ts` lines 30–170 (the Google call_view matching logic that needs to fold into the resolver as Rule 1)
+5. Confirm Codex quota is back: `codex exec --skip-git-repo-check 'echo ok'` — if it returns ok, the second-opinion path is alive again
+
+### PR2 implementation order (when ready to start)
+
+1. **Branch:** `git checkout -b fix/attribution-resolver-integration`
+2. **Add `src/lib/callQualifying.ts`** — new shared helper exporting `isQualifyingCall(call)` and `applyQualifyingFilter(calls)`. Move the duplicated filter logic from `metricsBuilder.ts:343–351`, `unifiedLeadsBuilder.ts:293–300`, and `offlineConversionSync.ts:602–605` into this single module. Make `metricsBuilder` and `unifiedLeadsBuilder` import the helper. Verify behavior is unchanged on a sample.
+3. **Extract Google call_view matching** from `callAttributionSync.ts:30–170` into a new `matchGoogleCallView()` function in `callAttribution.ts`. Output: `attribution_method='google_call_view'`, `attribution_confidence=100`, `ad_platform='google'`. Make it Rule 1 in `attributeAllCalls()` (run before `matchDirectConversions`). Deprecate the standalone write at `callAttributionSync.ts:145` so the resolver becomes the single canonical writer.
+4. **Apply `isQualifyingCall()` filter** to `attributeAllCalls()`'s call query at `callAttribution.ts:355`. Currently pulls every inbound call; needs to filter business number, toll-free, sub-30-second, null caller.
+5. **Tighten `matchDirectConversions()`:**
+   - Add density check: if 5-min window contains BOTH gclid AND msclkid phone_clicks, set `attribution_method='direct_match_conflict'`, confidence 50
+   - Batch-fetch phone_click events for the date range once (fix N+1)
+   - Add `// TODO:` comment documenting the time-only-proximity weakness as known issue (caller fingerprinting requires form-side change)
+6. **Stop writing `time_correlation` to canonical.** Either remove `matchTimeCorrelation` from `attributeAllCalls()` entirely, OR run it but skip `saveAttributionResults` for those rows. Codex's strong preference is "remove from canonical entirely; if you want impression-volume estimates, build a separate analytics widget that doesn't touch `attribution_method`."
+7. **Add overwrite-precedence guard** in `saveAttributionResults` (`callAttribution.ts:413–451`). Define a `METHOD_PRIORITY` map (`google_call_view: 100`, `direct_match: 80`, `direct_match_conflict: 50`, `unknown: 0`). Only update a row if the new method's priority is greater than or equal to the existing method's priority. Prevents resolver re-runs from regressing stronger matches.
+8. **Method-allowlist guards in `offlineConversionSync.ts`:**
+   - Google upload helpers: only ship calls where `attribution_method='google_call_view'` OR (`attribution_method='direct_match'` AND `gclid IS NOT NULL`)
+   - Microsoft upload helpers: only ship calls where `attribution_method='direct_match'` AND `msclkid IS NOT NULL`
+   - This is the structural "don't feed guesses back to bidding algorithms" guard Gemini caught
+9. **Verify:** `npx tsc --noEmit` (only new errors should be in files I touched), `npm run build` (clean), grep for any remaining `ad_platform: '...'` writes outside `callAttribution.ts`'s `saveAttributionResults`
+10. **Run Codex review on the uncommitted diff** at `model_reasoning_effort=medium`. Address any findings.
+11. **Commit, push, open PR.** Same 3-question merge-review pattern as PR1.
+
+### PR3 implementation order (after PR2 merges)
+
+1. Create `src/app/api/cron/run-attribution/route.ts` calling `attributeAllCalls(last 7 days)` from `callAttribution.ts`
+2. Add `vercel.json` cron entry at `"0 14 * * *"` (14:00 UTC, 1 hour after `sync-search-data` at 13:00 UTC)
+3. Run admin endpoint backfill in dry-run mode: `POST /api/admin/attribution/match-calls?startDate=2026-03-01&endDate=...&saveToDatabase=false`
+4. Eyeball the diff report (counts by method, deltas vs current `ad_platform` reads). If it looks right, run with `saveToDatabase=true`
+5. Drop `leads.website_session_id` zombie column via a small migration
+6. Update `CRON_SETUP.md` to match reality (the endpoint at `0 3 * * *` referenced there does not exist)
+
+### Quick context-restore commands
+
+```bash
+cd /Users/dougsimpson/clients/pink-auto-glass/website
+git log --oneline 3e9ac57^..main          # see PR1 in main
+git show 3e9ac57 --stat                    # see PR1 file changes
+cat tasks/2026-04-14-attribution-remediation.md | head -100   # this file
+node scripts/run-migration-via-api.js --help 2>&1 || cat scripts/run-migration-via-api.js | head -20
+```
