@@ -82,12 +82,21 @@ jobs:
       - name: Check homepage security headers
         run: |
           echo "Checking homepage headers..."
-          curl -sI http://localhost:3000 | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security|Content-Security-Policy|Referrer-Policy)" || exit 1
+          HEADERS=$(curl -sI http://localhost:3000)
+          echo "$HEADERS" | grep -q "X-Frame-Options" || (echo "Missing X-Frame-Options" && exit 1)
+          echo "$HEADERS" | grep -q "X-Content-Type-Options" || (echo "Missing X-Content-Type-Options" && exit 1)
+          echo "$HEADERS" | grep -q "Content-Security-Policy" || (echo "Missing Content-Security-Policy" && exit 1)
+          echo "$HEADERS" | grep -q "Referrer-Policy" || (echo "Missing Referrer-Policy" && exit 1)
+          echo "Skipping Strict-Transport-Security on localhost HTTP check"
 
       - name: Check API security headers
         run: |
           echo "Checking API headers..."
-          curl -sI http://localhost:3000/api/vehicles/makes | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security|Content-Security-Policy)" || exit 1
+          HEADERS=$(curl -sI http://localhost:3000/api/vehicles/makes)
+          echo "$HEADERS" | grep -q "X-Frame-Options" || (echo "Missing X-Frame-Options" && exit 1)
+          echo "$HEADERS" | grep -q "X-Content-Type-Options" || (echo "Missing X-Content-Type-Options" && exit 1)
+          echo "$HEADERS" | grep -q "Content-Security-Policy" || (echo "Missing Content-Security-Policy" && exit 1)
+          echo "Skipping Strict-Transport-Security on localhost HTTP check"
 
       - name: Verify CSP includes essential directives
         run: |

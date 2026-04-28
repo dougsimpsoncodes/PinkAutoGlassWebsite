@@ -77,3 +77,10 @@ assets/**/credentials*.json
 /*.xlsx
 /tmp/
 supabase/.temp/
+
+# Review response skill — audit log contains customer PII (names, phones,
+# addresses, vehicle details). Log stays local only; never commit to git history.
+.claude/skills/review-response/review_responses_drafted.jsonl
+
+# Customer PII — never commit drafted/raw review data
+.claude/skills/review-response/review_responses_drafted.jsonl

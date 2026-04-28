@@ -328,3 +328,34 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 - Added `npm ci` step before audit (was missing — audit without install is unreliable)
 
 **Verification:** Production dependencies are clean. Secret scanning passed. Dev-only noise eliminated from CI.
+
+---
+
+## 2026-04-12 — Google Ads call attribution cascade fix
+
+**Decision and reasoning:** The "March direct-traffic spike" that appeared on the dashboard was diagnosed as a tracking artifact, not a real demand signal. Root cause: `fetchCallConversions` throws a GAQL v21 enum-filter error (`segments.conversion_action_category = 'PHONE_CALL'` is no longer valid), and the cron wrapped 2.5a and 2.5b in a shared outer try/catch, so the throw skipped `fetchCallView` entirely. `google_ads_calls` table had been frozen at 266 rows since 2026-03-01.
+
+**Fix shipped:** Wrapped step 2.5a in an inner try/catch so 2.5b runs regardless of 2.5a outcome. Commit `b8b7c5e`, deployed.
+
+**Deliberately NOT done:** The underlying `fetchCallConversions` GAQL bug is unfixed. `google_ads_call_conversions` table stays empty. Noise in cron logs as `call_conversions sync failed (non-fatal)`. Deferred because the dashboard's primary attribution path reads `google_ads_calls` (step 2.5b), not the conversions table.
+
+**Backfill:** POST `/api/admin/sync/google-ads-calls?days=42` pulled 204 call records, matched 192 to RingCentral via `timestamp+duration+area` cross-reference, errors=0. Table went 266 → 467 rows. March/April attribution rate now 33% and 30% — back in line with Oct-Feb baseline of 21-35%.
+
+**Also shipped (separate commits, same session):**
+- `ac15cf4` — `trackGoogleAdsConversion` now sends `value` + `currency: 'USD'` to gtag. Smart Bidding was optimizing for count, not value.
+- `d5a4640` — `combineSchemas` strips redundant `@context` from `@graph` members (JSON-LD correctness).
+
+**Verification:**
+- Direct DB query: `google_ads_calls` max sync_timestamp = 2026-04-12T14:48 UTC, 467 rows total
+- Dashboard `call-attribution` endpoint: March googleAdsForwardingCalls = 158/473 (33.4%), April = 43/143 (30.1%)
+- Live probe `fetchCallView('2026-04-11')` against Google Ads v21 returned 3 rows ✓
+- `resource_name UNIQUE NOT NULL` confirmed in migration `20260227_call_attribution.sql`
+
+**What's next:**
+1. Tomorrow morning: verify the first post-fix scheduled cron run (23:00 UTC tonight or 06:00 UTC tomorrow) wrote new rows to `google_ads_calls`
+2. `fetchCallConversions` query fix (separate ticket)
+3. Silent-failure alerting: watermark check that fires if `max(sync_timestamp)` is stale >24h
+4. Microsoft Ads attribution — check for same class of bug
+5. Revisit any bid strategy changes Doug made during the March/April broken window (decisions were based on phantom dashboard data)
+
+**Full session log:** `tasks/2026-04-12-google-ads-call-attribution-cascade-fix.md`
