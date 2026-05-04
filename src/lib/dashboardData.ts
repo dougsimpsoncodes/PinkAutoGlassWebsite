@@ -18,6 +18,7 @@ import {
   MIN_CALL_DURATION_SECONDS,
   ATTRIBUTION_WINDOW_MINUTES,
 } from './constants';
+import { classifyCampaignMarket, type MarketFilter } from './market';
 
 export type DateFilter = 'today' | 'yesterday' | '7days' | '30days' | 'all';
 
@@ -192,19 +193,27 @@ export async function getPaidPlatformDailyMetrics(
   supabase: SupabaseClient,
   platform: PaidPlatform,
   startDateStr: string,
-  endDateStr: string
+  endDateStr: string,
+  market: MarketFilter = 'all'
 ): Promise<PaidPlatformMetrics> {
   const cfg = PAID_TABLES[platform];
+  // We must select campaign_name to apply the market filter at runtime.
+  // The daily-performance tables do not have a market column — campaigns
+  // are classified by name regex (existing pattern shared with metricsBuilder.ts).
   const rows = await queryWithDateColumnFallback(
     supabase,
     cfg.dailyTable,
-    'impressions, clicks, cost, cost_micros, conversions',
+    'impressions, clicks, cost, cost_micros, conversions, campaign_name',
     startDateStr,
     endDateStr,
     cfg.dateColumns
   );
 
-  return aggregatePaidPlatformMetrics(rows);
+  const filteredRows = market === 'all'
+    ? rows
+    : rows.filter((row: any) => classifyCampaignMarket(row.campaign_name) === market);
+
+  return aggregatePaidPlatformMetrics(filteredRows);
 }
 
 /**
@@ -213,11 +222,12 @@ export async function getPaidPlatformDailyMetrics(
 export async function getPaidAdsDailyMetrics(
   supabase: SupabaseClient,
   startDateStr: string,
-  endDateStr: string
+  endDateStr: string,
+  market: MarketFilter = 'all'
 ): Promise<PaidAdsMetrics> {
   const [google, microsoft] = await Promise.all([
-    getPaidPlatformDailyMetrics(supabase, 'google', startDateStr, endDateStr),
-    getPaidPlatformDailyMetrics(supabase, 'microsoft', startDateStr, endDateStr),
+    getPaidPlatformDailyMetrics(supabase, 'google', startDateStr, endDateStr, market),
+    getPaidPlatformDailyMetrics(supabase, 'microsoft', startDateStr, endDateStr, market),
   ]);
 
   return { google, microsoft };
@@ -231,17 +241,22 @@ export async function getPaidPlatformSearchTermInsights(
   supabase: SupabaseClient,
   platform: PaidPlatform,
   startDateStr: string,
-  endDateStr: string
+  endDateStr: string,
+  market: MarketFilter = 'all'
 ): Promise<SearchTermInsights> {
   const cfg = PAID_TABLES[platform];
-  const rows = await queryWithDateColumnFallback(
+  const rawRows = await queryWithDateColumnFallback(
     supabase,
     cfg.searchTermsTable,
-    'search_term, clicks, impressions, conversions, cost, cost_micros',
+    'search_term, clicks, impressions, conversions, cost, cost_micros, campaign_name',
     startDateStr,
     endDateStr,
     cfg.dateColumns
   );
+
+  const rows = market === 'all'
+    ? rawRows
+    : rawRows.filter((row: any) => classifyCampaignMarket(row.campaign_name) === market);
 
   const termStats = new Map<string, { clicks: number; impressions: number; cost: number; conversions: number }>();
 

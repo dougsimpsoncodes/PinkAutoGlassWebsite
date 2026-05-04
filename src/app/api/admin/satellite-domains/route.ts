@@ -1,41 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
+import { isMarketFilter, type MarketFilter, type Market } from '@/lib/market';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // ─── Satellite Domain Definitions ────────────────────────────────────────────
+//
+// `market` field allows the route to filter the GSC fetch list when the admin
+// market toggle is set, saving GSC API calls. Page-side filtering still
+// applies as a defense-in-depth measure.
+//
+// 'colorado' / 'arizona' map directly to the admin toggle. 'national' domains
+// have no clear market home — they're shown under "All Markets" and hidden
+// under specific toggles (matches existing client-side filter behavior).
+//
+// Colorado Springs / Fort Collins are CO-based; tagged 'colorado'.
 
-export const SATELLITE_DOMAINS = [
+type SatelliteMarket = 'colorado' | 'arizona' | 'national';
+
+export const SATELLITE_DOMAINS: ReadonlyArray<{
+  domain: string; utmSource: string; label: string; color: string; market: SatelliteMarket;
+}> = [
   // ── Denver / Colorado ──────────────────────────────────────────────────────
-  { domain: 'windshieldcostcalculator.com', utmSource: 'windshieldcostcalculator', label: 'WS Cost Calculator', color: '#6366f1' },
-  { domain: 'windshielddenver.com', utmSource: 'windshielddenver', label: 'WS Denver', color: '#ec4899' },
-  { domain: 'windshieldchiprepairdenver.com', utmSource: 'chiprepairdenver', label: 'Chip Repair Denver', color: '#f59e0b' },
-  { domain: 'windshieldchiprepairboulder.com', utmSource: 'chiprepairboulder', label: 'Chip Repair Boulder', color: '#10b981' },
-  { domain: 'aurorawindshield.com', utmSource: 'aurorawindshield', label: 'Aurora WS', color: '#3b82f6' },
-  { domain: 'mobilewindshielddenver.com', utmSource: 'mobilewindshielddenver', label: 'Mobile WS Denver', color: '#8b5cf6' },
-  { domain: 'cheapestwindshieldnearme.com', utmSource: 'cheapestwindshield', label: 'Cheapest WS Near Me', color: '#ef4444' },
-  { domain: 'newwindshieldcost.com', utmSource: 'newwindshieldcost', label: 'New WS Cost', color: '#06b6d4' },
-  { domain: 'getawindshieldquote.com', utmSource: 'getawindshieldquote', label: 'Get WS Quote', color: '#84cc16' },
-  { domain: 'newwindshieldnearme.com', utmSource: 'newwindshieldnearme', label: 'New WS Near Me', color: '#f97316' },
-  { domain: 'windshieldpricecompare.com', utmSource: 'windshieldpricecompare', label: 'WS Price Compare', color: '#14b8a6' },
+  { domain: 'windshieldcostcalculator.com', utmSource: 'windshieldcostcalculator', label: 'WS Cost Calculator', color: '#6366f1', market: 'colorado' },
+  { domain: 'windshielddenver.com', utmSource: 'windshielddenver', label: 'WS Denver', color: '#ec4899', market: 'colorado' },
+  { domain: 'windshieldchiprepairdenver.com', utmSource: 'chiprepairdenver', label: 'Chip Repair Denver', color: '#f59e0b', market: 'colorado' },
+  { domain: 'windshieldchiprepairboulder.com', utmSource: 'chiprepairboulder', label: 'Chip Repair Boulder', color: '#10b981', market: 'colorado' },
+  { domain: 'aurorawindshield.com', utmSource: 'aurorawindshield', label: 'Aurora WS', color: '#3b82f6', market: 'colorado' },
+  { domain: 'mobilewindshielddenver.com', utmSource: 'mobilewindshielddenver', label: 'Mobile WS Denver', color: '#8b5cf6', market: 'colorado' },
+  { domain: 'cheapestwindshieldnearme.com', utmSource: 'cheapestwindshield', label: 'Cheapest WS Near Me', color: '#ef4444', market: 'colorado' },
+  { domain: 'newwindshieldcost.com', utmSource: 'newwindshieldcost', label: 'New WS Cost', color: '#06b6d4', market: 'colorado' },
+  { domain: 'getawindshieldquote.com', utmSource: 'getawindshieldquote', label: 'Get WS Quote', color: '#84cc16', market: 'colorado' },
+  { domain: 'newwindshieldnearme.com', utmSource: 'newwindshieldnearme', label: 'New WS Near Me', color: '#f97316', market: 'colorado' },
+  { domain: 'windshieldpricecompare.com', utmSource: 'windshieldpricecompare', label: 'WS Price Compare', color: '#14b8a6', market: 'colorado' },
   // ── Phoenix / Arizona ─────────────────────────────────────────────────────
-  { domain: 'windshieldchiprepairmesa.com', utmSource: 'chiprepairmesa', label: 'Chip Repair Mesa', color: '#f43f5e' },
-  { domain: 'windshieldchiprepairphoenix.com', utmSource: 'chiprepairphoenix', label: 'Chip Repair Phoenix', color: '#e11d48' },
-  { domain: 'windshieldchiprepairscottsdale.com', utmSource: 'chiprepairscottsdale', label: 'Chip Repair Scottsdale', color: '#be123c' },
-  { domain: 'windshieldchiprepairtempe.com', utmSource: 'chiprepairtempe', label: 'Chip Repair Tempe', color: '#9f1239' },
-  { domain: 'windshieldcostphoenix.com', utmSource: 'windshieldcostphoenix', label: 'WS Cost Phoenix', color: '#b45309' },
-  { domain: 'mobilewindshieldphoenix.com', utmSource: 'mobilewindshieldphoenix', label: 'Mobile WS Phoenix', color: '#92400e' },
+  { domain: 'windshieldchiprepairmesa.com', utmSource: 'chiprepairmesa', label: 'Chip Repair Mesa', color: '#f43f5e', market: 'arizona' },
+  { domain: 'windshieldchiprepairphoenix.com', utmSource: 'chiprepairphoenix', label: 'Chip Repair Phoenix', color: '#e11d48', market: 'arizona' },
+  { domain: 'windshieldchiprepairscottsdale.com', utmSource: 'chiprepairscottsdale', label: 'Chip Repair Scottsdale', color: '#be123c', market: 'arizona' },
+  { domain: 'windshieldchiprepairtempe.com', utmSource: 'chiprepairtempe', label: 'Chip Repair Tempe', color: '#9f1239', market: 'arizona' },
+  { domain: 'windshieldcostphoenix.com', utmSource: 'windshieldcostphoenix', label: 'WS Cost Phoenix', color: '#b45309', market: 'arizona' },
+  { domain: 'mobilewindshieldphoenix.com', utmSource: 'mobilewindshieldphoenix', label: 'Mobile WS Phoenix', color: '#92400e', market: 'arizona' },
   // ── National ──────────────────────────────────────────────────────────────
-  { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', label: 'Car WS Prices', color: '#0369a1' },
-  { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', label: 'WS Repair Prices', color: '#0c4a6e' },
-  { domain: 'carglassprices.com', utmSource: 'carglassprices', label: 'Car Glass Prices', color: '#0284c7' },
-  // ── Colorado Springs / Fort Collins ───────────────────────────────────────
-  { domain: 'coloradospringswindshield.com', utmSource: 'coloradospringswindshield', label: 'CS Windshield', color: '#0891b2' },
-  { domain: 'autoglasscoloradosprings.com', utmSource: 'autoglasscoloradosprings', label: 'CS Auto Glass', color: '#0e7490' },
-  { domain: 'mobilewindshieldcoloradosprings.com', utmSource: 'mobilewindshieldcoloradosprings', label: 'CS Mobile WS', color: '#155e75' },
-  { domain: 'windshieldreplacementfortcollins.com', utmSource: 'windshieldreplacementfortcollins', label: 'Ft Collins WS', color: '#164e63' },
+  { domain: 'carwindshieldprices.com', utmSource: 'carwindshieldprices', label: 'Car WS Prices', color: '#0369a1', market: 'national' },
+  { domain: 'windshieldrepairprices.com', utmSource: 'windshieldrepairprices', label: 'WS Repair Prices', color: '#0c4a6e', market: 'national' },
+  { domain: 'carglassprices.com', utmSource: 'carglassprices', label: 'Car Glass Prices', color: '#0284c7', market: 'national' },
+  // ── Colorado Springs / Fort Collins (Colorado market) ─────────────────────
+  { domain: 'coloradospringswindshield.com', utmSource: 'coloradospringswindshield', label: 'CS Windshield', color: '#0891b2', market: 'colorado' },
+  { domain: 'autoglasscoloradosprings.com', utmSource: 'autoglasscoloradosprings', label: 'CS Auto Glass', color: '#0e7490', market: 'colorado' },
+  { domain: 'mobilewindshieldcoloradosprings.com', utmSource: 'mobilewindshieldcoloradosprings', label: 'CS Mobile WS', color: '#155e75', market: 'colorado' },
+  { domain: 'windshieldreplacementfortcollins.com', utmSource: 'windshieldreplacementfortcollins', label: 'Ft Collins WS', color: '#164e63', market: 'colorado' },
 ] as const;
 
 export type SatelliteDomain = (typeof SATELLITE_DOMAINS)[number];
@@ -181,9 +196,25 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // ── Fetch GSC data for all 11 domains in parallel ──────────────────────
+    const marketParam = searchParams.get('market');
+    if (marketParam !== null && !isMarketFilter(marketParam)) {
+      return NextResponse.json(
+        { error: 'Invalid market. Must be one of: all, colorado, arizona' },
+        { status: 400 }
+      );
+    }
+    const market: MarketFilter = (marketParam as MarketFilter) || 'all';
+
+    // Filter the domain list before doing any work — saves up to 18 GSC API
+    // calls when a specific market is selected. National domains are hidden
+    // under specific-market views (matches existing client-side behavior).
+    const inScope = market === 'all'
+      ? [...SATELLITE_DOMAINS]
+      : SATELLITE_DOMAINS.filter((d) => d.market === market);
+
+    // ── Fetch GSC data for in-scope domains in parallel ────────────────────
     const gscResults = await Promise.allSettled(
-      SATELLITE_DOMAINS.map((sat) => fetchDomainGsc(sat.domain, startDate, endDate))
+      inScope.map((sat) => fetchDomainGsc(sat.domain, startDate, endDate))
     );
 
     // ── Query Supabase for lead counts per utm_source ──────────────────────
@@ -192,7 +223,7 @@ export async function GET(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const utmSources = SATELLITE_DOMAINS.map((d) => d.utmSource);
+    const utmSources = inScope.map((d) => d.utmSource);
 
     const { data: leadRows, error: leadError } = await supabase
       .from('leads')
@@ -219,7 +250,7 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Assemble domain results ────────────────────────────────────────────
-    const domains: DomainResult[] = SATELLITE_DOMAINS.map((sat, idx) => {
+    const domains: DomainResult[] = inScope.map((sat, idx) => {
       const gscResult = gscResults[idx];
       let summary = { clicks: 0, impressions: 0, ctr: 0, position: 0 };
       let daily: DailyRow[] = [];

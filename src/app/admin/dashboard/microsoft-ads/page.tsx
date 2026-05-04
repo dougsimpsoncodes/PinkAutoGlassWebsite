@@ -121,7 +121,7 @@ export default function MicrosoftAdsPage() {
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
-      const response = await fetch(`/api/admin/dashboard/microsoft-ads?period=${filter}`);
+      const response = await fetch(`/api/admin/dashboard/microsoft-ads?period=${filter}&market=${market}`);
       if (!response.ok) {
         throw new Error('Failed to fetch Microsoft Ads data');
       }
@@ -133,7 +133,7 @@ export default function MicrosoftAdsPage() {
       setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     }
-  }, []);
+  }, [market]);
 
   // Refresh all data when global sync triggers
   const refreshAllData = useCallback(async () => {

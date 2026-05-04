@@ -252,7 +252,7 @@ export default function SatelliteDomainsPage() {
     try {
       const { startDate, endDate } = getDateRange(filter);
       const res = await fetch(
-        `/api/admin/satellite-domains?startDate=${startDate}&endDate=${endDate}`
+        `/api/admin/satellite-domains?startDate=${startDate}&endDate=${endDate}&market=${market}`
       );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -266,7 +266,7 @@ export default function SatelliteDomainsPage() {
       setError(err.message || 'Failed to fetch satellite domain data');
       return null;
     }
-  }, []);
+  }, [market]);
 
   // Sync refresh
   useEffect(() => {
@@ -284,6 +284,15 @@ export default function SatelliteDomainsPage() {
     fetchData(dateFilter).finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-fetch when market changes — invalidate cache so all date filters
+  // re-pull with the new market scope on next selection.
+  useEffect(() => {
+    setDataCache({ today: null, yesterday: null, '7days': null, '30days': null, all: null });
+    setLoading(true);
+    fetchData(dateFilter).finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [market]);
 
   const handleDateFilterChange = (filter: DateFilter) => {
     setDateFilter(filter);
