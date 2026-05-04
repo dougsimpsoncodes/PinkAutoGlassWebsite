@@ -164,9 +164,15 @@ export function classifyCampaignMarket(campaignName?: string | null): Market | n
     console.warn(`[market] Campaign "${campaignName}" matches both CO and AZ patterns — excluded from market-specific spend`);
     return null;
   }
-  // No explicit market match → default to Colorado (Denver)
-  // All current campaigns are Denver-only; Phoenix campaigns will be named with "phoenix" when created
-  if (!isColorado && !isArizona) return 'colorado';
+  // No market signal in the campaign name → unclassified (NULL).
+  // Previously defaulted to Colorado on the assumption that all campaigns were
+  // Denver. That assumption breaks the moment a Phoenix campaign launches with
+  // a non-market-bearing name (e.g., "Brand", "Spring Promo"): its spend would
+  // silently land under Denver. Codex + Gemini retrospective review on
+  // 2026-05-04 flagged this as the highest-priority unfixed risk.
+  // NULL means "exclude from specific-market views; show under All Markets
+  // only" — matches the policy used everywhere else in the audit.
+  if (!isColorado && !isArizona) return null;
   return isColorado ? 'colorado' : 'arizona';
 }
 

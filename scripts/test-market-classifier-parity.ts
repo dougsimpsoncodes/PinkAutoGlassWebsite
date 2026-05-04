@@ -20,7 +20,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { classifyLeadMarket, classifyCallMarket } from '../src/lib/market';
+import { classifyLeadMarket, classifyCallMarket, classifyCampaignMarket } from '../src/lib/market';
 
 function loadEnv(p: string) {
   for (const line of readFileSync(p, 'utf-8').split('\n')) {
@@ -88,6 +88,44 @@ const CALL_CASES: Array<{ to_number: string | null; expected: string | null; lab
   { to_number: '+1234', expected: null, label: 'too short' },
 ];
 
+// classifyCampaignMarket has no SQL counterpart — both metricsBuilder.fetchSpend
+// and dashboardData.getPaidPlatformDailyMetrics call the TS function directly
+// after fetching campaign rows. So this is a TS-only test, but uses the same
+// fixture structure for consistency.
+//
+// Note the post-2026-05-04 default behavior: campaigns with no market signal
+// in the name return NULL (not 'colorado'). The original default-to-colorado
+// behavior would have silently misattributed Phoenix MS spend the moment
+// Phoenix MS launched with a non-market-bearing campaign name.
+const CAMPAIGN_CASES: Array<{ campaign: string | null; expected: string | null; label: string }> = [
+  // Market-bearing names — Colorado
+  { campaign: 'Denver - Windshield Replacement', expected: 'colorado', label: 'Denver in name' },
+  { campaign: 'Boulder - Insurance Claims', expected: 'colorado', label: 'Boulder in name' },
+  { campaign: 'Aurora - Mobile Repair', expected: 'colorado', label: 'Aurora in name' },
+  { campaign: 'Fort Collins - Local SEO', expected: 'colorado', label: 'Fort Collins in name' },
+  { campaign: 'Colorado Springs Replacement', expected: 'colorado', label: 'Colorado Springs in name' },
+  { campaign: 'CO - Q2 Replacement Push', expected: 'colorado', label: 'CO state abbrev' },
+  // Market-bearing names — Arizona
+  { campaign: 'Phoenix - Q2 Search', expected: 'arizona', label: 'Phoenix in name' },
+  { campaign: 'Scottsdale Replacement', expected: 'arizona', label: 'Scottsdale in name' },
+  { campaign: 'Mesa Mobile Service', expected: 'arizona', label: 'Mesa in name' },
+  { campaign: 'Tempe Same-Day Repair', expected: 'arizona', label: 'Tempe in name' },
+  { campaign: 'Arizona Statewide', expected: 'arizona', label: 'Arizona full name' },
+  { campaign: 'AZ - Brand Search', expected: 'arizona', label: 'AZ state abbrev' },
+  // Dual-market match → null (excluded from specific-market views)
+  { campaign: 'Denver and Phoenix - National Brand', expected: null, label: 'dual-market' },
+  { campaign: 'Colorado/Arizona Combined', expected: null, label: 'dual-market with slash' },
+  // No market signal → null (post-fix behavior; previously returned 'colorado')
+  { campaign: 'Brand', expected: null, label: 'no market signal — brand only' },
+  { campaign: 'Spring Promo 2026', expected: null, label: 'no market signal — generic promo' },
+  { campaign: 'Performance Max - Vehicles', expected: null, label: 'no market signal — pmax' },
+  { campaign: 'Insurance Claims', expected: null, label: 'no market signal — service only' },
+  // Empty / null
+  { campaign: null, expected: null, label: 'null' },
+  { campaign: '', expected: null, label: 'empty string' },
+  { campaign: '   ', expected: null, label: 'whitespace only' },
+];
+
 async function main() {
   let failures = 0;
   let total = 0;
@@ -134,12 +172,25 @@ async function main() {
   }
 
   console.log('');
+  console.log('═══════ CAMPAIGN CLASSIFIER (TS only — no SQL counterpart) ═══════');
+  for (const c of CAMPAIGN_CASES) {
+    total++;
+    const tsResult = classifyCampaignMarket(c.campaign);
+    if (tsResult !== c.expected) {
+      failures++;
+      console.log(`  ✗ ${c.label}: expected=${c.expected} ts=${tsResult}  (campaign="${c.campaign}")`);
+    } else {
+      console.log(`  ✓ ${c.label}: ${c.expected ?? 'null'}`);
+    }
+  }
+
+  console.log('');
   console.log(`═══════ ${total - failures} / ${total} passed ═══════`);
   if (failures > 0) {
-    console.log(`✗ ${failures} mismatch(es) — TS classifier and SQL function are NOT in parity`);
+    console.log(`✗ ${failures} mismatch(es) — classifier outputs do not match expectations`);
     process.exit(1);
   } else {
-    console.log('✓ TS and SQL classifiers in parity');
+    console.log('✓ all classifiers in parity / produce expected outputs');
   }
 }
 
