@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Boulder CO | Mobile, $0 Deductible',
-  description: 'Mobile windshield replacement & repair in Boulder CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
-  keywords: 'windshield repair boulder, boulder windshield repair, boulder chip repair, windshield replacement boulder, auto glass boulder co, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement',
+  title: 'Boulder Auto Glass Replacement | Mobile Same-Day Service',
+  description: 'Mobile windshield replacement and repair in Boulder, CO. Same-day service, comprehensive insurance billing, lifetime warranty. Most CO drivers with comprehensive pay $0. (720) 918-7465.',
+  keywords: 'auto glass boulder, windshield repair boulder, boulder windshield repair, boulder chip repair, windshield replacement boulder, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/boulder-co',
   },
   openGraph: {
-    title: 'Windshield Replacement Boulder CO | Mobile, $0 Deductible',
-    description: 'Mobile windshield replacement & repair in Boulder CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+    title: 'Boulder Auto Glass Replacement | Mobile Same-Day Service',
+    description: 'Mobile windshield replacement and repair in Boulder, CO. Same-day service, comprehensive insurance billing, lifetime warranty.',
     url: 'https://pinkautoglass.com/locations/boulder-co',
     type: 'website',
   },
