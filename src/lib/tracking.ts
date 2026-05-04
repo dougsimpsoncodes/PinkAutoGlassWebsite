@@ -10,6 +10,33 @@
 
 import { createClient } from '@supabase/supabase-js';
 import * as analytics from './analytics';
+import { classifySessionMarket, type Market } from './market';
+
+// Market is computed at session start and persisted in sessionStorage so
+// child events (page_views, conversion_events) can denormalize from the
+// session without doubling DB calls. Clearing sessionStorage falls back
+// to recomputing from current request inputs (best-effort).
+const SESSION_MARKET_KEY = 'pag_session_market';
+
+function getSessionMarket(): Market | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = sessionStorage.getItem(SESSION_MARKET_KEY);
+    if (stored === 'colorado' || stored === 'arizona') return stored;
+  } catch {
+    // sessionStorage may be blocked (incognito strict mode); fall through
+  }
+  return null;
+}
+
+function setSessionMarket(market: Market | null): void {
+  if (typeof window === 'undefined' || market === null) return;
+  try {
+    sessionStorage.setItem(SESSION_MARKET_KEY, market);
+  } catch {
+    // sessionStorage write may fail; child events will fall back to NULL
+  }
+}
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -344,6 +371,17 @@ export async function initializeSession(): Promise<SessionData> {
 
   const landingPage = window.location.pathname + window.location.search;
 
+  // Classify market once at session creation; persist to sessionStorage so
+  // child page_views/conversion_events can denormalize from the same value
+  // without re-running the classifier (and without risking inconsistency).
+  const market = classifySessionMarket({
+    utm_campaign: utmParams.campaign,
+    utm_source: utmParams.source,
+    referrer: document.referrer || null,
+    landing_page: landingPage,
+  });
+  setSessionMarket(market);
+
   // Use simple INSERT instead of UPSERT (RLS policy allows INSERT but not UPDATE for anon)
   // Duplicates will fail with unique constraint error, which we tolerate
   const { error: sessionInsertError } = await supabase
@@ -364,6 +402,7 @@ export async function initializeSession(): Promise<SessionData> {
       device_type: deviceInfo.deviceType,
       browser: deviceInfo.browser,
       os: deviceInfo.os,
+      market,
     });
 
   // Tolerate duplicates due to races or multiple calls
@@ -405,7 +444,7 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
 
-  // Track in database
+  // Track in database — denormalize market from the parent session
   await supabase.from('page_views').insert({
     session_id: sessionId,
     visitor_id: visitorId,
@@ -424,6 +463,7 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
     device_type: deviceInfo.deviceType,
     browser: deviceInfo.browser,
     os: deviceInfo.os,
+    market: getSessionMarket(),
   });
 
   // Track in Google Analytics
@@ -462,7 +502,7 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     return false;
   }
 
-  // Track in database
+  // Track in database — denormalize market from the parent session
   const { data, error } = await supabase.from('conversion_events').insert({
     session_id: sessionId,
     visitor_id: visitorId,
@@ -483,6 +523,7 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     device_type: deviceInfo.deviceType,
     event_value: event.eventValue,
     metadata: event.metadata,
+    market: getSessionMarket(),
   });
 
   if (error) {
