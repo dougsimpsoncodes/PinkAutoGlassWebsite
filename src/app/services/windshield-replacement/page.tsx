@@ -10,15 +10,15 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement | Mobile Service CO & AZ',
-  description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you. Call (720) 918-7465.',
-  keywords: 'windshield replacement denver, windshield replacement cost, mobile windshield replacement, same day windshield replacement, auto glass replacement denver, windshield replacement near me',
+  title: 'Mobile Windshield Replacement Denver | Same-Day Service',
+  description: 'Same-day mobile windshield replacement in Denver. Coverage verified first; many drivers pay $0 with comprehensive insurance. ADAS calibration included. Lifetime warranty. (720) 918-7465.',
+  keywords: 'windshield replacement denver, mobile windshield replacement denver, same day windshield replacement, auto glass replacement denver, windshield replacement near me, windshield replacement cost denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/windshield-replacement',
   },
   openGraph: {
-    title: 'Windshield Replacement | Mobile Service CO & AZ',
-    description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you.',
+    title: 'Mobile Windshield Replacement Denver | Same-Day Service',
+    description: 'Same-day mobile windshield replacement in Denver. Coverage verified first; many drivers pay $0 with comprehensive insurance. ADAS calibration included. Lifetime warranty.',
     url: 'https://pinkautoglass.com/services/windshield-replacement',
     type: 'website',
   },
@@ -150,19 +150,34 @@ export default function WindshieldReplacementPage() {
             {/* Main Column */}
             <div className="lg:col-span-2 space-y-12">
 
-              {/* What is Windshield Replacement */}
+              {/* Why Pink — differentiation vs chains */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  What is Full Windshield Replacement?
+                  Why Pink Auto Glass for Your Windshield Replacement
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Windshield replacement is the complete removal of your damaged windshield and installation of a new one. Unlike repairs that fill chips and cracks, replacement gives you a brand-new windshield that restores your vehicle's structural integrity, safety systems, and optical clarity.
+                  Most Denver auto glass shops are chains running call-center scripts. Pink is different: a local team that verifies your insurance coverage <em>before</em> you book, quotes a cash price upfront if you don't have comprehensive, and handles ADAS camera calibration when your vehicle requires it &mdash; at no extra charge. We come to your driveway, office, or parking lot. Same-day appointments are usually available, and every install is backed by a lifetime workmanship warranty.
                 </p>
+
+                <ul className="space-y-3 text-lg text-gray-700 mb-6">
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 text-pink-600 flex-shrink-0" />
+                    <span><strong>Coverage verified first.</strong> We check your insurance benefits before scheduling, so there are no surprise charges. If you carry comprehensive coverage in Colorado, your replacement may be $0 out of pocket.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 text-pink-600 flex-shrink-0" />
+                    <span><strong>ADAS calibration at no extra charge.</strong> Most 2018+ vehicles need camera and sensor recalibration after a windshield is replaced. Pink does it on-site as part of the service. Many chains charge $200-$400 separately.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="w-6 h-6 mr-3 mt-1 text-pink-600 flex-shrink-0" />
+                    <span><strong>Lifetime workmanship warranty.</strong> Defects, leaks, or installation issues get fixed at no charge for as long as you own the vehicle.</span>
+                  </li>
+                </ul>
 
                 <AboveFoldCTA location="service-windshield-replacement" />
 
                 <p className="text-lg text-gray-700 mb-4">
-                  Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk - that's why we use only OEM quality glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
+                  Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk &mdash; that's why we use OEM-grade glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
                 </p>
               </section>
 
