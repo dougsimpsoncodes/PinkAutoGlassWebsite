@@ -144,10 +144,9 @@ export default function WebsiteTrafficPage() {
     try {
       const [metricsRes, trafficRes, pagesRes, convDetailRes] = await Promise.all([
         fetch(`/api/admin/dashboard/metrics?period=${dateRange}&market=${market}`),
-        // NOTE: /api/admin/analytics does not yet support market filtering — traffic/page data is unfiltered
-        fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}`),
-        fetch(`/api/admin/analytics?metric=page_performance&range=${dateRange}`),
-        fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}`),
+        fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}&market=${market}`),
+        fetch(`/api/admin/analytics?metric=page_performance&range=${dateRange}&market=${market}`),
+        fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}&market=${market}`),
       ]);
 
       if (metricsRes.ok) {

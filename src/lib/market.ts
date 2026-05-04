@@ -169,3 +169,85 @@ export function classifyCampaignMarket(campaignName?: string | null): Market | n
   if (!isColorado && !isArizona) return 'colorado';
   return isColorado ? 'colorado' : 'arizona';
 }
+
+function normalizeHostname(value?: string | null): string | null {
+  if (!value) return null;
+  try {
+    const parsed = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    return parsed.hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
+
+function matchSatelliteHost(host: string): Market | null {
+  if (COLORADO_SATELLITE_SOURCES.some(s => host.includes(s))) return 'colorado';
+  if (ARIZONA_SATELLITE_SOURCES.some(s => host.includes(s))) return 'arizona';
+  return null;
+}
+
+function matchSatelliteSource(value: string): Market | null {
+  if (COLORADO_SATELLITE_SOURCES.some(s => value.includes(s))) return 'colorado';
+  if (ARIZONA_SATELLITE_SOURCES.some(s => value.includes(s))) return 'arizona';
+  return null;
+}
+
+/**
+ * Classify which market produced a website session.
+ * Used by /api/admin/analytics to filter session/page-view/conversion data
+ * by market when the admin toggle is set.
+ *
+ * Precedence (strongest signal first):
+ *   1. utm_campaign via classifyCampaignMarket() — paid attribution authoritative when present
+ *   2. utm_source matches a known satellite source — explicit satellite traffic
+ *   3. referrer hostname matches a known satellite host — organic-from-satellite
+ *   4. landing_page via getMarketFromPath() — content/SEO market signal
+ *
+ * Returns null when no signal classifies the session (paid traffic without a
+ * market-bearing campaign name, generic organic searches, ChatGPT, direct, etc).
+ * Callers should hide null-market sessions when a specific market is selected,
+ * and bucket them under their computed source name when "all" is selected.
+ *
+ * Note: this is a content-vs-acquisition signal mix. Landing page reflects
+ * which content the visitor saw, not which market they came from. For
+ * pure-acquisition analytics, prefer the campaign / utm / referrer signals.
+ */
+export function classifySessionMarket(session: {
+  utm_campaign?: string | null;
+  utm_source?: string | null;
+  referrer?: string | null;
+  landing_page?: string | null;
+}): Market | null {
+  // 1. utm_campaign — paid attribution wins when explicitly market-bearing
+  const utmCampaign = session.utm_campaign?.trim();
+  if (utmCampaign) {
+    // Use a stricter regex check here than classifyCampaignMarket's
+    // "default to colorado" behavior, which is appropriate for ad-spend
+    // attribution but would over-claim Denver for organic sessions.
+    const isColorado = COLORADO_CAMPAIGN_PATTERNS.some(p => p.test(utmCampaign));
+    const isArizona = ARIZONA_CAMPAIGN_PATTERNS.some(p => p.test(utmCampaign));
+    if (isColorado && !isArizona) return 'colorado';
+    if (isArizona && !isColorado) return 'arizona';
+    // Dual or no match → fall through to next signal
+  }
+
+  // 2. utm_source — explicit satellite tagging
+  const utmSource = session.utm_source?.trim().toLowerCase();
+  if (utmSource) {
+    const m = matchSatelliteSource(utmSource);
+    if (m) return m;
+  }
+
+  // 3. Referrer hostname — organic-from-satellite click-throughs
+  const referrerHost = normalizeHostname(session.referrer);
+  if (referrerHost) {
+    const m = matchSatelliteHost(referrerHost);
+    if (m) return m;
+  }
+
+  // 4. Landing page path — content-market signal (organic, direct)
+  const fromPath = getMarketFromPath(session.landing_page);
+  if (fromPath) return fromPath;
+
+  return null;
+}

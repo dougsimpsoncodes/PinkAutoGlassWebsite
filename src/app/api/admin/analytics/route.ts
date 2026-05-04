@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getMountainDayBounds, type DateFilter } from '@/lib/dateUtils';
+import { classifySessionMarket, isMarketFilter, type MarketFilter } from '@/lib/market';
+
+// Returns true if the session record should be included given the market filter.
+// 'all' includes everything. A specific market includes records that classify
+// to that market AND records the classifier returns null for under "all" only —
+// i.e. specific-market views hide unclassified records (factually accurate).
+function sessionMatchesMarket(
+  session: { utm_campaign?: string | null; utm_source?: string | null; referrer?: string | null; landing_page?: string | null },
+  marketFilter: MarketFilter
+): boolean {
+  if (marketFilter === 'all') return true;
+  return classifySessionMarket(session) === marketFilter;
+}
 
 // Force dynamic rendering - prevents static analysis during build
 export const dynamic = 'force-dynamic';
@@ -95,6 +108,18 @@ export async function GET(req: NextRequest) {
     const dateRange = searchParams.get('range') || '7days';
     const metric = searchParams.get('metric');
 
+    // Market filter — defaults to 'all' so existing callers that don't pass
+    // ?market= keep working unchanged. Returns 400 only if an invalid value
+    // is explicitly provided.
+    const marketParam = searchParams.get('market');
+    if (marketParam !== null && !isMarketFilter(marketParam)) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid market. Must be one of: all, colorado, arizona' },
+        { status: 400 }
+      );
+    }
+    const market: MarketFilter = (marketParam as MarketFilter) || 'all';
+
     // Map range param to DateFilter for Mountain Time boundaries
     const periodMap: Record<string, DateFilter> = {
       today: 'today', yesterday: 'yesterday',
@@ -110,23 +135,23 @@ export async function GET(req: NextRequest) {
     // Fetch different metrics based on request
     switch (metric) {
       case 'overview':
-        return await getOverviewMetrics(startDate);
+        return await getOverviewMetrics(startDate, market);
       case 'traffic_sources':
-        return await getTrafficSources(startDate);
+        return await getTrafficSources(startDate, market);
       case 'traffic_detail':
-        return await getTrafficDetail(startDate);
+        return await getTrafficDetail(startDate, market);
       case 'conversions':
-        return await getConversions(startDate);
+        return await getConversions(startDate, market);
       case 'conversions_detail':
-        return await getConversionsDetail(startDate);
+        return await getConversionsDetail(startDate, market);
       case 'page_performance':
-        return await getPagePerformance(startDate);
+        return await getPagePerformance(startDate, market);
       case 'pages':
-        return await getTopPages(startDate);
+        return await getTopPages(startDate, market);
       case 'sessions':
-        return await getSessions(startDate);
+        return await getSessions(startDate, market);
       default:
-        return await getOverviewMetrics(startDate);
+        return await getOverviewMetrics(startDate, market);
     }
   } catch (error) {
     console.error('Analytics API error:', error);
@@ -137,8 +162,68 @@ export async function GET(req: NextRequest) {
   }
 }
 
-async function getOverviewMetrics(startDate: Date) {
+// Resolve the set of session_ids that match the market filter for this date range.
+// Returns null when filter is 'all' (callers can skip filtering); otherwise returns
+// the session_id whitelist. Empty set means no sessions matched (legitimate case).
+async function getMarketSessionIds(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  startDate: Date,
+  market: MarketFilter
+): Promise<Set<string> | null> {
+  if (market === 'all') return null;
+  const { data, error } = await supabase
+    .from('user_sessions')
+    .select('session_id, utm_source, utm_medium, utm_campaign, referrer, landing_page')
+    .gte('started_at', startDate.toISOString());
+  if (error) throw error;
+  const ids = new Set<string>();
+  for (const s of data || []) {
+    if (sessionMatchesMarket(s, market)) ids.add(s.session_id);
+  }
+  return ids;
+}
+
+async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
+
+  // For market-filtered views, count via the session-id whitelist instead of
+  // raw row counts. For 'all', the existing count-only queries are faster.
+  if (market !== 'all') {
+    const sessionIds = await getMarketSessionIds(supabase, startDate, market);
+    const idArr = sessionIds ? Array.from(sessionIds) : [];
+    const [pvResult, convResult] = await Promise.all([
+      idArr.length === 0
+        ? Promise.resolve({ count: 0, error: null })
+        : supabase
+            .from('page_views')
+            .select('*', { count: 'exact', head: true })
+            .in('session_id', idArr)
+            .gte('created_at', startDate.toISOString())
+            .not('page_path', 'like', '/admin%')
+            .not('page_path', 'like', '/test%'),
+      idArr.length === 0
+        ? Promise.resolve({ count: 0, error: null })
+        : supabase
+            .from('conversion_events')
+            .select('*', { count: 'exact', head: true })
+            .in('session_id', idArr)
+            .gte('created_at', startDate.toISOString())
+            .not('page_path', 'like', '/admin%')
+            .not('page_path', 'like', '/test%'),
+    ]);
+    return NextResponse.json({
+      ok: true,
+      data: {
+        total_visitors: idArr.length,
+        total_page_views: (pvResult as { count: number | null }).count || 0,
+        total_conversions: (convResult as { count: number | null }).count || 0,
+        conversion_rate: idArr.length > 0
+          ? (((convResult as { count: number | null }).count || 0) / idArr.length) * 100
+          : 0,
+      },
+    });
+  }
+
   const [sessionsResult, pageViewsResult, conversionsResult] = await Promise.all([
     supabase
       .from('user_sessions')
@@ -171,7 +256,7 @@ async function getOverviewMetrics(startDate: Date) {
   });
 }
 
-async function getTrafficSources(startDate: Date) {
+async function getTrafficSources(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('user_sessions')
@@ -180,9 +265,12 @@ async function getTrafficSources(startDate: Date) {
 
   if (error) throw error;
 
-  // Group by source (parse from referrer and gclid if utm_source is missing)
+  // Group by source (parse from referrer and gclid if utm_source is missing).
+  // Specific-market views exclude sessions whose market is null/other; "all"
+  // includes everything.
   const sourceCounts: Record<string, number> = {};
   data?.forEach((session: any) => {
+    if (!sessionMatchesMarket(session, market)) return;
     const source = parseSourceFromReferrer(session.referrer, session.utm_source, session.landing_page);
     sourceCounts[source] = (sourceCounts[source] || 0) + 1;
   });
@@ -196,9 +284,11 @@ async function getTrafficSources(startDate: Date) {
   });
 }
 
-async function getConversions(startDate: Date) {
+async function getConversions(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
+  const sessionIds = await getMarketSessionIds(supabase, startDate, market);
+
+  let query = supabase
     .from('conversion_events')
     .select('*')
     .gte('created_at', startDate.toISOString())
@@ -206,9 +296,16 @@ async function getConversions(startDate: Date) {
     .not('page_path', 'like', '/test%')
     .order('created_at', { ascending: false });
 
+  if (sessionIds !== null) {
+    if (sessionIds.size === 0) {
+      return NextResponse.json({ ok: true, data: { conversions: [], by_type: {} } });
+    }
+    query = query.in('session_id', Array.from(sessionIds));
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
 
-  // Group by type
   const typeCounts: Record<string, number> = {};
   data?.forEach((conversion: any) => {
     typeCounts[conversion.event_type] = (typeCounts[conversion.event_type] || 0) + 1;
@@ -216,25 +313,31 @@ async function getConversions(startDate: Date) {
 
   return NextResponse.json({
     ok: true,
-    data: {
-      conversions: data,
-      by_type: typeCounts,
-    },
+    data: { conversions: data, by_type: typeCounts },
   });
 }
 
-async function getTopPages(startDate: Date) {
+async function getTopPages(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
+  const sessionIds = await getMarketSessionIds(supabase, startDate, market);
+
+  let query = supabase
     .from('page_views')
     .select('page_path')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%');
 
+  if (sessionIds !== null) {
+    if (sessionIds.size === 0) {
+      return NextResponse.json({ ok: true, data: [] });
+    }
+    query = query.in('session_id', Array.from(sessionIds));
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
 
-  // Count page views
   const pageCounts: Record<string, number> = {};
   data?.forEach((view: any) => {
     pageCounts[view.page_path] = (pageCounts[view.page_path] || 0) + 1;
@@ -245,23 +348,26 @@ async function getTopPages(startDate: Date) {
     .sort((a, b) => b.views - a.views)
     .slice(0, 10);
 
-  return NextResponse.json({
-    ok: true,
-    data: topPages,
-  });
+  return NextResponse.json({ ok: true, data: topPages });
 }
 
-async function getSessions(startDate: Date) {
+async function getSessions(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
-  // Get all sessions
-  const { data: sessions, error: sessionsError } = await supabase
+  // Pull more rows than we'll return when filtering, since some will be excluded.
+  // Cap at 500 to bound payload size — the page only displays 100.
+  const fetchLimit = market === 'all' ? 100 : 500;
+  const { data: rawSessions, error: sessionsError } = await supabase
     .from('user_sessions')
     .select('*')
     .gte('started_at', startDate.toISOString())
     .order('started_at', { ascending: false })
-    .limit(100);
+    .limit(fetchLimit);
 
   if (sessionsError) throw sessionsError;
+
+  const sessions = (rawSessions || [])
+    .filter((s: any) => sessionMatchesMarket(s, market))
+    .slice(0, 100);
 
   // Get conversion counts per session
   const { data: conversions, error: conversionsError } = await supabase
@@ -290,15 +396,17 @@ async function getSessions(startDate: Date) {
 }
 
 // Get detailed traffic sources with conversions
-async function getTrafficDetail(startDate: Date) {
+async function getTrafficDetail(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
-  // Get all sessions with their conversions
-  const { data: sessions, error: sessionsError } = await supabase
+  // Get all sessions with their conversions, then filter to market.
+  const { data: rawSessions, error: sessionsError } = await supabase
     .from('user_sessions')
     .select('session_id, utm_source, utm_medium, utm_campaign, referrer, landing_page')
     .gte('started_at', startDate.toISOString());
 
   if (sessionsError) throw sessionsError;
+
+  const sessions = (rawSessions || []).filter((s: any) => sessionMatchesMarket(s, market));
 
   // Get ACTUAL page views from page_views table - exclude admin and test pages
   const { data: pageViews, error: pageViewsError } = await supabase
@@ -383,9 +491,11 @@ async function getTrafficDetail(startDate: Date) {
 }
 
 // Get detailed conversions with session context
-async function getConversionsDetail(startDate: Date) {
+async function getConversionsDetail(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
+  const sessionIds = await getMarketSessionIds(supabase, startDate, market);
+
+  let query = supabase
     .from('conversion_events')
     .select('*')
     .gte('created_at', startDate.toISOString())
@@ -393,35 +503,46 @@ async function getConversionsDetail(startDate: Date) {
     .not('page_path', 'like', '/test%')
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (sessionIds !== null) {
+    if (sessionIds.size === 0) return NextResponse.json({ ok: true, data: [] });
+    query = query.in('session_id', Array.from(sessionIds));
+  }
 
-  return NextResponse.json({
-    ok: true,
-    data: data || [],
-  });
+  const { data, error } = await query;
+  if (error) throw error;
+  return NextResponse.json({ ok: true, data: data || [] });
 }
 
 // Get page performance metrics
-async function getPagePerformance(startDate: Date) {
+async function getPagePerformance(startDate: Date, market: MarketFilter) {
   const supabase = getSupabaseClient();
+  const sessionIds = await getMarketSessionIds(supabase, startDate, market);
+
+  if (sessionIds !== null && sessionIds.size === 0) {
+    return NextResponse.json({ ok: true, data: [] });
+  }
+  const idArr = sessionIds ? Array.from(sessionIds) : null;
+
   // Get all page views - exclude admin and test pages
-  const { data: pageViews, error: pageViewsError } = await supabase
+  let pvQuery = supabase
     .from('page_views')
     .select('page_path, session_id, visitor_id')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%');
-
+  if (idArr) pvQuery = pvQuery.in('session_id', idArr);
+  const { data: pageViews, error: pageViewsError } = await pvQuery;
   if (pageViewsError) throw pageViewsError;
 
   // Get all conversions - exclude admin and test pages
-  const { data: conversions, error: conversionsError } = await supabase
+  let convQuery = supabase
     .from('conversion_events')
     .select('page_path, session_id')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%');
-
+  if (idArr) convQuery = convQuery.in('session_id', idArr);
+  const { data: conversions, error: conversionsError } = await convQuery;
   if (conversionsError) throw conversionsError;
 
   // Note: entry_page and exit_page columns may not exist yet
