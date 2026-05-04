@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MessageSquare, Calendar, Shield, Clock, Star, CheckCircle, Wrench, Car } from 'lucide-react';
+import { Phone, MessageSquare, Calendar, Shield, Clock, Star, CheckCircle, Wrench, Car, MapPin } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -100,12 +100,21 @@ export default function WindshieldReplacementPage() {
 <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
+              <div className="flex items-center justify-center mb-4">
+                <MapPin className="w-7 h-7 mr-2" />
+                <span className="text-xl">Denver Mobile Windshield Replacement</span>
+              </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Professional Windshield Replacement in Denver
+                Mobile Windshield Replacement, Scheduled in Denver Today
               </h1>
               <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Windshield replacement in Denver typically costs between $250 and $900 depending on your vehicle make, model, and whether ADAS calibration is needed. However, most Colorado drivers pay nothing out of pocket because Colorado law requires all auto insurers to offer zero-deductible comprehensive glass coverage. At Pink Auto Glass, we handle 100% of the insurance paperwork and bill your insurer directly. Our certified technicians use OEM-quality glass that meets or exceeds factory specifications, and every installation includes a lifetime warranty on workmanship and leaks. We offer same-day mobile service across the entire Denver Front Range, meaning we come to your home, office, or wherever is most convenient. If your vehicle is 2018 or newer, we also perform ADAS camera calibration on-site at no extra charge. From the moment you call to the final quality check, the entire process takes about 60 to 90 minutes.
+                Pink Auto Glass replaces damaged windshields across Denver with mobile service, insurance billing, and cost verification before work starts. If you have qualifying comprehensive glass coverage, your replacement may be $0 out of pocket; if not, we quote the cash price upfront. We come to your home, office, or parked vehicle, install OEM-grade glass, handle ADAS calibration when required at no extra charge, and back the work with a lifetime warranty. Call (720) 918-7465 or schedule online before that crack spreads across I-25, I-70, or your morning commute.
               </p>
+              <ul className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-x-6 gap-y-2 mb-6 text-gray-100">
+                <li className="flex items-center justify-center"><CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" /> Cost verified before installation</li>
+                <li className="flex items-center justify-center"><CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" /> Mobile service across Denver</li>
+                <li className="flex items-center justify-center"><CheckCircle className="w-5 h-5 mr-2 flex-shrink-0" /> ADAS calibration included when required</li>
+              </ul>
               <CTAButtons source="windshield-replacement" />
             </div>
           </div>
