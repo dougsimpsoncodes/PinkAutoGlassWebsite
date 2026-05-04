@@ -153,8 +153,8 @@ export async function buildMetrics(
     fetchFormLeads(supabase, bounds, market),
     fetchCalls(supabase, bounds, market),
     fetchGrossRevenue(supabase, bounds, market),
-    fetchTraffic(supabase, bounds),
-    fetchClickEvents(supabase, bounds),
+    fetchTraffic(supabase, bounds, market),
+    fetchClickEvents(supabase, bounds, market),
     fetchCallLeadPhones(supabase, market),
     fetchSessionAttribution(supabase, bounds),
   ]);
@@ -544,19 +544,32 @@ async function fetchGrossRevenue(
 
 async function fetchTraffic(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<{ visitors: number; pageViews: number }> {
+  // Both tables now carry a denormalized `market` column populated by
+  // tracking.ts at write time and backfilled by P2b. SQL filter is direct.
+  // 'all' bypasses the filter entirely so unclassified rows count toward
+  // the total — same policy as everywhere else.
+  let sessionsQuery = supabase
+    .from('user_sessions')
+    .select('id')
+    .gte('started_at', bounds.startUTC)
+    .lte('started_at', bounds.endUTC);
+  let viewsQuery = supabase
+    .from('page_views')
+    .select('id')
+    .gte('created_at', bounds.startUTC)
+    .lte('created_at', bounds.endUTC);
+
+  if (market !== 'all') {
+    sessionsQuery = sessionsQuery.eq('market', market);
+    viewsQuery = viewsQuery.eq('market', market);
+  }
+
   const [{ data: sessions }, { data: views }] = await Promise.all([
-    supabase
-      .from('user_sessions')
-      .select('id')
-      .gte('started_at', bounds.startUTC)
-      .lte('started_at', bounds.endUTC),
-    supabase
-      .from('page_views')
-      .select('id')
-      .gte('created_at', bounds.startUTC)
-      .lte('created_at', bounds.endUTC),
+    sessionsQuery,
+    viewsQuery,
   ]);
 
   return {
@@ -567,15 +580,21 @@ async function fetchTraffic(
 
 async function fetchClickEvents(
   supabase: SupabaseClient,
-  bounds: MountainDayBounds
+  bounds: MountainDayBounds,
+  market: MarketFilter
 ): Promise<{ phoneClicks: number; textClicks: number; formSubmits: number; total: number }> {
-  const { data } = await supabase
+  let query = supabase
     .from('conversion_events')
     .select('event_type')
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC)
     .not('page_path', 'like', '/admin%');
 
+  if (market !== 'all') {
+    query = query.eq('market', market);
+  }
+
+  const { data } = await query;
   const events = data || [];
   const phoneClicks = events.filter((e: any) => e.event_type === 'phone_click').length;
   const textClicks = events.filter((e: any) => e.event_type === 'text_click').length;
