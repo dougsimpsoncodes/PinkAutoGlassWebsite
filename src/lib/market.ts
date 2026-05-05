@@ -159,8 +159,20 @@ export function classifyCallMarket(toNumber?: string | null): Market | null {
   return null;
 }
 
+// Known-Denver campaigns whose names predate the "Denver - X" / "Phoenix - X"
+// naming convention. Spend on these IS Denver, but the city literal is missing
+// from the campaign name. Curated allowlist — not a default — so a new
+// non-market-bearing campaign name still lands as NULL (the safe behavior
+// Codex + Gemini flagged on 2026-05-04). Remove an entry once the campaign
+// is renamed in the ad platform.
+const LEGACY_DENVER_CAMPAIGNS: readonly string[] = [
+  'PinkAutoGlass', // Microsoft Ads, Denver-only since launch (confirmed 2026-05-05)
+];
+
 export function classifyCampaignMarket(campaignName?: string | null): Market | null {
   if (!campaignName) return null;
+
+  if (LEGACY_DENVER_CAMPAIGNS.includes(campaignName)) return 'colorado';
 
   const isColorado = COLORADO_CAMPAIGN_PATTERNS.some(pattern => pattern.test(campaignName));
   const isArizona = ARIZONA_CAMPAIGN_PATTERNS.some(pattern => pattern.test(campaignName));
