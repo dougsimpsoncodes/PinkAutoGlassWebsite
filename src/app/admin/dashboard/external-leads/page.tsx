@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/admin/DashboardLayout';
 import DateFilterBar, { DateFilter } from '@/components/admin/DateFilterBar';
 import { getDateRange, isInDateRange } from '@/lib/dateUtils';
 import { Globe, MapPin, Phone, Car, Calendar, ExternalLink, RadioTower } from 'lucide-react';
+import { useMarket } from '@/contexts/MarketContext';
 
 interface ExternalLead {
   id: string;
@@ -37,9 +38,11 @@ export default function ExternalLeadsPage() {
   const [allNational, setAllNational] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<DateFilter>('7days');
+  const { market } = useMarket();
 
   useEffect(() => {
-    fetch('/api/admin/external-leads?limit=500')
+    setLoading(true);
+    fetch(`/api/admin/external-leads?limit=500&market=${market}`)
       .then(r => r.json())
       .then(d => {
         setLeads(d.leads || []);
@@ -47,7 +50,7 @@ export default function ExternalLeadsPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [market]);
 
   const dateRangeObj = useMemo(() => getDateRange(dateFilter), [dateFilter]);
 

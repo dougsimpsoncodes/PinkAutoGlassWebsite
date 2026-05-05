@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import { ArrowUpDown, Download, Filter } from 'lucide-react';
+import { useMarket } from '@/contexts/MarketContext';
 
 interface TrafficSource {
   source: string;
@@ -23,14 +24,15 @@ export default function TrafficSourcesPage() {
   const [sortBy, setSortBy] = useState<keyof TrafficSource>('visitors');
   const [sortDesc, setSortDesc] = useState(true);
   const router = useRouter();
+  const { market } = useMarket();
 
   useEffect(() => {
     fetchData();
-  }, [dateRange]);
+  }, [dateRange, market]);
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}`);
+      const res = await fetch(`/api/admin/analytics?metric=traffic_detail&range=${dateRange}&market=${market}`);
 
       if (!res.ok) {
         return;

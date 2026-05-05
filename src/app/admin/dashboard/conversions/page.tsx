@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/admin/DashboardLayout';
 import { Download, Phone, MessageSquare, FileText, Filter, Calendar } from 'lucide-react';
+import { useMarket } from '@/contexts/MarketContext';
 
 interface Conversion {
   id: string;
@@ -29,14 +30,15 @@ export default function ConversionsPage() {
   const [dateRange, setDateRange] = useState('7days');
   const [filterType, setFilterType] = useState<string>('all');
   const router = useRouter();
+  const { market } = useMarket();
 
   useEffect(() => {
     fetchData();
-  }, [dateRange]);
+  }, [dateRange, market]);
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}`);
+      const res = await fetch(`/api/admin/analytics?metric=conversions_detail&range=${dateRange}&market=${market}`);
 
       if (!res.ok) {
         return;

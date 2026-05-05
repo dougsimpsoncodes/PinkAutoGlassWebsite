@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '500');
+    const market = searchParams.get('market'); // 'colorado' | 'arizona' | 'all' | null
 
     const client = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,11 +25,17 @@ export async function GET(req: NextRequest) {
     );
 
     // Query all leads from national site sources
-    const { data, error } = await client
+    let query = client
       .from('leads')
-      .select('id, created_at, first_name, last_name, phone_e164, zip, city, state, utm_source, status, vehicle_year, vehicle_make, vehicle_model, market_type')
+      .select('id, created_at, first_name, last_name, phone_e164, zip, city, state, utm_source, status, vehicle_year, vehicle_make, vehicle_model, market_type, market')
       .in('utm_source', ['carwindshieldprices', 'windshieldrepairprices', 'carglassprices', 'coloradospringswindshield', 'autoglasscoloradosprings', 'mobilewindshieldcoloradosprings', 'windshieldreplacementfortcollins'])
-      .eq('is_test', false)
+      .eq('is_test', false);
+
+    if (market === 'colorado' || market === 'arizona') {
+      query = query.eq('market', market);
+    }
+
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .limit(limit);
 
