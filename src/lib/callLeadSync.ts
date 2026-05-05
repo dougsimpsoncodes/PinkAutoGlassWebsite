@@ -15,6 +15,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { MIN_CALL_DURATION_SECONDS, isExcludedPhone, isTestPhone } from '@/lib/constants';
+import { classifyCallMarket } from '@/lib/market';
 
 export interface CallLeadSyncResult {
   created: number;
@@ -53,7 +54,7 @@ export async function syncCallLeads(
   // 1. Fetch qualifying inbound calls
   const { data: calls, error: callsError } = await supabase
     .from('ringcentral_calls')
-    .select('call_id, from_number, start_time, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id')
+    .select('call_id, from_number, to_number, start_time, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id')
     .eq('direction', 'Inbound')
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', `${startDate}T00:00:00.000Z`)
@@ -72,7 +73,7 @@ export async function syncCallLeads(
   }
 
   // 2. Deduplicate by from_number — keep the call with the best ad_platform
-  const byPhone = new Map<string, { from_number: string; start_time: string; ad_platform: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; website_session_id: string | null }>();
+  const byPhone = new Map<string, { from_number: string; to_number: string | null; start_time: string; ad_platform: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; website_session_id: string | null }>();
   for (const call of calls) {
     const phone = call.from_number;
     if (!phone) continue;
@@ -81,6 +82,7 @@ export async function syncCallLeads(
     if (!existing || platformRank(call.ad_platform) < platformRank(existing.ad_platform)) {
       byPhone.set(phone, {
         from_number: phone,
+        to_number: call.to_number || null,
         start_time: call.start_time,
         ad_platform: call.ad_platform,
         utm_source: call.utm_source || null,
@@ -101,7 +103,7 @@ export async function syncCallLeads(
     // endlessly recreating test leads on every rerun)
     const { data: existingLead } = await supabase
       .from('leads')
-      .select('id, ad_platform, is_test')
+      .select('id, ad_platform, market, is_test')
       .eq('phone_e164', phone)
       .eq('is_test', isTest)
       .order('created_at', { ascending: false })
@@ -118,26 +120,36 @@ export async function syncCallLeads(
         && call.ad_platform !== 'direct'
         && call.ad_platform !== 'unknown';
 
-      if (weakPlatform && callHasPlatform) {
+      // Market backfill: only fill if currently NULL — don't overwrite an
+      // explicit value (might have been set by a more authoritative source).
+      const callMarket = classifyCallMarket(call.to_number);
+      const needsMarketFill = !existingLead.market && callMarket;
+
+      if ((weakPlatform && callHasPlatform) || needsMarketFill) {
         // Copy full attribution from call, not just ad_platform
         const updateFields: Record<string, any> = {
-          ad_platform: call.ad_platform,
           updated_at: new Date().toISOString(),
         };
-        if (call.utm_source) updateFields.utm_source = call.utm_source;
-        if (call.utm_medium) updateFields.utm_medium = call.utm_medium;
-        if (call.utm_campaign) updateFields.utm_campaign = call.utm_campaign;
+        if (weakPlatform && callHasPlatform) {
+          updateFields.ad_platform = call.ad_platform;
+          if (call.utm_source) updateFields.utm_source = call.utm_source;
+          if (call.utm_medium) updateFields.utm_medium = call.utm_medium;
+          if (call.utm_campaign) updateFields.utm_campaign = call.utm_campaign;
 
-        // Look up gclid/msclkid from the matched website session if available
-        if (call.website_session_id) {
-          const { data: session } = await supabase
-            .from('user_sessions')
-            .select('gclid, msclkid')
-            .eq('session_id', call.website_session_id)
-            .limit(1)
-            .maybeSingle();
-          if (session?.gclid) updateFields.gclid = session.gclid;
-          if (session?.msclkid) updateFields.msclkid = session.msclkid;
+          // Look up gclid/msclkid from the matched website session if available
+          if (call.website_session_id) {
+            const { data: session } = await supabase
+              .from('user_sessions')
+              .select('gclid, msclkid')
+              .eq('session_id', call.website_session_id)
+              .limit(1)
+              .maybeSingle();
+            if (session?.gclid) updateFields.gclid = session.gclid;
+            if (session?.msclkid) updateFields.msclkid = session.msclkid;
+          }
+        }
+        if (needsMarketFill) {
+          updateFields.market = callMarket;
         }
 
         const { error: updateError } = await supabase
@@ -155,6 +167,10 @@ export async function syncCallLeads(
       }
     } else {
       // No lead exists — create one with full attribution
+      // Market: derive from the inbound call's to_number. The lead-side
+      // BEFORE INSERT trigger uses state/zip/utm_source which are all null
+      // on sync'd call leads, so without this the row would land NULL.
+      const callMarket = classifyCallMarket(call.to_number);
       const insertFields: Record<string, any> = {
         phone_e164: phone,
         first_name: '',
@@ -164,6 +180,7 @@ export async function syncCallLeads(
         utm_source: call.utm_source || null,
         utm_medium: call.utm_medium || null,
         utm_campaign: call.utm_campaign || null,
+        market: callMarket,
         is_test: isTest,
         status: 'new',
         created_at: call.start_time,
