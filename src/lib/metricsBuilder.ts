@@ -272,7 +272,7 @@ async function fetchFormLeads(
 ): Promise<{ leads: MetricLead[] }> {
   const { data } = await supabase
     .from('leads')
-    .select('first_contact_method, ad_platform, gclid, msclkid, revenue_amount, state, zip, utm_source')
+    .select('first_contact_method, ad_platform, gclid, msclkid, revenue_amount, state, zip, utm_source, market')
     .eq('is_test', false)
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC);

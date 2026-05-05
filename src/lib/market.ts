@@ -125,12 +125,18 @@ export function getPhoneForMarket(market: Market) {
 }
 
 export function classifyLeadMarket(lead: {
+  market?: string | null;
   state?: string | null;
   zip?: string | null;
   utm_source?: string | null;
 }): Market | null {
+  // The DB column is canonical: set by the BEFORE INSERT trigger
+  // (derive_lead_market) on form leads, and by callLeadSync on call leads
+  // via classifyCallMarket(to_number). The state/zip/utm fallback below
+  // exists only for legacy rows written before the trigger landed.
+  if (lead.market === 'colorado' || lead.market === 'arizona') return lead.market;
+
   const state = lead.state?.trim().toUpperCase();
-  // Handle both abbreviations and full state names
   if (state === 'CO' || state === 'COLORADO') return 'colorado';
   if (state === 'AZ' || state === 'ARIZONA') return 'arizona';
 
