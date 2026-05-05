@@ -155,7 +155,7 @@ export async function buildMetrics(
     fetchGrossRevenue(supabase, bounds, market),
     fetchTraffic(supabase, bounds, market),
     fetchClickEvents(supabase, bounds, market),
-    fetchCallLeadPhones(supabase, market),
+    fetchCallLeadPhones(supabase),
     fetchSessionAttribution(supabase, bounds),
   ]);
 
@@ -412,20 +412,21 @@ function deduplicateCalls(
  * do not hide otherwise-valid filtered RingCentral rows.
  */
 async function fetchCallLeadPhones(
-  supabase: SupabaseClient,
-  market: MarketFilter
+  supabase: SupabaseClient
 ): Promise<Set<string>> {
+  // Market-agnostic on purpose: a person is a person regardless of which market
+  // their form lead classifies into. Filtering this set per-market caused
+  // Sum(markets) > All (the same call would survive dedup in one market but
+  // be suppressed in 'all' mode).
   const { data } = await supabase
     .from('leads')
-    .select('phone_e164, state, zip, utm_source')
+    .select('phone_e164')
     .eq('is_test', false)
     .eq('first_contact_method', 'call');
 
   const phones = new Set<string>();
   for (const row of data || []) {
     if (!row.phone_e164) continue;
-    if (!matchesMarketFilter(market, classifyLeadMarket(row))) continue;
-    // Normalize to 11-digit string so comparison works regardless of E.164 formatting
     const normalized = normalizePhoneDigits(row.phone_e164);
     if (normalized) phones.add(normalized);
   }
