@@ -89,7 +89,7 @@ async function populateVehicleData() {
       .single();
 
     if (makeError) {
-      console.error(`  ✗ Error inserting ${make}:`, makeError.message);
+      console.error('  ✗ Error inserting make:', make, makeError.message);
       errors++;
       continue;
     }
@@ -107,7 +107,7 @@ async function populateVehicleData() {
       .upsert(modelRecords, { onConflict: 'make_id,model' });
 
     if (modelsError) {
-      console.error(`  ✗ Error inserting models for ${make}:`, modelsError.message);
+      console.error('  ✗ Error inserting models for make:', make, modelsError.message);
       errors++;
       continue;
     }

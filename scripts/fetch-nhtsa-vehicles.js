@@ -102,7 +102,7 @@ async function fetchVehicleData() {
           }
         });
       } catch (error) {
-        console.error(`  ⚠ Error fetching ${makeName} ${year}:`, error.message);
+        console.error('  ⚠ Error fetching make/year:', makeName, year, error.message);
       }
     }
 

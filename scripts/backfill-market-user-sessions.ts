@@ -106,7 +106,7 @@ async function main() {
           .update({ market: u.market })
           .eq('session_id', u.session_id);
         if (updateError) {
-          console.error(`Update failed for ${u.session_id}:`, updateError.message);
+          console.error('Update failed for session:', u.session_id, updateError.message);
         } else {
           updated++;
         }

@@ -278,7 +278,7 @@ async function test() {
 
     console.log('\nAggregated msAdsDataByDate:');
     Object.entries(msAdsDataByDate).forEach(([date, data]) => {
-      console.log(`  ${date}:`, data);
+      console.log(' ', date, ':', data);
     });
 
     // Check yesterday specifically (what daily report uses)

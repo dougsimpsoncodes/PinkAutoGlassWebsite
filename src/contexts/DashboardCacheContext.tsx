@@ -154,7 +154,7 @@ export function DashboardCacheProvider({ children }: { children: React.ReactNode
             const data = await response.json();
             return { period, data, success: true };
           } catch (error) {
-            console.error(`Failed to preload ${period}:`, error);
+            console.error('Failed to preload period:', period, error);
             return { period, data: null, success: false };
           }
         })

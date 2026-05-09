@@ -27,7 +27,7 @@ async function checkRecentEmails() {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Resend API error (${response.status}):`, errorText);
+      console.error('❌ Resend API error:', response.status, errorText);
       process.exit(1);
     }
 

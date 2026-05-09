@@ -102,7 +102,7 @@ async function backfill() {
           .eq('id', existingLead.id);
 
         if (error) {
-          console.error(`Failed to update lead ${existingLead.id}:`, error.message);
+          console.error('Failed to update lead:', existingLead.id, error.message);
           errors++;
         } else {
           updated++;
@@ -125,7 +125,7 @@ async function backfill() {
         });
 
       if (error) {
-        console.error(`Failed to create lead for ${phone}:`, error.message);
+        console.error('Failed to create lead for phone:', phone, error.message);
         errors++;
       } else {
         created++;

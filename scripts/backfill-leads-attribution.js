@@ -121,7 +121,7 @@ async function backfillAttribution() {
       .eq('id', lead.id);
 
     if (updateError) {
-      console.log(`Error updating lead ${lead.id}:`, updateError.message);
+      console.log('Error updating lead:', lead.id, updateError.message);
       errorCount++;
     } else {
       const leadName = `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown';

@@ -70,7 +70,7 @@ function analyzeCompetitors(auctionData) {
     // Parse metrics (handle percentage strings and -- for N/A)
     const parsePercent = (val) => {
       if (!val || val === '--') return 0;
-      return parseFloat(val.replace('%', '').replace('<', '').replace('>', '').trim());
+      return parseFloat(val.replace(/[%<>]/g, '').trim());
     };
 
     const imprShare = parsePercent(row['Search Impr. share (Auction Insights)'] || row['Search Impr. share'] || row['Impr. share'] || '0');

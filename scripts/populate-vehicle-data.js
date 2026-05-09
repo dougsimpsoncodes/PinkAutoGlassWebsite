@@ -69,7 +69,7 @@ async function populateVehicles() {
       .single();
 
     if (makeError) {
-      console.error(`  ❌ Error adding ${make}:`, makeError.message);
+      console.error('  ❌ Error adding make:', make, makeError.message);
       continue;
     }
 
@@ -86,7 +86,7 @@ async function populateVehicles() {
       .insert(modelInserts);
 
     if (modelsError) {
-      console.error(`  ❌ Error adding models for ${make}:`, modelsError.message);
+      console.error('  ❌ Error adding models for make:', make, modelsError.message);
     } else {
       totalModels += models.length;
       console.log(`  ✅ Added ${models.length} models`);

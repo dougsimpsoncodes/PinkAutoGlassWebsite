@@ -88,9 +88,9 @@ function analyzeSearchTerms(searchTerms) {
 
     const clicks = parseInt(term.Clicks) || 0;
     const impressions = parseInt(term['Impr.']) || 0;
-    const cost = term.Cost ? parseFloat(term.Cost.replace('$', '')) : 0;
+    const cost = term.Cost ? parseFloat(term.Cost.replace(/[$,]/g, '')) : 0;
     const conversions = parseFloat(term.Conversions) || 0;
-    const convRate = term['Conv. rate'] ? parseFloat(term['Conv. rate'].replace('%', '')) : 0;
+    const convRate = term['Conv. rate'] ? parseFloat(term['Conv. rate'].replace(/%/g, '')) : 0;
 
     insights.totalClicks += clicks;
     insights.totalImpressions += impressions;

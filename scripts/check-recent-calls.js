@@ -32,7 +32,7 @@ if (recentCalls && recentCalls.length > 0) {
   console.log('\nLast 10 calls:');
   recentCalls.forEach((c, i) => {
     const time = new Date(c.start_time);
-    console.log('  ' + (i+1) + '.', time.toLocaleDateString(), time.toLocaleTimeString(), '-', c.direction);
+    console.log(' ', i + 1, '.', time.toLocaleDateString(), time.toLocaleTimeString(), '-', c.direction);
   });
 }
 

@@ -25,7 +25,7 @@ async function checkLeadDetails() {
       .single();
 
     if (error) {
-      console.error(`❌ Error fetching lead ${leadId}:`, error);
+      console.error('❌ Error fetching lead:', leadId, error);
       continue;
     }
 

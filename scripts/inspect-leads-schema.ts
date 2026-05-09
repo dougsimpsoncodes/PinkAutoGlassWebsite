@@ -37,7 +37,7 @@ const c = createClient(
   console.log('sample row keys with values:');
   for (const [k, v] of Object.entries(data[0])) {
     if (v !== null && v !== undefined && v !== '') {
-      console.log(`  ${k}:`, typeof v === 'string' ? `"${String(v).slice(0, 50)}"` : JSON.stringify(v).slice(0, 60));
+      console.log(' ', k, ':', typeof v === 'string' ? `"${String(v).slice(0, 50)}"` : JSON.stringify(v).slice(0, 60));
     }
   }
 })();
