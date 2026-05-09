@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { AlertTriangle, BadgeDollarSign, Car, CheckCircle2, Loader2, Phone, Search, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, BadgeDollarSign, Car, CheckCircle2, Loader2, Mail, Phone, Search, ShieldCheck, User } from 'lucide-react';
 
 type LookupMode = 'plate' | 'vin' | 'manual';
 
@@ -332,12 +332,12 @@ export default function AutomatedQuoteForm() {
         </button>
       </form>
 
-      <QuotePanel quote={quote} vehicle={vehicle} />
+      <QuotePanel quote={quote} vehicle={vehicle} zip={zip} state={plateState} />
     </div>
   );
 }
 
-function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: VehicleState }) {
+function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null; vehicle: VehicleState; zip: string; state: string }) {
   if (!quote) {
     return (
       <aside className="rounded-lg border border-gray-200 bg-gray-50 p-5">
@@ -370,6 +370,9 @@ function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: Ve
           </div>
         )}
         <VehicleSummary vehicle={vehicle} />
+        {quote.quoteToken && (
+          <ContactCapture quote={quote} vehicle={vehicle} zip={zip} state={state} buttonLabel="Send My Quote" />
+        )}
         <a
           href="tel:+17209187465"
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-5 py-3 font-bold text-white"
@@ -399,6 +402,9 @@ function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: Ve
       )}
 
       <VehicleSummary vehicle={vehicle} />
+      {quote.quoteToken && (
+        <ContactCapture quote={quote} vehicle={vehicle} zip={zip} state={state} buttonLabel="Text Me to Schedule" />
+      )}
 
       <div className="mt-5 divide-y divide-gray-100 rounded-md border border-gray-200">
         {quote.pricing.lineItems.map((item) => (
@@ -433,6 +439,141 @@ function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: Ve
         </a>
       </div>
     </aside>
+  );
+}
+
+function ContactCapture({
+  quote,
+  vehicle,
+  zip,
+  state,
+  buttonLabel,
+}: {
+  quote: QuoteResult;
+  vehicle: VehicleState;
+  zip: string;
+  state: string;
+  buttonLabel: string;
+}) {
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [smsConsent, setSmsConsent] = useState(true);
+  const [website, setWebsite] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+
+  async function submitContact(event: FormEvent) {
+    event.preventDefault();
+    if (!quote.quoteToken || submitting) return;
+
+    setSubmitting(true);
+    setStatus(null);
+    try {
+      const response = await fetch('/api/quote/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quoteToken: quote.quoteToken,
+          fullName,
+          phone,
+          email,
+          smsConsent,
+          website,
+          state,
+          zip,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'We could not save your contact info.');
+      }
+      setStatus({ kind: 'success', message: data.message || 'Got it. We will follow up shortly.' });
+    } catch (error) {
+      setStatus({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'We could not save your contact info.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const canSubmit = fullName.trim().length >= 2 && phone.replace(/\D/g, '').length >= 10;
+
+  return (
+    <form onSubmit={submitContact} className="mt-5 rounded-md border border-gray-200 bg-white p-3">
+      <div className="text-sm font-semibold text-gray-900">Have Pink follow up on this quote</div>
+      <div className="sr-only" aria-hidden="true">
+        <label>
+          Website
+          <input value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+      <div className="mt-3 grid gap-2">
+        <label className="relative block">
+          <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-pink-500 focus:outline-none"
+            placeholder="Name"
+            autoComplete="name"
+          />
+        </label>
+        <label className="relative block">
+          <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-pink-500 focus:outline-none"
+            placeholder="Mobile phone"
+            inputMode="tel"
+            autoComplete="tel"
+          />
+        </label>
+        <label className="relative block">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-pink-500 focus:outline-none"
+            placeholder="Email optional"
+            inputMode="email"
+            autoComplete="email"
+          />
+        </label>
+        <label className="flex items-start gap-2 text-xs text-gray-600">
+          <input
+            type="checkbox"
+            checked={smsConsent}
+            onChange={(event) => setSmsConsent(event.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+          />
+          <span>Text me about this quote. Message and data rates may apply.</span>
+        </label>
+      </div>
+      <button
+        type="submit"
+        disabled={!canSubmit || submitting}
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-2.5 font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+      >
+        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
+        {submitting ? 'Sending...' : buttonLabel}
+      </button>
+      {status && (
+        <div className={`mt-3 rounded-md p-2 text-sm ${
+          status.kind === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+        }`}>
+          {status.message}
+        </div>
+      )}
+      {vehicle.year && (
+        <div className="mt-2 text-xs text-gray-500">
+          Ref {quote.quoteToken ? shortQuoteToken(quote.quoteToken) : ''} for {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+        </div>
+      )}
+    </form>
   );
 }
 

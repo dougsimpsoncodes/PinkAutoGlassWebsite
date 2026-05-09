@@ -30,6 +30,11 @@ interface StoredQuoteResult {
   quoteToken?: string;
 }
 
+interface CreateAutomatedQuoteResult {
+  id: string;
+  quote_token: string;
+}
+
 interface PersistenceContext {
   ipAddress?: string;
   userAgent?: string;
@@ -286,7 +291,8 @@ async function storeAutomatedQuote(
       return {};
     }
 
-    return { quoteId: data.id, quoteToken: data.quote_token };
+    const createdQuote = data as CreateAutomatedQuoteResult;
+    return { quoteId: createdQuote.id, quoteToken: createdQuote.quote_token };
   } catch (error) {
     console.error('[quote-price] automated quote persistence failed:', error);
     return {};
