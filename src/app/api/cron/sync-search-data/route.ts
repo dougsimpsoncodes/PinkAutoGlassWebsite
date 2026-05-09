@@ -897,7 +897,7 @@ async function upsertInChunks<T extends Record<string, any>>(
     const chunk = records.slice(i, i + UPSERT_CHUNK_SIZE);
     const { error } = await supabase.from(table).upsert(chunk, { onConflict });
     if (!error) stored += chunk.length;
-    else console.error(`${table} upsert error:`, error.message, error.code);
+    else console.error('Table upsert error:', table, error.message, error.code);
   }
 
   return stored;

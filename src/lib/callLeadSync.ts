@@ -158,7 +158,7 @@ export async function syncCallLeads(
           .eq('id', existingLead.id);
 
         if (updateError) {
-          console.error(`callLeadSync: Failed to update lead ${existingLead.id}:`, updateError.message);
+          console.error('callLeadSync: failed to update lead:', existingLead.id, updateError.message);
         } else {
           result.updated++;
         }
@@ -208,7 +208,7 @@ export async function syncCallLeads(
         if (insertError.code === '23505') {
           result.skipped++;
         } else {
-          console.error(`callLeadSync: Failed to create lead for ${phone}:`, insertError.message);
+          console.error('callLeadSync: failed to create lead for phone:', phone, insertError.message);
         }
       } else {
         result.created++;

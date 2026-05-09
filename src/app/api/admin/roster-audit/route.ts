@@ -150,7 +150,7 @@ async function parseScreenshots(files: File[]): Promise<RosterEntry[]> {
     ]);
 
     const rawText = result.response.text();
-    console.log(`Roster parse for ${file.name}:`, rawText.substring(0, 300));
+    console.log('Roster parse for file:', file.name, rawText.substring(0, 300));
 
     let parsed: any;
     try {

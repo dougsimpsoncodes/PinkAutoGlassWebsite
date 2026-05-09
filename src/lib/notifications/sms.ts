@@ -112,7 +112,7 @@ export async function sendAdminSMS(message: string): Promise<boolean> {
     const results = await Promise.all(
       adminPhones.map(phone =>
         sendSMS({ to: phone, message }).catch(err => {
-          console.error(`Failed to send SMS to ${phone}:`, err);
+          console.error('Failed to send SMS to:', phone, err);
           return false;
         })
       )

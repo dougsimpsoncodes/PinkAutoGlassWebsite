@@ -150,7 +150,7 @@ export class OmegaEDIClient {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error(`❌ Omega API Error (${response.status}):`, error);
+      console.error('❌ Omega API Error:', response.status, error);
       throw new Error(`Omega API Error: ${response.status} - ${error}`);
     }
 

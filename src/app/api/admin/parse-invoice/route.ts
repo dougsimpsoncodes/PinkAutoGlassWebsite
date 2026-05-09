@@ -207,12 +207,12 @@ async function parseInvoiceWithRetry(
       try {
         parsed = JSON.parse(cleaned);
       } catch (parseErr: any) {
-        console.error(`JSON.parse failed for ${file.name}:`, parseErr.message);
+        console.error('JSON.parse failed for file:', file.name, parseErr.message);
         try {
           parsed = JSON.parse(jsonrepair(cleaned));
-          console.log(`jsonrepair succeeded for ${file.name}`);
+          console.log('jsonrepair succeeded for file:', file.name);
         } catch (repairErr: any) {
-          console.error(`jsonrepair also failed for ${file.name}:`, repairErr.message);
+          console.error('jsonrepair also failed for file:', file.name, repairErr.message);
           // If we have retries left, try again
           if (attempt < MAX_RETRIES) {
             lastError = new Error(`Failed to parse JSON: ${parseErr.message}`);
@@ -234,7 +234,7 @@ async function parseInvoiceWithRetry(
   }
 
   // All retries exhausted
-  console.error(`All attempts failed for ${file.name}:`, lastError?.message);
+  console.error('All attempts failed for file:', file.name, lastError?.message);
   return {
     source_filename: file.name,
     job_number: '',

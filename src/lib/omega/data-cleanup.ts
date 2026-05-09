@@ -201,7 +201,7 @@ export async function runOmegaCleanup(
           .eq('id', record.id);
 
         if (updateErr) {
-          console.error(`Omega cleanup: update failed for ${record.invoice_number}:`, updateErr.message);
+          console.error('Omega cleanup: update failed for invoice:', record.invoice_number, updateErr.message);
           summary.errors++;
         } else {
           summary.updated++;
@@ -235,7 +235,7 @@ export async function runOmegaCleanup(
         }
       }
     } catch (err: any) {
-      console.error(`Omega cleanup: error on ${record.invoice_number}:`, err.message);
+      console.error('Omega cleanup: error on invoice:', record.invoice_number, err.message);
       summary.errors++;
     }
   }

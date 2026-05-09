@@ -439,7 +439,7 @@ export async function saveAttributionResults(
       .eq('call_id', result.callId);
 
     if (error) {
-      console.error(`Failed to update call ${result.callId}:`, error);
+      console.error('Failed to update call:', result.callId, error);
       failed++;
     } else {
       success++;

@@ -24,7 +24,7 @@ export async function GET() {
         });
 
         if (!response.ok) {
-          console.error(`Preload failed for period ${period}:`, response.status);
+          console.error('Preload failed for period:', period, response.status);
           return { period, success: false, error: response.status };
         }
 
@@ -35,7 +35,7 @@ export async function GET() {
           cached: data._cached || false,
         };
       } catch (error) {
-        console.error(`Preload error for period ${period}:`, error);
+        console.error('Preload error for period:', period, error);
         return { period, success: false, error: String(error) };
       }
     });

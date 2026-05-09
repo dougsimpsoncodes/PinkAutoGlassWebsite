@@ -117,7 +117,7 @@ export async function compressImages(
       
       onComplete?.(i, result);
     } catch (error) {
-      console.error(`Failed to compress file ${file.name}:`, error);
+      console.error('Failed to compress file:', file.name, error);
       // Skip failed files but continue with others
       continue;
     }

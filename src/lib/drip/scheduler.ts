@@ -261,11 +261,11 @@ export async function scheduleDripSequence(
   const { error } = await supabase.from('scheduled_messages').insert(rows);
 
   if (error) {
-    console.error(`❌ Failed to schedule drip for lead ${leadId}:`, error.message);
+    console.error('❌ Failed to schedule drip for lead:', leadId, error.message);
     return { scheduled: 0, skipped };
   }
 
-  console.log(`📅 Scheduled ${rows.length} drip messages for lead ${leadId} (${sequenceName})`);
+  console.log('📅 Scheduled drip messages for lead:', rows.length, leadId, sequenceName);
   return { scheduled: rows.length, skipped };
 }
 
@@ -371,11 +371,11 @@ export async function scheduleReviewRequest(
   const { error } = await supabase.from('scheduled_messages').insert(rows);
 
   if (error) {
-    console.error(`❌ Failed to schedule review request for lead ${leadId}:`, error.message);
+    console.error('❌ Failed to schedule review request for lead:', leadId, error.message);
     return { scheduled: 0, skipped };
   }
 
-  console.log(`⭐ Scheduled ${rows.length} review request messages for lead ${leadId}`);
+  console.log('⭐ Scheduled review request messages for lead:', rows.length, leadId);
   return { scheduled: rows.length, skipped };
 }
 
@@ -419,10 +419,10 @@ export async function cancelDripForPhone(
     .in('id', ids);
 
   if (updateError) {
-    console.error(`❌ Failed to cancel drip for phone ${phoneE164}:`, updateError.message);
+    console.error('❌ Failed to cancel drip for phone:', phoneE164, updateError.message);
     return 0;
   }
 
-  console.log(`🚫 Cancelled ${ids.length} pending drip messages for phone ${phoneE164} (dedup)`);
+  console.log('🚫 Cancelled pending drip messages for phone:', ids.length, phoneE164, 'dedup');
   return ids.length;
 }

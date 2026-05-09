@@ -57,7 +57,7 @@ async function getAccessToken(): Promise<string | null> {
 
     if (!res.ok) {
       const errBody = await res.text();
-      console.error(`❌ Beetexting token request failed (${res.status}):`, errBody);
+      console.error('❌ Beetexting token request failed:', res.status, errBody);
       return null;
     }
 
@@ -133,7 +133,7 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
 
     if (!res.ok) {
       const errBody = await res.text();
-      console.error(`❌ Beetexting sendSMS failed (${res.status}):`, errBody);
+      console.error('❌ Beetexting sendSMS failed:', res.status, errBody);
       return false;
     }
 
