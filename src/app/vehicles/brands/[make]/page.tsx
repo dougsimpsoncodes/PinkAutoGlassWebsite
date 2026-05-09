@@ -6,7 +6,7 @@ import { getAllMakes, getVehiclesByMake, VehicleModel } from '@/data/makes-model
 import Breadcrumbs from '@/components/Breadcrumbs';
 import CTAButtons from '@/components/CTAButtons';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
-import { generateServiceSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import { generateServiceSchema, getBreadcrumbSchema, combineSchemas, getSchemaJSON } from '@/lib/schema';
 
 interface MakePageProps {
   params: {
@@ -80,7 +80,7 @@ export default function MakePage({ params }: MakePageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
+        dangerouslySetInnerHTML={{ __html: getSchemaJSON(combinedSchema) }} // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
       />
 
       <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
