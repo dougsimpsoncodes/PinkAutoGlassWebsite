@@ -1,11 +1,11 @@
 -- Create admin user for Pink Auto Glass analytics dashboard
--- Password: PinkGlass2025!
--- Email: admin@pinkautoglass.com
+-- Generate a fresh bcrypt hash outside the repo before running:
+--   node -e "require('bcryptjs').hash(process.env.ADMIN_PASSWORD, 10).then(console.log)"
 
 INSERT INTO public.admin_users (email, password_hash, full_name, is_active)
 VALUES (
   'admin@pinkautoglass.com',
-  '$2b$10$C8yuIZa0i/yCZX3luDSh/.rDhGnV/03c426eoo80VY5Q/3/F13o3S',
+  'replace-with-fresh-bcrypt-hash',
   'Admin User',
   true
 )

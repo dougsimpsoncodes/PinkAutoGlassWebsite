@@ -12,6 +12,15 @@ import { trackFormSubmission, getSessionId, getGclid, getMsclkid } from '@/lib/t
 
 // Types for form data
 const TOTAL_STEPS = 3;
+const LOCATION_SLUG_PATTERN = /^([a-z]+(?:-[a-z]+)*?)-([a-z]{2})$/i;
+
+function titleCaseSlug(value: string): string {
+  return value
+    .split('-')
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -71,15 +80,16 @@ export default function BookingPage() {
     }
 
     // Location prefill
-    if (params.get('location')) {
-      const location = params.get('location')!;
-      if (location.match(/^\d{5}$/)) {
-        prefillData.zipCode = location;
+    const rawLocation = params.get('location');
+    if (rawLocation) {
+      const normalizedLocation = rawLocation.trim();
+      if (/^\d{5}$/.test(normalizedLocation)) {
+        prefillData.zipCode = normalizedLocation;
       } else {
-        const [city, state] = location.split('-');
-        if (city && state) {
-          prefillData.city = city.charAt(0).toUpperCase() + city.slice(1);
-          prefillData.state = state.toUpperCase();
+        const match = normalizedLocation.match(LOCATION_SLUG_PATTERN);
+        if (match) {
+          prefillData.city = titleCaseSlug(match[1]);
+          prefillData.state = match[2].toUpperCase();
         }
       }
     }
