@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { MYGRANT_USER_AGENT, MygrantClient, type MygrantConfig } from '../src/lib/mygrant/client';
+import { MYGRANT_USER_AGENT, MygrantClient, parseMygrantSoapResponse, type MygrantConfig } from '../src/lib/mygrant/client';
 
 const EXPECTED_USER_AGENT = 'PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)';
 const ROOT = process.cwd();
@@ -78,6 +78,29 @@ function assertMygrantDomainGuard() {
   }
 }
 
+function assertReturnCodeParsing() {
+  const parsed = parseMygrantSoapResponse(
+    '<soap:Envelope><soap:Body><InboundTrafficResponse><InboundTrafficResult><![CDATA[<?xml version="1.0" encoding="utf-8" standalone="yes"?><Order><ReturnCode>e610</ReturnCode><ReturnText>Internal error: Something went wrong.</ReturnText></Order>]]></InboundTrafficResult></InboundTrafficResponse></soap:Body></soap:Envelope>'
+  );
+
+  if (parsed.requestStatusCode !== 'e610') {
+    throw new Error(`Expected Mygrant ReturnCode fallback to parse e610, got ${parsed.requestStatusCode}`);
+  }
+  if (parsed.requestStatusText !== 'Internal error: Something went wrong.') {
+    throw new Error(`Expected Mygrant ReturnText fallback to parse, got ${parsed.requestStatusText}`);
+  }
+}
+
+function assertStandardStatusParsing() {
+  const parsed = parseMygrantSoapResponse(
+    '<soap:Envelope><soap:Body><InboundTrafficResponse><InboundTrafficResult><![CDATA[<MygrantXMLOrderingSystemRequest><RequestSet></RequestSet><RequestStatusCode>0</RequestStatusCode><RequestStatusText>Success</RequestStatusText></MygrantXMLOrderingSystemRequest>]]></InboundTrafficResult></InboundTrafficResponse></soap:Body></soap:Envelope>'
+  );
+
+  if (parsed.requestStatusCode !== '0' || parsed.requestStatusText !== 'Success') {
+    throw new Error('Expected Mygrant standard status fields to parse.');
+  }
+}
+
 function findTextMatches(root: string, needle: string): string[] {
   const results: string[] = [];
   walk(root, file => {
@@ -113,6 +136,8 @@ function isCodeFile(file: string): boolean {
 async function main() {
   assertSingleUserAgentDefinition();
   assertMygrantDomainGuard();
+  assertStandardStatusParsing();
+  assertReturnCodeParsing();
   await assertHeader();
   assertScoringGuard();
   console.log('[mygrant] Client guard passed.');

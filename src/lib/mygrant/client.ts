@@ -138,7 +138,7 @@ export class MygrantClient {
     // or SOAP envelope without first masking <Password> and AuthToken values.
     const innerXml = buildMygrantRequestXml(this.config, requestType, requestItemsXml, opportunityId);
     const soapXml = buildSoapEnvelope(innerXml);
-    const signal = AbortSignal.timeout(12_000);
+    const signal = AbortSignal.timeout(mygrantTimeoutMs());
 
     const response = await this.fetchImpl(this.config.baseUrl, {
       method: 'POST',
@@ -184,6 +184,8 @@ export function getMygrantClient(fetchImpl: FetchLike = fetch): MygrantClient {
 
 export function parseMygrantSoapResponse(rawSoap: string): MygrantParsedResponse {
   const rawInnerXml = extractSoapResult(rawSoap);
+  const requestStatusCode = extractTag(rawInnerXml, 'RequestStatusCode') || extractTag(rawInnerXml, 'ReturnCode');
+  const requestStatusText = extractTag(rawInnerXml, 'RequestStatusText') || extractTag(rawInnerXml, 'ReturnText');
   const requestItems = matchBlocks(rawInnerXml, 'RequestItem').map(block => ({
     requestItemNo: parseOptionalInt(extractTag(block, 'RequestItemNo')),
     requestDetailXml: extractBlock(block, 'RequestDetail') || '',
@@ -191,8 +193,8 @@ export function parseMygrantSoapResponse(rawSoap: string): MygrantParsedResponse
   }));
 
   return {
-    requestStatusCode: extractTag(rawInnerXml, 'RequestStatusCode'),
-    requestStatusText: extractTag(rawInnerXml, 'RequestStatusText'),
+    requestStatusCode,
+    requestStatusText,
     requestItems,
     rawSoap,
     rawInnerXml,
@@ -452,4 +454,9 @@ function requiredEnv(name: string): string {
 function normalizeEnvironment(value?: string): MygrantEnvironment {
   if (value === 'PROD') return 'PROD';
   return 'TEST';
+}
+
+function mygrantTimeoutMs(): number {
+  const parsed = Number.parseInt(process.env.MYGRANT_TIMEOUT_MS || '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 25_000;
 }
