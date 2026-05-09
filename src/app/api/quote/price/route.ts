@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getMygrantClient, type MygrantResponseItem } from '@/lib/mygrant/client';
+import { evaluateMygrantWindshieldCandidates, publicScoredMygrantCandidate } from '@/lib/quote/mygrant-scoring';
 import { buildCashWindshieldQuote, dollarsToCents, type CashWindshieldQuote } from '@/lib/quote/pricing';
 
 export const runtime = 'nodejs';
@@ -62,18 +63,21 @@ export async function POST(request: NextRequest) {
 
     const input = normalizeQuoteInput(parsed.data);
     const mygrantResult = await getMygrantQuoteCandidates(input);
-    const selectedPart = selectBestWindshieldPart(mygrantResult.items);
+    const selection = evaluateMygrantWindshieldCandidates(mygrantResult.items);
+    const selectedPart = selection.selectedPart;
 
-    if (!selectedPart?.customerUnitPrice) {
+    if (selection.confidence !== 'high' || !selectedPart?.customerUnitPrice) {
+      const confidenceReasons = [
+        selectedPart?.customerUnitPrice ? `mygrant_confidence_${selection.confidence}` : 'missing_customer_unit_price',
+        ...selection.reasons,
+        ...mygrantResult.reasons,
+      ];
       const stored = await storeAutomatedQuote(input, {
         status: 'manual_review',
         pricingVersion: 'cash-windshield-v1',
         totalCents: 0,
         lineItems: [],
-        confidenceReasons: [
-          selectedPart ? 'missing_customer_unit_price' : 'no_confident_windshield_part_match',
-          ...mygrantResult.reasons,
-        ],
+        confidenceReasons,
       }, selectedPart, mygrantResult.safeSnapshot, {
         ipAddress: ip === 'unknown' ? undefined : ip,
         userAgent: request.headers.get('user-agent') || undefined,
@@ -85,10 +89,7 @@ export async function POST(request: NextRequest) {
         quoteToken: stored.quoteToken,
         vehicle: input.vehicle,
         message: 'We found your vehicle, but this glass needs a manual price confirmation.',
-        confidenceReasons: [
-          selectedPart ? 'missing_customer_unit_price' : 'no_confident_windshield_part_match',
-          ...mygrantResult.reasons,
-        ],
+        confidenceReasons,
       });
     }
 
@@ -100,25 +101,33 @@ export async function POST(request: NextRequest) {
       taxRate: Number.parseFloat(process.env.QUOTE_TAX_RATE || '0'),
     });
 
-    const stored = await storeAutomatedQuote(input, quote, selectedPart, mygrantResult.safeSnapshot, {
+    const quoteWithMygrantConfidence = {
+      ...quote,
+      confidenceReasons: [
+        ...quote.confidenceReasons,
+        ...selection.reasons,
+      ],
+    };
+
+    const stored = await storeAutomatedQuote(input, quoteWithMygrantConfidence, selectedPart, mygrantResult.safeSnapshot, {
       ipAddress: ip === 'unknown' ? undefined : ip,
       userAgent: request.headers.get('user-agent') || undefined,
     });
 
     return NextResponse.json({
       success: true,
-      status: quote.status,
+      status: quoteWithMygrantConfidence.status,
       quoteToken: stored.quoteToken,
       vehicle: input.vehicle,
       pricing: {
-        pricingVersion: quote.pricingVersion,
-        totalCents: quote.totalCents,
-        totalDollars: quote.totalCents / 100,
-        lineItems: quote.lineItems,
-        confidenceReasons: quote.confidenceReasons,
+        pricingVersion: quoteWithMygrantConfidence.pricingVersion,
+        totalCents: quoteWithMygrantConfidence.totalCents,
+        totalDollars: quoteWithMygrantConfidence.totalCents / 100,
+        lineItems: quoteWithMygrantConfidence.lineItems,
+        confidenceReasons: quoteWithMygrantConfidence.confidenceReasons,
       },
       selectedPart: publicPartSnapshot(selectedPart),
-      message: quote.status === 'ready_exact'
+      message: quoteWithMygrantConfidence.status === 'ready_exact'
         ? 'Your installed cash price is ready.'
         : 'Your installed price includes the expected calibration allowance.',
     });
@@ -176,6 +185,9 @@ async function getMygrantQuoteCandidates(input: QuotePriceInput): Promise<{
         requestStatusCode: response.requestStatusCode,
         requestStatusText: response.requestStatusText,
         responseCount: items.length,
+        candidateSummary: evaluateMygrantWindshieldCandidates(items).rankedCandidates
+          .slice(0, 8)
+          .map(publicScoredMygrantCandidate),
       },
     };
   } catch (error) {
@@ -186,31 +198,6 @@ async function getMygrantQuoteCandidates(input: QuotePriceInput): Promise<{
       safeSnapshot: { error: message.slice(0, 300) },
     };
   }
-}
-
-function selectBestWindshieldPart(items: MygrantResponseItem[]): MygrantResponseItem | undefined {
-  const windshieldItems = items.filter((item) => {
-    const descriptor = [
-      item.productType,
-      item.partDesc,
-      item.part,
-      item.nagsPrefix,
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    return descriptor.includes('windshield')
-      || descriptor.includes('w/shield')
-      || ['dw', 'fw', 'ws'].includes((item.nagsPrefix || '').toLowerCase());
-  });
-
-  return windshieldItems
-    .filter(item => item.customerUnitPrice || item.listUnitPrice)
-    .sort((a, b) => {
-      const aAvailable = a.qtyAvailable && a.qtyAvailable > 0 ? 0 : 1;
-      const bAvailable = b.qtyAvailable && b.qtyAvailable > 0 ? 0 : 1;
-      if (aAvailable !== bAvailable) return aAvailable - bAvailable;
-      return (a.customerUnitPrice || a.listUnitPrice || Number.MAX_SAFE_INTEGER)
-        - (b.customerUnitPrice || b.listUnitPrice || Number.MAX_SAFE_INTEGER);
-    })[0] || windshieldItems[0];
 }
 
 function shouldIncludeCalibration(input: QuotePriceInput): boolean {

@@ -8,6 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { MYGRANT_USER_AGENT, MygrantClient, type MygrantConfig } from '../src/lib/mygrant/client';
 
 const EXPECTED_USER_AGENT = 'PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)';
@@ -113,7 +114,19 @@ async function main() {
   assertSingleUserAgentDefinition();
   assertMygrantDomainGuard();
   await assertHeader();
+  assertScoringGuard();
   console.log('[mygrant] Client guard passed.');
+}
+
+function assertScoringGuard() {
+  const result = spawnSync('npx', ['tsx', 'scripts/verify-mygrant-scoring.ts'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    throw new Error(`Mygrant scoring guard failed:\n${result.stdout}${result.stderr}`);
+  }
 }
 
 main().catch(error => {

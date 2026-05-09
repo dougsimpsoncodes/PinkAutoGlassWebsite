@@ -10,6 +10,7 @@
 import path from 'node:path';
 import { config as loadDotenv } from 'dotenv';
 import { getMygrantClient, type MygrantParsedResponse } from '../src/lib/mygrant/client';
+import { evaluateMygrantWindshieldCandidates, publicScoredMygrantCandidate } from '../src/lib/quote/mygrant-scoring';
 
 loadDotenv({ path: path.resolve(process.cwd(), '.env.local') });
 
@@ -56,9 +57,27 @@ async function main() {
 }
 
 function printSummary(result: MygrantParsedResponse) {
+  const allResponses = result.requestItems.flatMap(item => item.responses);
+  const selection = evaluateMygrantWindshieldCandidates(allResponses);
+
   console.log(JSON.stringify({
     requestStatusCode: result.requestStatusCode,
     requestStatusText: result.requestStatusText,
+    windshieldSelection: {
+      confidence: selection.confidence,
+      reasons: selection.reasons,
+      selectedPart: selection.selectedPart ? {
+        nagsPrefix: selection.selectedPart.nagsPrefix,
+        nagsNumber: selection.selectedPart.nagsNumber,
+        productId: selection.selectedPart.productId,
+        brand: selection.selectedPart.brand,
+        partDesc: selection.selectedPart.partDesc,
+        qtyAvailable: selection.selectedPart.qtyAvailable,
+        customerUnitPrice: selection.selectedPart.customerUnitPrice,
+        shipFromBranch: selection.selectedPart.shipFromBranchName,
+      } : null,
+      topCandidates: selection.rankedCandidates.slice(0, 8).map(publicScoredMygrantCandidate),
+    },
     requestItems: result.requestItems.map(item => ({
       requestItemNo: item.requestItemNo,
       responseCount: item.responses.length,
