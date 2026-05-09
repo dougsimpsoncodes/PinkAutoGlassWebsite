@@ -362,6 +362,13 @@ function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: Ve
         <p className="mt-2 text-sm text-gray-700">
           {quote.message || 'This vehicle needs a manual glass match before we show a firm installed price.'}
         </p>
+        {quote.quoteToken && (
+          <div className="mt-4 rounded-md border border-amber-200 bg-white p-3 text-sm">
+            <div className="font-semibold text-gray-900">Reference</div>
+            <div className="font-mono text-base text-gray-700">{shortQuoteToken(quote.quoteToken)}</div>
+            <div className="mt-1 text-gray-600">Mention this when you call.</div>
+          </div>
+        )}
         <VehicleSummary vehicle={vehicle} />
         <a
           href="tel:+17209187465"
@@ -384,6 +391,12 @@ function QuotePanel({ quote, vehicle }: { quote: QuoteResult | null; vehicle: Ve
         {formatCents(quote.pricing.totalCents)}
       </div>
       <p className="mt-2 text-sm text-gray-600">{quote.message}</p>
+      {quote.quoteToken && (
+        <div className="mt-4 rounded-md bg-gray-50 p-3 text-sm text-gray-700">
+          <span className="font-semibold text-gray-900">Reference: </span>
+          <span className="font-mono">{shortQuoteToken(quote.quoteToken)}</span>
+        </div>
+      )}
 
       <VehicleSummary vehicle={vehicle} />
 
@@ -440,4 +453,8 @@ function formatCents(amountCents: number): string {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(amountCents / 100);
+}
+
+function shortQuoteToken(token: string): string {
+  return token.slice(0, 8).toUpperCase();
 }

@@ -30,6 +30,11 @@ interface StoredQuoteResult {
   quoteToken?: string;
 }
 
+interface PersistenceContext {
+  ipAddress?: string;
+  userAgent?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -64,7 +69,10 @@ export async function POST(request: NextRequest) {
           selectedPart ? 'missing_customer_unit_price' : 'no_confident_windshield_part_match',
           ...mygrantResult.reasons,
         ],
-      }, selectedPart, mygrantResult.safeSnapshot);
+      }, selectedPart, mygrantResult.safeSnapshot, {
+        ipAddress: ip === 'unknown' ? undefined : ip,
+        userAgent: request.headers.get('user-agent') || undefined,
+      });
 
       return NextResponse.json({
         success: true,
@@ -87,7 +95,10 @@ export async function POST(request: NextRequest) {
       taxRate: Number.parseFloat(process.env.QUOTE_TAX_RATE || '0'),
     });
 
-    const stored = await storeAutomatedQuote(input, quote, selectedPart, mygrantResult.safeSnapshot);
+    const stored = await storeAutomatedQuote(input, quote, selectedPart, mygrantResult.safeSnapshot, {
+      ipAddress: ip === 'unknown' ? undefined : ip,
+      userAgent: request.headers.get('user-agent') || undefined,
+    });
 
     return NextResponse.json({
       success: true,
@@ -206,75 +217,73 @@ async function storeAutomatedQuote(
   input: QuotePriceInput,
   quote: CashWindshieldQuote,
   selectedPart: MygrantResponseItem | undefined,
-  mygrantSnapshot: Record<string, unknown>
+  mygrantSnapshot: Record<string, unknown>,
+  context: PersistenceContext = {}
 ): Promise<StoredQuoteResult> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) return {};
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) return {};
 
   try {
-    const supabase = createClient(supabaseUrl, serviceKey, {
+    const supabase = createClient(supabaseUrl, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+
+    const payload = {
+      status: quote.status,
+      status_reason: quote.confidenceReasons.join(','),
+      pricing_version: quote.pricingVersion,
+      zip: input.zip || null,
+      state: input.state || null,
+      ip_address: context.ipAddress || null,
+      user_agent: context.userAgent || null,
+      plate_last4: input.plateLast4 || null,
+      plate_state: input.state || null,
+      vin: input.vehicle.vin || null,
+      vehicle_year: input.vehicle.year,
+      vehicle_make: input.vehicle.make,
+      vehicle_model: input.vehicle.model,
+      vehicle_trim: input.vehicle.trim || null,
+      selected_nags_prefix: selectedPart?.nagsPrefix || null,
+      selected_nags_number: selectedPart?.nagsNumber || null,
+      selected_nags_color: selectedPart?.nagsColor || null,
+      selected_nags_hardware_indicator: selectedPart?.hardwareIndicator || null,
+      selected_nags_premium_indicator: selectedPart?.premiumIndicator || null,
+      selected_product_id: selectedPart?.productId || null,
+      selected_brand: selectedPart?.brand || null,
+      selected_part_description: selectedPart?.partDesc || selectedPart?.part || null,
+      selected_ship_from_branch_id: selectedPart?.shipFromBranchId || null,
+      selected_ship_from_branch_name: selectedPart?.shipFromBranchName || null,
+      selected_qty_available: selectedPart?.qtyAvailable || null,
+      selected_estimated_delivery_date: selectedPart?.estimatedDeliveryDate || null,
+      selected_estimated_delivery_time: selectedPart?.estimatedDeliveryTime || null,
+      supplier_cost_cents: selectedPart?.customerUnitPrice ? dollarsToCents(selectedPart.customerUnitPrice) : null,
+      quote_total_cents: quote.totalCents || null,
+      confidence_reasons: quote.confidenceReasons,
+      mygrant_request: {
+        vehicleYear: input.vehicle.year,
+        vehicleMake: input.vehicle.make,
+        vehicleModel: input.vehicle.model,
+      },
+      mygrant_response: mygrantSnapshot,
+      line_items: quote.lineItems.map((item, index) => ({
+        sort_order: index + 1,
+        kind: item.kind,
+        description: item.description,
+        amount_cents: item.amountCents,
+        taxable: item.taxable || false,
+        vendor_part_number: selectedPart?.productId || selectedPart?.nagsNumber || null,
+        metadata: item.metadata || {},
+      })),
+    };
+
     const { data, error } = await supabase
-      .from('automated_quotes')
-      .insert({
-        status: quote.status,
-        status_reason: quote.confidenceReasons.join(','),
-        pricing_version: quote.pricingVersion,
-        zip: input.zip || null,
-        state: input.state || null,
-        plate_last4: input.plateLast4 || null,
-        vin: input.vehicle.vin || null,
-        vehicle_year: input.vehicle.year,
-        vehicle_make: input.vehicle.make,
-        vehicle_model: input.vehicle.model,
-        vehicle_trim: input.vehicle.trim || null,
-        selected_nags_prefix: selectedPart?.nagsPrefix || null,
-        selected_nags_number: selectedPart?.nagsNumber || null,
-        selected_nags_color: selectedPart?.nagsColor || null,
-        selected_nags_hardware_indicator: selectedPart?.hardwareIndicator || null,
-        selected_nags_premium_indicator: selectedPart?.premiumIndicator || null,
-        selected_product_id: selectedPart?.productId || null,
-        selected_brand: selectedPart?.brand || null,
-        selected_part_description: selectedPart?.partDesc || selectedPart?.part || null,
-        selected_ship_from_branch_id: selectedPart?.shipFromBranchId || null,
-        selected_ship_from_branch_name: selectedPart?.shipFromBranchName || null,
-        selected_qty_available: selectedPart?.qtyAvailable || null,
-        selected_estimated_delivery_date: selectedPart?.estimatedDeliveryDate || null,
-        selected_estimated_delivery_time: selectedPart?.estimatedDeliveryTime || null,
-        supplier_cost_cents: selectedPart?.customerUnitPrice ? dollarsToCents(selectedPart.customerUnitPrice) : null,
-        quote_total_cents: quote.totalCents || null,
-        confidence_reasons: quote.confidenceReasons,
-        mygrant_request: {
-          vehicleYear: input.vehicle.year,
-          vehicleMake: input.vehicle.make,
-          vehicleModel: input.vehicle.model,
-        },
-        mygrant_response: mygrantSnapshot,
-      })
-      .select('id, quote_token')
+      .rpc('fn_create_automated_quote', { payload })
       .single();
 
     if (error || !data) {
       console.error('[quote-price] automated quote insert failed:', error?.message);
       return {};
-    }
-
-    if (quote.lineItems.length > 0) {
-      const { error: lineError } = await supabase
-        .from('automated_quote_line_items')
-        .insert(quote.lineItems.map((item, index) => ({
-          quote_id: data.id,
-          sort_order: index + 1,
-          kind: item.kind,
-          description: item.description,
-          amount_cents: item.amountCents,
-          taxable: item.taxable || false,
-          vendor_part_number: selectedPart?.productId || selectedPart?.nagsNumber || null,
-          metadata: item.metadata || {},
-        })));
-      if (lineError) console.error('[quote-price] quote line insert failed:', lineError.message);
     }
 
     return { quoteId: data.id, quoteToken: data.quote_token };
