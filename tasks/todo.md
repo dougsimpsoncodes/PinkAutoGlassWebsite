@@ -359,3 +359,32 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 5. Revisit any bid strategy changes Doug made during the March/April broken window (decisions were based on phantom dashboard data)
 
 **Full session log:** `tasks/2026-04-12-google-ads-call-attribution-cascade-fix.md`
+
+## 2026-05-09 — Automated Quote Engine MVP Foundation
+
+**Decision and reasoning:** MVP target is exact cash windshield quote when the vehicle-to-part match is confident, with estimate/manual review for ambiguous vehicles. PlateToVIN is the first plate lookup provider; Mygrant is used for SOAP inquiry/price/availability, not ordering.
+
+**What changed:**
+- Added centralized Mygrant SOAP client at `src/lib/mygrant/client.ts` with the required fixed User-Agent.
+- Added Mygrant guard script `scripts/verify-mygrant-client.ts`.
+- Added PlateToVIN client and smoke script.
+- Added `/api/quote/identify` server-only plate lookup endpoint.
+- Added cash windshield pricing helper.
+- Added draft migration `supabase/migrations/20260509_automated_quotes.sql` for quote attempts, line items, and plate lookup cache.
+- Documented new env vars in `.env.example`.
+
+**Deliberately NOT done:**
+- Migration not applied yet.
+- No customer-facing `/quote` UI yet.
+- No Mygrant live calls yet because credentials are not present in `.env.local`.
+- No Mygrant order requests; inquiry only.
+
+**Verification:**
+- `npx tsx scripts/verify-mygrant-client.ts` passed.
+- Quote modules imported successfully through `tsx`.
+- Smoke scripts fail cleanly with missing credential messages.
+- Full `npx tsc --noEmit` still fails on pre-existing unrelated project errors.
+
+**Second-opinion review updates:**
+- Gemini and Claude reviewed the foundation. Applied follow-up fixes for plate validation status codes, PlateToVIN response shape checks, HTTP timeouts, Mygrant XML logging warning, stronger User-Agent guard, explicit RLS deny policies, no full plate column in the quote table, and pricing input/floor signals.
+- Deferred larger Mygrant XML parser refactor until dependency/test decision.

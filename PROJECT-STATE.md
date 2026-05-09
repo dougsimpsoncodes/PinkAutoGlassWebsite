@@ -8,7 +8,7 @@ Live client site at `pinkautoglass.com`; as of 2026-04-12 the latest investigate
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
 
 ## Current Focus
-Track and verify build/deploy failures from the auto-fix pipeline without making unnecessary code changes.
+Automated quote engine MVP foundation: exact cash windshield quote when confident, estimate/manual review otherwise.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
@@ -29,13 +29,15 @@ Track and verify build/deploy failures from the auto-fix pipeline without making
 - GitHub Actions / Vercel secrets: stored in GitHub repo settings and Vercel project settings
 
 ## Integrations
-- **Mygrant Glass API** — setup form drafted 2026-04-15 (not yet submitted pending commercial fields). Vendor contact: `api-support@mygrantglass.com` (Leon Staub / Mark Wright / Tim Veilleux). Mygrant does not IP-allowlist; we are identified in their logs by a required `User-Agent` header. Exact string and enforcement requirements live in `.claude/CLAUDE.md` under "Mygrant API Integration — User-Agent Rule". **Enforcement is code-level, not documentation-level:** first PR touching `src/lib/mygrant/` must ship a central client module, a `MYGRANT_USER_AGENT` constant, a unit test asserting the exact header value, and a repo guard against direct fetch to `mygrantglass.com` outside that module. Client code not yet built.
+- **Mygrant Glass API** — setup form drafted 2026-04-15; customer API access confirmed by Leon. Vendor contact: `api-support@mygrantglass.com` (Leon Staub / Mark Wright / Tim Veilleux). Mygrant does not IP-allowlist; traffic is identified by a required `User-Agent` header. Exact string and enforcement requirements live in `.claude/CLAUDE.md` under "Mygrant API Integration — User-Agent Rule". Client foundation now lives in `src/lib/mygrant/client.ts`; guard script: `npx tsx scripts/verify-mygrant-client.ts`.
+- **PlateToVIN API** — selected as MVP plate lookup provider. Client foundation lives in `src/lib/platelookup/client.ts`; smoke script: `npx tsx scripts/platetovin-smoke.ts --plate=ABC123 --state=CO`.
 
 ## Change Log
 - 2026-04-12: Created project state file in the active repo and logged self-healed investigation for `ci_failure_210`.
 - 2026-04-14: Started call attribution remediation. Audited production data, identified the 3 ad_platform writers, found the orphaned Phase 2 resolver, drafted the 3-PR plan, ran reviews via Claude self-read + Gemini + Codex.
 - 2026-04-15: PR1 merged (commit 3e9ac57). Migration applied to live DB. Dashboard builders updated. PR2 work scheduled for next session — see `tasks/2026-04-14-attribution-remediation.md` "Resume here" section.
 - 2026-04-15: Drafted Mygrant Glass API integration setup form. Added User-Agent rule to `.claude/CLAUDE.md` and Integrations section here. Revised after Codex second-opinion review: switched UA contact email to `doug@pinkautoglass.com` (real routing address), dropped AWS/Next.js specifics from OMS framing, acknowledged Vercel Static IPs/Secure Compute as a future option in the IP answer, and upgraded enforcement from "documentation rule" to "code-level invariant" (central client + constant + test + repo guard required in first client PR).
+- 2026-05-09: Started automated quote engine MVP foundation. Added Mygrant SOAP inquiry client + guard, PlateToVIN client, quote identify API boundary, cash windshield pricing helper, smoke scripts, and migration draft `20260509_automated_quotes.sql`. Migration not applied yet; live API credentials still needed in `.env.local`.
 
 ## Attribution Remediation (in progress)
 
