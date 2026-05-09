@@ -9,6 +9,7 @@ Scope: baseline review before exposing the automated quote flow publicly.
 - `gitleaks detect --log-opts='HEAD~1..HEAD'`: no leaks in the quote-engine commit.
 - Full-history `gitleaks detect`: 56 historical findings across 13 commits.
 - Full-repo Semgrep: 88 findings, mostly preexisting low-signal logging warnings.
+- Historical Gitleaks findings are now baselined in `.gitleaksignore` and `security/baseline/gitleaks-historical-baseline.json`.
 
 ## Historical Secret Classes
 
@@ -42,3 +43,5 @@ Highest-priority files from the historical report:
 ## Required Manual Rotation Check
 
 Before launch, compare live credentials in Vercel/Supabase/service dashboards against the historical secret classes above. Rotate anything live, uncertain, or impossible to prove inactive.
+
+Tracking checklist: `security/incident/2026-05-09-credential-rotation-checklist.md`.
