@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { AlertTriangle, BadgeDollarSign, Car, CheckCircle2, Loader2, Mail, Phone, Search, ShieldCheck, User } from 'lucide-react';
+import { getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
 
 type LookupMode = 'plate' | 'vin' | 'manual';
 
@@ -471,6 +472,15 @@ function ContactCapture({
     setSubmitting(true);
     setStatus(null);
     try {
+      const sessionId = getSessionId();
+      let clientId = typeof window !== 'undefined' ? localStorage.getItem('client_id') : null;
+      if (typeof window !== 'undefined' && !clientId) {
+        clientId = crypto.randomUUID();
+        localStorage.setItem('client_id', clientId);
+      }
+      const gclid = getGclid();
+      const msclkid = getMsclkid();
+      const utmParams = getUTMParams();
       const response = await fetch('/api/quote/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -483,6 +493,15 @@ function ContactCapture({
           website,
           state,
           zip,
+          clientId: clientId || undefined,
+          sessionId: sessionId || undefined,
+          gclid: gclid || undefined,
+          msclkid: msclkid || undefined,
+          utmSource: utmParams.source || undefined,
+          utmMedium: utmParams.medium || undefined,
+          utmCampaign: utmParams.campaign || undefined,
+          utmTerm: utmParams.term || undefined,
+          utmContent: utmParams.content || undefined,
         }),
       });
       const data = await response.json();
