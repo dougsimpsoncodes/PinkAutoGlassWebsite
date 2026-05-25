@@ -259,7 +259,7 @@ async function updateLead(
     .update({
       first_name: firstName,
       last_name: lastName || null,
-      email: input.email || null,
+      ...(input.email ? { email: input.email } : {}),
       phone_e164: input.phone,
       vehicle_year: quote.vehicle_year,
       vehicle_make: quote.vehicle_make,
