@@ -43,7 +43,7 @@ const STATE_OPTIONS = ['AZ', 'CO', 'CA', 'NM', 'NV', 'TX', 'UT', 'WY'];
 export default function AutomatedQuoteForm() {
   const [mode, setMode] = useState<LookupMode>('plate');
   const [plate, setPlate] = useState('');
-  const [plateState, setPlateState] = useState('CO');
+  const [plateState, setPlateState] = useState('');
   const [zip, setZip] = useState('');
   const [hasAdas, setHasAdas] = useState(false);
   const [vehicle, setVehicle] = useState<VehicleState>({
@@ -193,7 +193,7 @@ export default function AutomatedQuoteForm() {
         </div>
 
         {mode === 'plate' && (
-          <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
+          <div className="grid gap-4">
             <label className="block">
               <span className="mb-1 block text-sm font-semibold text-gray-700">License plate</span>
               <input
@@ -203,21 +203,11 @@ export default function AutomatedQuoteForm() {
                 placeholder="ABC1234"
               />
             </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
-              <select
-                value={plateState}
-                onChange={(event) => setPlateState(event.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-3 focus:border-pink-500 focus:outline-none"
-              >
-                {STATE_OPTIONS.map((state) => <option key={state}>{state}</option>)}
-              </select>
-            </label>
             <button
               type="button"
               onClick={lookupPlate}
-              disabled={lookupLoading || plate.trim().length < 2}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300 sm:col-span-2"
+              disabled={lookupLoading || plate.trim().length < 2 || !plateState}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300"
             >
               {lookupLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               Find Vehicle
@@ -280,7 +270,7 @@ export default function AutomatedQuoteForm() {
           </label>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <label className="block">
             <span className="mb-1 block text-sm font-semibold text-gray-700">Trim</span>
             <input
@@ -299,6 +289,17 @@ export default function AutomatedQuoteForm() {
               inputMode="numeric"
               placeholder="80202"
             />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
+            <select
+              value={plateState}
+              onChange={(event) => setPlateState(event.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-3 focus:border-pink-500 focus:outline-none"
+            >
+              <option value="">Select state</option>
+              {STATE_OPTIONS.map((state) => <option key={state}>{state}</option>)}
+            </select>
           </label>
         </div>
 
@@ -324,7 +325,7 @@ export default function AutomatedQuoteForm() {
 
         <button
           type="submit"
-          disabled={quoteLoading || !vehicleReady}
+          disabled={quoteLoading || !vehicleReady || !plateState}
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 font-bold text-white transition-colors hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           {quoteLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <BadgeDollarSign className="h-5 w-5" />}
