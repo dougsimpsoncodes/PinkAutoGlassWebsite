@@ -223,6 +223,7 @@ async function findOrCreateLead({
       sessionId: emptyToUndefined(input.sessionId) || request.cookies.get('session_id')?.value || null,
       smsConsent: input.smsConsent,
       privacyAcknowledgment: true,
+      termsAccepted: true,
       isTest: isExcludedPhone(input.phone) || isTestPhone(input.phone),
       ...attribution,
     },
