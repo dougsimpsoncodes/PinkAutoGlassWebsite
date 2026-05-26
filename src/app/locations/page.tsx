@@ -404,7 +404,7 @@ export default function LocationsPage() {
             </p>
 
             {/* Colorado Cities */}
-            <div className="mb-12">
+            <div id="colorado" className="mb-12 scroll-mt-24">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                 <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold mr-3">Colorado</span>
                 Denver Metro & Front Range
@@ -451,7 +451,7 @@ export default function LocationsPage() {
             </div>
 
             {/* Arizona Cities */}
-            <div>
+            <div id="arizona" className="scroll-mt-24">
               <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center flex-wrap gap-3">
                 <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">Arizona — New!</span>
                 Phoenix Metro
