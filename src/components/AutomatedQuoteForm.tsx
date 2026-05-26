@@ -161,6 +161,24 @@ export default function AutomatedQuoteForm() {
         setNotice(data.error || 'Quote pricing is unavailable.');
         return;
       }
+      if (data?.vehicle) {
+        const resolved = data.vehicle;
+        const corrected = {
+          vin: resolved.vin || vehicle.vin,
+          year: resolved.year ? String(resolved.year) : vehicle.year,
+          make: resolved.make || vehicle.make,
+          model: resolved.model || vehicle.model,
+          trim: resolved.trim ?? vehicle.trim,
+        };
+        const drift =
+          corrected.year !== vehicle.year ||
+          corrected.make.toUpperCase() !== vehicle.make.toUpperCase() ||
+          corrected.model.toUpperCase() !== vehicle.model.toUpperCase();
+        setVehicle(corrected);
+        if (drift) {
+          setNotice(`We matched your VIN to a ${[corrected.year, corrected.make, corrected.model].filter(Boolean).join(' ')}. The price below reflects that vehicle.`);
+        }
+      }
       setQuote(data);
     } catch {
       setNotice('Quote pricing is unavailable. Call us and we will confirm it manually.');

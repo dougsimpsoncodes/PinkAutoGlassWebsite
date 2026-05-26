@@ -1,4 +1,11 @@
-export const MYGRANT_USER_AGENT = 'PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)';
+import { OMS_USER_AGENT } from '@/lib/integration-identity';
+
+/**
+ * Re-exported for the existing Mygrant guard (scripts/verify-mygrant-client.ts).
+ * Both Mygrant and AutoBolt send the same OMS_USER_AGENT identity; this alias
+ * keeps the historical guard invariant working while avoiding a duplicate literal.
+ */
+export const MYGRANT_USER_AGENT = OMS_USER_AGENT;
 
 const DEFAULT_STAGING_URL = 'https://webservice-staging.mygrantglass.com/v2/CoRE650WebService.asmx';
 const DEFAULT_PRODUCTION_URL = 'https://webservice.mygrantglass.com/v2/CoRE650WebService.asmx';

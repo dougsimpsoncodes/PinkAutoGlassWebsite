@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getMygrantClient, type MygrantResponseItem } from '@/lib/mygrant/client';
 import { evaluateMygrantWindshieldCandidates, publicScoredMygrantCandidate } from '@/lib/quote/mygrant-scoring';
 import { buildCashWindshieldQuote, dollarsToCents, type CashWindshieldQuote } from '@/lib/quote/pricing';
+import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
+import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, type CachedNagsLookup } from '@/lib/autobolt/cache';
 
 export const runtime = 'nodejs';
 
@@ -62,7 +65,13 @@ export async function POST(request: NextRequest) {
     }
 
     const input = normalizeQuoteInput(parsed.data);
-    const mygrantResult = await getMygrantQuoteCandidates(input);
+    const cacheClient = buildCacheClient();
+    const mygrantResult = await getMygrantQuoteCandidates(input, cacheClient);
+    // Prefer the AutoBolt-resolved vehicle identity over what the form submitted,
+    // since the resolved values reflect the VIN the part was priced for. If the
+    // form's typed Y/M/M disagree with the decode, the customer and the lead row
+    // both see the vehicle the price actually corresponds to.
+    const effectiveInput = applyResolvedVehicle(input, mygrantResult.resolvedVehicle);
     const selection = evaluateMygrantWindshieldCandidates(mygrantResult.items);
     const selectedPart = selection.selectedPart;
 
@@ -72,7 +81,7 @@ export async function POST(request: NextRequest) {
         ...selection.reasons,
         ...mygrantResult.reasons,
       ];
-      const stored = await storeAutomatedQuote(input, {
+      const stored = await storeAutomatedQuote(effectiveInput, {
         status: 'manual_review',
         pricingVersion: 'cash-windshield-v1',
         totalCents: 0,
@@ -87,7 +96,7 @@ export async function POST(request: NextRequest) {
         success: true,
         status: 'manual_review',
         quoteToken: stored.quoteToken,
-        vehicle: input.vehicle,
+        vehicle: effectiveInput.vehicle,
         message: 'We found your vehicle, but this glass needs a manual price confirmation.',
         confidenceReasons,
       });
@@ -95,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     const quote = buildCashWindshieldQuote({
       glassCostCents: dollarsToCents(selectedPart.customerUnitPrice),
-      calibrationCents: shouldIncludeCalibration(input)
+      calibrationCents: shouldIncludeCalibration(effectiveInput)
         ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '22500', 10)
         : 0,
       taxRate: Number.parseFloat(process.env.QUOTE_TAX_RATE || '0'),
@@ -109,7 +118,7 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    const stored = await storeAutomatedQuote(input, quoteWithMygrantConfidence, selectedPart, mygrantResult.safeSnapshot, {
+    const stored = await storeAutomatedQuote(effectiveInput, quoteWithMygrantConfidence, selectedPart, mygrantResult.safeSnapshot, {
       ipAddress: ip === 'unknown' ? undefined : ip,
       userAgent: request.headers.get('user-agent') || undefined,
     });
@@ -118,7 +127,7 @@ export async function POST(request: NextRequest) {
       success: true,
       status: quoteWithMygrantConfidence.status,
       quoteToken: stored.quoteToken,
-      vehicle: input.vehicle,
+      vehicle: effectiveInput.vehicle,
       pricing: {
         pricingVersion: quoteWithMygrantConfidence.pricingVersion,
         totalCents: quoteWithMygrantConfidence.totalCents,
@@ -145,6 +154,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function applyResolvedVehicle(
+  input: QuotePriceInput,
+  resolved?: { vin?: string; year?: number; make?: string; model?: string; bodyStyle?: string }
+): QuotePriceInput {
+  if (!resolved) return input;
+  // Only override individual fields when the decode produced a value; preserve
+  // the form input as a fallback (e.g. trim isn't returned by the decoder).
+  const vehicle = {
+    ...input.vehicle,
+    vin: resolved.vin ?? input.vehicle.vin,
+    year: resolved.year ?? input.vehicle.year,
+    make: resolved.make ?? input.vehicle.make,
+    model: resolved.model ?? input.vehicle.model,
+  };
+  return { ...input, vehicle };
+}
+
 function normalizeQuoteInput(input: QuotePriceInput): QuotePriceInput {
   return {
     ...input,
@@ -161,11 +187,230 @@ function normalizeQuoteInput(input: QuotePriceInput): QuotePriceInput {
   };
 }
 
-async function getMygrantQuoteCandidates(input: QuotePriceInput): Promise<{
+async function getMygrantQuoteCandidates(
+  input: QuotePriceInput,
+  cacheClient?: SupabaseClient
+): Promise<{
   items: MygrantResponseItem[];
   reasons: string[];
   safeSnapshot: Record<string, unknown>;
+  vehicleNags?: { prefix: string; number: string; amNumber?: string };
+  resolvedVehicle?: { vin?: string; year?: number; make?: string; model?: string; bodyStyle?: string };
 }> {
+  // Strategy:
+  //   1. Use AutoBolt to resolve vehicle→NAGS (VIN-only today; plate path TBD)
+  //   2. If we got a NAGS identifier, ask Mygrant.inquireByNags for priced candidates
+  //   3. Whether or not (1)/(2) succeed, ALWAYS attempt Mygrant.inquireByVehicle
+  //      as a fallback so we degrade gracefully when:
+  //        - AutoBolt is missing creds / rate-limited / down
+  //        - The amNumber→NAGS mapping turns out to be wrong (still pending Nick)
+  //        - Mygrant returns no usable candidates for the resolved NAGS
+  //   4. Prefer NAGS candidates when present; only fall back to vehicle candidates
+  //      if NAGS came back empty.
+
+  const reasons: string[] = [];
+  const autoboltSnapshot: Record<string, unknown> = { confidence: 'none' };
+  let nagsLookup: CachedNagsLookup | undefined;
+  let nagsItems: MygrantResponseItem[] = [];
+  let nagsMygrantSnapshot: Record<string, unknown> | undefined;
+  let vehicleNagsForReturn: { prefix: string; number: string; amNumber?: string } | undefined;
+
+  try {
+    nagsLookup = await resolveVehicleNags(input, cacheClient, reasons);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown_error';
+    reasons.push('autobolt_lookup_failed');
+    autoboltSnapshot.error = message.slice(0, 300);
+  }
+
+  if (nagsLookup) {
+    Object.assign(autoboltSnapshot, {
+      resolvedFrom: nagsLookup.resolvedFrom,
+      confidence: nagsLookup.confidence,
+      partCount: nagsLookup.partCount,
+      year: nagsLookup.year,
+      make: nagsLookup.make,
+      model: nagsLookup.model,
+      ...(nagsLookup.nags
+        ? { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number }
+        : {}),
+    });
+  }
+
+  if (nagsLookup?.nags) {
+    try {
+      const response = await getMygrantClient().inquireByNags([
+        { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number },
+      ]);
+      nagsItems = response.requestItems.flatMap(item => item.responses);
+      if (response.requestStatusCode && response.requestStatusCode !== '0') {
+        reasons.push(`mygrant_status_${response.requestStatusCode}`);
+      }
+      nagsMygrantSnapshot = {
+        path: 'inquireByNags',
+        requestStatusCode: response.requestStatusCode,
+        requestStatusText: response.requestStatusText,
+        responseCount: nagsItems.length,
+        candidateSummary: evaluateMygrantWindshieldCandidates(nagsItems).rankedCandidates
+          .slice(0, 8)
+          .map(publicScoredMygrantCandidate),
+      };
+      vehicleNagsForReturn = {
+        prefix: nagsLookup.nags.prefix,
+        number: nagsLookup.nags.number,
+        amNumber: nagsLookup.amNumber,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown_error';
+      reasons.push('mygrant_nags_lookup_failed');
+      nagsMygrantSnapshot = { path: 'inquireByNags', error: message.slice(0, 300) };
+    }
+  }
+
+  // Fallback path: always try the legacy vehicle inquiry when the NAGS path
+  // produced no priceable candidates (empty, all accessory-only, all missing
+  // price, all unavailable, etc.). Use the AutoBolt-resolved Y/M/M when
+  // available so the fallback prices the same vehicle we'd label/store as
+  // priced. Currently inquireByVehicle returns e610 on Mygrant's side, but
+  // keeping the call preserves diagnostic telemetry and unblocks if Mygrant
+  // ever adds vehicle support.
+  let vehicleSnapshot: Record<string, unknown> | undefined;
+  let vehicleItems: MygrantResponseItem[] = [];
+  if (!hasPriceableCandidate(nagsItems)) {
+    if (nagsItems.length > 0) reasons.push('mygrant_nags_no_priceable_candidate');
+    const fallbackInput = applyResolvedVehicle(input, nagsLookup
+      ? {
+          vin: nagsLookup.vin || input.vehicle.vin || undefined,
+          year: nagsLookup.year ?? undefined,
+          make: nagsLookup.make ?? undefined,
+          model: nagsLookup.model ?? undefined,
+          bodyStyle: nagsLookup.bodyStyle ?? undefined,
+        }
+      : undefined);
+    const vehicleResult = await tryMygrantInquireByVehicle(fallbackInput, reasons);
+    vehicleItems = vehicleResult.items;
+    vehicleSnapshot = vehicleResult.snapshot;
+  }
+
+  // Item selection priority:
+  //   1. NAGS items with a priced candidate (any confidence) win.
+  //   2. Vehicle-fallback items when fallback returned anything.
+  //   3. Otherwise keep the NAGS items we did get so downstream ops views still
+  //      see vendor details (selectedPart, qtyAvailable, etc.) rather than an
+  //      empty bucket from a fallback that returned e610.
+  const items = hasPriceableCandidate(nagsItems)
+    ? nagsItems
+    : vehicleItems.length > 0
+      ? vehicleItems
+      : nagsItems;
+  return {
+    items,
+    reasons,
+    vehicleNags: vehicleNagsForReturn,
+    resolvedVehicle: nagsLookup
+      ? {
+          vin: nagsLookup.vin || input.vehicle.vin || undefined,
+          year: nagsLookup.year ?? undefined,
+          make: nagsLookup.make ?? undefined,
+          model: nagsLookup.model ?? undefined,
+          bodyStyle: nagsLookup.bodyStyle ?? undefined,
+        }
+      : undefined,
+    safeSnapshot: {
+      autobolt: autoboltSnapshot,
+      ...(nagsMygrantSnapshot ? { mygrantNags: nagsMygrantSnapshot } : {}),
+      ...(vehicleSnapshot ? { mygrantVehicle: vehicleSnapshot } : {}),
+    },
+  };
+}
+
+/**
+ * "Priceable" means at least one candidate has a customer-facing unit price.
+ * Medium-confidence parts (priced but with scoring warnings like "sensor pad")
+ * still count: we'd rather quote a real number than burn a fallback round-trip
+ * on inquireByVehicle, which currently returns e610 anyway.
+ */
+function hasPriceableCandidate(items: MygrantResponseItem[]): boolean {
+  if (items.length === 0) return false;
+  const evaluation = evaluateMygrantWindshieldCandidates(items);
+  return !!evaluation.selectedPart?.customerUnitPrice;
+}
+
+async function resolveVehicleNags(
+  input: QuotePriceInput,
+  cacheClient: SupabaseClient | undefined,
+  reasons: string[]
+): Promise<CachedNagsLookup | undefined> {
+  const vin = input.vehicle.vin || undefined;
+  const plate = input.plateLast4 || undefined;
+  const state = input.state || undefined;
+  // The form sends only the plate's last 4; full plate lookups via AutoBolt
+  // require the complete plate, so we can only use the plate path when the
+  // caller upgrades to providing the full plate. Today VIN is the deterministic
+  // route; plate decoding is reserved for a future iteration once we surface
+  // full plate capture upstream.
+
+  if (vin && cacheClient) {
+    const key = vinLookupKey(vin);
+    const cached = await readCachedNagsLookup(cacheClient, key);
+    if (cached) {
+      reasons.push('autobolt_cache_hit');
+      return cached;
+    }
+  }
+
+  if (!vin) {
+    reasons.push('autobolt_missing_vin');
+    return undefined;
+  }
+
+  const client = getAutoBoltClient();
+  try {
+    const summary = await client.lookup({ vin });
+    const nagsFromPart = summary.selectedPart ? extractCachedNags(summary.selectedPart.amNumber) : undefined;
+    const hasUsableNags = !!(nagsFromPart && (nagsFromPart.prefix || nagsFromPart.number));
+
+    // Only cache decisive results. An inconclusive ('multi' / 'none') or
+    // single-with-unparseable-NAGS response would otherwise pin the VIN to the
+    // fallback path for 180 days. We still emit the reason for telemetry.
+    if (cacheClient && summary.confidence === 'single' && hasUsableNags) {
+      await writeCachedNagsLookup(cacheClient, vinLookupKey(vin), summary, { vin: summary.vin || vin });
+    }
+    if (summary.confidence !== 'single') {
+      reasons.push(`autobolt_confidence_${summary.confidence}`);
+    } else if (!hasUsableNags) {
+      reasons.push('autobolt_nags_unparseable');
+    }
+    return {
+      resolvedFrom: summary.resolvedFrom,
+      vin: summary.vin || vin,
+      year: summary.year,
+      make: summary.make,
+      model: summary.model,
+      bodyStyle: summary.bodyStyle,
+      confidence: summary.confidence,
+      partCount: summary.partCount,
+      nags: hasUsableNags ? nagsFromPart : undefined,
+      amNumber: summary.selectedPart?.amNumber,
+      oemPartNumbers: summary.selectedPart?.oemPartNumbers ?? [],
+      interchangeables: summary.selectedPart?.interchangeables ?? [],
+    };
+  } catch (error) {
+    if (error instanceof AutoBoltError) {
+      reasons.push(`autobolt_error_${error.code.toLowerCase()}`);
+      if (error.code === 'NotFound') return undefined;
+      // Keep the surrounding catch in getMygrantQuoteCandidates handling auth/rate failures.
+    }
+    throw error;
+  }
+  // Plate-only fallback intentionally omitted — see comment above.
+  if (plate && state) reasons.push('autobolt_plate_only_unavailable');
+}
+
+async function tryMygrantInquireByVehicle(
+  input: QuotePriceInput,
+  reasons: string[]
+): Promise<{ items: MygrantResponseItem[]; snapshot: Record<string, unknown> }> {
   try {
     const response = await getMygrantClient().inquireByVehicle([
       {
@@ -174,14 +419,14 @@ async function getMygrantQuoteCandidates(input: QuotePriceInput): Promise<{
         vehicleModel: input.vehicle.model,
       },
     ]);
-
     const items = response.requestItems.flatMap(item => item.responses);
+    if (response.requestStatusCode && response.requestStatusCode !== '0') {
+      reasons.push(`mygrant_vehicle_status_${response.requestStatusCode}`);
+    }
     return {
       items,
-      reasons: response.requestStatusCode && response.requestStatusCode !== '0'
-        ? [`mygrant_status_${response.requestStatusCode}`]
-        : [],
-      safeSnapshot: {
+      snapshot: {
+        path: 'inquireByVehicle',
         requestStatusCode: response.requestStatusCode,
         requestStatusText: response.requestStatusText,
         responseCount: items.length,
@@ -192,12 +437,24 @@ async function getMygrantQuoteCandidates(input: QuotePriceInput): Promise<{
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
-    return {
-      items: [],
-      reasons: ['mygrant_lookup_failed'],
-      safeSnapshot: { error: message.slice(0, 300) },
-    };
+    reasons.push('mygrant_vehicle_lookup_failed');
+    return { items: [], snapshot: { path: 'inquireByVehicle', error: message.slice(0, 300) } };
   }
+}
+
+function buildCacheClient(): SupabaseClient | undefined {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return undefined;
+  return createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+function extractCachedNags(amNumber?: string) {
+  if (!amNumber) return undefined;
+  const cleaned = amNumber.trim().toUpperCase().replace(/[\s\-_]+/g, '');
+  const match = /^([A-Z]+)(.+)$/.exec(cleaned);
+  if (!match) return { prefix: '', number: cleaned, raw: amNumber };
+  return { prefix: match[1], number: match[2], raw: amNumber };
 }
 
 function shouldIncludeCalibration(input: QuotePriceInput): boolean {

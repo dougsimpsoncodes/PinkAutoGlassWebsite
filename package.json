@@ -15,7 +15,8 @@
     "verify:schema": "node scripts/validate-schema.js",
     "ci:guard:ad-platform": "node scripts/ci/guard-no-bing.js",
     "ci:guard:mygrant": "tsx scripts/verify-mygrant-client.ts",
-    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant",
+    "ci:guard:autobolt": "tsx scripts/verify-autobolt-client.ts",
+    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt",
     "env:pull": "vercel env pull .env.local && sed -i '' 's/\\\\n\"/\"/g' .env.local && echo '✓ .env.local pulled and sanitized (no \\n)'",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },

@@ -14,6 +14,9 @@ import { MYGRANT_USER_AGENT, MygrantClient, parseMygrantSoapResponse, type Mygra
 const EXPECTED_USER_AGENT = 'PinkAutoGlass-OMS/1.0 (+https://pinkautoglass.com; doug@pinkautoglass.com)';
 const ROOT = process.cwd();
 const CLIENT_PATH = path.join(ROOT, 'src/lib/mygrant/client.ts');
+const IDENTITY_PATH = path.join(ROOT, 'src/lib/integration-identity.ts');
+const AUTOBOLT_CLIENT_PATH = path.join(ROOT, 'src/lib/autobolt/client.ts');
+const AUTOBOLT_VERIFY_PATH = path.join(ROOT, 'scripts/verify-autobolt-client.ts');
 
 async function assertHeader() {
   let capturedUserAgent: string | null = null;
@@ -47,11 +50,21 @@ function assertSingleUserAgentDefinition() {
     throw new Error(`MYGRANT_USER_AGENT constant mismatch. Expected ${EXPECTED_USER_AGENT}`);
   }
 
+  // Allowlist: identity module owns the literal; vendor clients (Mygrant, AutoBolt)
+  // re-export aliases; verify scripts assert against the expected value.
+  const literalAllowlist = new Set([
+    CLIENT_PATH,
+    IDENTITY_PATH,
+    AUTOBOLT_CLIENT_PATH,
+    AUTOBOLT_VERIFY_PATH,
+  ]);
+  const constantAllowlist = new Set([CLIENT_PATH]);
+
   const matches = findTextMatches(ROOT, 'MYGRANT_USER_AGENT')
     .filter(file => isCodeFile(file))
     .filter(file => !file.endsWith('scripts/verify-mygrant-client.ts'));
 
-  const invalid = matches.filter(file => file !== CLIENT_PATH);
+  const invalid = matches.filter(file => !constantAllowlist.has(file));
   if (invalid.length > 0) {
     throw new Error(`MYGRANT_USER_AGENT may only be defined/referenced in src/lib/mygrant/client.ts. Offenders:\n${invalid.join('\n')}`);
   }
@@ -59,9 +72,9 @@ function assertSingleUserAgentDefinition() {
   const literalMatches = findTextMatches(ROOT, 'PinkAutoGlass-OMS/')
     .filter(file => isCodeFile(file))
     .filter(file => !file.endsWith('scripts/verify-mygrant-client.ts'));
-  const literalInvalid = literalMatches.filter(file => file !== CLIENT_PATH);
+  const literalInvalid = literalMatches.filter(file => !literalAllowlist.has(file));
   if (literalInvalid.length > 0) {
-    throw new Error(`Mygrant User-Agent literal may only be hardcoded in src/lib/mygrant/client.ts. Offenders:\n${literalInvalid.join('\n')}`);
+    throw new Error(`OMS User-Agent literal may only appear in the identity module + vendor clients + verify scripts. Offenders:\n${literalInvalid.join('\n')}`);
   }
 }
 
