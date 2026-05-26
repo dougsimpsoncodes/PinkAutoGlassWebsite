@@ -6,7 +6,7 @@ Pink Auto Glass runs Google Ads + Microsoft Ads search campaigns. Lead attributi
 
 ### Audit findings (verified 2026-04-14 via service-role SQL)
 
-- **896 calls in `ringcentral_calls` since 2026-03-01.** 887 (99%) have `attribution_method = NULL`. The Phase 2 resolver at `src/lib/callAttribution.ts` is feature-complete but never scheduled (`CRON_SETUP.md` references `/api/cron/run-attribution` — that endpoint does not exist in the codebase).
+- **896 calls in `ringcentral_calls` since 2026-03-01.** 887 (99%) have `attribution_method = NULL`. On 2026-05-02 this audit item was partially fixed: `/api/cron/run-attribution` now exists in `src/app/api/cron/run-attribution/route.ts`, and `vercel.json` now schedules it at `0 14 * * *`. The remaining issue is resolver quality / competing writers, not missing scheduling.
 - **27 calls have BOTH `google_ads_call_match = true` AND `microsoft_ads_uploaded_at IS NOT NULL`** — dual-platform conflicts caused by the offline upload job overwriting the Google call_view match.
 - **195 phone_click events in `conversion_events`** since 2026-03-01: 80% carry `gclid`/`msclkid`, 100% have `session_id` and `visitor_id`. The raw data for deterministic call attribution exists; nothing stitches it to calls.
 - **Form leads are fine.** 96.3% click-ID capture (105 of 109 paid form leads). The original spec's "67% of paid leads missing click IDs" framing was misleading — 192 of those 217 are call/SMS leads that structurally cannot carry a click ID on the lead record at all.
@@ -16,7 +16,7 @@ Pink Auto Glass runs Google Ads + Microsoft Ads search campaigns. Lead attributi
 
 | File | Line | Writes | Status |
 |---|---|---|---|
-| `src/lib/callAttributionSync.ts` | 145 | `ad_platform: 'google'` + `google_ads_call_match: true` when Google call_view match lands | Alive (cron `/api/cron/sync-search-data` daily 06:00 + 13:00 UTC) — strongest evidence source, kept as the only `ad_platform` writer for now |
+| `src/lib/callAttributionSync.ts` | 145 | `ad_platform: 'google'` + `google_ads_call_match: true` when Google call_view match lands | Alive (cron `/api/cron/sync-search-data` at 06:00 + 13:00 UTC). Still a competing writer as of 2026-05-02; resolver cron now runs separately at 14:00 UTC. |
 | `src/lib/offlineConversionSync.ts` | 301 (was) | `ad_platform: 'google'` after upload bookkeeping | **Removed in PR1** |
 | `src/lib/offlineConversionSync.ts` | 722 (was) | `ad_platform: 'microsoft'` after upload bookkeeping | **Removed in PR1** |
 
@@ -73,11 +73,12 @@ The existing resolver maps to those rules:
    - Replaces a single confidence threshold; cleaner, platform-specific.
 
 ### PR3 — Schedule + backfill + cleanup
-1. Create `src/app/api/cron/run-attribution/route.ts` that calls `attributeAllCalls(last 7 days)`.
-2. Add `vercel.json` cron entry at `"0 14 * * *"` (14:00 UTC — 1 hour after `sync-search-data` at 13:00 UTC so deterministic data has landed).
-3. Backfill via existing admin endpoint `POST /api/admin/attribution/match-calls?startDate=2026-03-01&endDate=…&saveToDatabase=false` for dry run, eyeball the diff, then re-run with writes.
-4. Drop `leads.website_session_id` zombie column. Keep `ringcentral_calls.website_session_id` (resolver writes it).
-5. Update stale `CRON_SETUP.md` to reflect reality.
+1. ✅ Created `src/app/api/cron/run-attribution/route.ts` on 2026-05-02. It calls `attributeAllCalls()` + `saveAttributionResults()` over a default 7-day window and supports `saveToDatabase=false` for dry runs.
+2. ✅ Added `vercel.json` cron entry at `"0 14 * * *"` on 2026-05-02 (14:00 UTC — 1 hour after `sync-search-data` at 13:00 UTC so deterministic data has landed).
+3. ✅ Ran the backfill path on 2026-05-02 via `POST /api/admin/attribution/match-calls?startDate=2026-03-01&endDate=2026-05-02`. Dry run summary: `687` qualifying calls → `202` `google_call_view`, `92` `microsoft_uploaded_call`, `125` `direct_match`, `42` `direct_match_conflict`, `226` `unknown`, `0` `time_correlation`. First write pass failed on all `92` Microsoft rows because the live `ringcentral_calls.check_attribution_method` constraint still did not allow `microsoft_uploaded_call`.
+4. ✅ Added and applied `supabase/migrations/20260502_allow_microsoft_uploaded_call_attribution.sql` via `scripts/run-migration-via-api.js`, then reran the write pass successfully (`saved: { success: 687, failed: 0 }`).
+5. Retire `leads.website_session_id` via expand/contract. Local steps completed on 2026-05-02: booking submit now writes `sessionId` instead of `website_session_id`; migration `20260502204500_backfill_leads_session_id_from_website_session_id.sql` was added to copy legacy lead linkage into `leads.session_id` where missing; and `src/lib/callLeadSync.ts` now reads only `leads.session_id` for existing lead linkage while writing `session_id` on new call-created leads. Keep `ringcentral_calls.website_session_id` (resolver writes it). Live rollout also completed on 2026-05-02: production backfill query returned `0` remaining rows, and the narrowed booking/callLeadSync path was deployed successfully to `pinkautoglass.com`. Remaining validation is behavioral: confirm the next real booking and/or call-created lead populates `session_id` correctly under live traffic, then continue dependency audit toward dropping `leads.website_session_id`.
+6. ✅ Updated stale `CRON_SETUP.md` on 2026-05-02 to reflect the live cron inventory.
 
 ## Decisions made (with reviewers)
 
@@ -148,8 +149,8 @@ PR1 is merged to main (commit `3e9ac57`) and the migration is live in the DB. Se
 | Dashboard reads | Already prefer canonical attribution when present (no-op until PR2 starts writing) |
 | `ad_platform` writers remaining | 1 (`callAttributionSync.ts:145` — Google call_view, kept until PR2 folds it into the resolver) |
 | PR2 | NOT STARTED |
-| PR3 | NOT STARTED |
-| Known followup | Stale `POSTGRES_URL` credential (Codex flagged) |
+| PR3 | PARTIALLY SHIPPED + backfill executed |
+| Known followup | Stale `POSTGRES_URL` credential (Codex flagged); conflict policy / live monitoring rollout / `leads.website_session_id` retirement still remain |
 
 ### When you resume — start here
 
@@ -164,7 +165,7 @@ PR1 is merged to main (commit `3e9ac57`) and the migration is live in the DB. Se
 1. **Branch:** `git checkout -b fix/attribution-resolver-integration`
 2. **Add `src/lib/callQualifying.ts`** — new shared helper exporting `isQualifyingCall(call)` and `applyQualifyingFilter(calls)`. Move the duplicated filter logic from `metricsBuilder.ts:343–351`, `unifiedLeadsBuilder.ts:293–300`, and `offlineConversionSync.ts:602–605` into this single module. Make `metricsBuilder` and `unifiedLeadsBuilder` import the helper. Verify behavior is unchanged on a sample.
 3. **Extract Google call_view matching** from `callAttributionSync.ts:30–170` into a new `matchGoogleCallView()` function in `callAttribution.ts`. Output: `attribution_method='google_call_view'`, `attribution_confidence=100`, `ad_platform='google'`. Make it Rule 1 in `attributeAllCalls()` (run before `matchDirectConversions`). Deprecate the standalone write at `callAttributionSync.ts:145` so the resolver becomes the single canonical writer.
-4. **Apply `isQualifyingCall()` filter** to `attributeAllCalls()`'s call query at `callAttribution.ts:355`. Currently pulls every inbound call; needs to filter business number, toll-free, sub-30-second, null caller.
+4. ✅ `attributeAllCalls()` now applies the shared `isQualifyingCall()` helper before matching; resolver/dashboard scope drift on qualifying calls was closed on 2026-05-02.
 5. **Tighten `matchDirectConversions()`:**
    - Add density check: if 5-min window contains BOTH gclid AND msclkid phone_clicks, set `attribution_method='direct_match_conflict'`, confidence 50
    - Batch-fetch phone_click events for the date range once (fix N+1)
@@ -181,12 +182,14 @@ PR1 is merged to main (commit `3e9ac57`) and the migration is live in the DB. Se
 
 ### PR3 implementation order (after PR2 merges)
 
-1. Create `src/app/api/cron/run-attribution/route.ts` calling `attributeAllCalls(last 7 days)` from `callAttribution.ts`
-2. Add `vercel.json` cron entry at `"0 14 * * *"` (14:00 UTC, 1 hour after `sync-search-data` at 13:00 UTC)
-3. Run admin endpoint backfill in dry-run mode: `POST /api/admin/attribution/match-calls?startDate=2026-03-01&endDate=...&saveToDatabase=false`
-4. Eyeball the diff report (counts by method, deltas vs current `ad_platform` reads). If it looks right, run with `saveToDatabase=true`
-5. Drop `leads.website_session_id` zombie column via a small migration
-6. Update `CRON_SETUP.md` to match reality (the endpoint at `0 3 * * *` referenced there does not exist)
+1. ✅ `src/app/api/cron/run-attribution/route.ts` created 2026-05-02 calling `attributeAllCalls()` + `saveAttributionResults()` over a default 7-day window.
+2. ✅ `vercel.json` cron entry added at `"0 14 * * *"` (14:00 UTC, 1 hour after `sync-search-data` at 13:00 UTC).
+3. ✅ Admin endpoint backfill dry run + write run completed on 2026-05-02.
+4. ✅ `/api/admin/attribution/match-calls` GET status route now uses qualifying-call scope/date bounds and reports `conflictedMatches` consistently with the resolver.
+5. Drop `leads.website_session_id` zombie column via a small migration once compatibility confidence is high enough.
+6. ✅ Added the first monitoring path on 2026-05-02 (`check-attribution-health` route + snapshot table + alert email flow), and removed the remaining `ad_platform` write from `callAttributionSync.ts` so it now records Google evidence only. Remaining follow-through is to make monitoring live and then handle `leads.website_session_id` retirement.
+7. ✅ Local conflict-policy refinement landed on 2026-05-02 after a production-evidence review plus Gemini pre/post checks: deterministic Google call_view evidence now beats unsupported `microsoft_ads_uploaded_at` bookkeeping in `src/lib/callAttribution.ts`; mixed Google/Microsoft click windows now resolve by `ringcentral_calls.website_session_id` when present and otherwise stay conservative; and `src/lib/offlineConversionSync.ts` now skips Microsoft upload attribution for calls already carrying deterministic Google call_view evidence. Expected outcome on the audited 42-call set: the 39 fake dual-marker conflicts collapse to `google_call_view`, and the 3 real mixed-window cases resolve to the platform on the call-linked session. Local `npm run build` passed.
+8. ✅ Deployed the refinement live on 2026-05-02 from a clean isolated temp checkout linked to the production Vercel project, specifically to avoid shipping unrelated local changes from the dirty working tree. Post-deploy smoke checks passed (`/book` → `HTTP/2 200`, `/admin` → `HTTP/2 401`). Then reran the live historical attribution write for `2026-03-01` → `2026-05-02` via `POST /api/admin/attribution/match-calls` with `saveToDatabase=true`; result was `saved: { success: 687, failed: 0 }`. Verified outcome against the previous audited baseline: `googleCallViewMatches` `202 → 241` (+39), `directMatches` `125 → 128` (+3), and `conflictedMatches` `42 → 0`. This closes the previously unresolved Google/Microsoft conflict bucket for the audited window.
 
 ### Quick context-restore commands
 

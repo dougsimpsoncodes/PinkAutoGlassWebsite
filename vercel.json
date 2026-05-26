@@ -13,6 +13,14 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/run-attribution",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/check-attribution-health",
+      "schedule": "15 14 * * *"
+    },
+    {
       "path": "/api/cron/process-drip",
       "schedule": "*/5 * * * *"
     },

@@ -289,7 +289,7 @@ export async function POST(req: NextRequest) {
       ...restValidatedData,
       phoneE164: phone, // Map phone -> phoneE164
       zip: zipCode, // Map zipCode -> zip
-      website_session_id: sessionId,
+      sessionId,
       first_contact_method: 'form', // This is a form submission
       ...finalAttribution, // Immutable attribution: gclid, msclkid, ad_platform, utm_*
     };

@@ -568,7 +568,7 @@ async function findMicrosoftAttributableCalls(
   try {
     const result = await supabase
       .from('ringcentral_calls')
-      .select('call_id, start_time, from_number, duration, direction, result, microsoft_ads_uploaded_at')
+      .select('call_id, start_time, from_number, duration, direction, result, microsoft_ads_uploaded_at, google_ads_call_match, google_ads_call_resource_name')
       .eq('direction', 'Inbound')
       .gte('start_time', lookbackDate.toISOString())
       .is('microsoft_ads_uploaded_at', null)
@@ -581,7 +581,7 @@ async function findMicrosoftAttributableCalls(
       console.warn('⚠️ microsoft_ads_uploaded_at column not found - fetching all calls');
       const fallbackResult = await supabase
         .from('ringcentral_calls')
-        .select('call_id, start_time, from_number, duration, direction, result')
+        .select('call_id, start_time, from_number, duration, direction, result, google_ads_call_match, google_ads_call_resource_name')
         .eq('direction', 'Inbound')
         .gte('start_time', lookbackDate.toISOString())
         .gte('duration', MIN_CALL_DURATION_SECONDS);
@@ -618,6 +618,11 @@ async function findMicrosoftAttributableCalls(
   const attributionWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
 
   for (const call of realCallsMs) {
+    if (call.google_ads_call_match || call.google_ads_call_resource_name) {
+      console.log(`⏭️ Policy Guard: skipping call ${call.call_id} — already claimed by deterministic Google call_view`);
+      continue;
+    }
+
     const callTime = new Date(call.start_time);
 
     // Strategy 1: Dedup check — phone_click within tight window already fired real-time conversion

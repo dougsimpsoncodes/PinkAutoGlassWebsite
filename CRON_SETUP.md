@@ -2,22 +2,27 @@
 
 ## Overview
 
-This application uses Vercel Cron Jobs to automatically sync data from:
-- **Google Ads** (every 6 hours)
-- **Bing Ads** (every 6 hours)
-- **Google Search Console** (daily at 2am UTC)
-- **RingCentral** (every hour)
-- **Attribution Matching** (daily at 3am UTC)
+This file was stale. Current cron behavior is consolidated into the live endpoints below.
+
+This application currently uses Vercel Cron Jobs to run:
+- **Daily report** (`/api/cron/daily-report`)
+- **Search + call sync** (`/api/cron/sync-search-data`) twice daily
+- **Canonical attribution resolver** (`/api/cron/run-attribution`) daily after the 13:00 UTC search sync
+- **Attribution health monitor** (`/api/cron/check-attribution-health`) daily after attribution runs
+- **Drip processing** (`/api/cron/process-drip`) every 5 minutes
+- **Omega sync** (`/api/cron/sync-omega`) nightly
 
 ## Cron Job Schedule
 
 | Job | Endpoint | Schedule | Description |
 |-----|----------|----------|-------------|
-| Google Ads Sync | `/api/cron/sync-google-ads` | `0 */6 * * *` | Syncs last 7 days of Google Ads performance data |
-| Bing Ads Sync | `/api/cron/sync-bing-ads` | `0 */6 * * *` | Syncs last 7 days of Microsoft Advertising data |
-| Search Console Sync | `/api/cron/sync-search-console` | `0 2 * * *` | Syncs organic search data (accounts for 3-day delay) |
-| RingCentral Sync | `/api/cron/sync-ringcentral` | `0 * * * *` | Syncs recent call records hourly |
-| Attribution Matching | `/api/cron/run-attribution` | `0 3 * * *` | Runs attribution algorithm for last 30 days |
+| Daily Report | `/api/cron/daily-report` | `0 16 * * *` | Sends the prior day's business summary |
+| Search + Call Sync | `/api/cron/sync-search-data` | `0 13 * * *` | Main daytime sync for ads, GSC, RingCentral, call-view cross-reference, and call-lead sync |
+| Search + Call Sync | `/api/cron/sync-search-data` | `0 6 * * *` | Overnight sync / backstop pass |
+| Attribution Matching | `/api/cron/run-attribution` | `0 14 * * *` | Runs canonical call attribution after the 13:00 UTC sync has landed |
+| Attribution Health | `/api/cron/check-attribution-health` | `15 14 * * *` | Snapshots attribution quality metrics and emails alerts on unknown/conflict/freshness anomalies |
+| Drip Processing | `/api/cron/process-drip` | `*/5 * * * *` | Processes queued drip/review sends |
+| Omega Sync | `/api/cron/sync-omega` | `0 5 * * *` | Syncs Omega quotes/invoices and review scheduling |
 
 ## Setup Instructions
 
@@ -55,6 +60,8 @@ Cron jobs need to know your site URL to call the sync endpoints.
 
 The cron jobs are configured in `vercel.json` and will be automatically registered when you deploy.
 
+> Important: `run-attribution` was missing in code for a while even though this doc claimed it existed. That endpoint now exists again at `src/app/api/cron/run-attribution/route.ts`.
+
 ```bash
 # Deploy to Vercel
 vercel --prod
@@ -65,12 +72,13 @@ vercel --prod
 After deployment:
 
 1. Go to Vercel Dashboard → Your Project → Cron
-2. You should see all 5 cron jobs listed:
-   - sync-google-ads
-   - sync-bing-ads
-   - sync-search-console
-   - sync-ringcentral
+2. You should see the live cron jobs listed:
+   - daily-report
+   - sync-search-data (two schedules)
    - run-attribution
+   - check-attribution-health
+   - process-drip
+   - sync-omega
 
 ### 5. Monitor Cron Execution
 
