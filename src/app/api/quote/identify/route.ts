@@ -28,7 +28,7 @@ const identifySchema = z.object({
       return z.NEVER;
     }
   }),
-  zip: z.string().regex(/^\d{5}(-\d{4})?$/).optional(),
+  zip: z.string().regex(/^\d{5}(-\d{4})?$/).optional().or(z.literal('')),
 });
 
 export async function POST(request: NextRequest) {

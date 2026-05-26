@@ -32,7 +32,7 @@ const quoteContactSchema = z.object({
   msclkid: z.string().trim().max(200).optional().or(z.literal('')),
   state: z.string().trim().max(2).optional().or(z.literal('')),
   zip: z.string().trim().max(10).optional().or(z.literal('')),
-  website: z.string().max(0).optional().default(''),
+  website: z.string().max(255).optional().default(''),
 });
 
 type QuoteContactInput = z.infer<typeof quoteContactSchema>;
@@ -248,13 +248,26 @@ async function updateLead(
   firstName: string,
   lastName: string
 ) {
-  const notes = [
-    `Automated quote ${shortQuoteToken(quote.quote_token)}`,
+  const quoteRef = shortQuoteToken(quote.quote_token);
+  const newNote = [
+    `Automated quote ${quoteRef}`,
     quote.status ? `status: ${quote.status}` : null,
     quote.vehicle_year || quote.vehicle_make || quote.vehicle_model
       ? `vehicle: ${[quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ')}`
       : null,
   ].filter(Boolean).join(' | ');
+
+  const { data: existing } = await admin
+    .from('leads')
+    .select('notes')
+    .eq('id', leadId)
+    .single<{ notes: string | null }>();
+  const existingNotes = existing?.notes?.trim() || '';
+  const notes = !existingNotes
+    ? newNote
+    : existingNotes.includes(`Automated quote ${quoteRef}`)
+      ? existingNotes
+      : `${existingNotes}\n${newNote}`;
 
   const { error } = await admin
     .from('leads')
@@ -281,7 +294,7 @@ async function updateLead(
 }
 
 async function notifyAdmins(input: QuoteContactInput, quote: AutomatedQuoteRow, name: { firstName: string; lastName: string }, leadId: string) {
-  if (isExcludedPhone(input.phone)) return;
+  if (isExcludedPhone(input.phone) || isTestPhone(input.phone)) return;
 
   const ref = shortQuoteToken(quote.quote_token);
   const vehicle = [quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ') || 'Vehicle not captured';
