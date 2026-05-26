@@ -1,37 +1,34 @@
 /**
  * Call Attribution Matching Algorithm
  *
- * Solves the critical problem: "We can't directly attribute what drives phone calls"
- *
- * Two attribution approaches:
- * 1. DIRECT MATCH: Link phone_click conversion events → actual RingCentral calls
- *    - Customer visited website, clicked phone number, then called
- *    - Match by phone number + timestamp (within attribution window)
- *    - Confidence: 95-100%
- *
- * 2. TIME-BASED CORRELATION: Match calls to campaign impression spikes
- *    - Customer saw ad, got phone number, called directly (no website visit)
- *    - Correlate new caller phone numbers with campaign activity within 30-min window
- *    - Confidence: 60-80%
- *
- * Example:
- * - Google Ads campaign runs 9:00-9:30am with 500 impressions
- * - New caller (720-555-1234) calls at 9:15am
- * - No website visit found
- * - Attribution: Google Ads campaign (70% confidence)
+ * Canonical attribution must be based on direct evidence only.
+ * Heuristic time-correlation is intentionally excluded from canonical writes.
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { normalizePhoneNumber } from './customerDeduplication';
 import { ATTRIBUTION_WINDOW_MINUTES } from './constants';
+import { applyQualifyingFilter } from './callQualifying';
 
-interface AttributionResult {
+const METHOD_PRIORITY: Record<string, number> = {
+  google_call_view: 100,
+  microsoft_uploaded_call: 95,
+  direct_match: 80,
+  direct_match_conflict: 50,
+  unknown: 0,
+};
+
+export interface AttributionResult {
   callId: string;
   fromNumber: string;
   callTimestamp: string;
-  attributionMethod: 'direct_match' | 'time_correlation' | 'unknown';
-  attributionConfidence: number; // 0-100
-  adPlatform: string | null; // google, bing, organic, direct
+  attributionMethod:
+    | 'google_call_view'
+    | 'microsoft_uploaded_call'
+    | 'direct_match'
+    | 'direct_match_conflict'
+    | 'unknown';
+  attributionConfidence: number;
+  adPlatform: string | null;
   campaignId: string | null;
   campaignName: string | null;
   utmSource: string | null;
@@ -39,32 +36,18 @@ interface AttributionResult {
   utmCampaign: string | null;
   gclid?: string | null;
   msclkid?: string | null;
-  sessionId?: string | null; // The website session_id from the matched conversion event
-  matchDetails: string; // Explanation of how attribution was determined
+  sessionId?: string | null;
+  matchDetails: string;
 }
 
 interface ConversionEvent {
-  id: string;
   created_at: string;
   session_id: string;
-  visitor_id?: string;
-  event_type: string;
-  event_category?: string;
-  event_label?: string;
-  event_value?: number;
-  page_path: string;
-  button_text?: string;
-  button_location?: string;
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
-  utm_term?: string | null;
-  utm_content?: string | null;
-  device_type?: string;
-  metadata?: any;
-  phone_number?: string; // Not in schema yet, but algorithm needs it
-  gclid?: string; // Not in schema yet
-  msclkid?: string; // Not in schema yet
+  gclid?: string | null;
+  msclkid?: string | null;
 }
 
 interface RingCentralCall {
@@ -72,23 +55,18 @@ interface RingCentralCall {
   from_number: string;
   start_time: string;
   direction: 'Inbound' | 'Outbound';
-  result?: string;
   duration?: number;
+  google_ads_call_match?: boolean | null;
+  google_ads_call_resource_name?: string | null;
+  google_ads_uploaded_at?: string | null;
+  microsoft_ads_uploaded_at?: string | null;
+  ad_platform?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  website_session_id?: string | null;
 }
 
-interface CampaignActivity {
-  date: string;
-  hour: number;
-  platform: 'google' | 'microsoft';  // Database stores 'microsoft', not 'bing'
-  campaign_id: string;
-  campaign_name: string;
-  impressions: number;
-  clicks: number;
-}
-
-/**
- * Get Supabase client
- */
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -100,242 +78,166 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-/**
- * APPROACH 1: Direct Match
- * Match phone_click conversion events to actual calls
- */
-export async function matchDirectConversions(
-  calls: RingCentralCall[]
-): Promise<AttributionResult[]> {
-  const client = getSupabaseClient();
-  const results: AttributionResult[] = [];
+function matchCanonicalPlatformEvidence(calls: RingCentralCall[]): AttributionResult[] {
+  return calls.flatMap((call) => {
+    const hasGoogleCallView = Boolean(call.google_ads_call_match || call.google_ads_call_resource_name);
+    const hasMicrosoftUpload = Boolean(call.microsoft_ads_uploaded_at);
 
-  for (const call of calls) {
-    // Only process inbound calls
-    if (call.direction !== 'Inbound') continue;
-
-    const callTime = new Date(call.start_time);
-
-    // Look for phone_click events within attribution window before the call
-    const windowBefore = new Date(callTime.getTime() - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000);
-    const oneMinAfter = new Date(callTime.getTime() + 1 * 60 * 1000);
-
-    const { data: events, error } = await client
-      .from('conversion_events')
-      .select('*')
-      .eq('event_type', 'phone_click')
-      .gte('created_at', windowBefore.toISOString())
-      .lte('created_at', oneMinAfter.toISOString());
-
-    if (error) {
-      console.error('Error fetching conversion events:', error);
-      continue;
-    }
-
-    // Match by timestamp proximity — phone_click fires right before the actual call.
-    // NOTE: phone_click events store the business number (the number displayed on the
-    // website), not the caller's number, so phone-based matching doesn't work here.
-    // Instead, find the closest phone_click event by time (must have gclid or msclkid).
-    const attributedEvents = (events || []).filter(
-      (e: ConversionEvent) => e.gclid || e.msclkid
-    );
-
-    let matchingEvent: ConversionEvent | null = null;
-    let bestTimeDiff = Infinity;
-    for (const event of attributedEvents) {
-      const diff = Math.abs(callTime.getTime() - new Date(event.created_at).getTime());
-      if (diff < bestTimeDiff) {
-        bestTimeDiff = diff;
-        matchingEvent = event;
-      }
-    }
-
-    // Accept matches within 5 minutes (phone_click → dial → wait → connect)
-    // Previously 90s which was too tight — users often take 2-3 min to dial
-    if (matchingEvent && bestTimeDiff <= 300_000) {
-      const timeDiffSec = Math.round(bestTimeDiff / 1000);
-
-      // Calculate confidence based on time proximity
-      let confidence = 100;
-      if (timeDiffSec > 30) confidence = 95;
-      if (timeDiffSec > 60) confidence = 90;
-      if (timeDiffSec > 120) confidence = 85;
-      if (timeDiffSec > 180) confidence = 80;
-
-      // Determine platform from click IDs
-      // NOTE: Database stores 'microsoft' (not 'bing') per src/lib/attribution.ts
-      let platform = 'direct';
-      if (matchingEvent.gclid) platform = 'google';
-      else if (matchingEvent.msclkid) platform = 'microsoft';
-      else if (matchingEvent.utm_source === 'google' && matchingEvent.utm_medium === 'organic') platform = 'organic';
-      else if (matchingEvent.utm_source) platform = matchingEvent.utm_source;
-
-      results.push({
+    if (hasGoogleCallView) {
+      return [{
         callId: call.call_id,
         fromNumber: call.from_number,
         callTimestamp: call.start_time,
-        attributionMethod: 'direct_match',
-        attributionConfidence: confidence,
-        adPlatform: platform,
-        campaignId: null, // Could look up campaign from session if needed
-        campaignName: matchingEvent.utm_campaign || null,
-        utmSource: matchingEvent.utm_source || null,
-        utmMedium: matchingEvent.utm_medium || null,
-        utmCampaign: matchingEvent.utm_campaign || null,
-        gclid: matchingEvent.gclid || null,
-        msclkid: matchingEvent.msclkid || null,
-        sessionId: matchingEvent.session_id || null,
-        matchDetails: `Matched phone_click event ${timeDiffSec}s from call (session: ${matchingEvent.session_id})`
-      });
+        attributionMethod: 'google_call_view',
+        attributionConfidence: 100,
+        adPlatform: 'google',
+        campaignId: null,
+        campaignName: call.utm_campaign || null,
+        utmSource: call.utm_source || 'google',
+        utmMedium: call.utm_medium || 'cpc',
+        utmCampaign: call.utm_campaign || null,
+        sessionId: call.website_session_id || null,
+        matchDetails: hasMicrosoftUpload
+          ? `Matched deterministic Google call_view record ${call.google_ads_call_resource_name || 'marker'}; ignored weaker Microsoft offline-upload bookkeeping marker`
+          : call.google_ads_call_resource_name
+            ? `Matched deterministic Google call_view record ${call.google_ads_call_resource_name}`
+            : 'Matched deterministic Google call_view marker on RingCentral call',
+      }];
     }
-  }
 
-  return results;
+    if (hasMicrosoftUpload) {
+      return [{
+        callId: call.call_id,
+        fromNumber: call.from_number,
+        callTimestamp: call.start_time,
+        attributionMethod: 'microsoft_uploaded_call',
+        attributionConfidence: 95,
+        adPlatform: 'microsoft',
+        campaignId: null,
+        campaignName: call.utm_campaign || null,
+        utmSource: call.utm_source || 'microsoft',
+        utmMedium: call.utm_medium || 'cpc',
+        utmCampaign: call.utm_campaign || null,
+        sessionId: call.website_session_id || null,
+        matchDetails: `Matched deterministic Microsoft uploaded-call marker from ${call.microsoft_ads_uploaded_at}`,
+      }];
+    }
+
+    return [];
+  });
 }
 
-/**
- * APPROACH 2: Time-Based Correlation
- * Match unattributed calls to campaign impression spikes
- */
-export async function matchTimeCorrelation(
-  unmatchedCalls: RingCentralCall[],
-  startDate: string,
-  endDate: string
-): Promise<AttributionResult[]> {
+export async function matchDirectConversions(calls: RingCentralCall[]): Promise<AttributionResult[]> {
+  if (calls.length === 0) return [];
+
   const client = getSupabaseClient();
   const results: AttributionResult[] = [];
 
-  // Get hourly campaign activity from both platforms
-  const campaignActivity = await getHourlyCampaignActivity(startDate, endDate);
+  const callTimes = calls.map(call => new Date(call.start_time).getTime());
+  const windowStart = new Date(Math.min(...callTimes) - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000);
+  const windowEnd = new Date(Math.max(...callTimes) + 60 * 1000);
 
-  for (const call of unmatchedCalls) {
+  const { data: events, error } = await client
+    .from('conversion_events')
+    .select('created_at, session_id, utm_source, utm_medium, utm_campaign, gclid, msclkid')
+    .eq('event_type', 'phone_click')
+    .gte('created_at', windowStart.toISOString())
+    .lte('created_at', windowEnd.toISOString())
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching conversion events:', error);
+    return results;
+  }
+
+  const attributedEvents = (events || []).filter((event: ConversionEvent) => event.gclid || event.msclkid);
+
+  for (const call of calls) {
     if (call.direction !== 'Inbound') continue;
 
-    const callTime = new Date(call.start_time);
-    const callHour = callTime.getHours();
-    const callDate = callTime.toISOString().split('T')[0];
+    const callTime = new Date(call.start_time).getTime();
+    const matchWindowStart = callTime - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+    const matchWindowEnd = callTime + 60 * 1000;
 
-    // Find campaigns active within 30 min of call
-    const relevantCampaigns = campaignActivity.filter(activity => {
-      if (activity.date !== callDate) return false;
-
-      // Check if campaign was active within 30 min window
-      const hourDiff = Math.abs(activity.hour - callHour);
-      return hourDiff <= 0; // Same hour (could expand to +/- 1 hour)
+    const windowEvents = attributedEvents.filter((event: ConversionEvent) => {
+      const eventTime = new Date(event.created_at).getTime();
+      return eventTime >= matchWindowStart && eventTime <= matchWindowEnd;
     });
 
-    if (relevantCampaigns.length === 0) {
-      // No campaigns active - likely organic or direct
-      results.push({
-        callId: call.call_id,
-        fromNumber: call.from_number,
-        callTimestamp: call.start_time,
-        attributionMethod: 'unknown',
-        attributionConfidence: 0,
-        adPlatform: 'direct',
-        campaignId: null,
-        campaignName: null,
-        utmSource: null,
-        utmMedium: null,
-        utmCampaign: null,
-        matchDetails: 'No active campaigns found near call time'
-      });
-      continue;
+    if (windowEvents.length === 0) continue;
+
+    const hasGoogle = windowEvents.some((event: ConversionEvent) => Boolean(event.gclid));
+    const hasMicrosoft = windowEvents.some((event: ConversionEvent) => Boolean(event.msclkid));
+
+    const nearestEvent = windowEvents.reduce<{ event: ConversionEvent | null; diff: number }>((best, event) => {
+      const diff = Math.abs(callTime - new Date(event.created_at).getTime());
+      return diff < best.diff ? { event, diff } : best;
+    }, { event: null, diff: Infinity });
+
+    const sessionMatchedEvents = call.website_session_id
+      ? windowEvents.filter((event: ConversionEvent) => event.session_id === call.website_session_id)
+      : [];
+    const sessionMatchedNearest = sessionMatchedEvents.reduce<{ event: ConversionEvent | null; diff: number }>((best, event) => {
+      const diff = Math.abs(callTime - new Date(event.created_at).getTime());
+      return diff < best.diff ? { event, diff } : best;
+    }, { event: null, diff: Infinity });
+
+    const matchingEvent = sessionMatchedNearest.event || nearestEvent.event;
+    const bestTimeDiff = sessionMatchedNearest.event ? sessionMatchedNearest.diff : nearestEvent.diff;
+
+    if (!matchingEvent || bestTimeDiff > 300_000) continue;
+
+    const timeDiffSec = Math.round(bestTimeDiff / 1000);
+    let confidence = 100;
+    if (timeDiffSec > 30) confidence = 95;
+    if (timeDiffSec > 60) confidence = 90;
+    if (timeDiffSec > 120) confidence = 85;
+    if (timeDiffSec > 180) confidence = 80;
+
+    let platform: string | null = null;
+    if (matchingEvent.gclid) {
+      platform = 'google';
+    } else if (matchingEvent.msclkid) {
+      platform = 'microsoft';
+    } else if (matchingEvent.utm_source === 'google' && matchingEvent.utm_medium === 'organic') {
+      platform = 'google_organic';
     }
 
-    // Find campaign with highest impression volume (most likely source)
-    const topCampaign = relevantCampaigns.reduce((max, campaign) =>
-      campaign.impressions > max.impressions ? campaign : max
-    );
+    const resolvedBySessionLink = Boolean(sessionMatchedNearest.event && hasGoogle && hasMicrosoft && platform);
+    const remainsConflict = Boolean(hasGoogle && hasMicrosoft && !resolvedBySessionLink);
 
-    // Calculate confidence based on:
-    // 1. Impression volume (higher = more confident)
-    // 2. Number of competing campaigns (fewer = more confident)
-    // 3. Click-through activity (clicks = higher confidence)
-    let confidence = 50; // Base confidence
-
-    if (topCampaign.impressions > 100) confidence += 10;
-    if (topCampaign.impressions > 500) confidence += 10;
-    if (topCampaign.clicks > 10) confidence += 10;
-    if (relevantCampaigns.length === 1) confidence += 10; // Only one campaign active
-    if (relevantCampaigns.length === 2) confidence += 5;
+    if (remainsConflict) {
+      confidence = 50;
+    } else if (resolvedBySessionLink) {
+      confidence = Math.max(confidence, 95);
+    }
 
     results.push({
       callId: call.call_id,
       fromNumber: call.from_number,
       callTimestamp: call.start_time,
-      attributionMethod: 'time_correlation',
-      attributionConfidence: Math.min(confidence, 80), // Cap at 80%
-      adPlatform: topCampaign.platform,
-      campaignId: topCampaign.campaign_id,
-      campaignName: topCampaign.campaign_name,
-      utmSource: topCampaign.platform,
-      utmMedium: 'cpc',
-      utmCampaign: topCampaign.campaign_name,
-      matchDetails: `Correlated with ${topCampaign.platform} campaign "${topCampaign.campaign_name}" (${topCampaign.impressions} impressions, ${topCampaign.clicks} clicks in same hour)`
+      attributionMethod: remainsConflict ? 'direct_match_conflict' : 'direct_match',
+      attributionConfidence: confidence,
+      adPlatform: remainsConflict ? null : platform,
+      campaignId: null,
+      campaignName: matchingEvent.utm_campaign || null,
+      utmSource: matchingEvent.utm_source || null,
+      utmMedium: matchingEvent.utm_medium || null,
+      utmCampaign: matchingEvent.utm_campaign || null,
+      gclid: matchingEvent.gclid || null,
+      msclkid: matchingEvent.msclkid || null,
+      sessionId: matchingEvent.session_id || null,
+      matchDetails: remainsConflict
+        ? `Conflicting phone_click evidence within ${timeDiffSec}s of call`
+        : resolvedBySessionLink
+          ? `Resolved mixed-platform phone_click evidence via call-linked session ${matchingEvent.session_id} (${timeDiffSec}s from call)`
+          : `Matched phone_click event ${timeDiffSec}s from call (session: ${matchingEvent.session_id})`,
     });
   }
 
   return results;
 }
 
-/**
- * Get hourly campaign activity across all platforms
- */
-async function getHourlyCampaignActivity(
-  startDate: string,
-  endDate: string
-): Promise<CampaignActivity[]> {
-  const client = getSupabaseClient();
-  const activities: CampaignActivity[] = [];
-
-  // Get Google Ads hourly data
-  const { data: googleAds, error: googleError } = await client
-    .from('google_ads_daily_performance')
-    .select('date, campaign_id, campaign_name, impressions, clicks, hour_of_day')
-    .gte('date', startDate)
-    .lte('date', endDate)
-    .not('hour_of_day', 'is', null);
-
-  if (!googleError && googleAds) {
-    activities.push(...googleAds.map((row: any) => ({
-      date: row.date,
-      hour: row.hour_of_day,
-      platform: 'google' as const,
-      campaign_id: row.campaign_id.toString(),
-      campaign_name: row.campaign_name,
-      impressions: row.impressions || 0,
-      clicks: row.clicks || 0,
-    })));
-  }
-
-  // Get Microsoft Ads hourly data
-  const { data: bingAds, error: bingError } = await client
-    .from('microsoft_ads_daily_performance')
-    .select('date, campaign_id, campaign_name, impressions, clicks, hour_of_day')
-    .gte('date', startDate)
-    .lte('date', endDate)
-    .not('hour_of_day', 'is', null);
-
-  if (!bingError && bingAds) {
-    activities.push(...bingAds.map((row: any) => ({
-      date: row.date,
-      hour: row.hour_of_day,
-      platform: 'microsoft' as const,  // Database stores 'microsoft', not 'bing'
-      campaign_id: row.campaign_id.toString(),
-      campaign_name: row.campaign_name,
-      impressions: row.impressions || 0,
-      clicks: row.clicks || 0,
-    })));
-  }
-
-  return activities;
-}
-
-/**
- * Master attribution function
- * Runs both direct match and time correlation
- */
 export async function attributeAllCalls(
   startDate: string,
   endDate: string
@@ -343,7 +245,11 @@ export async function attributeAllCalls(
   attributed: AttributionResult[];
   summary: {
     total: number;
+    qualifyingCalls: number;
+    googleCallViewMatches: number;
+    microsoftUploadedMatches: number;
     directMatches: number;
+    conflictedMatches: number;
     timeCorrelated: number;
     unknown: number;
     avgConfidence: number;
@@ -351,10 +257,9 @@ export async function attributeAllCalls(
 }> {
   const client = getSupabaseClient();
 
-  // Get all inbound calls in date range
   const { data: calls, error } = await client
     .from('ringcentral_calls')
-    .select('call_id, from_number, start_time, direction, result, duration')
+    .select('call_id, from_number, start_time, direction, duration, google_ads_call_match, google_ads_call_resource_name, google_ads_uploaded_at, microsoft_ads_uploaded_at, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id')
     .eq('direction', 'Inbound')
     .gte('start_time', `${startDate}T00:00:00.000Z`)
     .lte('start_time', `${endDate}T23:59:59.999Z`);
@@ -365,51 +270,63 @@ export async function attributeAllCalls(
       attributed: [],
       summary: {
         total: 0,
+        qualifyingCalls: 0,
+        googleCallViewMatches: 0,
+        microsoftUploadedMatches: 0,
         directMatches: 0,
+        conflictedMatches: 0,
         timeCorrelated: 0,
         unknown: 0,
         avgConfidence: 0,
-      }
+      },
     };
   }
 
-  console.log(`📞 Attributing ${calls.length} inbound calls...`);
+  const qualifyingCalls = applyQualifyingFilter(calls as RingCentralCall[]);
+  console.log(`📞 Attributing ${qualifyingCalls.length} qualifying inbound calls...`);
 
-  // Step 1: Try direct matches first
-  const directMatches = await matchDirectConversions(calls);
-  console.log(`✅ Direct matches: ${directMatches.length}`);
+  const canonicalEvidenceMatches = matchCanonicalPlatformEvidence(qualifyingCalls);
+  const evidenceMatchedCallIds = new Set(canonicalEvidenceMatches.map(result => result.callId));
 
-  // Step 2: Get unmatched calls
-  const matchedCallIds = new Set(directMatches.map(r => r.callId));
-  const unmatchedCalls = calls.filter((call: RingCentralCall) =>
-    !matchedCallIds.has(call.call_id)
-  );
+  const remainingCalls = qualifyingCalls.filter(call => !evidenceMatchedCallIds.has(call.call_id));
+  const directMatches = await matchDirectConversions(remainingCalls);
+  const matchedCallIds = new Set([...evidenceMatchedCallIds, ...directMatches.map(result => result.callId)]);
 
-  // Step 3: Try time correlation for unmatched
-  const timeMatches = await matchTimeCorrelation(unmatchedCalls, startDate, endDate);
-  console.log(`🕐 Time-correlated: ${timeMatches.filter(r => r.attributionMethod === 'time_correlation').length}`);
+  const unknownResults: AttributionResult[] = qualifyingCalls
+    .filter(call => !matchedCallIds.has(call.call_id))
+    .map(call => ({
+      callId: call.call_id,
+      fromNumber: call.from_number,
+      callTimestamp: call.start_time,
+      attributionMethod: 'unknown' as const,
+      attributionConfidence: 0,
+      adPlatform: null,
+      campaignId: null,
+      campaignName: null,
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      sessionId: null,
+      matchDetails: 'No direct attribution evidence found',
+    }));
 
-  // Combine results
-  const allResults = [...directMatches, ...timeMatches];
-
-  // Calculate summary
+  const allResults = [...canonicalEvidenceMatches, ...directMatches, ...unknownResults];
   const summary = {
     total: allResults.length,
-    directMatches: allResults.filter(r => r.attributionMethod === 'direct_match').length,
-    timeCorrelated: allResults.filter(r => r.attributionMethod === 'time_correlation').length,
-    unknown: allResults.filter(r => r.attributionMethod === 'unknown').length,
-    avgConfidence: allResults.reduce((sum, r) => sum + r.attributionConfidence, 0) / allResults.length || 0,
+    qualifyingCalls: qualifyingCalls.length,
+    googleCallViewMatches: allResults.filter(result => result.attributionMethod === 'google_call_view').length,
+    microsoftUploadedMatches: allResults.filter(result => result.attributionMethod === 'microsoft_uploaded_call').length,
+    directMatches: allResults.filter(result => result.attributionMethod === 'direct_match').length,
+    conflictedMatches: allResults.filter(result => result.attributionMethod === 'direct_match_conflict').length,
+    timeCorrelated: 0,
+    unknown: allResults.filter(result => result.attributionMethod === 'unknown').length,
+    avgConfidence: allResults.reduce((sum, result) => sum + result.attributionConfidence, 0) / allResults.length || 0,
   };
 
-  console.log(`📊 Attribution complete:`, summary);
-
+  console.log('📊 Attribution complete:', summary);
   return { attributed: allResults, summary };
 }
 
-/**
- * Save attribution results to database
- * Updates ringcentral_calls table with attribution data
- */
 export async function saveAttributionResults(
   results: AttributionResult[]
 ): Promise<{ success: number; failed: number }> {
@@ -417,7 +334,28 @@ export async function saveAttributionResults(
   let success = 0;
   let failed = 0;
 
+  const { data: existingRows, error: existingError } = await client
+    .from('ringcentral_calls')
+    .select('call_id, attribution_method')
+    .in('call_id', results.map(result => result.callId));
+
+  if (existingError) {
+    console.error('Failed to load existing attribution rows:', existingError);
+  }
+
+  const existingByCallId = new Map(
+    (existingRows || []).map((row: any) => [row.call_id, row.attribution_method || 'unknown'])
+  );
+
   for (const result of results) {
+    const existingMethod = existingByCallId.get(result.callId) || 'unknown';
+    const existingPriority = METHOD_PRIORITY[existingMethod] ?? 0;
+    const nextPriority = METHOD_PRIORITY[result.attributionMethod] ?? 0;
+
+    if (nextPriority < existingPriority) {
+      continue;
+    }
+
     const updateData: Record<string, any> = {
       attribution_method: result.attributionMethod,
       attribution_confidence: result.attributionConfidence,
@@ -427,8 +365,6 @@ export async function saveAttributionResults(
       utm_campaign: result.utmCampaign,
     };
 
-    // Store the matched session_id so downstream processes (offlineConversionSync,
-    // callLeadSync) can look up gclid/msclkid from the user_sessions table
     if (result.sessionId) {
       updateData.website_session_id = result.sessionId;
     }
@@ -450,14 +386,13 @@ export async function saveAttributionResults(
   return { success, failed };
 }
 
-/**
- * Get attribution breakdown by platform
- */
 export function getAttributionBreakdown(results: AttributionResult[]): Record<string, {
   count: number;
   avgConfidence: number;
   directMatches: number;
-  timeCorrelated: number;
+  conflictedMatches: number;
+  googleCallViewMatches: number;
+  microsoftUploadedMatches: number;
 }> {
   const breakdown: Record<string, any> = {};
 
@@ -469,7 +404,9 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
         count: 0,
         totalConfidence: 0,
         directMatches: 0,
-        timeCorrelated: 0,
+        conflictedMatches: 0,
+        googleCallViewMatches: 0,
+        microsoftUploadedMatches: 0,
       };
     }
 
@@ -478,19 +415,24 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
 
     if (result.attributionMethod === 'direct_match') {
       breakdown[platform].directMatches++;
-    } else if (result.attributionMethod === 'time_correlation') {
-      breakdown[platform].timeCorrelated++;
+    } else if (result.attributionMethod === 'direct_match_conflict') {
+      breakdown[platform].conflictedMatches++;
+    } else if (result.attributionMethod === 'google_call_view') {
+      breakdown[platform].googleCallViewMatches++;
+    } else if (result.attributionMethod === 'microsoft_uploaded_call') {
+      breakdown[platform].microsoftUploadedMatches++;
     }
   }
 
-  // Calculate averages
   const final: Record<string, any> = {};
   for (const [platform, data] of Object.entries(breakdown)) {
     final[platform] = {
       count: data.count,
       avgConfidence: Math.round(data.totalConfidence / data.count),
       directMatches: data.directMatches,
-      timeCorrelated: data.timeCorrelated,
+      conflictedMatches: data.conflictedMatches,
+      googleCallViewMatches: data.googleCallViewMatches,
+      microsoftUploadedMatches: data.microsoftUploadedMatches,
     };
   }
 

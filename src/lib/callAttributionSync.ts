@@ -128,7 +128,10 @@ export async function crossReferenceCallsToRingCentral(
     if (bestMatch) {
       claimedRcIds.add(bestMatch.call_id);
 
-      // Update both tables with the cross-reference
+      // Update both tables with the cross-reference.
+      // IMPORTANT: this job records deterministic Google evidence only.
+      // It must not write derived attribution fields like ad_platform;
+      // the canonical resolver in callAttribution.ts owns that decision.
       const [gadsUpdate, rcUpdate] = await Promise.all([
         supabase
           .from('google_ads_calls')
@@ -142,7 +145,6 @@ export async function crossReferenceCallsToRingCentral(
           .update({
             google_ads_call_match: true,
             google_ads_call_resource_name: gadsCall.resource_name,
-            ad_platform: 'google',
           })
           .eq('call_id', bestMatch.call_id),
       ]);

@@ -4,6 +4,7 @@ import {
   saveAttributionResults,
   getAttributionBreakdown,
 } from '@/lib/callAttribution';
+import { applyQualifyingFilter } from '@/lib/callQualifying';
 
 
 // Force dynamic rendering - prevents static analysis during build
@@ -153,39 +154,50 @@ export async function GET(req: NextRequest) {
     // Get attribution stats from database
     const { data: calls, error } = await client
       .from('ringcentral_calls')
-      .select('call_id, from_number, start_time, attribution_method, attribution_confidence, ad_platform, utm_campaign')
+      .select('call_id, from_number, start_time, direction, duration, attribution_method, attribution_confidence, ad_platform, utm_campaign')
       .eq('direction', 'Inbound')
-      .gte('start_time', startDate)
-      .lte('start_time', endDate);
+      .gte('start_time', `${startDate}T00:00:00.000Z`)
+      .lte('start_time', `${endDate}T23:59:59.999Z`);
 
     if (error) {
       throw new Error(`Database error: ${error.message}`);
     }
 
+    const qualifyingCalls = applyQualifyingFilter((calls || []) as any[]);
+
     // Calculate summary
-    const total = calls?.length || 0;
-    const directMatches = calls?.filter((c: any) => c.attribution_method === 'direct_match').length || 0;
-    const timeCorrelated = calls?.filter((c: any) => c.attribution_method === 'time_correlation').length || 0;
-    const unknown = calls?.filter((c: any) => c.attribution_method === 'unknown' || !c.attribution_method).length || 0;
-    const avgConfidence = calls?.reduce((sum: number, c: any) =>
+    const total = qualifyingCalls.length;
+    const googleCallViewMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'google_call_view').length;
+    const microsoftUploadedMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'microsoft_uploaded_call').length;
+    const directMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'direct_match').length;
+    const conflictedMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'direct_match_conflict').length;
+    const timeCorrelated = qualifyingCalls.filter((c: any) => c.attribution_method === 'time_correlation').length;
+    const unknown = qualifyingCalls.filter((c: any) => c.attribution_method === 'unknown' || !c.attribution_method).length;
+    const avgConfidence = qualifyingCalls.reduce((sum: number, c: any) =>
       sum + (c.attribution_confidence || 0), 0
     ) / total || 0;
 
     // Calculate platform breakdown
     const platformBreakdown: Record<string, any> = {};
-    calls?.forEach((call: any) => {
+    qualifyingCalls.forEach((call: any) => {
       const platform = call.ad_platform || 'unknown';
       if (!platformBreakdown[platform]) {
         platformBreakdown[platform] = {
           count: 0,
           totalConfidence: 0,
           directMatches: 0,
+          googleCallViewMatches: 0,
+          microsoftUploadedMatches: 0,
+          conflictedMatches: 0,
           timeCorrelated: 0,
         };
       }
       platformBreakdown[platform].count++;
       platformBreakdown[platform].totalConfidence += call.attribution_confidence || 0;
       if (call.attribution_method === 'direct_match') platformBreakdown[platform].directMatches++;
+      if (call.attribution_method === 'direct_match_conflict') platformBreakdown[platform].conflictedMatches++;
+      if (call.attribution_method === 'google_call_view') platformBreakdown[platform].googleCallViewMatches++;
+      if (call.attribution_method === 'microsoft_uploaded_call') platformBreakdown[platform].microsoftUploadedMatches++;
       if (call.attribution_method === 'time_correlation') platformBreakdown[platform].timeCorrelated++;
     });
 
@@ -196,6 +208,9 @@ export async function GET(req: NextRequest) {
         count: data.count,
         avgConfidence: Math.round(data.totalConfidence / data.count),
         directMatches: data.directMatches,
+        googleCallViewMatches: data.googleCallViewMatches,
+        microsoftUploadedMatches: data.microsoftUploadedMatches,
+        conflictedMatches: data.conflictedMatches,
         timeCorrelated: data.timeCorrelated,
       };
     }
@@ -204,7 +219,11 @@ export async function GET(req: NextRequest) {
       ok: true,
       summary: {
         total,
+        qualifyingCalls: total,
+        googleCallViewMatches,
+        microsoftUploadedMatches,
         directMatches,
+        conflictedMatches,
         timeCorrelated,
         unknown,
         avgConfidence: Math.round(avgConfidence),
