@@ -1,254 +1,226 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MessageSquare, Calendar, Shield, Clock, Star, CheckCircle, Wrench, Car } from 'lucide-react';
+import { Car, CheckCircle, Clock, MapPin, Shield, Star } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
-import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 import ServiceAreaLinks from '@/components/ServiceAreaLinks';
-import RelatedServices from '@/components/RelatedServices';
+import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
   robots: { index: false },
-  title: 'Windshield Replacement | Mobile Service CO & AZ',
-  description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you. Call (480) 712-7465.',
-  keywords: 'windshield replacement denver, windshield replacement cost, mobile windshield replacement, same day windshield replacement, auto glass replacement denver, windshield replacement near me',
+  title: 'Phoenix Windshield Replacement | Same-Day Mobile Service',
+  description:
+    'Mobile windshield replacement across Phoenix, Scottsdale, Mesa, and Tempe. OEM-quality glass, lifetime workmanship warranty, and insurance help. Call (480) 712-7465.',
+  keywords:
+    'phoenix windshield replacement, mobile windshield replacement phoenix, windshield replacement scottsdale, windshield replacement mesa, windshield replacement tempe, auto glass replacement phoenix',
   alternates: {
     canonical: 'https://pinkautoglass.com/arizona/services/windshield-replacement',
   },
   openGraph: {
-    title: 'Windshield Replacement | Mobile Service CO & AZ',
-    description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you.',
+    title: 'Phoenix Windshield Replacement | Same-Day Mobile Service',
+    description:
+      'Same-day mobile windshield replacement in Phoenix metro. OEM-quality glass, lifetime warranty, and insurance help.',
     url: 'https://pinkautoglass.com/arizona/services/windshield-replacement',
     type: 'website',
   },
 };
 
-export default function WindshieldReplacementPage() {
-  const faqs = [
-    {
-      question: 'Does insurance cover windshield replacement in Denver?',
-      answer: 'Most insurance companies cover windshield replacement under comprehensive coverage. The exact coverage depends on your vehicle make, model, and features. Luxury vehicles, larger SUVs, and vehicles with ADAS (Advanced Driver Assistance Systems) may have different coverage due to specialized glass and calibration requirements. We provide free quotes and handle all insurance paperwork.'
-    },
-    {
-      question: 'How long does windshield replacement take?',
-      answer: 'A standard windshield replacement takes 60-90 minutes from start to finish. This includes removing the old windshield, preparing the frame, installing new OEM-quality glass, and allowing proper cure time. If your vehicle requires ADAS calibration (2018+ models with cameras or sensors), add an additional 30-60 minutes. We recommend waiting at least 1 hour before driving to ensure the adhesive has properly set.'
-    },
-    {
-      question: 'Do you use OEM or aftermarket windshields?',
-      answer: 'We primarily use OEM quality (Original Equipment Manufacturer) glass that meets or exceeds factory specifications. OEM quality glass ensures proper fit, optical clarity, and compatibility with modern safety systems like ADAS. For vehicles without advanced safety features, we also offer high-quality aftermarket options that can reduce costs while maintaining safety standards. We\'ll recommend the best option for your specific vehicle and budget.'
-    },
-    {
-      question: 'How does insurance coverage work in Colorado?',
-      answer: 'In Colorado, most comprehensive insurance policies cover windshield replacement. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly. We\'ll verify your exact coverage before we start.'
-    },
-    {
-      question: 'What is ADAS calibration and do I need it?',
-      answer: 'ADAS (Advanced Driver Assistance Systems) calibration is required when replacing windshields on vehicles with cameras, sensors, or heads-up displays mounted on or near the glass. Systems like lane departure warning, automatic emergency braking, adaptive cruise control, and collision avoidance all require precise calibration after windshield replacement. Most vehicles 2018 and newer require ADAS calibration.'
-    },
-    {
-      question: 'Do you offer mobile windshield replacement?',
-      answer: 'Absolutely! Mobile service is our specialty. We come to your home, office, or anywhere across the Front Range. Our fully equipped mobile units carry the tools and glass needed to complete your replacement on-site. There\'s no additional charge for mobile service within our service area. Same-day appointments are usually available.'
-    },
-    {
-      question: 'What\'s your warranty on windshield replacement?',
-      answer: 'We offer a lifetime warranty on all windshield replacements. This covers defects in materials, workmanship, and leaks for as long as you own your vehicle. If you experience any issues related to our installation, we\'ll fix it free of charge.'
-    },
-    {
-      question: 'When should I replace vs repair my windshield?',
-      answer: 'Replace your windshield if: the damage is larger than a dollar bill, the crack extends to the edge of the glass, damage is in the driver\'s line of sight, there are multiple chips or cracks, or the damage has penetrated the inner layer of glass. Repair is suitable for chips smaller than a quarter and cracks under 6 inches that are not in critical viewing areas. We\'ll assess your damage and recommend the safest, most cost-effective solution.'
-    }
-  ];
+const faqs = [
+  {
+    question: 'How much does windshield replacement cost in Phoenix?',
+    answer:
+      'Cash pricing usually depends on your vehicle, glass features, and calibration needs. If you have comprehensive coverage with full glass coverage, many Arizona drivers pay $0 out of pocket. We verify coverage before the job starts.',
+  },
+  {
+    question: 'How long does windshield replacement take?',
+    answer:
+      'Most replacements take about 60 to 90 minutes, plus safe drive-away time for the adhesive to cure. If your vehicle needs camera or sensor calibration, that can add time.',
+  },
+  {
+    question: 'Do you offer mobile windshield replacement?',
+    answer:
+      'Yes. Mobile service is the default. We come to your home, office, or job site across Phoenix metro, including Phoenix, Scottsdale, Mesa, and Tempe.',
+  },
+  {
+    question: 'Do you use OEM or aftermarket glass?',
+    answer:
+      'We install OEM-quality glass that meets or exceeds factory standards for fit, clarity, and safety. We will explain the best glass option for your specific vehicle before we schedule the work.',
+  },
+  {
+    question: 'Will insurance cover my windshield replacement in Arizona?',
+    answer:
+      'If you carry comprehensive coverage and the right glass coverage on your policy, your replacement may be fully covered. We help verify coverage and handle the claim process with your insurer.',
+  },
+  {
+    question: 'When should I replace instead of repair?',
+    answer:
+      'Replacement is usually the safer choice when the crack is long, reaches the edge, sits in the driver’s line of sight, or when there are multiple impact points. We can confirm that before scheduling.',
+  },
+];
 
+export default function WindshieldReplacementPage() {
   const serviceSchema = generateServiceSchema({
-    serviceName: 'Windshield Replacement',
-    description: 'Professional windshield replacement service in Denver metro area. OEM quality glass, mobile service, same-day appointments, lifetime warranty, and ADAS calibration included.',
+    serviceName: 'Phoenix Windshield Replacement',
+    description:
+      'Mobile windshield replacement service for Phoenix metro. OEM-quality glass, same-day scheduling, insurance help, and lifetime workmanship warranty.',
     serviceType: 'Auto Glass Replacement',
-    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
+    areaServed: ['Phoenix', 'Scottsdale', 'Mesa', 'Tempe'],
   });
 
   const faqSchema = generateFAQSchema(faqs);
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
-    { name: 'Windshield Replacement', url: 'https://pinkautoglass.com/arizona/services/windshield-replacement' }
+    { name: 'Arizona', url: 'https://pinkautoglass.com/arizona' },
+    { name: 'Services', url: 'https://pinkautoglass.com/arizona/services' },
+    {
+      name: 'Windshield Replacement',
+      url: 'https://pinkautoglass.com/arizona/services/windshield-replacement',
+    },
   ]);
 
   const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Windshield Replacement Denver | Same-Day Mobile Service",
-    "speakable": {
-      "@type": "SpeakableSpecification",
-      "cssSelector": [".answer-first", "h1"]
-    }
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Phoenix Windshield Replacement | Same-Day Mobile Service',
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['.answer-first', 'h1'],
+    },
   };
 
   const combinedSchema = combineSchemas(serviceSchema, faqSchema, breadcrumbSchema, webPageSchema);
 
   return (
     <>
-      {/* Schema Markup */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
       <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
-        {/* Hero Section */}
-<section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
+        <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
+            <div className="text-center max-w-4xl mx-auto">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold mb-5">
+                <MapPin className="w-4 h-4" />
+                Phoenix • Scottsdale • Mesa • Tempe
+              </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Professional Windshield Replacement in Denver
+                Mobile Windshield Replacement in Phoenix Metro
               </h1>
-              <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Windshield replacement in Denver typically costs between $250 and $900 depending on your vehicle make, model, and whether ADAS calibration is needed. However, most Colorado drivers pay nothing out of pocket because Colorado law requires all auto insurers to offer zero-deductible comprehensive glass coverage. At Pink Auto Glass, we handle 100% of the insurance paperwork and bill your insurer directly. Our certified technicians use OEM-quality glass that meets or exceeds factory specifications, and every installation includes a lifetime warranty on workmanship and leaks. We offer same-day mobile service across the entire Denver Front Range, meaning we come to your home, office, or wherever is most convenient. If your vehicle is 2018 or newer, we also perform ADAS camera calibration on-site at no extra charge. From the moment you call to the final quality check, the entire process takes about 60 to 90 minutes.
+              <p className="answer-first text-lg text-pink-50 leading-relaxed mb-6 max-w-3xl mx-auto">
+                Same-day windshield replacement with OEM-quality glass, mobile installation, and lifetime workmanship coverage. If your policy includes Arizona glass coverage, we can help verify it and handle the claim.
               </p>
-              <CTAButtons source="windshield-replacement" />
+              <CTAButtons source="az-windshield-replacement" />
             </div>
           </div>
         </section>
 
-        {/* Trust Signals */}
         <section className="py-8 bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <TrustSignals />
           </div>
         </section>
 
-        {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Services', href: '/services' },
-              { label: 'Windshield Replacement', href: '/services/windshield-replacement' }
+              { label: 'Arizona', href: '/arizona' },
+              { label: 'Services', href: '/arizona/services' },
+              { label: 'Windshield Replacement', href: '/arizona/services/windshield-replacement' },
             ]}
           />
         </div>
 
-        {/* Timestamp */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <time dateTime="2026-02-22" className="text-sm text-gray-500">
-            Updated February 22, 2026
+          <time dateTime="2026-04-28" className="text-sm text-gray-500">
+            Updated April 28, 2026
           </time>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-6">
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Column */}
             <div className="lg:col-span-2 space-y-12">
-
-              {/* What is Windshield Replacement */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  What is Full Windshield Replacement?
+                  Why Phoenix Drivers Replace Fast
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  Windshield replacement is the complete removal of your damaged windshield and installation of a new one. Unlike repairs that fill chips and cracks, replacement gives you a brand-new windshield that restores your vehicle's structural integrity, safety systems, and optical clarity.
+                  In Phoenix, small chips do not stay small for long. Heat swings, highway debris, and daily driving on I-10, Loop 101, Loop 202, and US-60 can turn a manageable hit into a full crack fast.
                 </p>
-
-                <AboveFoldCTA location="service-windshield-replacement" />
-
                 <p className="text-lg text-gray-700 mb-4">
-                  Modern windshields are crucial safety components. They provide up to 60% of your vehicle's structural strength in a rollover and ensure proper airbag deployment. A compromised windshield puts you and your passengers at risk - that's why we use only OEM quality glass that meets Federal Motor Vehicle Safety Standards (FMVSS).
+                  Our replacement service is built for that reality: mobile scheduling, OEM-quality glass, clean installation, and clear next steps if insurance is involved.
                 </p>
+                <AboveFoldCTA location="az-windshield-replacement-mid" />
               </section>
 
-              {/* How It Works (Replacement) */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">How Our Windshield Replacement Works</h2>
-                <ol className="list-decimal list-inside space-y-3 text-gray-700">
-                  <li><strong>Inspect & Protect:</strong> We cover your interior, verify glass features, and check for ADAS sensors or camera units.</li>
-                  <li><strong>Remove Glass:</strong> The damaged windshield and old urethane are safely removed following OEM procedures.</li>
-                  <li><strong>Prep & Prime:</strong> We clean and prime the pinch weld to ensure proper bond strength and long‑term seal.</li>
-                  <li><strong>Install OEM‑Quality Glass:</strong> We position the new windshield precisely and apply premium urethane for a factory‑tight fit.</li>
-                  <li><strong>ADAS Calibration:</strong> If your vehicle requires it (common on 2018+), we recalibrate cameras/sensors and provide documentation.</li>
-                </ol>
-              </section>
-
-              {/* FAQs (Replacement) */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Replacement FAQs</h2>
-                <div className="space-y-4 text-gray-700">
-                  <div>
-                    <h3 className="font-semibold">Do you use OEM or aftermarket glass?</h3>
-                    <p>We recommend OEM‑quality glass for correct fit, optical clarity, and ADAS performance. High‑quality aftermarket is available for older vehicles without advanced sensors.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">How long before I can drive?</h3>
-                    <p>Plan on 60–90 minutes for replacement plus recommended cure time. If calibration is required, add about 30–60 minutes.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Do you calibrate ADAS?</h3>
-                    <p>Yes—when required by your vehicle, we include calibration and provide results.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Does insurance cover replacement?</h3>
-                    <p>With comprehensive coverage, many Colorado drivers pay $0. We verify coverage and bill your insurer directly.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Will it leak?</h3>
-                    <p>No. We use OEM‑spec materials and methods and back the installation with a lifetime leak and workmanship warranty.</p>
-                  </div>
-                </div>
-              </section>
-
-              {/* When Replacement is Needed */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  When You Need Windshield Replacement
-                </h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <h3 className="font-semibold text-red-900 mb-2 flex items-center">
-                      <Car className="w-5 h-5 mr-2" />
-                      Large Damage
-                    </h3>
-                    <p className="text-red-800">Cracks longer than 6 inches or chips larger than a quarter require replacement.</p>
-                  </div>
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <h3 className="font-semibold text-red-900 mb-2 flex items-center">
-                      <Car className="w-5 h-5 mr-2" />
-                      Driver's View
-                    </h3>
-                    <p className="text-red-800">Any damage in the driver's direct line of sight compromises safety and visibility.</p>
-                  </div>
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <h3 className="font-semibold text-red-900 mb-2 flex items-center">
-                      <Car className="w-5 h-5 mr-2" />
-                      Edge Damage
-                    </h3>
-                    <p className="text-red-800">Cracks extending to the windshield edge affect structural integrity.</p>
-                  </div>
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <h3 className="font-semibold text-red-900 mb-2 flex items-center">
-                      <Car className="w-5 h-5 mr-2" />
-                      Multiple Chips
-                    </h3>
-                    <p className="text-red-800">Three or more chips indicate weakened glass that should be replaced.</p>
-                  </div>
-                </div>
-              </section>
-
-              {/* Our Process */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Our 6-Step Windshield Replacement Process
+                  What You Get With Pink Auto Glass
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      icon: Clock,
+                      title: 'Same-Day Mobile Service',
+                      body: 'We come to your home, office, or job site across Phoenix metro when scheduling allows.',
+                    },
+                    {
+                      icon: Shield,
+                      title: 'Insurance Help',
+                      body: 'We verify coverage, explain your out-of-pocket cost, and help with the claim process.',
+                    },
+                    {
+                      icon: Star,
+                      title: 'OEM-Quality Glass',
+                      body: 'We use high-quality glass and installation materials that meet safety and fit standards.',
+                    },
+                    {
+                      icon: CheckCircle,
+                      title: 'Lifetime Workmanship Warranty',
+                      body: 'Your installation is backed against leaks and workmanship issues for as long as you own the vehicle.',
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="bg-white border border-gray-200 rounded-xl p-5">
+                      <item.icon className="w-6 h-6 text-pink-600 mb-3" />
+                      <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                      <p className="text-gray-700">{item.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                  How Our Windshield Replacement Works
                 </h2>
                 <div className="space-y-4">
                   {[
-                    { num: 1, title: 'Vehicle Inspection', desc: 'We inspect your vehicle and verify the correct windshield part number for your exact make, model, and year.' },
-                    { num: 2, title: 'Old Windshield Removal', desc: 'Using specialized tools, we carefully remove the damaged windshield and all old adhesive from the frame.' },
-                    { num: 3, title: 'Frame Preparation', desc: 'We clean and prime the windshield frame to ensure optimal adhesion of the new glass.' },
-                    { num: 4, title: 'New Glass Installation', desc: 'We apply high-grade urethane adhesive and carefully position your new OEM-quality windshield.' },
-                    { num: 5, title: 'ADAS Calibration', desc: 'For vehicles with cameras or sensors, we perform precise ADAS calibration to restore safety system functionality.' },
-                    { num: 6, title: 'Quality Check & Cure Time', desc: 'We inspect the installation, test for leaks, and advise you on proper cure time before driving.' }
+                    {
+                      num: 1,
+                      title: 'We confirm your vehicle details',
+                      desc: 'We verify the correct glass, features, and scheduling window before we dispatch.',
+                    },
+                    {
+                      num: 2,
+                      title: 'We replace the damaged windshield',
+                      desc: 'Our technician removes the broken glass, preps the frame, and installs the new windshield correctly.',
+                    },
+                    {
+                      num: 3,
+                      title: 'We review drive-away timing',
+                      desc: 'You get clear instructions on cure time and what to avoid right after installation.',
+                    },
+                    {
+                      num: 4,
+                      title: 'We handle the insurance side if needed',
+                      desc: 'If your coverage applies, we help document and process the claim with your insurer.',
+                    },
                   ].map((step) => (
-                    <div key={step.num} className="flex items-start bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div key={step.num} className="flex items-start bg-white border border-gray-200 rounded-lg p-4">
                       <div className="flex-shrink-0 w-10 h-10 bg-pink-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">
                         {step.num}
                       </div>
@@ -261,294 +233,117 @@ export default function WindshieldReplacementPage() {
                 </div>
               </section>
 
-              {/* OEM vs Aftermarket */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  OEM vs Aftermarket Windshields: What's the Difference?
-                </h2>
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">OEM (Original Equipment Manufacturer) Glass</h3>
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Exact same glass that came with your vehicle from the factory</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Perfect fit and optical clarity guaranteed</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">For ADAS-equipped vehicles (2018+)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Maintains vehicle resale value</span>
-                    </li>
-                  </ul>
-
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Aftermarket Glass</h3>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Lower cost alternative for older vehicles</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Meets DOT safety standards</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">Suitable for vehicles without advanced safety features</span>
-                    </li>
-                  </ul>
-                </div>
-                <p className="text-lg text-gray-700 mt-4">
-                  <strong>Our Recommendation:</strong> We recommend OEM quality glass for all vehicles, especially those with ADAS. The slight price difference is worth the peace of mind knowing your windshield is exactly as the manufacturer intended.
-                </p>
-              </section>
-
-              {/* ADAS Calibration */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  ADAS Calibration Included
-                </h2>
-                <p className="text-lg text-gray-700 mb-4">
-                  Modern vehicles (2018 and newer) come equipped with Advanced Driver Assistance Systems (ADAS) that rely on cameras and sensors mounted on or near the windshield. These systems include:
-                </p>
-                <div className="grid md:grid-cols-2 gap-3 mb-4">
-                  <div className="flex items-center bg-blue-50 p-3 rounded">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
-                    <span>Lane Departure Warning</span>
-                  </div>
-                  <div className="flex items-center bg-blue-50 p-3 rounded">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
-                    <span>Automatic Emergency Braking</span>
-                  </div>
-                  <div className="flex items-center bg-blue-50 p-3 rounded">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
-                    <span>Adaptive Cruise Control</span>
-                  </div>
-                  <div className="flex items-center bg-blue-50 p-3 rounded">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
-                    <span>Collision Avoidance</span>
-                  </div>
-                </div>
-                <p className="text-lg text-gray-700">
-                  After windshield replacement, these systems must be recalibrated to ensure they function correctly. Our certified technicians use manufacturer-approved equipment to ensure your safety systems work perfectly.
-                </p>
-              </section>
-
-              {/* What's Included */}
-              <section>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  What's Included in Your Service
-                </h2>
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-6 border-2 border-pink-200">
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <Shield className="w-12 h-12 text-pink-600 mx-auto mb-3" />
-                      <div className="font-bold text-gray-900 mb-2">OEM Quality Glass</div>
-                      <div className="text-sm text-gray-700">Exact same glass as factory original</div>
-                    </div>
-                    <div className="text-center">
-                      <Car className="w-12 h-12 text-pink-600 mx-auto mb-3" />
-                      <div className="font-bold text-gray-900 mb-2">Mobile Service</div>
-                      <div className="text-sm text-gray-700">We come to your location</div>
-                    </div>
-                    <div className="text-center">
-                      <Shield className="w-12 h-12 text-pink-600 mx-auto mb-3" />
-                      <div className="font-bold text-gray-900 mb-2">Lifetime Warranty</div>
-                      <div className="text-sm text-gray-700">Workmanship guaranteed forever</div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Insurance */}
-              <section className="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Insurance Claims - We Handle Everything
-                </h2>
-                <p className="text-lg text-gray-700 mb-4">
-                  Most windshield replacements are covered by your comprehensive insurance policy. We work with all major insurance companies:
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  {['State Farm', 'Geico', 'Progressive', 'Allstate', 'USAA', 'Farmers', 'Liberty Mutual', 'Nationwide'].map(insurer => (
-                    <div key={insurer} className="bg-white p-2 rounded text-center text-sm font-medium text-gray-700">
-                      {insurer}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-lg text-gray-700">
-                  <strong>We handle all the paperwork and bill your insurance directly.</strong> You'll know your exact out-of-pocket cost before we start. No surprises.
-                </p>
-              </section>
-
-              {/* FAQs */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  Frequently Asked Questions
+                  Common Reasons Replacement Is the Right Call
                 </h2>
-                <div className="space-y-4">
-                  {faqs.map((faq, index) => (
-                    <details key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow group">
-                      <summary className="font-semibold text-lg text-gray-900 cursor-pointer flex justify-between items-center">
-                        {faq.question}
-                        <span className="text-pink-600 group-open:rotate-180 transition-transform">▼</span>
-                      </summary>
-                      <p className="mt-3 text-gray-700 leading-relaxed">{faq.answer}</p>
-                    </details>
-                  ))}
-                </div>
-              </section>
-
-              {/* Popular Vehicles We Service */}
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Popular Vehicles We Service in Denver
-                </h2>
-                <p className="text-gray-700 mb-4">Get vehicle-specific information:</p>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   {[
-                    { make: 'Toyota', model: 'Camry', slug: 'toyota-camry-windshield-replacement-denver' },
-                    { make: 'Honda', model: 'Accord', slug: 'honda-accord-windshield-replacement-denver' },
-                    { make: 'Subaru', model: 'Outback', slug: 'subaru-outback-windshield-replacement-denver' },
-                    { make: 'Ford', model: 'F-150', slug: 'ford-f150-windshield-replacement-denver' },
-                    { make: 'Jeep', model: 'Wrangler', slug: 'jeep-wrangler-windshield-replacement-denver' },
-                    { make: 'Tesla', model: 'Model 3', slug: 'tesla-model-3-windshield-replacement-denver' },
-                    { make: 'Toyota', model: 'RAV4', slug: 'toyota-rav4-windshield-replacement-denver' },
-                    { make: 'Honda', model: 'CR-V', slug: 'honda-cr-v-windshield-replacement-denver' },
-                  ].map(v => (
-                    <Link
-                      key={v.slug}
-                      href={`/vehicles/${v.slug}`}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:border-pink-500 hover:shadow-md transition-all"
-                    >
-                      <div className="font-semibold text-gray-900">{v.make} {v.model}</div>
-                      <div className="text-sm text-pink-600">Learn More →</div>
-                    </Link>
+                    'Cracks longer than a few inches',
+                    'Damage at the edge of the windshield',
+                    'Multiple chips or impact points',
+                    'Damage in the driver’s line of sight',
+                  ].map((reason) => (
+                    <div key={reason} className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                      <div className="flex items-start gap-3">
+                        <Car className="w-5 h-5 text-red-700 mt-0.5" />
+                        <p className="text-red-900 font-medium">{reason}</p>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>
 
-              {/* CTA Section */}
-              
-              <ServiceAreaLinks />
-              <RelatedServices currentSlug="/services/windshield-replacement" />
-
-              <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
-                <h2 className="text-3xl font-bold mb-4">Ready to Replace Your Windshield?</h2>
-                <p className="text-xl mb-6 text-pink-100">
-                  Same-day appointments available. Free quotes. Zero-hassle insurance claims.
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Insurance Support for Arizona Drivers
+                </h2>
+                <p className="text-lg text-gray-700 mb-4">
+                  We do not make you guess what your policy covers. If you want to use insurance, we check your coverage first, explain the likely out-of-pocket number, and walk you through the next step.
                 </p>
-                <CTAButtons source="windshield-replacement" />
+                <p className="text-lg text-gray-700 mb-4">
+                  Need the insurance-focused version first? Go here:
+                </p>
+                <Link
+                  href="/arizona/services/insurance-claims/arizona"
+                  className="inline-flex items-center text-pink-600 hover:text-pink-700 font-semibold"
+                >
+                  Arizona insurance claims help →
+                </Link>
+              </section>
+
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Windshield Replacement FAQs</h2>
+                <div className="space-y-4">
+                  {faqs.map((faq) => (
+                    <div key={faq.question} className="bg-white border border-gray-200 rounded-xl p-5">
+                      <h3 className="font-semibold text-gray-900 mb-2">{faq.question}</h3>
+                      <p className="text-gray-700">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Phoenix Metro Service Area
+                </h2>
+                <p className="text-lg text-gray-700 mb-4">
+                  Paid launch is focused on Phoenix, Scottsdale, Mesa, and Tempe, but our Arizona mobile coverage is broader across the metro.
+                </p>
+                <ServiceAreaLinks heading="Arizona Cities We Serve" market="arizona" />
+              </section>
+
+              <section className="bg-pink-600 text-white rounded-2xl p-8 text-center">
+                <h2 className="text-3xl font-bold mb-4">Ready to Replace Your Windshield?</h2>
+                <p className="text-lg text-pink-50 mb-6 max-w-2xl mx-auto">
+                  Call, text, or book online. We will confirm the glass, check the schedule, and tell you the next step fast.
+                </p>
+                <CTAButtons source="az-windshield-replacement-bottom" />
               </section>
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-6">
-                {/* Quick Contact Card */}
-                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-pink-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Get Started Now</h3>
-                  <div className="space-y-3">
-                    <a
-                      href="tel:+14807127465"
-                      className="flex items-center justify-center w-full bg-pink-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-pink-700 transition-colors"
-                    >
-                      <Phone className="w-5 h-5 mr-2" />
-                      Call (480) 712-7465
-                    </a>
-                    <a
-                      href="sms:+14807127465"
-                      className="flex items-center justify-center w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                    >
-                      <MessageSquare className="w-5 h-5 mr-2" />
-                      Text Us
-                    </a>
+            <aside className="space-y-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Why customers call us first</h3>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-pink-600 mt-0.5" />
+                    <span>Fast mobile scheduling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-pink-600 mt-0.5" />
+                    <span>Clear pricing before the job starts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-pink-600 mt-0.5" />
+                    <span>Insurance verification help</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-pink-600 mt-0.5" />
+                    <span>Lifetime workmanship warranty</span>
+                  </li>
+                </ul>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Helpful Arizona links</h4>
+                  <div className="space-y-2 text-sm">
+                    <Link href="/phoenix" className="block text-pink-600 hover:underline">
+                      Phoenix windshield replacement
+                    </Link>
                     <Link
-                      href="/book"
-                      className="flex items-center justify-center w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      href="/arizona/services/insurance-claims/arizona"
+                      className="block text-pink-600 hover:underline"
                     >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Book Online
+                      Arizona insurance claims help
+                    </Link>
+                    <Link href="/arizona" className="block text-pink-600 hover:underline">
+                      Arizona service overview
                     </Link>
                   </div>
-                </div>
-
-                {/* Why Choose Us */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Why Choose Pink Auto Glass?</h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-start">
-                      <Shield className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Lifetime Warranty</strong> on all replacements</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Clock className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Same-Day Service</strong> available</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Star className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>OEM Quality Glass</strong> guaranteed</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Car className="w-5 h-5 text-pink-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-sm text-gray-700"><strong>Mobile Service</strong> to your location</span>
-                    </li>
-                  </ul>
-                  <div className="mt-4 pt-4 border-t border-gray-300">
-                    <p className="text-sm text-gray-700">
-                      We're proud supporters of breast cancer research, and a portion of our proceeds goes to help fund breast cancer awareness and treatment.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Service Area */}
-                <div className="bg-blue-50 rounded-lg p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
-                  <p className="text-sm text-gray-700 mb-3">We serve the Front Range:</p>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/highlands-ranch-co" className="text-blue-600 hover:underline">Highlands Ranch</Link>
-                    <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
-                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
-                  </div>
-                </div>
-
-                {/* Related Services */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/services/windshield-repair" className="text-pink-600 hover:underline">
-                        Windshield Repair →
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/services/adas-calibration" className="text-pink-600 hover:underline">
-                        ADAS Calibration →
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/services/mobile-service" className="text-pink-600 hover:underline">
-                        Mobile Service →
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/services/insurance-claims" className="text-pink-600 hover:underline">
-                        Insurance Claims →
-                      </Link>
-                    </li>
-                  </ul>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </article>

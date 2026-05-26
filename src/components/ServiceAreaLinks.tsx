@@ -53,7 +53,7 @@ export default function ServiceAreaLinks({ heading = 'Our Service Areas', market
                 </Link>
               ))}
               <Link
-                href="/locations"
+                href="/locations#colorado"
                 className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
                 + 35 more cities
@@ -75,7 +75,7 @@ export default function ServiceAreaLinks({ heading = 'Our Service Areas', market
                 </Link>
               ))}
               <Link
-                href="/locations"
+                href="/locations#arizona"
                 className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
                 + 12 more cities
