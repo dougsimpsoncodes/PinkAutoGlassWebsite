@@ -6,6 +6,8 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { getMygrantClient, type MygrantResponseItem } from '@/lib/mygrant/client';
 import { evaluateMygrantWindshieldCandidates, publicScoredMygrantCandidate } from '@/lib/quote/mygrant-scoring';
 import { buildCashWindshieldQuote, dollarsToCents, type CashWindshieldQuote } from '@/lib/quote/pricing';
+import { calculateMarkup, detectHudFromFeatures } from '@/lib/quote/markup';
+import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, type CachedNagsLookup } from '@/lib/autobolt/cache';
 
@@ -65,6 +67,19 @@ export async function POST(request: NextRequest) {
     }
 
     const input = normalizeQuoteInput(parsed.data);
+
+    // Defense-in-depth service area gate. The form blocks the submit button
+    // when ZIP is out-of-area; this catches direct API callers and tests.
+    if (input.zip) {
+      const serviceArea = isInServiceArea(input.zip);
+      if (!serviceArea.inServiceArea && serviceArea.reason === 'out_of_area') {
+        return NextResponse.json(
+          { error: OUT_OF_AREA_MESSAGE, reason: 'out_of_area', zip3: serviceArea.zip3 },
+          { status: 422 }
+        );
+      }
+    }
+
     const cacheClient = buildCacheClient();
     const mygrantResult = await getMygrantQuoteCandidates(input, cacheClient);
     // Prefer the AutoBolt-resolved vehicle identity over what the form submitted,
@@ -103,18 +118,56 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const wholesaleCents = dollarsToCents(selectedPart.customerUnitPrice);
+    const markupResult = calculateMarkup({
+      make: effectiveInput.vehicle.make,
+      model: effectiveInput.vehicle.model,
+      wholesaleCents,
+      hasHud: mygrantResult.hasHud,
+    });
+
+    if (markupResult.kind === 'manual_review') {
+      const confidenceReasons = [
+        `exotic_brand_${markupResult.brand.toLowerCase().replace(/\s+/g, '_')}`,
+        ...selection.reasons,
+        ...mygrantResult.reasons,
+      ];
+      const stored = await storeAutomatedQuote(effectiveInput, {
+        status: 'manual_review',
+        pricingVersion: 'cash-windshield-v2-markup',
+        totalCents: 0,
+        lineItems: [],
+        confidenceReasons,
+      }, selectedPart, mygrantResult.safeSnapshot, {
+        ipAddress: ip === 'unknown' ? undefined : ip,
+        userAgent: request.headers.get('user-agent') || undefined,
+      });
+
+      return NextResponse.json({
+        success: true,
+        status: 'manual_review',
+        quoteToken: stored.quoteToken,
+        vehicle: effectiveInput.vehicle,
+        adas: mygrantResult.adasSignal,
+        message: `Pricing for ${markupResult.brand} is handled by our team directly. Please call (720) 918-7465 for your quote.`,
+        confidenceReasons,
+      });
+    }
+
     const quote = buildCashWindshieldQuote({
-      glassCostCents: dollarsToCents(selectedPart.customerUnitPrice),
+      wholesaleCents,
+      markupCents: markupResult.markupCents,
       calibrationCents: shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
-        ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '22500', 10)
+        ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10)
         : 0,
-      taxRate: Number.parseFloat(process.env.QUOTE_TAX_RATE || '0'),
     });
 
     const quoteWithMygrantConfidence = {
       ...quote,
       confidenceReasons: [
         ...quote.confidenceReasons,
+        `markup_tier_${markupResult.tier}`,
+        ...markupResult.reasons,
         ...selection.reasons,
       ],
     };
@@ -204,6 +257,12 @@ async function getMygrantQuoteCandidates(
    * mode without VIN), in which case we fall back to the form checkbox + year heuristic.
    */
   adasSignal?: { requiresCalibration: boolean; calibrations: Array<{ type?: string; sensor?: string }> };
+  /**
+   * Vehicle has a HUD windshield, derived from AutoBolt features[]. Drives the
+   * +$75 HUD markup adder. False when AutoBolt didn't run or the response didn't
+   * include features.
+   */
+  hasHud: boolean;
 }> {
   // Strategy:
   //   1. Use AutoBolt to resolve vehicle→NAGS (VIN-only today; plate path TBD)
@@ -332,6 +391,7 @@ async function getMygrantQuoteCandidates(
     adasSignal: nagsLookup && nagsLookup.confidence === 'single' && nagsLookup.nags
       ? { requiresCalibration: nagsLookup.calibrations.length > 0, calibrations: nagsLookup.calibrations }
       : undefined,
+    hasHud: nagsLookup?.hasHud === true,
     safeSnapshot: {
       autobolt: autoboltSnapshot,
       ...(nagsMygrantSnapshot ? { mygrantNags: nagsMygrantSnapshot } : {}),
@@ -414,6 +474,7 @@ async function resolveVehicleNags(
         type: c.calibrationType?.name,
         sensor: c.sensor?.name,
       })),
+      hasHud: detectHudFromFeatures(summary.selectedPart?.features),
     };
   } catch (error) {
     if (error instanceof AutoBoltError) {

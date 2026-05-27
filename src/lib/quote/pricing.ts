@@ -1,9 +1,21 @@
-export const CASH_WINDSHIELD_PRICING_VERSION = 'cash-windshield-v1';
+/**
+ * Customer-facing pricing builder for the auto-quoter.
+ *
+ * Wholesale + markup combine into a single "Windshield + install" line item
+ * so the customer sees one price for the glass-plus-labor portion. Calibration
+ * stays on its own line so the surcharge is visible. Pre-tax — the form
+ * appends a "+ sales tax at install" note out of band.
+ *
+ * Markup math lives in markup.ts; this module is responsible only for the
+ * shape of the customer-facing quote and persistence-ready line items.
+ */
+
+export const CASH_WINDSHIELD_PRICING_VERSION = 'cash-windshield-v2-markup';
 
 export type QuoteStatus = 'ready_exact' | 'ready_estimate' | 'manual_review';
 
 export interface QuoteLineItem {
-  kind: 'glass' | 'labor' | 'supplies' | 'mobile_service' | 'calibration' | 'tax' | 'margin_adjustment';
+  kind: 'windshield_install' | 'calibration';
   description: string;
   amountCents: number;
   taxable?: boolean;
@@ -11,13 +23,12 @@ export interface QuoteLineItem {
 }
 
 export interface CashWindshieldPricingInput {
-  glassCostCents: number;
-  laborCents?: number;
-  suppliesCents?: number;
-  mobileServiceCents?: number;
+  /** Mygrant customer unit price in cents. */
+  wholesaleCents: number;
+  /** Markup in cents, computed by calculateMarkup. */
+  markupCents: number;
+  /** Calibration price in cents when ADAS is required. Omit or 0 to skip. */
   calibrationCents?: number;
-  taxRate?: number;
-  minimumQuoteCents?: number;
 }
 
 export interface CashWindshieldQuote {
@@ -28,119 +39,69 @@ export interface CashWindshieldQuote {
   confidenceReasons: string[];
 }
 
-const DEFAULT_LABOR_CENTS = 17500;
-const DEFAULT_SUPPLIES_CENTS = 4500;
-const DEFAULT_MOBILE_SERVICE_CENTS = 0;
-const DEFAULT_MINIMUM_QUOTE_CENTS = 29900;
-
 export function buildCashWindshieldQuote(input: CashWindshieldPricingInput): CashWindshieldQuote {
-  if (!Number.isFinite(input.glassCostCents) || input.glassCostCents <= 0) {
+  if (!Number.isFinite(input.wholesaleCents) || input.wholesaleCents <= 0) {
     return {
       status: 'manual_review',
       pricingVersion: CASH_WINDSHIELD_PRICING_VERSION,
       totalCents: 0,
       lineItems: [],
-      confidenceReasons: ['missing_or_invalid_glass_cost'],
+      confidenceReasons: ['missing_or_invalid_wholesale_cost'],
     };
   }
-
-  const invalidOptional = [
-    input.laborCents,
-    input.suppliesCents,
-    input.mobileServiceCents,
-    input.calibrationCents,
-    input.taxRate,
-    input.minimumQuoteCents,
-  ].some(value => value !== undefined && !Number.isFinite(value));
-  if (invalidOptional) {
+  if (!Number.isFinite(input.markupCents) || input.markupCents < 0) {
     return {
       status: 'manual_review',
       pricingVersion: CASH_WINDSHIELD_PRICING_VERSION,
       totalCents: 0,
       lineItems: [],
-      confidenceReasons: ['invalid_pricing_input'],
+      confidenceReasons: ['missing_or_invalid_markup'],
+    };
+  }
+  if (input.calibrationCents !== undefined && (!Number.isFinite(input.calibrationCents) || input.calibrationCents < 0)) {
+    return {
+      status: 'manual_review',
+      pricingVersion: CASH_WINDSHIELD_PRICING_VERSION,
+      totalCents: 0,
+      lineItems: [],
+      confidenceReasons: ['invalid_calibration_amount'],
     };
   }
 
+  const windshieldInstallCents = Math.round(input.wholesaleCents + input.markupCents);
   const lineItems: QuoteLineItem[] = [
     {
-      kind: 'glass',
-      description: 'Windshield glass',
-      amountCents: Math.round(input.glassCostCents),
+      kind: 'windshield_install',
+      description: 'Windshield + install',
+      amountCents: windshieldInstallCents,
       taxable: true,
-    },
-    {
-      kind: 'labor',
-      description: 'Mobile windshield installation labor',
-      amountCents: input.laborCents ?? DEFAULT_LABOR_CENTS,
-      taxable: false,
-    },
-    {
-      kind: 'supplies',
-      description: 'Urethane, primer, molding, clips, and shop supplies',
-      amountCents: input.suppliesCents ?? DEFAULT_SUPPLIES_CENTS,
-      taxable: true,
+      metadata: {
+        wholesaleCents: Math.round(input.wholesaleCents),
+        markupCents: Math.round(input.markupCents),
+      },
     },
   ];
 
-  const mobileServiceCents = input.mobileServiceCents ?? DEFAULT_MOBILE_SERVICE_CENTS;
-  if (mobileServiceCents > 0) {
-    lineItems.push({
-      kind: 'mobile_service',
-      description: 'Mobile service',
-      amountCents: mobileServiceCents,
-      taxable: false,
-    });
-  }
-
-  if (input.calibrationCents && input.calibrationCents > 0) {
+  const calibrationCents = input.calibrationCents ?? 0;
+  if (calibrationCents > 0) {
     lineItems.push({
       kind: 'calibration',
       description: 'ADAS calibration',
-      amountCents: input.calibrationCents,
+      amountCents: Math.round(calibrationCents),
       taxable: false,
     });
   }
 
-  const taxRate = input.taxRate ?? 0;
-  if (taxRate > 0) {
-    const taxableSubtotal = lineItems
-      .filter(item => item.taxable)
-      .reduce((sum, item) => sum + item.amountCents, 0);
-    const taxCents = Math.round(taxableSubtotal * taxRate);
-    if (taxCents > 0) {
-      lineItems.push({
-        kind: 'tax',
-        description: 'Estimated tax on taxable parts and supplies',
-        amountCents: taxCents,
-        taxable: false,
-      });
-    }
-  }
-
-  const subtotal = lineItems.reduce((sum, item) => sum + item.amountCents, 0);
-  const minimumQuoteCents = input.minimumQuoteCents ?? DEFAULT_MINIMUM_QUOTE_CENTS;
-  let minimumFloorApplied = false;
-  if (subtotal < minimumQuoteCents) {
-    minimumFloorApplied = true;
-    lineItems.push({
-      kind: 'margin_adjustment',
-      description: 'Minimum installed price adjustment',
-      amountCents: minimumQuoteCents - subtotal,
-      taxable: false,
-    });
-  }
+  const totalCents = lineItems.reduce((sum, item) => sum + item.amountCents, 0);
 
   return {
-    status: input.calibrationCents && input.calibrationCents > 0 ? 'ready_estimate' : 'ready_exact',
+    status: 'ready_exact',
     pricingVersion: CASH_WINDSHIELD_PRICING_VERSION,
-    totalCents: lineItems.reduce((sum, item) => sum + item.amountCents, 0),
+    totalCents,
     lineItems,
     confidenceReasons: [
-      input.calibrationCents && input.calibrationCents > 0
-        ? 'calibration_included_as_estimate'
-        : 'single_part_cash_windshield_formula',
-      ...(minimumFloorApplied ? ['minimum_floor_applied'] : []),
+      'markup_pricing_formula',
+      ...(calibrationCents > 0 ? ['calibration_included'] : []),
     ],
   };
 }
