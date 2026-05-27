@@ -84,3 +84,15 @@ supabase/.temp/
 
 # Customer PII — never commit drafted/raw review data
 .claude/skills/review-response/review_responses_drafted.jsonl
+
+# Customer PII — RingCentral pilot artifacts (call recordings, transcripts,
+# customer-identifying CSVs). Live in ~/clients/pink-auto-glass/private/ instead.
+# Codex code review flagged this as P0 on 2026-05-26.
+analysis/
+
+# Destructive automation scripts — these auto-modify OTHER satellite repos
+# (next.config rewrites, repo-wide git add/checkout). Run them deliberately
+# from outside the repo; do not commit and risk accidental CI invocation.
+# Codex code review flagged these as P1 on 2026-05-26.
+scripts/apply-satellite-fixes.sh
+scripts/apply-satellite-snippet-rewrites.sh

@@ -2,7 +2,9 @@
 
 **Purpose:** Document available Omega EDI API endpoints to determine what pricing/parts data we can pull automatically.
 
-**Status:** PHASE 0 SMOKE READY — NAGS endpoints still need verification with Pink's actual Omega API key.
+**Status:** DECIDED 2026-05-25 — ABANDONED for vehicle→NAGS lookup. Omega's `/NagsVehicles/{vinOrId}` and `/NagsQuotes/{vehicleId}/{nags}` endpoints (probed via `scripts/omega-nags-smoke.ts`) require an Omega license tier we do NOT hold. `OMEGA_EDI_API_KEY` is not set in any local `.env*` file because it was never issued. Pivoting to **AutoBolt** (Nick Dominato, `nick@myautobolt.com`) for the vehicle→NAGS translation layer — he offered free API access in Feb 2026 and we're picking that thread back up. The existing Omega integration (quotes / invoices / customers sync) is unaffected and continues to work; only the parts/pricing discovery is abandoned.
+
+**Re-open this document only if:** Pink Auto Glass upgrades to the Omega license tier that includes API access to NAGS pricing.
 
 ---
 
