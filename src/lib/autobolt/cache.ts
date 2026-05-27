@@ -6,6 +6,7 @@ import {
   NagsIdentifier,
   extractNagsFromPart,
 } from './client';
+import { detectHudFromFeatures } from '@/lib/quote/markup';
 
 export interface CachedNagsLookup {
   resolvedFrom: 'vin' | 'plate';
@@ -28,6 +29,12 @@ export interface CachedNagsLookup {
    * Used by /api/quote/price to auto-include the calibration line item.
    */
   calibrations: Array<{ type?: string; sensor?: string }>;
+  /**
+   * Derived at cache-write from AutoBolt's features[] array. Drives the +$75
+   * HUD markup adder. Defaults to false on legacy rows; bumping NAGS_MAP_VERSION
+   * invalidates all pre-HUD entries so we re-decode and populate accurately.
+   */
+  hasHud: boolean;
 }
 
 /**
@@ -46,10 +53,15 @@ export interface CachedNagsLookup {
  * defaulted to []; bumping forces a fresh AutoBolt lookup which populates the
  * real value.
  *
+ * v3-with-hud-and-markup: hasHud became part of the cached payload to drive the
+ * +$75 HUD markup adder in the markup-v1 pricing engine. Pre-v3 rows do not
+ * have has_hud populated, so bumping forces a fresh decode that scans
+ * AutoBolt's features[] array. Coincident with the markup-v1 rollout.
+ *
  * Plate keys include the literal "PLATE:" prefix so a 17-char plate cannot
  * collide with a VIN.
  */
-export const NAGS_MAP_VERSION = 'v2-with-calibrations';
+export const NAGS_MAP_VERSION = 'v3-with-hud-and-markup';
 
 export function vinLookupKey(vin: string): string {
   const normalized = `${NAGS_MAP_VERSION}:VIN:${vin.trim().toUpperCase()}`;
@@ -79,6 +91,7 @@ interface VehicleNagsCacheRow {
   oem_part_numbers: unknown;
   interchangeables: unknown;
   calibration_summary: unknown;
+  has_hud: boolean | null;
   expires_at: string;
 }
 
@@ -88,7 +101,7 @@ export async function readCachedNagsLookup(
 ): Promise<CachedNagsLookup | null> {
   const { data, error } = await supabase
     .from('vehicle_nags_cache')
-    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, calibration_summary, expires_at')
+    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, calibration_summary, has_hud, expires_at')
     .eq('lookup_key', lookupKey)
     .gt('expires_at', new Date().toISOString())
     .maybeSingle<VehicleNagsCacheRow>();
@@ -97,12 +110,11 @@ export async function readCachedNagsLookup(
   return mapRowToCached(data);
 }
 
-// Short TTL while the AM→NAGS mapping is pending Nick's confirmation. Once
-// vendor confirms the right response field, this can grow back to 180.
-// The NAGS_MAP_VERSION above also invalidates the cache automatically if we
-// change the extraction strategy, so this TTL is a belt-and-suspenders safety
-// margin against a wrong mapping going undetected.
-const CACHE_TTL_DAYS = 14;
+// amNumber → NAGS mapping confirmed across 6 vehicles 2026-05-26 (Honda Accord,
+// Audi e-tron, Hyundai Kona, Subaru Outback, Mitsubishi Outlander, Ford Ranger).
+// Bumped to 180 from the safety-margin 14 once the mapping was proven correct.
+// NAGS_MAP_VERSION still serves as the invalidation lever if cache semantics change.
+const CACHE_TTL_DAYS = 180;
 
 export async function writeCachedNagsLookup(
   supabase: SupabaseClient,
@@ -138,6 +150,7 @@ export async function writeCachedNagsLookup(
       type: c.calibrationType?.name,
       sensor: c.sensor?.name,
     })) ?? [],
+    has_hud: detectHudFromFeatures(summary.selectedPart?.features),
     raw_response: summary.raw,
     expires_at: expiresAt,
   };
@@ -181,6 +194,7 @@ function mapRowToCached(row: VehicleNagsCacheRow): CachedNagsLookup {
     oemPartNumbers: Array.isArray(row.oem_part_numbers) ? row.oem_part_numbers as string[] : [],
     interchangeables: Array.isArray(row.interchangeables) ? row.interchangeables as string[] : [],
     calibrations: parseCalibrationSummary(row.calibration_summary),
+    hasHud: row.has_hud === true,
   };
 }
 
