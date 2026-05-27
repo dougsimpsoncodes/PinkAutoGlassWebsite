@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pink Auto Glass — Denver Holistic Audit</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121935;
+      --panel-2: #182246;
+      --text: #eef2ff;
+      --muted: #9fb0d9;
+      --pink: #ff5aa5;
+      --cyan: #66e3ff;
+      --green: #67f0a8;
+      --yellow: #ffd76a;
+      --red: #ff7a7a;
+      --border: rgba(255,255,255,0.09);
+      --shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #17234f 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    .hero, .slide {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 22px;
+      backdrop-filter: blur(8px);
+    }
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1; }
+    h2 { font-size: 28px; }
+    h3 { font-size: 18px; }
+    p { margin: 0 0 12px; color: var(--muted); }
+    .hero-grid, .grid, .cards {
+      display: grid;
+      gap: 16px;
+    }
+    .hero-grid { grid-template-columns: 1.6fr 1fr; margin-top: 20px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid.three, .cards { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .metric {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .metric small { font-size: 14px; color: var(--muted); font-weight: 600; }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .danger { background: rgba(255,122,122,0.12); color: var(--red); }
+    .warn { background: rgba(255,215,106,0.12); color: var(--yellow); }
+    .good { background: rgba(103,240,168,0.12); color: var(--green); }
+    .info { background: rgba(102,227,255,0.12); color: var(--cyan); }
+    ul { margin: 10px 0 0 18px; color: var(--text); }
+    li { margin: 8px 0; }
+    .cols { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 700; }
+    .quote {
+      border-left: 4px solid var(--pink);
+      padding: 14px 16px;
+      background: rgba(255,90,165,0.08);
+      border-radius: 12px;
+      color: var(--text);
+    }
+    .small { font-size: 13px; color: var(--muted); }
+    .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+    @media (max-width: 860px) {
+      .hero-grid, .grid.two, .grid.three, .cards, .cols { grid-template-columns: 1fr; }
+      .hero, .slide { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Pink Auto Glass · Denver main site only · all-time audit</div>
+      <h1>Traffic is being bought.<br>SEO is weak.<br>Measurement is the main fire.</h1>
+      <p>This is a holistic audit of Denver-only growth for the main Pink Auto Glass website, combining Google Ads, Google Search Console, on-site/admin analytics, lead records, call activity, and closed-lead revenue signal quality.</p>
+      <div class="hero-grid">
+        <div class="card">
+          <span class="pill danger">Big risk</span>
+          <span class="pill info">Gemini-reviewed</span>
+          <p><strong>Current state:</strong> paid search is carrying Denver demand capture, the Denver SEO surface is barely visible for non-branded local queries, and attribution quality is not strong enough to trust ROAS decisions cleanly yet.</p>
+          <div class="quote">Best immediate path to more leads: protect and tighten paid search, improve Denver local SEO pages, and fix tracking so the business can scale what actually closes.</div>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <div class="metric">$23.6k</div>
+            <p>Denver Google Ads spend<br><small>1,741 clicks · 309 reported conversions · $76.28 CPA</small></p>
+          </div>
+          <div class="card">
+            <div class="metric">0.22%</div>
+            <p>Denver page organic CTR<br><small>11 clicks from 4,958 impressions</small></p>
+          </div>
+          <div class="card">
+            <div class="metric">560</div>
+            <p>Unattributed leads<br><small>too much of the funnel is still dark</small></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 1</div>
+      <h2>Executive summary</h2>
+      <div class="grid three">
+        <div class="card">
+          <h3>1. Acquisition</h3>
+          <p>Denver growth currently depends on Google Ads. Organic search contributes very little non-branded Denver traffic.</p>
+        </div>
+        <div class="card">
+          <h3>2. Conversion</h3>
+          <p>The homepage is the dominant conversion surface. Service and Denver pages can convert, but they are starved for traffic.</p>
+        </div>
+        <div class="card">
+          <h3>3. Measurement</h3>
+          <p>Tracking quality is weak enough that any precise Denver CPA/ROAS claim should be treated carefully until the data layer is fixed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 2</div>
+      <h2>Paid search is carrying Denver</h2>
+      <div class="cols">
+        <div class="card">
+          <table>
+            <thead>
+              <tr><th>Campaign</th><th>Impr.</th><th>Clicks</th><th>Spend</th><th>Conv.</th><th>CPA</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Denver search</td><td>42,116</td><td>1,741</td><td>$23,569.85</td><td>309</td><td>$76.28</td></tr>
+              <tr><td>Performance Max</td><td>108,743</td><td>3,320</td><td>$2,243.69</td><td>64</td><td>$35.06</td></tr>
+            </tbody>
+          </table>
+          <p class="small">Phoenix intentionally excluded from this audit.</p>
+        </div>
+        <div class="card">
+          <h3>Read</h3>
+          <ul>
+            <li>Google Ads is the current Denver growth engine.</li>
+            <li>PMax looks cheaper on paper, but that number is not trustworthy until brand cannibalization and offline quality are checked.</li>
+            <li>If paid traffic gets disrupted, Denver lead flow likely drops immediately.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 3</div>
+      <h2>SEO is weak for Denver non-branded demand</h2>
+      <div class="grid two">
+        <div class="card">
+          <div class="metric">47,287 <small>sitewide impressions</small></div>
+          <p>Search Console all-time: 210 clicks, 0.44% CTR, average position 36.09.</p>
+          <div class="metric">4,958 <small>Denver page impressions</small></div>
+          <p><code>/locations/denver-co</code>: 11 clicks, 0.22% CTR, average position 52.31.</p>
+        </div>
+        <div class="card">
+          <h3>What that means</h3>
+          <ul>
+            <li>Brand searches work. Non-branded Denver local intent mostly does not.</li>
+            <li>Queries like <em>windshield replacement denver</em> and <em>auto glass denver co</em> show visibility without meaningful click share.</li>
+            <li>The Denver page is not the problem because it cannot convert. It is the problem because it is not ranking high enough to earn traffic.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 4</div>
+      <h2>Homepage wins the funnel</h2>
+      <div class="grid two">
+        <div class="card">
+          <table>
+            <thead>
+              <tr><th>Landing page</th><th>Sessions</th><th>Converted sessions</th><th>Rate</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>/</td><td>9,284</td><td>636</td><td>6.85%</td></tr>
+              <tr><td>/locations/denver-co</td><td>186</td><td>11</td><td>5.91%</td></tr>
+              <tr><td>/services/windshield-replacement</td><td>272</td><td>18</td><td>6.62%</td></tr>
+              <tr><td>/services/windshield-repair</td><td>160</td><td>10</td><td>6.25%</td></tr>
+              <tr><td>/book</td><td>174</td><td>8</td><td>4.60%</td></tr>
+              <tr><td>/contact</td><td>125</td><td>1</td><td>0.80%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>CRO interpretation</h3>
+          <ul>
+            <li>The homepage is the primary conversion engine.</li>
+            <li>Hero CTAs, homepage quote forms, and quick-capture elements are doing most of the work.</li>
+            <li>Deeper service pages are not obviously poor converters — they simply do not get enough qualified traffic yet.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 5</div>
+      <h2>Calls dominate the real intake funnel</h2>
+      <div class="grid three">
+        <div class="card">
+          <div class="metric">1,002</div>
+          <p>Call leads in CRM</p>
+        </div>
+        <div class="card">
+          <div class="metric">456</div>
+          <p>Form leads in CRM</p>
+        </div>
+        <div class="card">
+          <div class="metric">1,461</div>
+          <p>Qualified inbound calls<br><small>30 seconds or longer</small></p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p><strong>Meaning:</strong> this is a call-first business. Any Denver growth plan that does not tighten phone attribution will stay partly blind.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 6</div>
+      <h2>Measurement quality is the biggest blocker</h2>
+      <div class="grid three">
+        <div class="card">
+          <div class="metric">0.68</div>
+          <p>Recorded page views per session<br><small>mathematically wrong in a healthy setup</small></p>
+        </div>
+        <div class="card">
+          <div class="metric">0</div>
+          <p>Bounce sessions recorded<br><small>bounce tracking is unusable</small></p>
+        </div>
+        <div class="card">
+          <div class="metric">1</div>
+          <p>Explicit <code>google_organic</code> lead in CRM<br><small>almost certainly under-attributed</small></p>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>What is broken or incomplete</h3>
+          <ul>
+            <li>On-site analytics cannot be fully trusted.</li>
+            <li>Lead attribution is patchy and too many records are unattributed.</li>
+            <li>City/state data is inconsistent even when zip and revenue exist.</li>
+            <li>Call demand is only partially connected back to web sessions and campaigns.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Why it matters</h3>
+          <ul>
+            <li>Google Ads may be optimizing toward soft or partially observed conversions.</li>
+            <li>Denver-specific ROAS cannot be stated with confidence yet.</li>
+            <li>CRO testing is riskier when the baseline instrumentation is this weak.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 7</div>
+      <h2>Revenue signal exists, but Denver slicing is noisy</h2>
+      <div class="grid two">
+        <div class="card">
+          <table>
+            <thead>
+              <tr><th>CRM slice</th><th>Leads</th><th>Completed</th><th>Revenue</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>All non-test leads</td><td>1,514</td><td>272</td><td>$102,270.39</td></tr>
+              <tr><td>Denver proxy (city contains Denver or 802xx zip)</td><td>96</td><td>21</td><td>$9,514.24</td></tr>
+            </tbody>
+          </table>
+          <p class="small">The Denver proxy should be treated as a rough floor, not a final Denver revenue total.</p>
+        </div>
+        <div class="card">
+          <h3>Platform mix in CRM</h3>
+          <ul>
+            <li>Google leads: 632 total · 106 completed · $41.2k revenue</li>
+            <li>Microsoft leads: 236 total · 56 completed · $20.9k revenue</li>
+            <li>Unattributed leads: 560 total · 100 completed · $37.5k revenue</li>
+          </ul>
+          <p>That unattributed bucket is too large. It is hiding real acquisition truth.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 8</div>
+      <h2>Top 7 actions, ranked by impact</h2>
+      <div class="grid two">
+        <div class="card">
+          <ol>
+            <li><strong>Fix measurement first.</strong> Audit GA4/GTM/session tracking, bounce logic, pageview capture, and lead hidden fields.</li>
+            <li><strong>Lock down phone attribution.</strong> Audit call extensions, GBP calls, desktop/manual dial paths, and dynamic number insertion.</li>
+            <li><strong>Tighten Google Ads conversion definitions.</strong> Make sure bidding is optimizing on hard leads, not soft proxy actions.</li>
+            <li><strong>Rebuild the Denver SEO surface.</strong> Upgrade <code>/locations/denver-co</code> for local intent, local proof, and Denver-specific relevance.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <ol start="5">
+            <li><strong>Protect the homepage conversion path.</strong> Keep the urgent-user funnel fast, mobile-first, and low-friction.</li>
+            <li><strong>Validate PMax before scaling it.</strong> Check brand cannibalization and offline quality before trusting the low CPA.</li>
+            <li><strong>Use Denver service pages as traffic sinks.</strong> Improve rankings and internal linking into windshield replacement, repair, insurance, and Denver location pages.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 9</div>
+      <h2>30-day action plan</h2>
+      <div class="grid three">
+        <div class="card">
+          <h3>Week 1</h3>
+          <ul>
+            <li>Audit tracking stack</li>
+            <li>Define hard conversions</li>
+            <li>Inspect call attribution gaps</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Week 2</h3>
+          <ul>
+            <li>Refresh Denver page copy + schema</li>
+            <li>Strengthen Denver service-page internal links</li>
+            <li>Review PMax search term / brand behavior</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Weeks 3–4</h3>
+          <ul>
+            <li>Launch measurement fixes</li>
+            <li>Watch lead-source cleanliness</li>
+            <li>Adjust paid spend using validated data only</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">Slide 10</div>
+      <h2>Gemini second-opinion checkpoints</h2>
+      <div class="grid three">
+        <div class="card">
+          <h3>Acquisition check</h3>
+          <p>Gemini agreed Denver is overly dependent on paid, Denver SEO is weak, and PMax needs guardrails before its CPA is trusted.</p>
+        </div>
+        <div class="card">
+          <h3>CRO check</h3>
+          <p>Gemini agreed the homepage is the true conversion engine and warned that deep engagement is not the goal in an urgent-service business.</p>
+        </div>
+        <div class="card">
+          <h3>Measurement check</h3>
+          <p>Gemini agreed measurement is the biggest fire and specifically highlighted phone attribution as the critical blind spot.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Prepared 2026-05-02 · Main site only · Denver focus · Advisory-only</div>
+  </div>
+</body>
+</html>
