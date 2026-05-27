@@ -17,6 +17,12 @@ interface SearchTerm {
   'Cost / conv.': string;
 }
 
+function parseNumericMetric(value?: string): number {
+  if (!value) return 0;
+  const parsed = Number.parseFloat(value.replace(/[$,%\s,]/g, ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export async function POST(request: NextRequest) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
 
@@ -95,10 +101,10 @@ export async function POST(request: NextRequest) {
 
     if (campaignTotalRow) {
       campaignTotals = {
-        clicks: parseInt(campaignTotalRow.Clicks?.replace(/,/g, '') || '0') || 0,
-        impressions: parseInt(campaignTotalRow['Impr.']?.replace(/,/g, '') || '0') || 0,
-        cost: parseFloat(campaignTotalRow.Cost?.replace(/[$,]/g, '') || '0') || 0,
-        conversions: parseFloat(campaignTotalRow.Conversions?.replace(/,/g, '') || '0') || 0,
+        clicks: Math.trunc(parseNumericMetric(campaignTotalRow.Clicks)),
+        impressions: Math.trunc(parseNumericMetric(campaignTotalRow['Impr.'])),
+        cost: parseNumericMetric(campaignTotalRow.Cost),
+        conversions: parseNumericMetric(campaignTotalRow.Conversions),
       };
     }
 
@@ -123,11 +129,11 @@ export async function POST(request: NextRequest) {
       if (!term['Search term']) return;
       if (term['Search term'].toLowerCase().startsWith('total:')) return;
 
-      const clicks = parseInt(term.Clicks) || 0;
-      const impressions = parseInt(term['Impr.']) || 0;
-      const cost = term.Cost ? parseFloat(term.Cost.replace('$', '')) : 0;
-      const conversions = parseFloat(term.Conversions) || 0;
-      const convRate = term['Conv. rate'] ? parseFloat(term['Conv. rate'].replace('%', '')) : 0;
+      const clicks = Math.trunc(parseNumericMetric(term.Clicks));
+      const impressions = Math.trunc(parseNumericMetric(term['Impr.']));
+      const cost = parseNumericMetric(term.Cost);
+      const conversions = parseNumericMetric(term.Conversions);
+      const convRate = parseNumericMetric(term['Conv. rate']);
 
       // Note: We use campaignTotals for overall metrics (not summing individual rows)
       // Individual rows are only used for keyword analysis below

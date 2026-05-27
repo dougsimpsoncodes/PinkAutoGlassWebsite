@@ -14,7 +14,9 @@
     "verify:brands": "./scripts/verify-brand-urls.sh",
     "verify:schema": "node scripts/validate-schema.js",
     "ci:guard:ad-platform": "node scripts/ci/guard-no-bing.js",
-    "ci:guards": "npm run ci:guard:ad-platform",
+    "ci:guard:mygrant": "tsx scripts/verify-mygrant-client.ts",
+    "ci:guard:autobolt": "tsx scripts/verify-autobolt-client.ts",
+    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt",
     "env:pull": "vercel env pull .env.local && sed -i '' 's/\\\\n\"/\"/g' .env.local && echo '✓ .env.local pulled and sanitized (no \\n)'",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
@@ -51,7 +53,7 @@
     "next-themes": "^0.4.6",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
-    "postcss": "8.4.32",
+    "postcss": "^8.5.10",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "recharts": "^3.3.0",
@@ -70,10 +72,15 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "dotenv": "^17.2.3",
-    "eslint": "8.56.0",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.0.4",
     "nodemon": "^3.1.10",
     "tsx": "^4.20.6"
+  },
+  "overrides": {
+    "@typescript-eslint/parser": "^8.59.2",
+    "@typescript-eslint/typescript-estree": "^8.59.2",
+    "postcss": "^8.5.10"
   },
   "engines": {
     "node": ">=18.17.0"

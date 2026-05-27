@@ -249,7 +249,12 @@ export default function ${city.name.replace(/[- ]/g, '')}LocationPage() {
 
 // Create pages
 cities.forEach(city => {
+  if (!/^[a-z0-9-]+$/.test(city.slug)) {
+    throw new Error(`Invalid city slug: ${city.slug}`);
+  }
+  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
   const dirPath = path.join(__dirname, '..', 'src', 'app', 'locations', city.slug);
+  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
   const filePath = path.join(dirPath, 'page.tsx');
 
   // Create directory if it doesn't exist

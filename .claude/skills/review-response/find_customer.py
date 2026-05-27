@@ -78,6 +78,13 @@ if not SUPABASE_URL or not SERVICE_KEY:
     }))
     sys.exit(1)
 
+parsed_supabase_url = urllib.parse.urlparse(SUPABASE_URL)
+if parsed_supabase_url.scheme != "https" or not parsed_supabase_url.netloc:
+    print(json.dumps({
+        "error": "NEXT_PUBLIC_SUPABASE_URL must be an absolute https URL"
+    }))
+    sys.exit(1)
+
 
 # --- Supabase REST helpers ----------------------------------------------------
 
@@ -92,7 +99,8 @@ def _request(path: str, params: dict) -> list:
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        # SUPABASE_URL is validated above to prevent file:// and other local schemes.
+        with urllib.request.urlopen(req, timeout=30) as r:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             return json.loads(r.read())
     except urllib.error.HTTPError as e:
         return [{"__error__": f"HTTP {e.code}: {e.read().decode()[:300]}"}]

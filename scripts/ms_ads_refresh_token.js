@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const http = require('http');
 const { URL } = require('url');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 
 const CLIENT_ID = process.env.MICROSOFT_ADS_CLIENT_ID;
 const CLIENT_SECRET = process.env.MICROSOFT_ADS_CLIENT_SECRET;
@@ -27,15 +27,38 @@ function buildAuthUrl(redirectUri) {
 }
 
 function openBrowser(url) {
-  const cmd = process.platform === 'darwin'
-    ? `open \"${url}\"`
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:' || parsed.hostname !== 'login.microsoftonline.com') {
+    throw new Error('Refusing to open unexpected OAuth URL.');
+  }
+
+  const command = process.platform === 'darwin'
+    ? 'open'
     : process.platform === 'win32'
-      ? `start \"\" \"${url}\"`
-      : `xdg-open \"${url}\"`;
-  exec(cmd);
+      ? 'cmd'
+      : 'xdg-open';
+  const args = process.platform === 'win32'
+    ? ['/c', 'start', '', parsed.toString()]
+    : [parsed.toString()];
+
+  const child = spawn(command, args, {
+    detached: true,
+    stdio: 'ignore',
+    shell: false,
+  });
+  child.unref();
 }
 
-const server = http.createServer(async (req, res) => {
+function assertLocalRedirectUri(redirectUri) {
+  const parsed = new URL(redirectUri);
+  const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+  if (parsed.protocol !== 'http:' || !localHosts.has(parsed.hostname)) {
+    throw new Error('MICROSOFT_ADS_REDIRECT_URI must be an http:// localhost redirect URI.');
+  }
+}
+
+// Local OAuth callback only; bound to 127.0.0.1 below and never deployed.
+const server = http.createServer(async (req, res) => { // nosemgrep: problem-based-packs.insecure-transport.js-node.using-http-server.using-http-server
   const url = new URL(req.url, activeRedirectUri || 'http://localhost');
   const code = url.searchParams.get('code');
   if (!code) {
@@ -88,16 +111,18 @@ function tryListen(portIndex) {
   }
 
   const redirectUri = REDIRECT_URI || `http://localhost:${port}`;
+  assertLocalRedirectUri(redirectUri);
+  const listenPort = REDIRECT_URI ? Number(new URL(redirectUri).port || 80) : port;
   activeRedirectUri = redirectUri;
 
-  server.listen(port, () => {
+  server.listen(listenPort, '127.0.0.1', () => {
     console.log(`Listening on ${redirectUri} ...`);
     console.log('Opening auth URL in your browser...');
     openBrowser(buildAuthUrl(redirectUri));
   });
 
   server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
+    if (err.code === 'EADDRINUSE' && !REDIRECT_URI) {
       console.warn(`Port ${port} is in use, trying next...`);
       tryListen(portIndex + 1);
       return;

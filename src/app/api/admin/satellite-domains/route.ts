@@ -176,7 +176,7 @@ async function fetchDomainGsc(
     if (code === 403 || code === 404 || code === '403' || code === '404') {
       return { summary: zeros, daily: [], error: `Domain not verified in GSC (${code})` };
     }
-    console.error(`GSC fetch error for ${domain}:`, err?.message || err);
+    console.error('GSC fetch error for domain:', domain, err?.message || err);
     return { summary: zeros, daily: [], error: err?.message || 'GSC fetch failed' };
   }
 }

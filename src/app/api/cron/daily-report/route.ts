@@ -293,11 +293,11 @@ async function fetchData() {
         if (msPerformance) break;
         
         if (attempt < 3) {
-          console.log(`   No data on attempt ${attempt}, waiting 5 seconds...`);
+          console.log('   No data on attempt, waiting 5 seconds:', attempt);
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
       } catch (attemptError: any) {
-        console.error(`   Attempt ${attempt} failed:`, attemptError.message);
+        console.error('   Microsoft Ads attempt failed:', attempt, attemptError.message);
         if (attempt === 3) throw attemptError;
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
@@ -310,9 +310,9 @@ async function fetchData() {
         spend: msPerformance.spend,
         conversions: msPerformance.conversions,
       };
-      console.log(`✅ Microsoft Ads for ${yesterdayStr}:`, msAdsDataByDate[yesterdayStr]);
+      console.log('✅ Microsoft Ads data loaded for date:', yesterdayStr, msAdsDataByDate[yesterdayStr]);
     } else {
-      console.log(`⚠️ Microsoft Ads: No valid data returned for ${yesterdayStr}`);
+      console.log('⚠️ Microsoft Ads: no valid data returned for date:', yesterdayStr);
       // Add note to email about missing data
       msAdsDataByDate[yesterdayStr] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
     }

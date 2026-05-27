@@ -162,10 +162,10 @@ export async function PATCH(req: NextRequest) {
         });
         reviewScheduled = result.scheduled > 0;
         if (reviewScheduled) {
-          console.log(`⭐ Review request auto-scheduled for lead ${id}: ${result.scheduled} messages`);
+          console.log('⭐ Review request auto-scheduled for lead:', id, result.scheduled, 'messages');
         }
       } catch (err) {
-        console.error(`❌ Review request scheduling failed for lead ${id}:`, err);
+        console.error('❌ Review request scheduling failed for lead:', id, err);
         // Don't fail the lead update — review scheduling is supplementary
       }
     }

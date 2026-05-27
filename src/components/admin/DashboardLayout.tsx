@@ -19,6 +19,7 @@ import {
   MapPinOff,
   Grid2x2,
   FileText,
+  BadgeDollarSign,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -40,6 +41,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Search Ads Control', href: '/admin/dashboard/search-ads-control', icon: Target },
     { name: 'Leads', href: '/admin/dashboard/leads', icon: Users },
+    { name: 'Automated Quotes', href: '/admin/dashboard/quotes', icon: BadgeDollarSign },
     { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
     { name: 'Website & Traffic', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
     { name: 'Satellite Sites', href: '/admin/dashboard/satellite-domains', icon: Globe },

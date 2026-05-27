@@ -177,7 +177,7 @@ async function testMicrosoftAds() {
 
     console.log('\n=== Parsed Results ===');
     for (let i = 0; i < headers.length; i++) {
-      console.log(headers[i] + ':', values[i]);
+      console.log('Parsed value:', headers[i], values[i]);
     }
 
     // Calculate spend

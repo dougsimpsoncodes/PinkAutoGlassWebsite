@@ -109,14 +109,14 @@ export async function POST(req: NextRequest) {
               .single();
 
             if (error) {
-              console.error(`  ❌ Error upserting quote ${quote.id}:`, error);
+              console.error('  ❌ Error upserting quote:', quote.id, error);
               results.quotes.errors.push(`Quote ${quote.id}: ${error.message}`);
             } else {
               results.quotes.created++;
-              console.log(`  ✅ Upserted quote ${quote.id}`);
+              console.log('  ✅ Upserted quote:', quote.id);
             }
           } catch (err: any) {
-            console.error(`  ❌ Error processing quote ${quote.id}:`, err);
+            console.error('  ❌ Error processing quote:', quote.id, err);
             results.quotes.errors.push(`Quote ${quote.id}: ${err.message}`);
           }
         }
@@ -181,14 +181,14 @@ export async function POST(req: NextRequest) {
               .single();
 
             if (error) {
-              console.error(`  ❌ Error upserting invoice ${invoice.id}:`, error);
+              console.error('  ❌ Error upserting invoice:', invoice.id, error);
               results.invoices.errors.push(`Invoice ${invoice.id}: ${error.message}`);
             } else {
               results.invoices.created++;
-              console.log(`  ✅ Upserted invoice ${invoice.id}`);
+              console.log('  ✅ Upserted invoice:', invoice.id);
             }
           } catch (err: any) {
-            console.error(`  ❌ Error processing invoice ${invoice.id}:`, err);
+            console.error('  ❌ Error processing invoice:', invoice.id, err);
             results.invoices.errors.push(`Invoice ${invoice.id}: ${err.message}`);
           }
         }

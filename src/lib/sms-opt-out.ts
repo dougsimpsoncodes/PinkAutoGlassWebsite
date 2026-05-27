@@ -66,7 +66,7 @@ export async function recordOptOut(phoneE164: string, source = 'sms'): Promise<b
     );
 
   if (upsertError) {
-    console.error(`❌ Failed to record opt-out for ${phoneE164}:`, upsertError.message);
+    console.error('❌ Failed to record opt-out for phone:', phoneE164, upsertError.message);
     throw new Error(`Opt-out recording failed: ${upsertError.message}`);
   }
 
@@ -118,7 +118,7 @@ export async function recordOptIn(phoneE164: string): Promise<boolean> {
     );
 
   if (upsertError) {
-    console.error(`❌ Failed to record opt-in for ${phoneE164}:`, upsertError.message);
+    console.error('❌ Failed to record opt-in for phone:', phoneE164, upsertError.message);
     throw new Error(`Opt-in recording failed: ${upsertError.message}`);
   }
 

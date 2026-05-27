@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
             });
             reviewsScheduled += result.scheduled;
           } catch (err: any) {
-            console.error(`Review request failed for lead ${lead.id}:`, err.message);
+            console.error('Review request failed for lead:', lead.id, err.message);
           }
         }
       }

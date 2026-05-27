@@ -394,7 +394,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Team member flag — suppresses internal notifications only, not customer comms
-    const isTeamMember = isExcludedPhone(validatedData.phone);
+    const isTeamMember = isExcludedPhone(validatedData.phone) || isTestPhone(validatedData.phone);
 
     try {
       const autoReplyPromises: Promise<boolean>[] = [];

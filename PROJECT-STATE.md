@@ -8,7 +8,7 @@ Live client site at `pinkautoglass.com`; as of 2026-04-12 the latest investigate
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
 
 ## Current Focus
-Execute the first post-audit measurement and attribution hardening pass so Denver paid/SEO decisions are based on stricter, more trustworthy call attribution data, scope the RingCentral recording-analysis pilot for Denver closed-vs-lost call review, and unblock the PAG/satellite Search Console audit with a secrets-safe local OAuth exchange flow.
+Automated quote engine MVP foundation (exact cash windshield quote when confident, estimate/manual review otherwise) AND ongoing measurement/attribution hardening so Denver paid/SEO decisions are based on stricter call attribution data. RingCentral recording-analysis pilot for Denver closed-vs-lost is scoped; secrets-safe local OAuth for Search Console is unblocked.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
@@ -39,7 +39,8 @@ Execute the first post-audit measurement and attribution hardening pass so Denve
 - GitHub Actions / Vercel secrets: stored in GitHub repo settings and Vercel project settings
 
 ## Integrations
-- **Mygrant Glass API** — setup form drafted 2026-04-15 (not yet submitted pending commercial fields). Vendor contact: `api-support@mygrantglass.com` (Leon Staub / Mark Wright / Tim Veilleux). Mygrant does not IP-allowlist; we are identified in their logs by a required `User-Agent` header. Exact string and enforcement requirements live in `.claude/CLAUDE.md` under "Mygrant API Integration — User-Agent Rule". **Enforcement is code-level, not documentation-level:** first PR touching `src/lib/mygrant/` must ship a central client module, a `MYGRANT_USER_AGENT` constant, a unit test asserting the exact header value, and a repo guard against direct fetch to `mygrantglass.com` outside that module. Client code not yet built.
+- **Mygrant Glass API** — setup form drafted 2026-04-15; customer API access confirmed by Leon. Vendor contact: `api-support@mygrantglass.com` (Leon Staub / Mark Wright / Tim Veilleux). Mygrant does not IP-allowlist; traffic is identified by a required `User-Agent` header. Exact string and enforcement requirements live in `.claude/CLAUDE.md` under "Mygrant API Integration — User-Agent Rule". Client foundation now lives in `src/lib/mygrant/client.ts`; guard script: `npx tsx scripts/verify-mygrant-client.ts`.
+- **PlateToVIN API** — selected as MVP plate lookup provider. Client foundation lives in `src/lib/platelookup/client.ts`; smoke script: `npx tsx scripts/platetovin-smoke.ts --plate=ABC123 --state=CO`.
 
 ## Change Log
 - 2026-04-12: Created project state file in the active repo and logged self-healed investigation for `ci_failure_210`.
@@ -77,6 +78,7 @@ Execute the first post-audit measurement and attribution hardening pass so Denve
 - 2026-05-02: Continued the pilot through transcript review and first-pass scoring. Fully scored the lost cohort, scored multiple clean win examples, and wrote `analysis/ringcentral-pilot/pilot-findings.md`. Main early signal: converted calls usually stay live until a concrete appointment is locked, while non-converted calls repeatedly leak at VIN/callback handoffs, same-day unavailability without a save attempt, early competitor release, or other optional-next-step endings. Also discovered a methodology issue on the won side: earliest-call and nearest-install-call selection both pulled contaminated transfer/follow-up/admin calls, so a transcript-aware heuristic (`analysis/ringcentral-pilot/reselected-won-candidates-v2.json`) is now being used to clean the final won cohort before final conclusions.
 - 2026-05-02: Turned the pilot findings into an operational sales artifact: `analysis/ringcentral-pilot/CALL-CLOSE-SOP.md`. The SOP encodes the highest-leverage fixes from the call review: quote fast, keep control, save same-day misses, do not let VIN verification restart the sale, and require every viable call to end with a concrete booked or time-bound next step.
 - 2026-05-02: Closed out the first documentation pass for the RingCentral pilot by adding `analysis/ringcentral-pilot/README.md`, which explains scope, artifacts, main findings, confidence/caveats, and the remaining won-cohort cleanup limitation. Current reusable package is now: cohort files, local transcripts/audio, scored sheet, findings memo, and rep SOP.
+- 2026-05-09: Started automated quote engine MVP foundation. Added Mygrant SOAP inquiry client + guard, PlateToVIN client, quote identify API boundary, cash windshield pricing helper, smoke scripts, and migration draft `20260509_automated_quotes.sql`. Migration not applied yet; live API credentials still needed in `.env.local`.
 
 ## Attribution Remediation (in progress)
 

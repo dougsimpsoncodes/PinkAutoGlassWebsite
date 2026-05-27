@@ -280,7 +280,12 @@ export default function ${loc.city.replace(/\s+/g, '')}LocationPage() {
 
 // Generate all location pages
 locations.forEach(loc => {
+  if (!/^[a-z0-9-]+$/.test(loc.slug)) {
+    throw new Error(`Invalid location slug: ${loc.slug}`);
+  }
+  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
   const dir = path.join(__dirname, '..', 'src', 'app', 'locations', loc.slug);
+  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
   const filePath = path.join(dir, 'page.tsx');
 
   if (!fs.existsSync(dir)) {

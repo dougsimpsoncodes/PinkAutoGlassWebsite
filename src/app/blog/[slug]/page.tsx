@@ -5,7 +5,7 @@ import { Calendar, Clock, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { getAllBlogPosts, getBlogPostBySlug, getRelatedPosts, BlogContent } from '@/data/blog';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import CTAButtons from '@/components/CTAButtons';
-import { getArticleSchema, combineSchemas } from '@/lib/schema';
+import { getArticleSchema, combineSchemas, getSchemaJSON } from '@/lib/schema';
 import { getBreadcrumbSchema } from '@/lib/schema';
 
 interface BlogArticlePageProps {
@@ -184,7 +184,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
+        dangerouslySetInnerHTML={{ __html: getSchemaJSON(combinedSchema) }} // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
       />
 
       <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">

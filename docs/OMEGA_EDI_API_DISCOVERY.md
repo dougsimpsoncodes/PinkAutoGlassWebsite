@@ -32,7 +32,37 @@
 
 ## Parts/Pricing Endpoints (Need Discovery)
 
-Check for any of these:
+The quote-engine path should use Omega for vehicle-to-NAGS resolution, then Mygrant for supplier
+cost and inventory. A read-only smoke script exists:
+
+```bash
+npx tsx scripts/omega-nags-smoke.ts --vin=17_CHARACTER_VIN
+npx tsx scripts/omega-nags-smoke.ts --vin=17_CHARACTER_VIN --quote-first
+npx tsx scripts/omega-nags-smoke.ts --vehicle-id=NAGS_CAR_ID --nags=FW04792
+```
+
+The script requires `OMEGA_EDI_API_KEY` in `.env.local` and intentionally does not print the raw API key or raw VIN.
+
+### Target NAGS Endpoints
+
+| Purpose | Endpoint | Status |
+| --- | --- | --- |
+| List valid years / search tree | `GET /NagsVehicles/search` | To verify |
+| Models for a year | `GET /NagsVehicles/search/{year}` | To verify |
+| Body styles for year + make | `GET /NagsVehicles/search/{year}/{make_id}` | To verify |
+| Vehicle IDs for YMM | `GET /NagsVehicles/search/{year}/{make_id}/{model_id}` | To verify |
+| VIN or NAGS CarID to glass candidates | `GET /NagsVehicles/{vehicle_id}?load_glass=WINDSHIELD&load_options=true` | Smoke script ready |
+| Optional Omega quote benchmark | `GET /NagsQuotes/{vehicle_id}/{nags_part_number}` | Smoke script ready |
+
+Before production implementation, verify:
+
+- Existing `OMEGA_EDI_API_KEY` is authorized for `/NagsVehicles/*`.
+- NAGS license seats are assigned to the API user/key.
+- VIN lookup credits are enabled and confirm per-successful-lookup cost.
+- Returned part numbers are canonical NAGS values accepted by Mygrant SOAP Inquiry.
+- Multiple windshield variants include enough options data for customer/admin disambiguation.
+
+Older speculative candidates from the first integration plan:
 
 ### Parts Lookup by Vehicle
 

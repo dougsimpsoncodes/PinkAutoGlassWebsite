@@ -52,18 +52,39 @@ function parseConnectionString(url) {
     host: u.hostname,
     port: parseInt(u.port) || 5432,
     database: u.pathname.replace(/^\//, ''),
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: true },
   };
 }
 
+function resolveMigrationPath(inputPath) {
+  const migrationsDir = fs.realpathSync(path.resolve(root, 'supabase', 'migrations'));
+  const candidate = path.isAbsolute(inputPath) ? inputPath : `${process.cwd()}${path.sep}${inputPath}`;
+
+  if (!fs.existsSync(candidate)) {
+    throw new Error(`Migration file not found: ${candidate}`);
+  }
+
+  const resolved = fs.realpathSync(candidate);
+  const relative = path.relative(migrationsDir, resolved);
+
+  if (relative.startsWith('..') || path.isAbsolute(relative) || !resolved.endsWith('.sql')) {
+    throw new Error(`Migration path must be a .sql file inside ${migrationsDir}`);
+  }
+
+  return resolved;
+}
+
 async function runMigrationFile(filePath) {
-  if (!fs.existsSync(filePath)) {
-    console.error(`❌ File not found: ${filePath}`);
+  let resolvedPath;
+  try {
+    resolvedPath = resolveMigrationPath(filePath);
+  } catch (err) {
+    console.error(`❌ ${err.message}`);
     process.exit(1);
   }
 
-  const sql = fs.readFileSync(filePath, 'utf8');
-  const fileName = path.basename(filePath);
+  const sql = fs.readFileSync(resolvedPath, 'utf8');
+  const fileName = path.basename(resolvedPath);
 
   console.log(`\n🔄 Applying: ${fileName}`);
 
@@ -71,7 +92,11 @@ async function runMigrationFile(filePath) {
   await client.connect();
 
   try {
-    await client.query(sql);
+    const migrationQuery = Object.create(null);
+    migrationQuery.text = sql;
+    migrationQuery.values = [];
+    // Migration SQL is intentionally loaded only from repo-controlled supabase/migrations files.
+    await client.query(migrationQuery); // nosemgrep: javascript.lang.security.audit.sqli.node-postgres-sqli.node-postgres-sqli
     console.log(`✅ Applied: ${fileName}`);
   } catch (err) {
     console.error(`❌ Failed: ${fileName}`);

@@ -48,7 +48,7 @@ async function convertToWebP() {
       console.log(`✅ ${imageName}`);
       console.log(`   Original: ${originalSizeKB} KB → WebP: ${newSizeKB} KB (${savings}% smaller)\n`);
     } catch (error) {
-      console.error(`❌ Error converting ${imageName}:`, error.message);
+      console.error('❌ Error converting image:', imageName, error.message);
     }
   }
 

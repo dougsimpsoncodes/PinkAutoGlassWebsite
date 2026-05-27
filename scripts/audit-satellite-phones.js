@@ -72,11 +72,20 @@ function scanDirectory(dirPath) {
   const found = new Set();
   if (!fs.existsSync(dirPath)) return found;
 
+  function safeChildPath(parent, childName) {
+    const resolved = path.resolve(parent, childName); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const root = path.resolve(parent); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+      throw new Error(`Path escaped scan root: ${childName}`);
+    }
+    return resolved;
+  }
+
   function walk(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.name === 'node_modules' || entry.name === '.next') continue;
-      const full = path.join(dir, entry.name);
+      const full = safeChildPath(dir, entry.name);
       if (entry.isDirectory()) {
         walk(full);
       } else if (entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) {

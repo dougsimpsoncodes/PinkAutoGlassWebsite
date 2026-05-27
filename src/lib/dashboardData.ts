@@ -152,13 +152,13 @@ async function queryWithDateColumnFallback(
 
     // Try the next fallback only for missing-column errors.
     if (!isMissingColumnError(error)) {
-      console.error(`[${table}] query failed on ${dateColumn}:`, error);
+      console.error('Dashboard query failed on date column:', table, dateColumn, error);
       return [];
     }
   }
 
   if (lastError) {
-    console.error(`[${table}] date filter failed for all fallback columns:`, lastError);
+    console.error('Dashboard date filter failed for all fallback columns:', table, lastError);
   }
 
   return [];

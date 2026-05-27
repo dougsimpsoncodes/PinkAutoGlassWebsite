@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
             });
             reviewsScheduled += result.scheduled;
           } catch (err: any) {
-            console.error(`Omega cron: review request failed for lead ${lead.id}:`, err.message);
+            console.error('Omega cron: review request failed for lead:', lead.id, err.message);
           }
         }
-        console.log(`Omega cron: scheduled ${reviewsScheduled} review request messages`);
+        console.log('Omega cron: scheduled review request messages:', reviewsScheduled);
       }
     } catch (err: any) {
       console.error('Omega cron: review request scheduling error:', err.message);

@@ -95,7 +95,7 @@ git ls-files | grep "\.env"
 **Sample Placeholders**:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
 FORM_INTEGRITY_SECRET=your-32-character-hex-key-for-form-token-signing
 ```
 

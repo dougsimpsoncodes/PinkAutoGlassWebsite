@@ -335,5 +335,5 @@ export function combineSchemas(...schemas: any[]) {
  * Note: Use this directly in your component JSX instead
  */
 export function getSchemaJSON(schema: any): string {
-  return JSON.stringify(schema);
+  return JSON.stringify(schema).replace(/</g, '\\u003c');
 }

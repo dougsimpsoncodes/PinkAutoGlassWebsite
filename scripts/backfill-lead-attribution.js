@@ -158,7 +158,7 @@ async function backfillAttribution() {
         .insert(batch);
 
       if (insertError) {
-        console.error(`Error inserting batch ${i / 50 + 1}:`, insertError);
+        console.error('Error inserting batch:', i / 50 + 1, insertError);
       } else {
         console.log(`Inserted batch ${i / 50 + 1} (${batch.length} events)`);
       }

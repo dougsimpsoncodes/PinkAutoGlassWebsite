@@ -95,9 +95,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       // Log results
       results.forEach((result) => {
         if (result.success) {
-          console.log(`✅ ${result.name}`);
+          console.log('✅ Sync endpoint succeeded:', result.name);
         } else {
-          console.error(`❌ ${result.name}:`, result.data?.error || `HTTP ${result.status}`);
+          console.error('❌ Sync endpoint failed:', result.name, result.data?.error || `HTTP ${result.status}`);
         }
       });
 

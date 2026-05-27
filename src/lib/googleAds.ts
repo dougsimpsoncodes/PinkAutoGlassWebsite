@@ -491,7 +491,7 @@ export async function fetchCallView(
     const results = await customer.query(query);
     return results.map(mapCallViewRow);
   } catch (error: any) {
-    console.error(`Error fetching call_view for ${singleDate}:`, error);
+    console.error('Error fetching call_view for date:', singleDate, error);
     throw new Error(`Failed to fetch call_view for ${singleDate}: ${error.message}`);
   }
 }
@@ -530,10 +530,10 @@ export async function fetchCallViewRange(
 
   try {
     const results = await customer.query(query);
-    console.log(`📞 Fetched ${results.length} call_view records for ${startDate} to ${endDate}`);
+    console.log('📞 Fetched call_view records for range:', results.length, startDate, endDate);
     return results.map(mapCallViewRow);
   } catch (error: any) {
-    console.error(`Error fetching call_view for ${startDate} to ${endDate}:`, error);
+    console.error('Error fetching call_view for range:', startDate, endDate, error);
     throw new Error(`Failed to fetch call_view: ${error.message}`);
   }
 }

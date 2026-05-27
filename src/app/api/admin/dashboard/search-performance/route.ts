@@ -42,13 +42,13 @@ async function fetchRowsWithDateFallback(
 
     lastError = error;
     if (!isMissingColumnError(error)) {
-      console.error(`Error fetching ${table} data (${dateColumn}):`, error);
+      console.error('Error fetching table data for date column:', table, dateColumn, error);
       return [];
     }
   }
 
   if (lastError) {
-    console.error(`Error fetching ${table} data (all date columns failed):`, lastError);
+    console.error('Error fetching table data: all date columns failed:', table, lastError);
   }
 
   return [];
