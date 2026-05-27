@@ -17,6 +17,10 @@ const CLIENT_PATH = path.join(ROOT, 'src/lib/mygrant/client.ts');
 const IDENTITY_PATH = path.join(ROOT, 'src/lib/integration-identity.ts');
 const AUTOBOLT_CLIENT_PATH = path.join(ROOT, 'src/lib/autobolt/client.ts');
 const AUTOBOLT_VERIFY_PATH = path.join(ROOT, 'scripts/verify-autobolt-client.ts');
+// Standalone diagnostic scripts that probe vendors directly; can't easily
+// import from src/ (they're .mjs and need to run via plain `node`).
+const PROBE_MYGRANT_PATH = path.join(ROOT, 'scripts/probe-mygrant-nags.mjs');
+const PROBE_AUTOBOLT_PATH = path.join(ROOT, 'scripts/probe-autobolt-vehicle.mjs');
 
 async function assertHeader() {
   let capturedUserAgent: string | null = null;
@@ -51,12 +55,16 @@ function assertSingleUserAgentDefinition() {
   }
 
   // Allowlist: identity module owns the literal; vendor clients (Mygrant, AutoBolt)
-  // re-export aliases; verify scripts assert against the expected value.
+  // re-export aliases; verify scripts assert against the expected value;
+  // standalone diagnostic probe scripts hardcode it because they can't import
+  // from src/.
   const literalAllowlist = new Set([
     CLIENT_PATH,
     IDENTITY_PATH,
     AUTOBOLT_CLIENT_PATH,
     AUTOBOLT_VERIFY_PATH,
+    PROBE_MYGRANT_PATH,
+    PROBE_AUTOBOLT_PATH,
   ]);
   const constantAllowlist = new Set([CLIENT_PATH]);
 
@@ -85,7 +93,9 @@ function assertMygrantDomainGuard() {
     .filter(file => !file.endsWith('scripts/verify-mygrant-client.ts'))
     .filter(file => !file.endsWith('.env.example'));
 
-  const invalid = matches.filter(file => file !== CLIENT_PATH);
+  // Standalone diagnostic probe needs the base URL inline (plain .mjs, no TS imports).
+  const allowed = new Set([CLIENT_PATH, PROBE_MYGRANT_PATH]);
+  const invalid = matches.filter(file => !allowed.has(file));
   if (invalid.length > 0) {
     throw new Error(`Mygrant domain references must stay centralized in src/lib/mygrant/client.ts. Offenders:\n${invalid.join('\n')}`);
   }
@@ -129,6 +139,8 @@ function walk(dir: string, visit: (file: string) => void) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (['.git', '.next', 'node_modules', 'playwright-report', 'test-results'].includes(entry.name)) continue;
+      // Skip stale TS build outputs under scripts/temp/ — gitignored, not source.
+      if (entry.name === 'temp' && /\/scripts\/?$/.test(dir)) continue;
       walk(fullPath, visit);
     } else if (entry.isFile()) {
       visit(fullPath);

@@ -37,6 +37,7 @@ interface QuoteResult {
     qtyAvailable?: number;
     estimatedDeliveryDate?: string;
   };
+  adas?: { requiresCalibration: boolean; calibrations: Array<{ type?: string; sensor?: string }> };
 }
 
 const STATE_OPTIONS = ['AZ', 'CO', 'CA', 'NM', 'NV', 'TX', 'UT', 'WY'];
@@ -152,6 +153,12 @@ export default function AutomatedQuoteForm() {
           },
           state: plateState,
           zip,
+          // Always send hasAdas. The server prioritizes AutoBolt's calibrations[]
+          // when AutoBolt resolved the vehicle, but if AutoBolt fails (missing
+          // creds, rate-limited, vendor error) the route falls back to this
+          // value before the year>=2018 heuristic. In plate/VIN modes the
+          // checkbox is hidden so hasAdas stays at its initial false; in manual
+          // mode the user sets it explicitly.
           hasAdas,
           plateLast4: plate.slice(-4),
         }),
@@ -322,18 +329,25 @@ export default function AutomatedQuoteForm() {
           </label>
         </div>
 
-        <label className="mt-4 flex items-start gap-3 rounded-md border border-blue-100 bg-blue-50 p-3">
-          <input
-            type="checkbox"
-            checked={hasAdas}
-            onChange={(event) => setHasAdas(event.target.checked)}
-            className="mt-1 h-5 w-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
-          />
-          <span>
-            <span className="block text-sm font-semibold text-gray-900">Forward camera or lane-assist windshield</span>
-            <span className="block text-sm text-gray-600">Check this for lane keeping, collision warning, Subaru EyeSight, Toyota Safety Sense, Tesla camera glass, and similar systems.</span>
-          </span>
-        </label>
+        {/*
+          Plate/VIN modes resolve via AutoBolt, which tells us authoritatively whether the
+          vehicle needs ADAS calibration — the customer shouldn't have to guess. We only
+          show this checkbox in manual mode (year/make/model only) where no decode happens.
+        */}
+        {mode === 'manual' && (
+          <label className="mt-4 flex items-start gap-3 rounded-md border border-blue-100 bg-blue-50 p-3">
+            <input
+              type="checkbox"
+              checked={hasAdas}
+              onChange={(event) => setHasAdas(event.target.checked)}
+              className="mt-1 h-5 w-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-gray-900">Forward camera or lane-assist windshield</span>
+              <span className="block text-sm text-gray-600">Check this for lane keeping, collision warning, Subaru EyeSight, Toyota Safety Sense, Tesla camera glass, and similar systems.</span>
+            </span>
+          </label>
+        )}
 
         {notice && (
           <div className="mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
@@ -434,6 +448,14 @@ function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null;
           </div>
         ))}
       </div>
+
+      {quote.adas?.requiresCalibration && (
+        <div className="mt-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+          <span className="font-semibold">Calibration included.</span>{' '}
+          We detected lane-assist or camera sensors on your vehicle. The quote already includes the
+          ADAS calibration our technician will perform after install.
+        </div>
+      )}
 
       {quote.selectedPart?.description && (
         <div className="mt-4 rounded-md bg-gray-50 p-3 text-sm text-gray-700">

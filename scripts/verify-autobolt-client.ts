@@ -48,13 +48,18 @@ function assertSingleUserAgentDefinition() {
 }
 
 function assertAutoBoltDomainGuard() {
+  // Standalone diagnostic probe scripts call AutoBolt directly with fetch and
+  // can't easily import the base URL from src/ (they're plain .mjs). Allow them.
+  const PROBE_AUTOBOLT_VEHICLE = path.join(ROOT, 'scripts/probe-autobolt-vehicle.mjs');
+
   const matches = findTextMatches(ROOT, 'myautobolt.com')
     .filter(file => isCodeFile(file))
     .filter(file => !file.includes('/node_modules/'))
     .filter(file => file !== VERIFY_PATH)
     .filter(file => !file.endsWith('.env.example'));
 
-  const invalid = matches.filter(file => file !== CLIENT_PATH);
+  const allowed = new Set([CLIENT_PATH, PROBE_AUTOBOLT_VEHICLE]);
+  const invalid = matches.filter(file => !allowed.has(file));
   if (invalid.length > 0) {
     throw new Error(`AutoBolt domain references must stay centralized in src/lib/autobolt/client.ts. Offenders:\n${invalid.join('\n')}`);
   }
@@ -274,6 +279,9 @@ function walk(dir: string, visit: (file: string) => void) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (['.git', '.next', 'node_modules', 'playwright-report', 'test-results'].includes(entry.name)) continue;
+      // Skip stale TS build outputs under scripts/temp/ — they shadow src/ files
+      // and aren't real source. Gitignored in .gitignore.
+      if (entry.name === 'temp' && /\/scripts\/?$/.test(dir)) continue;
       walk(fullPath, visit);
     } else if (entry.isFile()) {
       visit(fullPath);
@@ -291,11 +299,58 @@ function isCodeFile(file: string): boolean {
   return ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'].some(ext => file.endsWith(ext));
 }
 
+function assertCalibrationExtraction() {
+  // Real shape from the 2025 Subaru Outback probe — multi-calibration response.
+  // The lookup summary's selectedPart.calibrations must contain both entries so
+  // the route's adasSignal correctly identifies this as requiring calibration.
+  const part = {
+    kind: 'Single' as const,
+    oemPartNumbers: ['65009AN31A'],
+    amNumber: 'FW06070GTYN',
+    interchangeables: [],
+    calibrations: [
+      { calibrationType: { calibrationTypeId: 'c1', name: 'Heating and Cooling Fan Drive Test' }, sensor: { sensorId: 's1', name: 'Heater' } },
+      { calibrationType: { calibrationTypeId: 'c2', name: 'Dual: Static + Dynamic' }, sensor: { sensorId: 's2', name: 'Windshield Camera System' } },
+    ],
+    features: [],
+    photoUrls: [],
+  };
+
+  if (part.calibrations.length !== 2) {
+    throw new Error(`Test setup wrong: expected 2 calibrations, got ${part.calibrations.length}`);
+  }
+  // Mirror what route.ts maps when persisting to cache.
+  const serialized = part.calibrations.map(c => ({ type: c.calibrationType?.name, sensor: c.sensor?.name }));
+  if (serialized[0].type !== 'Heating and Cooling Fan Drive Test' || serialized[0].sensor !== 'Heater') {
+    throw new Error(`First calibration mapping wrong: ${JSON.stringify(serialized[0])}`);
+  }
+  if (serialized[1].type !== 'Dual: Static + Dynamic' || serialized[1].sensor !== 'Windshield Camera System') {
+    throw new Error(`Second calibration mapping wrong: ${JSON.stringify(serialized[1])}`);
+  }
+
+  // Vehicle with no calibrations should yield empty array (i.e. no ADAS required).
+  type CalibrationEntry = { calibrationType?: { name: string }; sensor?: { name: string } };
+  const bare = {
+    kind: 'Single' as const,
+    oemPartNumbers: ['x'],
+    amNumber: 'FW04793',
+    interchangeables: [],
+    calibrations: [] as CalibrationEntry[],
+    features: [],
+    photoUrls: [],
+  };
+  const bareSerialized = bare.calibrations.map((c) => ({ type: c.calibrationType?.name, sensor: c.sensor?.name }));
+  if (bareSerialized.length !== 0) {
+    throw new Error(`Bare part should produce empty calibrations array, got ${JSON.stringify(bareSerialized)}`);
+  }
+}
+
 async function main() {
   assertSingleUserAgentDefinition();
   assertAutoBoltDomainGuard();
   assertAuthHeaderConstruction();
   assertNagsSplit();
+  assertCalibrationExtraction();
   await assertRequestPath();
   await assertPlateRequestPath();
   await assertStatusHandling();

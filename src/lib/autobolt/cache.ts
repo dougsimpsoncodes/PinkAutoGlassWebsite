@@ -22,6 +22,12 @@ export interface CachedNagsLookup {
   amNumber?: string;
   oemPartNumbers: string[];
   interchangeables: string[];
+  /**
+   * AutoBolt's calibration_summary array (e.g. [{type:"Static", sensor:"Windshield Camera System"}]).
+   * Non-empty length means the vehicle requires ADAS calibration as part of the install.
+   * Used by /api/quote/price to auto-include the calibration line item.
+   */
+  calibrations: Array<{ type?: string; sensor?: string }>;
 }
 
 /**
@@ -29,15 +35,21 @@ export interface CachedNagsLookup {
  *   - VIN identifier: sha256("NAGS_MAP_VERSION:VIN:" + uppercase 17-char VIN)
  *   - Plate identifier: sha256("NAGS_MAP_VERSION:PLATE:" + uppercase plate + ":" + uppercase 2-letter state)
  *
- * The version prefix means changing the AutoBolt-response→NAGS extraction
- * strategy (currently `amNumber`, pending Nick's confirmation) automatically
- * invalidates every cached entry without manual cleanup. Bump `NAGS_MAP_VERSION`
- * whenever the mapping logic in extractNagsFromPart changes.
+ * The version prefix invalidates every cached entry without manual cleanup
+ * whenever the cached payload's MEANING changes. Bump when:
+ *   - The AutoBolt-response→NAGS extraction strategy changes (e.g. amNumber → oemPartNumbers[0])
+ *   - The cache schema gains a new field that the route now depends on
+ *     (e.g. calibrations[] becoming authoritative for ADAS detection)
+ *
+ * v2-with-calibrations: calibrations[] became the source of truth for whether a
+ * vehicle requires ADAS calibration. Pre-v2 rows may have had calibration_summary
+ * defaulted to []; bumping forces a fresh AutoBolt lookup which populates the
+ * real value.
  *
  * Plate keys include the literal "PLATE:" prefix so a 17-char plate cannot
  * collide with a VIN.
  */
-export const NAGS_MAP_VERSION = 'v1-amNumber';
+export const NAGS_MAP_VERSION = 'v2-with-calibrations';
 
 export function vinLookupKey(vin: string): string {
   const normalized = `${NAGS_MAP_VERSION}:VIN:${vin.trim().toUpperCase()}`;
@@ -66,6 +78,7 @@ interface VehicleNagsCacheRow {
   am_number: string | null;
   oem_part_numbers: unknown;
   interchangeables: unknown;
+  calibration_summary: unknown;
   expires_at: string;
 }
 
@@ -75,7 +88,7 @@ export async function readCachedNagsLookup(
 ): Promise<CachedNagsLookup | null> {
   const { data, error } = await supabase
     .from('vehicle_nags_cache')
-    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, expires_at')
+    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, calibration_summary, expires_at')
     .eq('lookup_key', lookupKey)
     .gt('expires_at', new Date().toISOString())
     .maybeSingle<VehicleNagsCacheRow>();
@@ -167,5 +180,16 @@ function mapRowToCached(row: VehicleNagsCacheRow): CachedNagsLookup {
     amNumber: row.am_number ?? undefined,
     oemPartNumbers: Array.isArray(row.oem_part_numbers) ? row.oem_part_numbers as string[] : [],
     interchangeables: Array.isArray(row.interchangeables) ? row.interchangeables as string[] : [],
+    calibrations: parseCalibrationSummary(row.calibration_summary),
   };
+}
+
+function parseCalibrationSummary(raw: unknown): Array<{ type?: string; sensor?: string }> {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((c): c is Record<string, unknown> => !!c && typeof c === 'object')
+    .map((c) => ({
+      type: typeof c.type === 'string' ? c.type : undefined,
+      sensor: typeof c.sensor === 'string' ? c.sensor : undefined,
+    }));
 }
