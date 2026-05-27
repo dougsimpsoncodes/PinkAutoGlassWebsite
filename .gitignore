@@ -101,3 +101,23 @@ scripts/apply-satellite-snippet-rewrites.sh
 # tsc runs. The compiled .js copies trip the Mygrant + AutoBolt guards
 # because they reference the protected constants outside the central client.
 scripts/temp/
+
+# One-shot diagnostic scripts. These were written to debug specific
+# incidents (heated-windshield schema, www-scope coverage, URL inspection,
+# snippet candidates, gemini ad-hoc reviews, GSC page queries). They have
+# no recurring use and were accumulating in the working tree across
+# unrelated PRs. Keep them local for re-use as templates; do not commit.
+scripts/diag-heated-windshield.mjs
+scripts/diag-www-scope.mjs
+scripts/diagnostic-url-inspection.mjs
+scripts/extract-snippet-candidates.mjs
+scripts/gemini-review.mjs
+scripts/gemini-snippets.mjs
+scripts/page-queries.mjs
+
+# Doug-personal Gmail draft scripts. These create one-off email drafts
+# via the Gmail OAuth token at
+# /Users/dougsimpson/Projects/Voice Memo post meeting tool/credentials/gmail-1dougsimpson.json
+# — a hardcoded absolute path that is not portable across machines. They
+# are useful local automation, not project infrastructure.
+emails/
