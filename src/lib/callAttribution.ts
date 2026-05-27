@@ -79,7 +79,7 @@ function getSupabaseClient() {
 }
 
 function matchCanonicalPlatformEvidence(calls: RingCentralCall[]): AttributionResult[] {
-  return calls.flatMap((call) => {
+  return calls.flatMap((call): AttributionResult[] => {
     const hasGoogleCallView = Boolean(call.google_ads_call_match || call.google_ads_call_resource_name);
     const hasMicrosoftUpload = Boolean(call.microsoft_ads_uploaded_at);
 
