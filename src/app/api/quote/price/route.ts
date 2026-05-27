@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
         status: 'manual_review',
         quoteToken: stored.quoteToken,
         vehicle: effectiveInput.vehicle,
+        adas: mygrantResult.adasSignal,
         message: 'We found your vehicle, but this glass needs a manual price confirmation.',
         confidenceReasons,
       });
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     const quote = buildCashWindshieldQuote({
       glassCostCents: dollarsToCents(selectedPart.customerUnitPrice),
-      calibrationCents: shouldIncludeCalibration(effectiveInput)
+      calibrationCents: shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
         ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '22500', 10)
         : 0,
       taxRate: Number.parseFloat(process.env.QUOTE_TAX_RATE || '0'),
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
         confidenceReasons: quoteWithMygrantConfidence.confidenceReasons,
       },
       selectedPart: publicPartSnapshot(selectedPart),
+      adas: mygrantResult.adasSignal,
       message: quoteWithMygrantConfidence.status === 'ready_exact'
         ? 'Your installed cash price is ready.'
         : 'Your installed price includes the expected calibration allowance.',
@@ -196,6 +198,12 @@ async function getMygrantQuoteCandidates(
   safeSnapshot: Record<string, unknown>;
   vehicleNags?: { prefix: string; number: string; amNumber?: string };
   resolvedVehicle?: { vin?: string; year?: number; make?: string; model?: string; bodyStyle?: string };
+  /**
+   * AutoBolt-derived calibration requirement signal. Authoritative when present
+   * (overrides the form checkbox). `undefined` when AutoBolt didn't run (manual
+   * mode without VIN), in which case we fall back to the form checkbox + year heuristic.
+   */
+  adasSignal?: { requiresCalibration: boolean; calibrations: Array<{ type?: string; sensor?: string }> };
 }> {
   // Strategy:
   //   1. Use AutoBolt to resolve vehicle→NAGS (VIN-only today; plate path TBD)
@@ -316,6 +324,14 @@ async function getMygrantQuoteCandidates(
           bodyStyle: nagsLookup.bodyStyle ?? undefined,
         }
       : undefined,
+    // Only emit adasSignal when AutoBolt produced an authoritative single-part
+    // match. For confidence='multi' or 'none' the calibrations[] array is empty
+    // by absence of data (not by knowledge), so treating it as authoritative
+    // would skip the user-provided hasAdas / year>=2018 fallback. Leaving it
+    // undefined lets shouldIncludeCalibration fall through to those.
+    adasSignal: nagsLookup && nagsLookup.confidence === 'single' && nagsLookup.nags
+      ? { requiresCalibration: nagsLookup.calibrations.length > 0, calibrations: nagsLookup.calibrations }
+      : undefined,
     safeSnapshot: {
       autobolt: autoboltSnapshot,
       ...(nagsMygrantSnapshot ? { mygrantNags: nagsMygrantSnapshot } : {}),
@@ -394,6 +410,10 @@ async function resolveVehicleNags(
       amNumber: summary.selectedPart?.amNumber,
       oemPartNumbers: summary.selectedPart?.oemPartNumbers ?? [],
       interchangeables: summary.selectedPart?.interchangeables ?? [],
+      calibrations: (summary.selectedPart?.calibrations ?? []).map(c => ({
+        type: c.calibrationType?.name,
+        sensor: c.sensor?.name,
+      })),
     };
   } catch (error) {
     if (error instanceof AutoBoltError) {
@@ -457,7 +477,18 @@ function extractCachedNags(amNumber?: string) {
   return { prefix: match[1], number: match[2], raw: amNumber };
 }
 
-function shouldIncludeCalibration(input: QuotePriceInput): boolean {
+/**
+ * Calibration decision rules, in priority order:
+ *   1. AutoBolt's calibrations[] is authoritative when AutoBolt resolved the VIN.
+ *      Customer's form checkbox is ignored — they can't reasonably know this.
+ *   2. If AutoBolt didn't run (manual mode, no VIN), use the form checkbox.
+ *   3. If neither, fall back to year>=2018 (most ADAS-equipped vehicles).
+ */
+function shouldIncludeCalibration(
+  input: QuotePriceInput,
+  adasSignal?: { requiresCalibration: boolean }
+): boolean {
+  if (adasSignal !== undefined) return adasSignal.requiresCalibration;
   if (input.hasAdas !== undefined) return input.hasAdas;
   return input.vehicle.year >= 2018;
 }

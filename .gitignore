@@ -96,3 +96,8 @@ analysis/
 # Codex code review flagged these as P1 on 2026-05-26.
 scripts/apply-satellite-fixes.sh
 scripts/apply-satellite-snippet-rewrites.sh
+
+# Stale TypeScript build artifacts left under scripts/temp/ by ad-hoc
+# tsc runs. The compiled .js copies trip the Mygrant + AutoBolt guards
+# because they reference the protected constants outside the central client.
+scripts/temp/
