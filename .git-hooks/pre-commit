@@ -104,8 +104,13 @@ if git diff --cached | grep -E "(https?://[a-z0-9-]+\.supabase\.co)" | grep -v "
 fi
 
 # Check for service role key imports in client files
-if git diff --cached --name-only | grep -E "^src/(app|components)/" >/dev/null 2>&1; then
-  if git diff --cached | grep -E "SUPABASE_SERVICE_ROLE_KEY|supabaseAdmin" >/dev/null 2>&1; then
+# Excludes src/app/api/** because API routes are server-side and may use
+# the service role legitimately. We only flag client-side usage in pages
+# and components.
+CLIENT_FILES=$(git diff --cached --name-only | grep -E "^src/(app|components)/" | grep -vE "^src/app/api/" || true)
+if [ -n "$CLIENT_FILES" ]; then
+  CLIENT_DIFF=$(echo "$CLIENT_FILES" | xargs -I{} git diff --cached -- {} 2>/dev/null || true)
+  if echo "$CLIENT_DIFF" | grep -E "SUPABASE_SERVICE_ROLE_KEY|supabaseAdmin" >/dev/null 2>&1; then
     echo "${RED}✗ Service role key usage detected in client-side code!${NC}"
     echo "${YELLOW}Fix: Use anon key for client-side, service role only in API routes${NC}"
     CHECKS_FAILED=1
