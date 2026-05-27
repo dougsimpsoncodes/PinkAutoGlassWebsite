@@ -85,7 +85,8 @@
   "overrides": {
     "@typescript-eslint/parser": "^8.59.2",
     "@typescript-eslint/typescript-estree": "^8.59.2",
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "uuid": "$uuid"
   },
   "engines": {
     "node": ">=18.17.0"
