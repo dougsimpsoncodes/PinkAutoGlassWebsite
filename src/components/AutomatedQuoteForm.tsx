@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { AlertTriangle, BadgeDollarSign, Car, CheckCircle2, Loader2, Mail, Phone, Search, ShieldCheck, User } from 'lucide-react';
 import { getSessionId, getGclid, getMsclkid, getUTMParams } from '@/lib/tracking';
+import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 
 type LookupMode = 'plate' | 'vin' | 'manual';
 
@@ -64,6 +65,10 @@ export default function AutomatedQuoteForm() {
     const year = Number.parseInt(vehicle.year, 10);
     return Number.isFinite(year) && year >= 1981 && vehicle.make.trim().length >= 2 && vehicle.model.trim().length >= 1;
   }, [vehicle]);
+
+  const serviceAreaCheck = useMemo(() => isInServiceArea(zip), [zip]);
+  const zipEntered = zip.trim().length > 0;
+  const outOfArea = zipEntered && !serviceAreaCheck.inServiceArea && serviceAreaCheck.reason === 'out_of_area';
 
   async function lookupPlate() {
     setNotice('');
@@ -133,6 +138,10 @@ export default function AutomatedQuoteForm() {
     event.preventDefault();
     if (!vehicleReady) {
       setNotice('Enter year, make, and model before pricing.');
+      return;
+    }
+    if (outOfArea) {
+      setNotice(OUT_OF_AREA_MESSAGE);
       return;
     }
 
@@ -356,9 +365,16 @@ export default function AutomatedQuoteForm() {
           </div>
         )}
 
+        {outOfArea && (
+          <div className="mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{OUT_OF_AREA_MESSAGE}</span>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={quoteLoading || !vehicleReady || !plateState}
+          disabled={quoteLoading || !vehicleReady || !plateState || outOfArea}
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 font-bold text-white transition-colors hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           {quoteLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <BadgeDollarSign className="h-5 w-5" />}
@@ -381,7 +397,7 @@ function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null;
         <h2 className="text-2xl font-bold text-gray-900">Your quote will appear here</h2>
         <div className="mt-5 space-y-3 text-sm text-gray-700">
           <div className="flex gap-2"><ShieldCheck className="h-5 w-5 text-green-600" />Mobile service included</div>
-          <div className="flex gap-2"><ShieldCheck className="h-5 w-5 text-green-600" />Labor and standard supplies included</div>
+          <div className="flex gap-2"><ShieldCheck className="h-5 w-5 text-green-600" />ADAS calibration added when required</div>
           <div className="flex gap-2"><ShieldCheck className="h-5 w-5 text-green-600" />No payment collected online</div>
         </div>
       </aside>
@@ -391,10 +407,10 @@ function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null;
   if (quote.status === 'manual_review' || !quote.pricing) {
     return (
       <aside className="rounded-lg border border-amber-200 bg-amber-50 p-5">
-        <AlertTriangle className="mb-4 h-9 w-9 text-amber-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Manual confirmation needed</h2>
+        <Phone className="mb-4 h-9 w-9 text-amber-700" />
+        <h2 className="text-2xl font-bold text-gray-900">Please call for accurate pricing</h2>
         <p className="mt-2 text-sm text-gray-700">
-          {quote.message || 'This vehicle needs a manual glass match before we show a firm installed price.'}
+          {quote.message || "We need a few more details to price this vehicle accurately. Call us and we'll quote you on the phone."}
         </p>
         {quote.quoteToken && (
           <div className="mt-4 rounded-md border border-amber-200 bg-white p-3 text-sm">
@@ -404,15 +420,12 @@ function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null;
           </div>
         )}
         <VehicleSummary vehicle={vehicle} />
-        {quote.quoteToken && (
-          <ContactCapture quote={quote} vehicle={vehicle} zip={zip} state={state} buttonLabel="Send My Quote" />
-        )}
         <a
           href="tel:+17209187465"
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-5 py-3 font-bold text-white"
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 text-lg font-bold text-white hover:bg-pink-700"
         >
           <Phone className="h-5 w-5" />
-          Call for Fast Confirmation
+          (720) 918-7465
         </a>
       </aside>
     );
@@ -447,7 +460,12 @@ function QuotePanel({ quote, vehicle, zip, state }: { quote: QuoteResult | null;
             <span className="font-semibold text-gray-900">{formatCents(item.amountCents)}</span>
           </div>
         ))}
+        <div className="flex justify-between gap-4 px-3 py-2 text-sm bg-gray-50">
+          <span className="font-semibold text-gray-900">Total</span>
+          <span className="font-bold text-gray-900">{formatCents(quote.pricing.totalCents)}</span>
+        </div>
       </div>
+      <p className="mt-2 text-xs text-gray-500">+ sales tax at install</p>
 
       {quote.adas?.requiresCalibration && (
         <div className="mt-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
