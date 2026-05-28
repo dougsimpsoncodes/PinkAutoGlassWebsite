@@ -13,17 +13,12 @@ export const metadata: Metadata = {
 export default function QuotePage() {
   return (
     <div className="page-top-padding">
-      <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Breadcrumbs items={[{ label: 'Quote', href: '/quote' }]} />
 
-        <div className="mb-8 max-w-4xl">
-          <h1 className="text-4xl font-bold tracking-normal text-gray-900 md:text-5xl">
-            Get an installed windshield quote
-          </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Enter a plate, VIN, or vehicle details. The quote includes mobile installation labor and standard supplies. No payment is collected online.
-          </p>
-        </div>
+        <h1 className="mb-5 mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+          Get an <span className="text-pink-600">INSTANT QUOTE</span> and schedule now
+        </h1>
 
         <AutomatedQuoteForm />
       </div>
