@@ -230,15 +230,28 @@ export default function AutomatedQuoteForm() {
 
         {mode === 'plate' && (
           <div className="grid gap-4">
-            <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-gray-700">License plate</span>
-              <input
-                value={plate}
-                onChange={(event) => setPlate(event.target.value.toUpperCase())}
-                className="w-full rounded-md border border-gray-300 px-3 py-3 text-lg font-semibold tracking-wide focus:border-pink-500 focus:outline-none"
-                placeholder="ABC1234"
-              />
-            </label>
+            <div className="grid grid-cols-[1fr_120px] gap-3">
+              <label className="block">
+                <span className="mb-1 block text-sm font-semibold text-gray-700">License plate</span>
+                <input
+                  value={plate}
+                  onChange={(event) => setPlate(event.target.value.toUpperCase())}
+                  className="w-full rounded-md border border-gray-300 px-3 py-3 text-lg font-semibold tracking-wide focus:border-pink-500 focus:outline-none"
+                  placeholder="ABC1234"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
+                <select
+                  value={plateState}
+                  onChange={(event) => setPlateState(event.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-3 text-lg font-semibold focus:border-pink-500 focus:outline-none"
+                >
+                  <option value="">—</option>
+                  {STATE_OPTIONS.map((state) => <option key={state}>{state}</option>)}
+                </select>
+              </label>
+            </div>
             <button
               type="button"
               onClick={lookupPlate}
@@ -246,7 +259,7 @@ export default function AutomatedQuoteForm() {
               className="inline-flex items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300"
             >
               {lookupLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-              Find Vehicle
+              {plate.trim().length < 2 ? 'Enter plate to continue' : !plateState ? 'Select state to continue' : 'Find Vehicle'}
             </button>
           </div>
         )}
@@ -306,7 +319,7 @@ export default function AutomatedQuoteForm() {
           </label>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className={`mt-4 grid gap-4 ${mode === 'plate' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
           <label className="block">
             <span className="mb-1 block text-sm font-semibold text-gray-700">Trim</span>
             <input
@@ -326,17 +339,25 @@ export default function AutomatedQuoteForm() {
               placeholder="80202"
             />
           </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
-            <select
-              value={plateState}
-              onChange={(event) => setPlateState(event.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-3 focus:border-pink-500 focus:outline-none"
-            >
-              <option value="">Select state</option>
-              {STATE_OPTIONS.map((state) => <option key={state}>{state}</option>)}
-            </select>
-          </label>
+          {/*
+            In plate mode the state lives inline next to the plate input above;
+            duplicating it here confused customers. Show this row's state
+            dropdown only in VIN / manual modes, where it captures the install
+            state for the booking flow.
+          */}
+          {mode !== 'plate' && (
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
+              <select
+                value={plateState}
+                onChange={(event) => setPlateState(event.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-3 focus:border-pink-500 focus:outline-none"
+              >
+                <option value="">Select state</option>
+                {STATE_OPTIONS.map((state) => <option key={state}>{state}</option>)}
+              </select>
+            </label>
+          )}
         </div>
 
         {/*
