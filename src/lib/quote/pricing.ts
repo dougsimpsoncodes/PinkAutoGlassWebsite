@@ -10,7 +10,7 @@
  * shape of the customer-facing quote and persistence-ready line items.
  */
 
-export const CASH_WINDSHIELD_PRICING_VERSION = 'cash-windshield-v2-markup';
+export const CASH_WINDSHIELD_PRICING_VERSION = 'cash-windshield-v3-min-floor';
 
 export type QuoteStatus = 'ready_exact' | 'ready_estimate' | 'manual_review';
 
@@ -29,6 +29,13 @@ export interface CashWindshieldPricingInput {
   markupCents: number;
   /** Calibration price in cents when ADAS is required. Omit or 0 to skip. */
   calibrationCents?: number;
+  /**
+   * Minimum customer-facing total in cents. When the computed total falls
+   * below this floor, the windshield+install line is silently inflated so
+   * the customer-facing total equals the floor. Floor adjustment is
+   * recorded in the line's metadata for audit. Omit or 0 to disable.
+   */
+  minTotalCents?: number;
 }
 
 export interface CashWindshieldQuote {
@@ -92,7 +99,26 @@ export function buildCashWindshieldQuote(input: CashWindshieldPricingInput): Cas
     });
   }
 
-  const totalCents = lineItems.reduce((sum, item) => sum + item.amountCents, 0);
+  let totalCents = lineItems.reduce((sum, item) => sum + item.amountCents, 0);
+
+  // Minimum total floor (per Doug 2026-05-28). If the computed total is
+  // below the configured floor, silently inflate the windshield+install
+  // line so the customer-facing total equals the floor. Adjustment recorded
+  // in the line's metadata so Pink ops can still see the original wholesale
+  // and markup math in the saved quote row.
+  const minTotalCents = input.minTotalCents ?? 0;
+  let floorAdjustmentCents = 0;
+  if (minTotalCents > 0 && totalCents < minTotalCents) {
+    floorAdjustmentCents = minTotalCents - totalCents;
+    const windshieldLine = lineItems[0];
+    windshieldLine.amountCents += floorAdjustmentCents;
+    windshieldLine.metadata = {
+      ...(windshieldLine.metadata ?? {}),
+      floorAdjustmentCents,
+      preFloorAmountCents: windshieldLine.amountCents - floorAdjustmentCents,
+    };
+    totalCents = minTotalCents;
+  }
 
   return {
     status: 'ready_exact',
@@ -102,6 +128,7 @@ export function buildCashWindshieldQuote(input: CashWindshieldPricingInput): Cas
     confidenceReasons: [
       'markup_pricing_formula',
       ...(calibrationCents > 0 ? ['calibration_included'] : []),
+      ...(floorAdjustmentCents > 0 ? [`minimum_total_floor_applied_${floorAdjustmentCents}c`] : []),
     ],
   };
 }
