@@ -99,10 +99,19 @@ export function evaluateMygrantWindshieldCandidates(
   // When we have an expected interchangeable set (AutoBolt declared these
   // NAGS as substitutes), pick the cheapest available windshield among
   // them. Same-NAGS / expected-NAGS competition isn't ambiguity, it's the
-  // price comparison we explicitly asked for.
+  // price comparison we explicitly asked for. The pool is strict: a
+  // candidate must have a non-empty nagsKey AND that key must be in the
+  // expected set. nagsKey=null candidates are accessories Mygrant returns
+  // alongside real glass (clip kits, retainers, etc.); their price often
+  // beats real glass on cents but they're not substitutes.
   if (context.expectedInterchangeableNagsKeys && context.expectedInterchangeableNagsKeys.size > 1) {
     const onlyExpected = availableCandidates.filter(c =>
-      !c.nagsKey || context.expectedInterchangeableNagsKeys!.has(c.nagsKey)
+      c.nagsKey !== null
+      && c.nagsKey !== ''
+      && context.expectedInterchangeableNagsKeys!.has(c.nagsKey)
+      // Belt-and-suspenders: exclude anything flagged as accessory-like even
+      // if it somehow inherited a NAGS key in the expected set.
+      && !c.warnings.includes('accessory_like_description')
     );
     if (onlyExpected.length > 0) {
       const cheapest = onlyExpected.reduce((acc, candidate) =>
