@@ -3,10 +3,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
   AutoBoltLookupSummary,
+  AutoBoltDecodeResponse,
+  AutoBoltSinglePart,
   NagsIdentifier,
   extractNagsFromPart,
 } from './client';
 import { detectHudFromFeatures } from '@/lib/quote/markup';
+import { parseAmNumberToNags } from '@/lib/quote/nags-compatibility';
 
 export interface CachedNagsLookup {
   resolvedFrom: 'vin' | 'plate';
@@ -35,6 +38,28 @@ export interface CachedNagsLookup {
    * invalidates all pre-HUD entries so we re-decode and populate accurately.
    */
   hasHud: boolean;
+  /**
+   * NAGS variants that AutoBolt lists as interchangeable with the selected
+   * part. We query Mygrant for each compatible one alongside the primary so
+   * the customer gets the cheapest fit. Only includes interchangeables whose
+   * features are a functional superset of the primary (per
+   * checkCompatibility); cosmetic-only diffs (logo/grille) are tolerated.
+   * Derived at cache-write from raw partsById; empty array when none.
+   */
+  interchangeableParts: InterchangeableNagsPart[];
+  /**
+   * Features of the primary (selectedPart). Needed at query time alongside
+   * interchangeableParts so we can re-run the compatibility filter when an
+   * interchangeable's features change (we only re-decode on NAGS_MAP_VERSION
+   * bump; if AutoBolt rolls out a new feature ID we'd otherwise misjudge).
+   */
+  primaryFeatures: Array<{ name: string }>;
+}
+
+export interface InterchangeableNagsPart {
+  amNumber: string;
+  nags: { prefix: string; number: string };
+  features: Array<{ name: string }>;
 }
 
 /**
@@ -58,10 +83,16 @@ export interface CachedNagsLookup {
  * have has_hud populated, so bumping forces a fresh decode that scans
  * AutoBolt's features[] array. Coincident with the markup-v1 rollout.
  *
+ * v4-with-interchangeable-search: cached lookup now derives the full set of
+ * NAGS variants (primary + compatible interchangeables) from AutoBolt's raw
+ * partsById, so the route can batch-query Mygrant for the cheapest fit
+ * instead of only the OEM/factory-fit NAGS. Bumping invalidates v3 rows so
+ * the interchangeable list gets populated on next decode.
+ *
  * Plate keys include the literal "PLATE:" prefix so a 17-char plate cannot
  * collide with a VIN.
  */
-export const NAGS_MAP_VERSION = 'v3-with-hud-and-markup';
+export const NAGS_MAP_VERSION = 'v4-with-interchangeable-search';
 
 export function vinLookupKey(vin: string): string {
   const normalized = `${NAGS_MAP_VERSION}:VIN:${vin.trim().toUpperCase()}`;
@@ -92,6 +123,7 @@ interface VehicleNagsCacheRow {
   interchangeables: unknown;
   calibration_summary: unknown;
   has_hud: boolean | null;
+  raw_response: unknown;
   expires_at: string;
 }
 
@@ -101,7 +133,7 @@ export async function readCachedNagsLookup(
 ): Promise<CachedNagsLookup | null> {
   const { data, error } = await supabase
     .from('vehicle_nags_cache')
-    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, calibration_summary, has_hud, expires_at')
+    .select('lookup_key, resolved_from, vin, plate_last4, plate_state, vehicle_year, vehicle_make, vehicle_model, vehicle_body_style, confidence, part_count, nags_prefix, nags_number, am_number, oem_part_numbers, interchangeables, calibration_summary, has_hud, raw_response, expires_at')
     .eq('lookup_key', lookupKey)
     .gt('expires_at', new Date().toISOString())
     .maybeSingle<VehicleNagsCacheRow>();
@@ -195,7 +227,81 @@ function mapRowToCached(row: VehicleNagsCacheRow): CachedNagsLookup {
     interchangeables: Array.isArray(row.interchangeables) ? row.interchangeables as string[] : [],
     calibrations: parseCalibrationSummary(row.calibration_summary),
     hasHud: row.has_hud === true,
+    interchangeableParts: extractInterchangeablesFromRaw(row.raw_response, row.am_number),
+    primaryFeatures: extractPrimaryFeaturesFromRaw(row.raw_response, row.am_number),
   };
+}
+
+/**
+ * Walk an AutoBolt raw_response.partsById map, find the selectedPart (matched
+ * by amNumber), and return the interchangeable Single parts with parseable
+ * NAGS identifiers. Each returned part has its own features array so the
+ * route can run the compatibility filter at query time.
+ *
+ * Returns [] when the data isn't shaped as expected — defensive against
+ * cached rows from versions before raw_response was populated reliably.
+ *
+ * Exported so the quote route can use the same extraction on a fresh
+ * AutoBolt decode without going through Supabase.
+ */
+export function extractInterchangeablesFromSummary(summary: AutoBoltLookupSummary): InterchangeableNagsPart[] {
+  return extractInterchangeablesFromRaw(summary.raw, summary.selectedPart?.amNumber ?? null);
+}
+
+export function extractPrimaryFeaturesFromSummary(summary: AutoBoltLookupSummary): Array<{ name: string }> {
+  return (summary.selectedPart?.features ?? []).map(f => ({ name: f.name })).filter(f => f.name);
+}
+
+function extractInterchangeablesFromRaw(raw: unknown, primaryAmNumber: string | null): InterchangeableNagsPart[] {
+  const decoded = raw as Partial<AutoBoltDecodeResponse> | null | undefined;
+  if (!decoded?.partsById) return [];
+  const partsById = decoded.partsById as Record<string, unknown>;
+
+  // Find the selected part's UUID by matching amNumber.
+  let primary: AutoBoltSinglePart | undefined;
+  for (const value of Object.values(partsById)) {
+    const part = value as { kind?: string; amNumber?: string } | undefined;
+    if (part?.kind === 'Single' && part.amNumber === primaryAmNumber) {
+      primary = value as AutoBoltSinglePart;
+      break;
+    }
+  }
+  if (!primary) return [];
+
+  const out: InterchangeableNagsPart[] = [];
+  const seen = new Set<string>();
+  // Normalize the primary's NAGS so we never re-emit it as an interchangeable.
+  const primaryNags = parseAmNumberToNags(primary.amNumber);
+  if (primaryNags) seen.add(`${primaryNags.prefix}${primaryNags.number}`);
+
+  for (const uuid of primary.interchangeables ?? []) {
+    const part = partsById[uuid] as AutoBoltSinglePart | undefined;
+    if (!part || part.kind !== 'Single') continue;
+    const nags = parseAmNumberToNags(part.amNumber);
+    if (!nags) continue;
+    const key = `${nags.prefix}${nags.number}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      amNumber: part.amNumber,
+      nags,
+      features: (part.features ?? []).map(f => ({ name: f.name })),
+    });
+  }
+  return out;
+}
+
+function extractPrimaryFeaturesFromRaw(raw: unknown, primaryAmNumber: string | null): Array<{ name: string }> {
+  const decoded = raw as Partial<AutoBoltDecodeResponse> | null | undefined;
+  if (!decoded?.partsById) return [];
+  const partsById = decoded.partsById as Record<string, unknown>;
+  for (const value of Object.values(partsById)) {
+    const part = value as { kind?: string; amNumber?: string; features?: Array<{ name?: string }> } | undefined;
+    if (part?.kind === 'Single' && part.amNumber === primaryAmNumber) {
+      return (part.features ?? []).map(f => ({ name: f.name ?? '' })).filter(f => f.name);
+    }
+  }
+  return [];
 }
 
 function parseCalibrationSummary(raw: unknown): Array<{ type?: string; sensor?: string }> {
