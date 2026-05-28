@@ -88,7 +88,9 @@ export async function POST(request: NextRequest) {
     // form's typed Y/M/M disagree with the decode, the customer and the lead row
     // both see the vehicle the price actually corresponds to.
     const effectiveInput = applyResolvedVehicle(input, mygrantResult.resolvedVehicle);
-    const selection = evaluateMygrantWindshieldCandidates(mygrantResult.items);
+    const selection = evaluateMygrantWindshieldCandidates(mygrantResult.items, {
+      expectedInterchangeableNagsKeys: mygrantResult.expectedInterchangeableNagsKeys,
+    });
     const selectedPart = selection.selectedPart;
 
     if (selection.confidence !== 'high' || !selectedPart?.customerUnitPrice) {
@@ -264,6 +266,14 @@ async function getMygrantQuoteCandidates(
    * include features.
    */
   hasHud: boolean;
+  /**
+   * NAGS keys (e.g. {'DW01881', 'DW01668', 'DW02479'}) the route intentionally
+   * batched into Mygrant inquireByNags because AutoBolt declared them
+   * interchangeable for this vehicle. Passed to evaluateMygrantWindshieldCandidates
+   * so its ambiguity check doesn't trip on price competition between expected
+   * interchangeables. Empty when no interchangeable batch ran.
+   */
+  expectedInterchangeableNagsKeys: ReadonlySet<string>;
 }> {
   // Strategy:
   //   1. Use AutoBolt to resolve vehicle→NAGS (VIN-only today; plate path TBD)
@@ -282,6 +292,7 @@ async function getMygrantQuoteCandidates(
   let nagsItems: MygrantResponseItem[] = [];
   let nagsMygrantSnapshot: Record<string, unknown> | undefined;
   let vehicleNagsForReturn: { prefix: string; number: string; amNumber?: string } | undefined;
+  let expectedInterchangeableNagsKeys: Set<string> | undefined;
 
   try {
     nagsLookup = await resolveVehicleNags(input, cacheClient, reasons);
@@ -333,6 +344,9 @@ async function getMygrantQuoteCandidates(
     if (compatibilityLog.some(c => !c.compatible)) {
       reasons.push('interchangeable_nags_filtered_for_feature_compat');
     }
+    expectedInterchangeableNagsKeys = new Set(
+      nagsQuery.map(q => `${q.nagsPrefix}${q.nagsNumber}`)
+    );
 
     try {
       const response = await getMygrantClient().inquireByNags(nagsQuery);
@@ -347,14 +361,18 @@ async function getMygrantQuoteCandidates(
         nagsQueried: nagsQuery,
         interchangeableCompatibility: compatibilityLog,
         responseCount: nagsItems.length,
-        candidateSummary: evaluateMygrantWindshieldCandidates(nagsItems).rankedCandidates
+        candidateSummary: evaluateMygrantWindshieldCandidates(nagsItems, {
+          expectedInterchangeableNagsKeys,
+        }).rankedCandidates
           .slice(0, 8)
           .map(publicScoredMygrantCandidate),
       };
       // Determine which NAGS the route ultimately selected (may be primary or
       // an interchangeable). The scoring already runs across all candidates;
       // we re-derive the selection here for telemetry.
-      const selection = evaluateMygrantWindshieldCandidates(nagsItems);
+      const selection = evaluateMygrantWindshieldCandidates(nagsItems, {
+        expectedInterchangeableNagsKeys,
+      });
       const selectedPrefix = selection.selectedPart?.nagsPrefix || nagsLookup.nags.prefix;
       const selectedNumber = selection.selectedPart?.nagsNumber || nagsLookup.nags.number;
       vehicleNagsForReturn = {
@@ -430,6 +448,7 @@ async function getMygrantQuoteCandidates(
       ? { requiresCalibration: nagsLookup.calibrations.length > 0, calibrations: nagsLookup.calibrations }
       : undefined,
     hasHud: nagsLookup?.hasHud === true,
+    expectedInterchangeableNagsKeys: expectedInterchangeableNagsKeys ?? new Set<string>(),
     safeSnapshot: {
       autobolt: autoboltSnapshot,
       ...(nagsMygrantSnapshot ? { mygrantNags: nagsMygrantSnapshot } : {}),
