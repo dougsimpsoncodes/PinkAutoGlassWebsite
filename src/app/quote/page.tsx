@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import AutomatedQuoteForm from '@/components/AutomatedQuoteForm';
 
 export const metadata: Metadata = {
@@ -13,13 +12,13 @@ export const metadata: Metadata = {
 export default function QuotePage() {
   return (
     <div className="page-top-padding">
-      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <Breadcrumbs items={[{ label: 'Quote', href: '/quote' }]} />
-
-        <h1 className="mb-5 mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
-          Get an <span className="text-pink-600">INSTANT QUOTE</span> and schedule now
-        </h1>
-
+      {/*
+        Per Doug 2026-05-28: kill the breadcrumbs and the marketing H1 on
+        /quote so the price + booking form get the full screen and drive
+        conversion. The form's own bordered price card carries the visual
+        weight now.
+      */}
+      <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-8 lg:px-8 max-w-2xl">
         <AutomatedQuoteForm />
       </div>
     </div>

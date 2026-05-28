@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -368,17 +368,7 @@ function PricedHero({
   vehicle: VehicleState;
   onNewQuote: () => void;
 }) {
-  const [bookingOpen, setBookingOpen] = useState(false);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
-  const bookingRef = useRef<HTMLDivElement | null>(null);
-
-  function openBooking() {
-    setBookingOpen(true);
-    // Defer scroll so the form has rendered before we measure its position
-    setTimeout(() => {
-      bookingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
-  }
 
   if (quote.status === 'manual_review' || !quote.pricing) {
     return (
@@ -417,109 +407,67 @@ function PricedHero({
   const totalDollars = (quote.pricing.totalCents / 100).toFixed(2);
 
   return (
-    <>
-      <div className="rounded-lg border border-green-200 bg-white p-6 shadow-sm">
+    <div>
+      {/* Bordered price card — pink ring so the number pops */}
+      <div className="rounded-xl border-2 border-pink-500 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-          <CheckCircle2 className="h-5 w-5" /> Installed price
+          <CheckCircle2 className="h-5 w-5" /> Installed price, we come to you
         </div>
-
-        <div className="mt-2 text-6xl font-bold leading-none text-gray-900">
+        <div className="mt-2 text-6xl font-extrabold leading-none text-gray-900 tracking-tight sm:text-7xl">
           ${totalDollars}
         </div>
-
-        <p className="mt-3 text-base text-gray-600">
-          for your <span className="font-semibold text-gray-900">{vehicleLine || 'vehicle'}</span>
-          <span className="block text-sm text-gray-500">+ sales tax at install · mobile service included</span>
+        <p className="mt-3 text-sm text-gray-600">
+          for your <span className="font-semibold text-gray-900">{vehicleLine || 'vehicle'}</span> · + sales tax
         </p>
-
-        {!bookingOpen && (
-          <button
-            type="button"
-            onClick={openBooking}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-5 text-xl font-bold text-white shadow-sm hover:bg-pink-700"
-          >
-            Schedule my install
-          </button>
-        )}
-
-        {!bookingOpen && (
-          <a
-            href="tel:+17209187465"
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:border-pink-300"
-          >
-            <Phone className="h-4 w-4" />
-            Prefer to call? (720) 918-7465
-          </a>
-        )}
-
-        <button
-          type="button"
-          onClick={() => setBreakdownOpen(v => !v)}
-          className="mt-4 text-sm text-gray-500 underline hover:text-pink-600"
-        >
-          {breakdownOpen ? 'Hide price breakdown' : 'See price breakdown'}
-        </button>
-
-        {breakdownOpen && (
-          <div className="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
-            {quote.pricing.lineItems.map((item) => (
-              <div key={`${item.kind}-${item.description}`} className="flex justify-between gap-4 px-3 py-2">
-                <span className="text-gray-700">{item.description}</span>
-                <span className="font-semibold text-gray-900">${(item.amountCents / 100).toFixed(2)}</span>
-              </div>
-            ))}
-            <div className="flex justify-between gap-4 bg-gray-50 px-3 py-2">
-              <span className="font-semibold text-gray-900">Total</span>
-              <span className="font-bold text-gray-900">${totalDollars}</span>
-            </div>
-            {quote.adas?.requiresCalibration && (
-              <div className="px-3 py-2 text-xs text-blue-900">
-                Calibration included — we detected lane-assist or camera sensors on your vehicle.
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="mt-5 text-xs text-gray-500">
-          {vehicleLine && `Quoted for ${vehicleLine}.`}{' '}
-          <button type="button" onClick={onNewQuote} className="underline hover:text-pink-600">
-            Not your car?
-          </button>
-        </div>
       </div>
 
-      {bookingOpen && quote.quoteToken && (
-        <div ref={bookingRef} className="mt-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-          <QuoteBookingForm quoteToken={quote.quoteToken} />
+      {/* Transition copy — bridges the price hero and the schedule fields */}
+      <div className="mt-5 text-center">
+        <div className="text-xl font-bold text-gray-900">Lock in this price.</div>
+        <div className="mt-1 text-sm text-gray-600">Quick form below — we come to you, no shop visit.</div>
+      </div>
+
+      {/* Inline schedule form — no Schedule button gate */}
+      {quote.quoteToken && (
+        <div className="mt-5">
+          <QuoteBookingForm quoteToken={quote.quoteToken} totalDollars={totalDollars} />
         </div>
       )}
 
-      {!bookingOpen && (
-        <MobileStickyCta totalDollars={totalDollars} onClick={openBooking} />
-      )}
-    </>
-  );
-}
-
-function MobileStickyCta({
-  totalDollars,
-  onClick,
-}: {
-  totalDollars: string;
-  onClick: () => void;
-}) {
-  // Only renders on small screens — desktop has the price + CTA already visible.
-  // Uses backdrop-blur and a top border so it never visually fights the page.
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] backdrop-blur sm:hidden">
       <button
         type="button"
-        onClick={onClick}
-        className="inline-flex w-full items-center justify-between gap-2 rounded-md bg-pink-600 px-4 py-4 text-base font-bold text-white shadow-sm hover:bg-pink-700"
+        onClick={() => setBreakdownOpen(v => !v)}
+        className="mt-5 text-sm text-gray-500 underline hover:text-pink-600"
       >
-        <span>Schedule install</span>
-        <span className="font-bold">${totalDollars}</span>
+        {breakdownOpen ? 'Hide price breakdown' : 'See price breakdown'}
       </button>
+
+      {breakdownOpen && (
+        <div className="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
+          {quote.pricing.lineItems.map((item) => (
+            <div key={`${item.kind}-${item.description}`} className="flex justify-between gap-4 px-3 py-2">
+              <span className="text-gray-700">{item.description}</span>
+              <span className="font-semibold text-gray-900">${(item.amountCents / 100).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between gap-4 bg-gray-50 px-3 py-2">
+            <span className="font-semibold text-gray-900">Total</span>
+            <span className="font-bold text-gray-900">${totalDollars}</span>
+          </div>
+          {quote.adas?.requiresCalibration && (
+            <div className="px-3 py-2 text-xs text-blue-900">
+              Calibration included — we detected lane-assist or camera sensors on your vehicle.
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 text-xs text-gray-500">
+        {vehicleLine && `Quoted for ${vehicleLine}. `}
+        <button type="button" onClick={onNewQuote} className="underline hover:text-pink-600">
+          Not your car?
+        </button>
+      </div>
     </div>
   );
 }

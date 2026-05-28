@@ -32,6 +32,11 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
   }, []);
 
   if (pathname?.startsWith('/admin')) return null;
+  // Suppress on the auto-quoter — phone CTAs are already in the quote card
+  // and the floating bar covers the priced quote on mobile (Doug walked
+  // 2026-05-28: "the overlay 'need auto glass service' along with the
+  // clickable phone number" was eating conversion-critical real estate).
+  if (pathname === '/quote' || pathname?.startsWith('/quote/')) return null;
 
   const market = resolveMarket(pathname);
   const { phoneE164, displayPhone } = getPhoneForMarket(market);
