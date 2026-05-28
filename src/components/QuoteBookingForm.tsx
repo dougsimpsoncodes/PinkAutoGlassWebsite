@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { CheckCircle2, Loader2, Phone } from 'lucide-react';
+import { getNextTwoWorkingDays, pillDateLabel, pillDayLabel, toIsoLocal } from '@/lib/quote/schedule-slots';
 
 /**
  * Booking form inside the priced-state PricedHero. Per the 2026-05-28 owner
@@ -40,36 +41,35 @@ interface SubmittedSnapshot {
 }
 
 /**
- * The 4 slots offered by the pill picker. Each maps to a concrete ISO date
- * (computed at render time) + AM/PM window for the API submission.
+ * The 4 slots offered by the pill picker — next 2 working days × AM/PM.
+ * Per Dan 2026-05-28: no same-day appointments. Pink works Mon-Sat (Sundays
+ * off). US federal holidays are skipped. Label uses "Tomorrow" only when
+ * day-1 is literally today+1; otherwise day-of-week (so a Saturday customer
+ * sees "Mon" not a misleading "Tomorrow Mon").
  *
- * Time-of-day availability (e.g., suppressing Today AM after 7am dispatch
- * cutoff) is tracked in TaskCreate #15 and will arrive in a separate PR.
+ * Day-1/Day-2 selection logic lives in src/lib/quote/schedule-slots.ts.
  */
-type SlotKey = 'today_am' | 'today_pm' | 'tmrw_am' | 'tmrw_pm';
+type SlotKey = 'day1_am' | 'day1_pm' | 'day2_am' | 'day2_pm';
 
 interface SlotOption {
   key: SlotKey;
   date: string;          // ISO YYYY-MM-DD
   window: 'AM' | 'PM';
-  dayLabel: string;      // "Today" / "Tmrw"
-  dateLabel: string;     // "5/28" / "5/29"
+  dayLabel: string;      // "Tomorrow" / "Sat" / "Mon" / etc
+  dateLabel: string;     // "5/29"
   timeLabel: string;     // "8a-12p" / "12p-5p"
 }
 
-function buildSlotOptions(): SlotOption[] {
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const md = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+function buildSlotOptions(now: Date = new Date()): SlotOption[] {
+  const [day1, day2] = getNextTwoWorkingDays(now);
+  const day1Label = pillDayLabel(day1, now);
+  const day2Label = pillDayLabel(day2, now);
 
   return [
-    { key: 'today_am', date: iso(today), window: 'AM', dayLabel: 'Today', dateLabel: md(today), timeLabel: '8a-12p' },
-    { key: 'today_pm', date: iso(today), window: 'PM', dayLabel: 'Today', dateLabel: md(today), timeLabel: '12p-5p' },
-    { key: 'tmrw_am', date: iso(tomorrow), window: 'AM', dayLabel: 'Tmrw', dateLabel: md(tomorrow), timeLabel: '8a-12p' },
-    { key: 'tmrw_pm', date: iso(tomorrow), window: 'PM', dayLabel: 'Tmrw', dateLabel: md(tomorrow), timeLabel: '12p-5p' },
+    { key: 'day1_am', date: toIsoLocal(day1), window: 'AM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '8a-12p' },
+    { key: 'day1_pm', date: toIsoLocal(day1), window: 'PM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '12p-5p' },
+    { key: 'day2_am', date: toIsoLocal(day2), window: 'AM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '8a-12p' },
+    { key: 'day2_pm', date: toIsoLocal(day2), window: 'PM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '12p-5p' },
   ];
 }
 
@@ -83,7 +83,7 @@ function readVariantCookie(): string {
 export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBookingFormProps) {
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const slots = useMemo(buildSlotOptions, []);
-  const [selectedSlot, setSelectedSlot] = useState<SlotKey>('today_am');
+  const [selectedSlot, setSelectedSlot] = useState<SlotKey>('day1_am');
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
