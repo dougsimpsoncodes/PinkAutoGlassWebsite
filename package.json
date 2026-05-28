@@ -22,7 +22,8 @@
     "ci:guard:autobolt": "tsx scripts/verify-autobolt-client.ts",
     "ci:guard:pricing": "tsx scripts/verify-pricing-markup.ts",
     "ci:guard:nags-compat": "tsx scripts/verify-nags-compatibility.ts",
-    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt && npm run ci:guard:pricing && npm run ci:guard:nags-compat",
+    "ci:guard:scoring": "tsx scripts/verify-mygrant-scoring.ts",
+    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt && npm run ci:guard:pricing && npm run ci:guard:nags-compat && npm run ci:guard:scoring",
     "env:pull": "vercel env pull .env.local && sed -i '' 's/\\\\n\"/\"/g' .env.local && echo '✓ .env.local pulled and sanitized (no \\n)'",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },
