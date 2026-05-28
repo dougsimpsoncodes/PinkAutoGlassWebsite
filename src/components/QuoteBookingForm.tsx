@@ -5,10 +5,13 @@ import { CalendarDays, CheckCircle2, Loader2, Phone, ShieldCheck, User } from 'l
 
 interface QuoteBookingFormProps {
   quoteToken: string;
-  zip: string;
-  state: string;
-  /** Customer-facing vehicle line for the confirmation. */
-  vehicleSummary: string;
+  /**
+   * Quote-time ZIP if the upstream form happened to capture one. May be
+   * empty after the price-first redesign that killed the ZIP entry stage;
+   * the booking form now collects ZIP as part of the install address
+   * regardless. This prop is only used to pre-fill when present.
+   */
+  zip?: string;
 }
 
 interface BookingSuccess {
@@ -61,8 +64,7 @@ function readVariantCookie(): string {
   return decodeURIComponent(match.split('=')[1]) || 'control';
 }
 
-export default function QuoteBookingForm({ quoteToken, zip, state, vehicleSummary }: QuoteBookingFormProps) {
-  const [expanded, setExpanded] = useState(false);
+export default function QuoteBookingForm({ quoteToken, zip: initialZip }: QuoteBookingFormProps) {
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
 
   const dayOptions = useMemo(nextDayOptions, []);
@@ -71,6 +73,7 @@ export default function QuoteBookingForm({ quoteToken, zip, state, vehicleSummar
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [street, setStreet] = useState('');
+  const [installZip, setInstallZip] = useState(initialZip || '');
   const [installDate, setInstallDate] = useState(dayOptions[1]?.value ?? dayOptions[0]?.value);
   const [installWindow, setInstallWindow] = useState<'AM' | 'PM'>('AM');
   const [smsConsent, setSmsConsent] = useState(true);
@@ -81,23 +84,11 @@ export default function QuoteBookingForm({ quoteToken, zip, state, vehicleSummar
   const ready = fullName.trim().length >= 2
     && phone.trim().length >= 7
     && street.trim().length >= 3
+    && /^\d{5}(-\d{4})?$/.test(installZip.trim())
     && installDate;
 
   if (submit.kind === 'success') {
     return <BookingConfirmation success={submit.result} submitted={submit.submitted} />;
-  }
-
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 text-base font-bold text-white hover:bg-pink-700"
-      >
-        <CalendarDays className="h-5 w-5" />
-        Schedule install
-      </button>
-    );
   }
 
   async function onSubmit(event: FormEvent) {
@@ -111,7 +102,7 @@ export default function QuoteBookingForm({ quoteToken, zip, state, vehicleSummar
         body: JSON.stringify({
           quoteToken,
           customer: { fullName, phone, email: email || undefined },
-          install: { street, date: installDate, window: installWindow },
+          install: { street, zip: installZip.trim(), date: installDate, window: installWindow },
           smsConsent,
           honeypot,
           variantId: readVariantCookie(),
@@ -214,8 +205,21 @@ export default function QuoteBookingForm({ quoteToken, zip, state, vehicleSummar
           minLength={3}
           autoComplete="street-address"
         />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-gray-700">Install ZIP</span>
+        <input
+          value={installZip}
+          onChange={(e) => setInstallZip(e.target.value.replace(/[^0-9-]/g, '').slice(0, 10))}
+          className="w-full rounded-md border border-gray-300 px-3 py-3 focus:border-pink-500 focus:outline-none"
+          placeholder="80202"
+          required
+          inputMode="numeric"
+          autoComplete="postal-code"
+        />
         <span className="mt-1 block text-xs text-gray-500">
-          ZIP {zip} {state} — we serve Front Range CO + Phoenix metro.
+          We serve Colorado Front Range and Phoenix metro.
         </span>
       </label>
 
