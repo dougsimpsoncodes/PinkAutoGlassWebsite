@@ -46,7 +46,22 @@ const NON_WINDSHIELD_GLASS_TERMS = [
   'vent glass',
 ];
 
-export function evaluateMygrantWindshieldCandidates(items: MygrantResponseItem[]): MygrantWindshieldSelection {
+export interface ScoringContext {
+  /**
+   * NAGS keys (e.g. ['DW01881', 'DW01668', 'DW02479']) that the route
+   * intentionally queried because AutoBolt declared them interchangeable
+   * for this vehicle. When set, candidates with different NAGS keys are
+   * not treated as "ambiguous" competitors — they're expected interchange
+   * variants and the cheapest priceable available one wins with high
+   * confidence (subject to feature-compat filtering done upstream).
+   */
+  expectedInterchangeableNagsKeys?: ReadonlySet<string>;
+}
+
+export function evaluateMygrantWindshieldCandidates(
+  items: MygrantResponseItem[],
+  context: ScoringContext = {}
+): MygrantWindshieldSelection {
   const rankedCandidates = items
     .map(scoreMygrantWindshieldCandidate)
     .filter(candidate => candidate.isPrimaryWindshield || candidate.score > 0)
@@ -79,6 +94,35 @@ export function evaluateMygrantWindshieldCandidates(items: MygrantResponseItem[]
       reasons: ['no_available_windshield_candidate', ...priceableCandidates[0].warnings],
       rankedCandidates,
     };
+  }
+
+  // When we have an expected interchangeable set (AutoBolt declared these
+  // NAGS as substitutes), pick the cheapest available windshield among
+  // them. Same-NAGS / expected-NAGS competition isn't ambiguity, it's the
+  // price comparison we explicitly asked for.
+  if (context.expectedInterchangeableNagsKeys && context.expectedInterchangeableNagsKeys.size > 1) {
+    const onlyExpected = availableCandidates.filter(c =>
+      !c.nagsKey || context.expectedInterchangeableNagsKeys!.has(c.nagsKey)
+    );
+    if (onlyExpected.length > 0) {
+      const cheapest = onlyExpected.reduce((acc, candidate) =>
+        cheapestOf(acc, candidate));
+      const confidence: MygrantWindshieldConfidence = cheapest.score >= 115 && cheapest.warnings.length === 0
+        ? 'high'
+        : 'medium';
+      return {
+        selectedPart: cheapest.item,
+        confidence,
+        reasons: [
+          confidence === 'high' ? 'high_confidence_cheapest_interchangeable' : 'cheapest_interchangeable_needs_confirmation',
+          `selected_${cheapest.nagsKey || 'unknown_nags'}`,
+          `interchangeable_pool_size_${onlyExpected.length}`,
+          ...cheapest.reasons,
+          ...cheapest.warnings,
+        ],
+        rankedCandidates,
+      };
+    }
   }
 
   const selected = availableCandidates[0];
@@ -117,6 +161,12 @@ export function evaluateMygrantWindshieldCandidates(items: MygrantResponseItem[]
     ],
     rankedCandidates,
   };
+}
+
+function cheapestOf(a: ScoredMygrantCandidate, b: ScoredMygrantCandidate): ScoredMygrantCandidate {
+  const priceA = a.item.customerUnitPrice ?? Number.POSITIVE_INFINITY;
+  const priceB = b.item.customerUnitPrice ?? Number.POSITIVE_INFINITY;
+  return priceA <= priceB ? a : b;
 }
 
 export function publicScoredMygrantCandidate(candidate: ScoredMygrantCandidate) {
