@@ -17,6 +17,11 @@ const bookingSchema = z.object({
   }),
   install: z.object({
     street: z.string().trim().min(3).max(200),
+    // ZIP collected at booking time (rather than at quote time) since the
+    // price-first redesign killed the quote's ZIP stage. We catch
+    // out-of-area customers here gracefully (the form had a state-based
+    // pre-gate, but state alone admits Tucson/Flagstaff false positives).
+    zip: z.string().trim().regex(/^\d{5}(-\d{4})?$/, 'Please enter a valid 5-digit ZIP code.'),
     date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/),
     window: z.enum(['AM', 'PM']),
   }),
@@ -111,9 +116,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3) Validate install ZIP is in service area (matches the quote's gate).
-    if (quoteRow.zip) {
-      const serviceArea = isInServiceArea(quoteRow.zip);
+    // 3) Validate install ZIP is in service area. Prefer the booking's
+    // freshly-entered ZIP over the quote-row's ZIP (which may be empty
+    // after the price-first redesign that killed the quote's ZIP stage).
+    const installZip = input.install.zip || quoteRow.zip || '';
+    if (installZip) {
+      const serviceArea = isInServiceArea(installZip);
       if (!serviceArea.inServiceArea && serviceArea.reason === 'out_of_area') {
         return NextResponse.json(
           { error: OUT_OF_AREA_MESSAGE, reason: 'out_of_area' },
@@ -152,7 +160,7 @@ export async function POST(request: NextRequest) {
       install_street: input.install.street,
       install_city: '',  // derivable from ZIP; left blank for v1
       install_state: quoteRow.state || '',
-      install_zip: quoteRow.zip || '',
+      install_zip: installZip,
       preferred_install_date: input.install.date,
       preferred_install_window: input.install.window,
       sms_consent: input.smsConsent,
@@ -191,7 +199,7 @@ export async function POST(request: NextRequest) {
         street: input.install.street,
         city: null,
         state: quoteRow.state,
-        zip: quoteRow.zip || '',
+        zip: installZip,
         date: input.install.date,
         window: input.install.window,
       },

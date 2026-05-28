@@ -185,7 +185,7 @@ export default function AutomatedQuoteForm() {
   }
 
   if (stage === 'priced' && quote) {
-    return <PricedHero quote={quote} vehicle={vehicle} plateState={plateState} onNewQuote={newQuote} />;
+    return <PricedHero quote={quote} vehicle={vehicle} onNewQuote={newQuote} />;
   }
 
   return (
@@ -362,12 +362,10 @@ function VehicleStage({
 function PricedHero({
   quote,
   vehicle,
-  plateState,
   onNewQuote,
 }: {
   quote: QuoteResult;
   vehicle: VehicleState;
-  plateState: string;
   onNewQuote: () => void;
 }) {
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -492,12 +490,7 @@ function PricedHero({
 
       {bookingOpen && quote.quoteToken && (
         <div ref={bookingRef} className="mt-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-          <QuoteBookingForm
-            quoteToken={quote.quoteToken}
-            zip=""
-            state={plateState}
-            vehicleSummary={vehicleLine}
-          />
+          <QuoteBookingForm quoteToken={quote.quoteToken} />
         </div>
       )}
 
