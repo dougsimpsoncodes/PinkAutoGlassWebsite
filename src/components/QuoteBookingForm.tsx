@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, Loader2, Phone, ShieldCheck, User } from 'lucide-react';
+import { CheckCircle2, Loader2, Phone, ShieldCheck, User } from 'lucide-react';
 
 interface QuoteBookingFormProps {
   quoteToken: string;
@@ -124,15 +124,7 @@ export default function QuoteBookingForm({ quoteToken, zip: initialZip }: QuoteB
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-5 space-y-4 rounded-md border border-gray-200 bg-white p-4">
-      <div className="flex items-center gap-2">
-        <CalendarDays className="h-5 w-5 text-pink-600" />
-        <h3 className="text-base font-bold text-gray-900">Schedule your install</h3>
-      </div>
-      <p className="text-sm text-gray-600">
-        Our tech comes to you — pick a day and window that works. We'll text 30 minutes before arrival.
-      </p>
-
+    <form onSubmit={onSubmit} className="space-y-4">
       <label className="block">
         <span className="mb-1 block text-sm font-semibold text-gray-700">When</span>
         <select
