@@ -1,33 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getPlateToVinClient, normalizePlate, normalizeState } from '@/lib/platelookup/client';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 
 export const runtime = 'nodejs';
 
+// Plate normalization is light because AutoBolt accepts uppercase alphanumeric
+// already; we strip whitespace/punctuation in the schema transform to match
+// what the form would send.
 const identifySchema = z.object({
-  plate: z.string().min(2).max(16).transform((value, ctx) => {
-    try {
-      return normalizePlate(value);
-    } catch {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Enter a valid US license plate.',
-      });
-      return z.NEVER;
-    }
-  }),
-  state: z.string().length(2).transform((value, ctx) => {
-    try {
-      return normalizeState(value);
-    } catch {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Enter a valid 2-letter state.',
-      });
-      return z.NEVER;
-    }
-  }),
+  plate: z.string()
+    .min(2)
+    .max(16)
+    .transform(v => v.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')),
+  state: z.string()
+    .length(2)
+    .transform(v => v.trim().toUpperCase()),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/).optional().or(z.literal('')),
 });
 
@@ -46,17 +34,42 @@ export async function POST(request: NextRequest) {
     const parsed = identifySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Enter a valid license plate, state, and ZIP code.' },
+        { error: 'Enter a valid license plate and state.' },
         { status: 400 }
       );
     }
 
     const { plate, state } = parsed.data;
-    // ZIP is validated here because the quote flow needs service-area context
-    // after identification, but this endpoint only performs vehicle lookup.
-    const result = await getPlateToVinClient().lookupPlate({ plate, state });
 
-    if (!result.success || !result.vehicle?.vin) {
+    let summary;
+    try {
+      summary = await getAutoBoltClient().decodePlate({
+        plateNumber: plate,
+        plateState: state,
+      });
+    } catch (err) {
+      if (err instanceof AutoBoltError) {
+        if (err.code === 'NotFound') {
+          // AutoBolt returned 204 — plate isn't in their database. Common in TX
+          // where AutoBolt has limited coverage. Tell the customer to enter
+          // the VIN or vehicle details manually rather than guessing.
+          return NextResponse.json({
+            success: false,
+            status: 'manual_entry_required',
+            message: 'We could not find that plate. Please enter the VIN or vehicle details manually.',
+          });
+        }
+        // Auth / rate-limit / server errors propagate as 503 so the form
+        // surfaces a meaningful message and falls back to manual entry.
+        throw err;
+      }
+      throw err;
+    }
+
+    // AutoBolt returns the full decode response; the form only needs
+    // VIN + Y/M/M, but we surface bodyStyle too because the manual review
+    // path stores it for later inspection.
+    if (!summary?.vin || !summary?.year || !summary?.make || !summary?.model) {
       return NextResponse.json({
         success: false,
         status: 'manual_entry_required',
@@ -68,25 +81,19 @@ export async function POST(request: NextRequest) {
       success: true,
       status: 'vehicle_found',
       vehicle: {
-        vin: result.vehicle.vin,
-        year: result.vehicle.year,
-        make: result.vehicle.make,
-        model: result.vehicle.model,
-        trim: result.vehicle.trim,
-        name: result.vehicle.name,
-        style: result.vehicle.style,
-        engine: result.vehicle.engine,
-        driveType: result.vehicle.driveType,
-        transmission: result.vehicle.transmission,
-        fuel: result.vehicle.fuel,
-        color: result.vehicle.color,
+        vin: summary.vin,
+        year: summary.year,
+        make: summary.make,
+        model: summary.model,
+        trim: '',
+        bodyStyle: summary.bodyStyle ?? null,
       },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Vehicle lookup failed.';
     console.error('[quote-identify] lookup failed:', message);
     return NextResponse.json(
-      { error: 'Vehicle lookup is temporarily unavailable. Please enter your vehicle details manually.' },
+      { error: 'Vehicle lookup is temporarily unavailable. Please enter your VIN or vehicle details manually.' },
       { status: 503 }
     );
   }
