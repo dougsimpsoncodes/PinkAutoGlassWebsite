@@ -9,7 +9,8 @@ import { buildCashWindshieldQuote, dollarsToCents, type CashWindshieldQuote } fr
 import { calculateMarkup, detectHudFromFeatures } from '@/lib/quote/markup';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
-import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, type CachedNagsLookup } from '@/lib/autobolt/cache';
+import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, extractInterchangeablesFromSummary, extractPrimaryFeaturesFromSummary, type CachedNagsLookup, type InterchangeableNagsPart } from '@/lib/autobolt/cache';
+import { checkCompatibility } from '@/lib/quote/nags-compatibility';
 
 export const runtime = 'nodejs';
 
@@ -305,10 +306,36 @@ async function getMygrantQuoteCandidates(
   }
 
   if (nagsLookup?.nags) {
+    // Build the NAGS query set: primary + functionally-compatible interchangeables.
+    // The compatibility filter (per the 2026-05-27 council review) drops only
+    // cosmetic-equivalent variants — anything missing a functional feature the
+    // primary needed (ADAS, acoustic, heated wiper, HUD, etc.) is rejected so
+    // we never substitute down a customer's actual driving experience.
+    const nagsQuery: Array<{ nagsPrefix: string; nagsNumber: string }> = [
+      { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number },
+    ];
+    const interchangeableCandidates: InterchangeableNagsPart[] = nagsLookup.interchangeableParts ?? [];
+    const compatibilityLog: Array<{ amNumber: string; compatible: boolean; missingFunctional: string[] }> = [];
+    for (const part of interchangeableCandidates) {
+      const check = checkCompatibility(nagsLookup.primaryFeatures ?? [], part.features ?? []);
+      compatibilityLog.push({
+        amNumber: part.amNumber,
+        compatible: check.compatible,
+        missingFunctional: check.missingFunctionalFeatures,
+      });
+      if (check.compatible) {
+        nagsQuery.push({ nagsPrefix: part.nags.prefix, nagsNumber: part.nags.number });
+      }
+    }
+    if (nagsQuery.length > 1) {
+      reasons.push(`interchangeable_nags_queried_${nagsQuery.length}`);
+    }
+    if (compatibilityLog.some(c => !c.compatible)) {
+      reasons.push('interchangeable_nags_filtered_for_feature_compat');
+    }
+
     try {
-      const response = await getMygrantClient().inquireByNags([
-        { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number },
-      ]);
+      const response = await getMygrantClient().inquireByNags(nagsQuery);
       nagsItems = response.requestItems.flatMap(item => item.responses);
       if (response.requestStatusCode && response.requestStatusCode !== '0') {
         reasons.push(`mygrant_status_${response.requestStatusCode}`);
@@ -317,16 +344,27 @@ async function getMygrantQuoteCandidates(
         path: 'inquireByNags',
         requestStatusCode: response.requestStatusCode,
         requestStatusText: response.requestStatusText,
+        nagsQueried: nagsQuery,
+        interchangeableCompatibility: compatibilityLog,
         responseCount: nagsItems.length,
         candidateSummary: evaluateMygrantWindshieldCandidates(nagsItems).rankedCandidates
           .slice(0, 8)
           .map(publicScoredMygrantCandidate),
       };
+      // Determine which NAGS the route ultimately selected (may be primary or
+      // an interchangeable). The scoring already runs across all candidates;
+      // we re-derive the selection here for telemetry.
+      const selection = evaluateMygrantWindshieldCandidates(nagsItems);
+      const selectedPrefix = selection.selectedPart?.nagsPrefix || nagsLookup.nags.prefix;
+      const selectedNumber = selection.selectedPart?.nagsNumber || nagsLookup.nags.number;
       vehicleNagsForReturn = {
-        prefix: nagsLookup.nags.prefix,
-        number: nagsLookup.nags.number,
+        prefix: selectedPrefix,
+        number: selectedNumber,
         amNumber: nagsLookup.amNumber,
       };
+      if (selectedPrefix !== nagsLookup.nags.prefix || selectedNumber !== nagsLookup.nags.number) {
+        reasons.push(`interchangeable_${selectedPrefix}${selectedNumber}_chosen_over_${nagsLookup.nags.prefix}${nagsLookup.nags.number}`);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown_error';
       reasons.push('mygrant_nags_lookup_failed');
@@ -475,6 +513,8 @@ async function resolveVehicleNags(
         sensor: c.sensor?.name,
       })),
       hasHud: detectHudFromFeatures(summary.selectedPart?.features),
+      interchangeableParts: extractInterchangeablesFromSummary(summary),
+      primaryFeatures: extractPrimaryFeaturesFromSummary(summary),
     };
   } catch (error) {
     if (error instanceof AutoBoltError) {
