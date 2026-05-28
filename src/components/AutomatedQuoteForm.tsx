@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   Loader2,
-  MapPin,
   Phone,
   Search,
   ShieldCheck,
@@ -262,15 +261,7 @@ function ZipStage({
 }) {
   return (
     <form onSubmit={onContinue}>
-      <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-md bg-pink-50 text-pink-600">
-        <MapPin className="h-6 w-6" />
-      </div>
-      <h2 className="text-2xl font-bold text-gray-900">Where are you?</h2>
-      <p className="mt-2 text-sm text-gray-600">
-        Pink Auto Glass serves the Colorado Front Range and Phoenix metro. Enter your ZIP to confirm we can come to you.
-      </p>
-
-      <label className="mt-5 block">
+      <label className="block">
         <span className="mb-1 block text-sm font-semibold text-gray-700">ZIP code</span>
         <input
           value={zip}
@@ -293,7 +284,7 @@ function ZipStage({
       <button
         type="submit"
         disabled={zip.trim().length < 5}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 text-base font-bold text-white transition-colors hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-5 py-3 text-base font-bold text-white transition-colors hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
       >
         Continue
         <ArrowRight className="h-5 w-5" />
@@ -301,7 +292,7 @@ function ZipStage({
 
       <a
         href="tel:+17209187465"
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:border-pink-300"
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 text-sm font-semibold text-gray-500 hover:text-pink-600"
       >
         <Phone className="h-4 w-4" />
         Prefer to call? (720) 918-7465
@@ -355,16 +346,8 @@ function VehicleStage({
         ZIP {zip}
       </button>
 
-      <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-md bg-pink-50 text-pink-600">
-        <Car className="h-6 w-6" />
-      </div>
-      <h2 className="text-2xl font-bold text-gray-900">What car are we fixing?</h2>
-      <p className="mt-2 text-sm text-gray-600">
-        We'll get your installed price in a few seconds.
-      </p>
-
       {mode === 'plate' && (
-        <div className="mt-5 grid gap-3">
+        <div className="grid gap-3">
           <div className="grid grid-cols-[1fr_120px] gap-3">
             <label className="block">
               <span className="mb-1 block text-sm font-semibold text-gray-700">License plate</span>
@@ -415,7 +398,7 @@ function VehicleStage({
       )}
 
       {mode === 'vin' && (
-        <div className="mt-5 grid gap-3">
+        <div className="grid gap-3">
           <label className="block">
             <span className="mb-1 block text-sm font-semibold text-gray-700">VIN (17 characters)</span>
             <input
