@@ -163,6 +163,7 @@ export async function POST(request: NextRequest) {
       calibrationCents: shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
         ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10)
         : 0,
+      minTotalCents: Number.parseInt(process.env.QUOTE_MIN_TOTAL_CENTS || '29900', 10),
     });
 
     const quoteWithMygrantConfidence = {
