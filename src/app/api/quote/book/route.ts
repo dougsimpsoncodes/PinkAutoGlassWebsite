@@ -5,6 +5,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-notifications';
+import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
 import { assertEnvCoherent } from '@/lib/env';
 
 export const runtime = 'nodejs';
@@ -160,14 +161,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
+    // 6) Resolve city from ZIP via Google Geocoding. Best-effort: never
+    // throws, returns null on any error so the booking still proceeds.
+    // Cached in-process — second booking from the same ZIP is free.
+    const installCity = (await lookupCityFromZip(installZip)) || '';
+
+    // 7) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
     const insertPayload = {
       quote_id: quoteRow.id,
       full_name: input.customer.fullName,
       phone_e164: phoneE164,
       email: (input.customer.email || '').trim(),
       install_street: input.install.street,
-      install_city: '',  // derivable from ZIP; left blank for v1
+      install_city: installCity,
       install_state: quoteRow.state || '',
       install_zip: installZip,
       preferred_install_date: input.install.date,
@@ -212,7 +218,7 @@ export async function POST(request: NextRequest) {
         },
         install: {
           street: input.install.street,
-          city: null,
+          city: installCity || null,
           state: quoteRow.state,
           zip: installZip,
           date: input.install.date,
