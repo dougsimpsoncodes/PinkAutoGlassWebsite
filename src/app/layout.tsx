@@ -8,8 +8,10 @@ import StickyCallbackBar from "@/components/StickyCallbackBar";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import GlobalPhoneTracker from "@/components/GlobalPhoneTracker";
 import TrackingProvider from "@/components/TrackingProvider";
+import StagingBanner from "@/components/StagingBanner";
 import { Analytics } from '@vercel/analytics/react';
 import { Suspense } from 'react';
+import { isStaging } from "@/lib/env";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +24,12 @@ const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
+const stagingMeta = isStaging()
+  ? { robots: { index: false, follow: false, nocache: true } as const }
+  : {};
+
 export const metadata: Metadata = {
+  ...stagingMeta,
   metadataBase: new URL('https://pinkautoglass.com'),
   title: "Mobile Windshield Replacement CO & AZ | Pink Auto Glass",
   description: "Mobile windshield replacement across Colorado & Phoenix AZ. Same-day service, $0 deductible often, we come to you. Call (720) 918-7465.",
@@ -82,6 +89,7 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${poppins.variable} antialiased`}
         >
+          <StagingBanner />
           <Header />
           <main id="main-content">
             {children}
