@@ -61,6 +61,14 @@ export interface BookingNotificationInput {
     totalCents: number;
     vehicleSummary: string;  // e.g. "2022 Honda Accord"
   };
+  /**
+   * ADAS classification carried from the quote. When 'recommended' we add a
+   * Tier-2 ADAS paragraph to the email + a tail to the SMS so the customer
+   * is warmed up before the tech raises it at install. 'mandatory' = the
+   * $200 was already in the quote total; 'none' = no ADAS mention.
+   * Council reco 2026-05-29 (Codex + Gemini): convert first, sell ADAS at install.
+   */
+  adasTier?: 'mandatory' | 'recommended' | 'none';
 }
 
 const CALLBACK_PHONE = '(720) 918-7465';
@@ -84,13 +92,19 @@ function buildSmsText(input: BookingNotificationInput): string {
   const date = formatInstallDate(input.install.date);
   const win = formatWindow(input.install.window);
   // Body kept under 160 chars where possible. STOP language required for TCPA.
-  return [
+  const lines = [
     `${COMPANY_NAME}: ${input.customer.fullName}, your install is booked.`,
     `${date}, ${win}.`,
     `Ref ${input.bookingToken}.`,
-    `Call ${CALLBACK_PHONE} for changes.`,
-    `Reply STOP to opt out.`,
-  ].join(' ');
+  ];
+  // Tier-2 ADAS tail — warm-up so the tech's at-install conversation
+  // isn't a surprise. Adds ~75 chars; TCPA STOP line stays separate.
+  if (input.adasTier === 'recommended') {
+    lines.push(`Your tech will also walk you through optional ADAS recalibration ($200, recommended).`);
+  }
+  lines.push(`Call ${CALLBACK_PHONE} for changes.`);
+  lines.push(`Reply STOP to opt out.`);
+  return lines.join(' ');
 }
 
 function buildEmailHtml(input: BookingNotificationInput): string {
@@ -117,6 +131,12 @@ function buildEmailHtml(input: BookingNotificationInput): string {
   <h2 style="color: #1a1a1a; font-size: 16px; margin: 24px 0 8px 0;">What's next</h2>
   <p style="margin: 0 0 8px 0;">A Pink Auto Glass tech will arrive in the window above. We'll text you a heads-up about 30 minutes before arrival.</p>
   <p style="margin: 0 0 8px 0;"><strong>Before we arrive:</strong> please make sure the vehicle is accessible (out of the garage, parked in shade if possible) and clear the dashboard.</p>
+  ${input.adasTier === 'recommended' ? `
+  <div style="margin: 16px 0; padding: 12px 14px; background: #fff7ed; border-left: 3px solid #f97316; border-radius: 4px;">
+    <p style="margin: 0 0 6px 0; font-weight: 600; color: #1a1a1a;">About your vehicle's safety features</p>
+    <p style="margin: 0; color: #555; font-size: 14px;">Your ${input.quote.vehicleSummary} uses cameras and sensors that work best when recalibrated after a windshield replacement. Your tech will walk you through this option at install — $200, performed in-house in about 30 minutes, no return trip needed. It's your call.</p>
+  </div>
+  ` : ''}
   <p style="margin: 24px 0 4px 0;">Questions? Call us at <strong>${CALLBACK_PHONE}</strong>.</p>
   <p style="margin: 0; color: #555;">Mention reference <strong>${input.bookingToken}</strong>.</p>
 </body></html>`;

@@ -45,6 +45,23 @@ interface QuoteSummary {
   vehicle_trim: string | null;
   quote_total_cents: number | null;
   quote_token: string;
+  // Used to surface a Tier-2 ADAS recommendation in the booking
+  // confirmation when calibration wasn't bundled in the quote total.
+  confidence_reasons: string[] | null;
+}
+
+/**
+ * Extract the ADAS tier the engine assigned at quote time from the saved
+ * confidence reasons array. Falls back to 'none' if the tag is missing
+ * (e.g., quote saved before the tier classifier shipped).
+ */
+function readAdasTier(reasons: string[] | null | undefined): 'mandatory' | 'recommended' | 'none' {
+  for (const r of reasons ?? []) {
+    if (r === 'adas_tier_mandatory') return 'mandatory';
+    if (r === 'adas_tier_recommended') return 'recommended';
+    if (r === 'adas_tier_none') return 'none';
+  }
+  return 'none';
 }
 
 export async function POST(request: NextRequest) {
@@ -85,7 +102,7 @@ export async function POST(request: NextRequest) {
     // 1) Look up the quote. Service role bypasses RLS.
     const { data: quoteRow, error: lookupError } = await supabase
       .from('automated_quotes')
-      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token')
+      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .maybeSingle<QuoteSummary>();
 
@@ -187,6 +204,7 @@ export async function POST(request: NextRequest) {
     const vehicleSummary = [quoteRow.vehicle_year, quoteRow.vehicle_make, quoteRow.vehicle_model, quoteRow.vehicle_trim]
       .filter(Boolean)
       .join(' ');
+    const adasTier = readAdasTier(quoteRow.confidence_reasons);
     const notification = await sendBookingNotifications({
       bookingToken: rpcResult.booking_token,
       customer: {
@@ -207,6 +225,7 @@ export async function POST(request: NextRequest) {
         totalCents: quoteRow.quote_total_cents || 0,
         vehicleSummary: vehicleSummary || 'your vehicle',
       },
+      adasTier,
     });
 
     // 8) Persist notification outcome onto the booking row. Failure to
