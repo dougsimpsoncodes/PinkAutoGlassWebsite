@@ -12,6 +12,7 @@ import { scheduleDripSequence } from '@/lib/drip/scheduler';
 import { getQuotePrice } from '@/lib/pricing';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { isExcludedPhone, isCustomerSmsEnabled, isTestPhone } from '@/lib/constants';
+import { assertEnvCoherent } from '@/lib/env';
 
 // ─── Market classification ────────────────────────────────────────────────────
 // Phoenix metro: 850xx–855xx (Maricopa County)
@@ -28,6 +29,7 @@ function classifyMarket(zip: string | null | undefined): 'in_market' | 'out_of_m
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     // Rate limit: 5 submissions per IP per 60 seconds
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateCheck = checkRateLimit(ip, 5, 60_000);

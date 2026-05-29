@@ -4,7 +4,9 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
-import { sendBookingNotifications } from '@/lib/quote/booking-notifications';
+import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-notifications';
+import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
+import { assertEnvCoherent } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -45,10 +47,18 @@ interface QuoteSummary {
   vehicle_trim: string | null;
   quote_total_cents: number | null;
   quote_token: string;
+  // Used by the team alert for cost / margin / glass-selection lines.
+  selected_brand: string | null;
+  selected_part_description: string | null;
+  selected_nags_number: string | null;
+  supplier_cost_cents: number | null;
+  selected_qty_available: number | null;
+  selected_estimated_delivery_date: string | null;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rate = checkRateLimit(`quote-book:${ip}`, 8, 60_000);
     if (!rate.allowed) {
@@ -85,7 +95,7 @@ export async function POST(request: NextRequest) {
     // 1) Look up the quote. Service role bypasses RLS.
     const { data: quoteRow, error: lookupError } = await supabase
       .from('automated_quotes')
-      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token')
+      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, selected_brand, selected_part_description, selected_nags_number, supplier_cost_cents, selected_qty_available, selected_estimated_delivery_date')
       .eq('quote_token', input.quoteToken)
       .maybeSingle<QuoteSummary>();
 
@@ -151,14 +161,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
+    // 6) Resolve city from ZIP via Google Geocoding. Best-effort: never
+    // throws, returns null on any error so the booking still proceeds.
+    // Cached in-process — second booking from the same ZIP is free.
+    const installCity = (await lookupCityFromZip(installZip)) || '';
+
+    // 7) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
     const insertPayload = {
       quote_id: quoteRow.id,
       full_name: input.customer.fullName,
       phone_e164: phoneE164,
       email: (input.customer.email || '').trim(),
       install_street: input.install.street,
-      install_city: '',  // derivable from ZIP; left blank for v1
+      install_city: installCity,
       install_state: quoteRow.state || '',
       install_zip: installZip,
       preferred_install_date: input.install.date,
@@ -187,6 +202,47 @@ export async function POST(request: NextRequest) {
     const vehicleSummary = [quoteRow.vehicle_year, quoteRow.vehicle_make, quoteRow.vehicle_model, quoteRow.vehicle_trim]
       .filter(Boolean)
       .join(' ');
+
+    // Team alert — fire-and-forget, never blocks the customer response.
+    // Council reco 2026-05-28 (Codex + Gemini unanimous): async after DB
+    // write so provider delays don't slow down "You're booked!" for the
+    // customer. Errors are logged inside sendTeamAlert; we don't await.
+    void sendTeamAlert(
+      {
+        bookingToken: rpcResult.booking_token,
+        customer: {
+          fullName: input.customer.fullName,
+          phoneE164,
+          email: input.customer.email?.trim() || null,
+          smsConsent: input.smsConsent,
+        },
+        install: {
+          street: input.install.street,
+          city: installCity || null,
+          state: quoteRow.state,
+          zip: installZip,
+          date: input.install.date,
+          window: input.install.window,
+        },
+        quote: {
+          totalCents: quoteRow.quote_total_cents || 0,
+          vehicleSummary: vehicleSummary || 'your vehicle',
+        },
+      },
+      {
+        supplierCostCents: quoteRow.supplier_cost_cents,
+        glassBrand: quoteRow.selected_brand,
+        glassPartNumber: quoteRow.selected_nags_number,
+        glassDescription: quoteRow.selected_part_description,
+        qtyAvailable: quoteRow.selected_qty_available,
+        estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
+      }
+    ).catch((err) => {
+      // Last-resort logger — sendTeamAlert itself never throws but the
+      // void-promise contract means we still want a backstop log.
+      console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
+    });
+
     const notification = await sendBookingNotifications({
       bookingToken: rpcResult.booking_token,
       customer: {

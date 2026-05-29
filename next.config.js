@@ -184,10 +184,18 @@ const nextConfig = {
         destination: '/services/windshield-repair',
         permanent: true, // 301 redirect
       },
+      // Homepage migration 2026-05-28: the auto-quoter moved from /quote to /.
+      // Any inbound link to /quote (legacy bookmarks, SMS history, internal
+      // /pricing CTA, QuoteCalculator widget) now lands on the homepage.
+      {
+        source: '/quote',
+        destination: '/',
+        permanent: true,
+      },
       // Common 404 URLs Google tries to crawl → redirect to relevant pages
       {
         source: '/get-quote',
-        destination: '/quote',
+        destination: '/',
         permanent: true,
       },
       {

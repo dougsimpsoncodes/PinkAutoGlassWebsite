@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { CheckCircle2, Loader2, Phone } from 'lucide-react';
 import { getNextTwoWorkingDays, pillDateLabel, pillDayLabel, toIsoLocal } from '@/lib/quote/schedule-slots';
+import { trackFormSubmission } from '@/lib/tracking';
 
 /**
  * Booking form inside the priced-state PricedHero. Per the 2026-05-28 owner
@@ -87,15 +88,31 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [street, setStreet] = useState('');
   const [installZip, setInstallZip] = useState('');
   const [smsConsent, setSmsConsent] = useState(true);
   const [honeypot, setHoneypot] = useState('');
 
+  // Strip every non-digit, count to 10. Phone is valid only with 10 digits.
+  const phoneDigits = phone.replace(/\D/g, '');
+  // Email is optional. When non-empty, must look email-shaped before submit.
+  const emailTrimmed = email.trim();
+  const emailValid = emailTrimmed === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed);
   const ready = fullName.trim().length >= 2
-    && phone.trim().length >= 7
+    && phoneDigits.length === 10
     && street.trim().length >= 3
-    && /^\d{5}(-\d{4})?$/.test(installZip.trim());
+    && /^\d{5}(-\d{4})?$/.test(installZip.trim())
+    && emailValid;
+
+  // Auto-format phone as (XXX) XXX-XXXX as the user types.
+  function formatPhoneInput(raw: string) {
+    const d = raw.replace(/\D/g, '').slice(0, 10);
+    if (d.length === 0) return '';
+    if (d.length < 4) return `(${d}`;
+    if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  }
 
   if (submit.kind === 'success') {
     return <BookingConfirmation success={submit.result} submitted={submit.submitted} />;
@@ -113,7 +130,7 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quoteToken,
-          customer: { fullName, phone },
+          customer: { fullName, phone, email: emailTrimmed || undefined },
           install: { street, zip: installZip.trim(), date: slot.date, window: slot.window },
           smsConsent,
           honeypot,
@@ -130,6 +147,15 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
         result: { bookingToken: data.bookingToken, status: data.notification?.status, channels: data.notification?.channels || [] },
         submitted: { fullName, street, date: slot.date, window: slot.window, dayLabel: `${slot.dayLabel} ${slot.dateLabel}` },
       });
+      // Fire booking-conversion event with the same `quote_form` name so Google Ads
+      // + Microsoft Ads pick it up. Phone is captured here for enhanced conversions.
+      trackFormSubmission('quote_form', {
+        stage: 'booked',
+        booking_token: data.bookingToken,
+        phone,
+        install_date: slot.date,
+        install_window: slot.window,
+      }).catch(() => { /* analytics never blocks UX */ });
     } catch {
       setSubmit({ kind: 'error', message: 'Booking is temporarily unavailable. Please call (720) 918-7465.' });
     }
@@ -163,52 +189,88 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
 
       {/* Name + Phone paired */}
       <div className="grid grid-cols-2 gap-2">
-        <input
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Your name"
-          aria-label="Your name"
-          required
-          minLength={2}
-          autoComplete="name"
-        />
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Phone"
-          aria-label="Phone"
-          type="tel"
-          required
-          autoComplete="tel"
-          inputMode="tel"
-        />
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Name</span>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="Jane Doe"
+            aria-label="Your name"
+            required
+            minLength={2}
+            autoComplete="name"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Phone</span>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="(720) 555-1234"
+            aria-label="Phone"
+            type="tel"
+            required
+            autoComplete="tel"
+            inputMode="tel"
+            maxLength={14}
+          />
+        </label>
       </div>
 
       {/* Address + ZIP paired */}
       <div className="grid grid-cols-[1fr_100px] gap-2">
-        <input
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Install address"
-          aria-label="Install address"
-          required
-          minLength={3}
-          autoComplete="street-address"
-        />
-        <input
-          value={installZip}
-          onChange={(e) => setInstallZip(e.target.value.replace(/[^0-9-]/g, '').slice(0, 10))}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="ZIP"
-          aria-label="ZIP"
-          required
-          inputMode="numeric"
-          autoComplete="postal-code"
-        />
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Install address</span>
+          <input
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="1234 Main St"
+            aria-label="Install address"
+            required
+            minLength={3}
+            autoComplete="street-address"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">ZIP</span>
+          <input
+            value={installZip}
+            onChange={(e) => setInstallZip(e.target.value.replace(/[^0-9-]/g, '').slice(0, 10))}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="80202"
+            aria-label="ZIP"
+            required
+            inputMode="numeric"
+            autoComplete="postal-code"
+          />
+        </label>
       </div>
+
+      {/* Optional email — paper-trail confirmation for customers who want one.
+          Not required; phone is the dispatch channel. Per council reco 2026-05-28. */}
+      <label className="block">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+          Email <span className="text-gray-400 font-normal normal-case tracking-normal">(optional — for confirmation)</span>
+        </span>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={`w-full rounded-md border px-3 py-3 text-base focus:border-pink-500 focus:outline-none ${
+            emailValid ? 'border-gray-300' : 'border-red-400'
+          }`}
+          placeholder="you@example.com"
+          aria-label="Email (optional)"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+        />
+        {!emailValid && (
+          <span className="mt-1 block text-xs text-red-600">Please enter a valid email or leave blank.</span>
+        )}
+      </label>
 
       <label className="flex items-start gap-2 text-xs text-gray-600">
         <input

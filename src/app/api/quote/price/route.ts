@@ -11,6 +11,7 @@ import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, extractInterchangeablesFromSummary, extractPrimaryFeaturesFromSummary, type CachedNagsLookup, type InterchangeableNagsPart } from '@/lib/autobolt/cache';
 import { checkCompatibility } from '@/lib/quote/nags-compatibility';
+import { assertEnvCoherent } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -49,6 +50,7 @@ interface PersistenceContext {
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateCheck = checkRateLimit(`quote-price:${ip}`, 8, 60_000);
     if (!rateCheck.allowed) {

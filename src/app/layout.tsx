@@ -104,7 +104,11 @@ export default function RootLayout({
           </Suspense>
           <Analytics />
 
-          {/* Microsoft Ads: Consent Mode + UET (combined to guarantee ordering) */}
+          {/* Microsoft Ads UET + Google Ads tags: prod only. Skipping these on
+              staging prevents test traffic from training ad bidders / polluting
+              the prod conversion stream. Per project memory
+              `project-pink-auto-glass-homepage-migration` (council reco). */}
+          {!isStaging() && <>
           <Script
             id="ms-ads-uet"
             strategy="afterInteractive"
@@ -156,6 +160,7 @@ export default function RootLayout({
               `,
             }}
           />
+          </>}
         </body>
       </html>
   );
