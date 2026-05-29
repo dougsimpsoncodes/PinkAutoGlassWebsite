@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -27,7 +27,7 @@ import { trackFormSubmission } from '@/lib/tracking';
  */
 
 type Stage = 'vehicle' | 'priced';
-type VehicleMode = 'plate' | 'vin';
+type VehicleMode = 'plate' | 'vin' | 'ymm';
 
 interface VehicleState {
   vin: string;
@@ -63,7 +63,20 @@ interface QuoteResult {
   adas?: { requiresCalibration: boolean; calibrations: Array<{ type?: string; sensor?: string }> };
 }
 
-const STATE_OPTIONS = ['AZ', 'CO', 'CA', 'NM', 'NV', 'TX', 'UT', 'WY'];
+// All 50 US states + DC. Service-area enforcement is downstream (per ZIP at
+// booking time); the dropdown is comprehensive so out-of-state customers
+// don't bounce at this step.
+const STATE_OPTIONS = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'HI',
+  'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN',
+  'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH',
+  'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA',
+  'WV', 'WI', 'WY',
+];
+
+// Vehicle year range — current year + 1 down 25 years.
+const CURRENT_YEAR = new Date().getFullYear();
+const YMM_YEAR_OPTIONS = Array.from({ length: 26 }, (_, i) => CURRENT_YEAR + 1 - i);
 
 export default function AutomatedQuoteForm() {
   const [stage, setStage] = useState<Stage>('vehicle');
@@ -74,6 +87,53 @@ export default function AutomatedQuoteForm() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [quote, setQuote] = useState<QuoteResult | null>(null);
+
+  // YMM (Year/Make/Model) mode state. Makes load on first YMM-mode mount;
+  // models load when a make is selected. Mirrors the legacy QuoteForm cascade.
+  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loadingMakes, setLoadingMakes] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [ymmYear, setYmmYear] = useState('');
+  const [ymmMake, setYmmMake] = useState('');
+  const [ymmModel, setYmmModel] = useState('');
+
+  useEffect(() => {
+    if (vehicleMode !== 'ymm' || availableMakes.length > 0 || loadingMakes) return;
+    setLoadingMakes(true);
+    fetch('/api/vehicles/makes')
+      .then((r) => r.json())
+      .then((data) => setAvailableMakes(Array.isArray(data?.makes) ? data.makes : []))
+      .catch(() => setNotice('Vehicle list is temporarily unavailable. Try a VIN or plate, or call (720) 918-7465.'))
+      .finally(() => setLoadingMakes(false));
+  }, [vehicleMode, availableMakes.length, loadingMakes]);
+
+  useEffect(() => {
+    if (!ymmMake) {
+      setAvailableModels([]);
+      setYmmModel('');
+      return;
+    }
+    setLoadingModels(true);
+    fetch(`/api/vehicles/models?make=${encodeURIComponent(ymmMake)}`)
+      .then((r) => r.json())
+      .then((data) => setAvailableModels(Array.isArray(data?.models) ? data.models : []))
+      .catch(() => setAvailableModels([]))
+      .finally(() => setLoadingModels(false));
+  }, [ymmMake]);
+
+  async function lookupYmm() {
+    if (!ymmYear || !ymmMake || !ymmModel) return;
+    setNotice('');
+    setBusy(true);
+    try {
+      const v: VehicleState = { vin: '', year: ymmYear, make: ymmMake, model: ymmModel, trim: '' };
+      setVehicle(v);
+      await requestPrice(v);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function lookupPlate() {
     if (!isStateInServiceArea(plateState)) {
@@ -211,6 +271,17 @@ export default function AutomatedQuoteForm() {
           setPlate={setPlate}
           plateState={plateState}
           setPlateState={setPlateState}
+          ymmYear={ymmYear}
+          setYmmYear={setYmmYear}
+          ymmMake={ymmMake}
+          setYmmMake={setYmmMake}
+          ymmModel={ymmModel}
+          setYmmModel={setYmmModel}
+          availableMakes={availableMakes}
+          availableModels={availableModels}
+          loadingMakes={loadingMakes}
+          loadingModels={loadingModels}
+          onLookupYmm={lookupYmm}
           vinInput={vehicle.vin}
           setVinInput={(vin) => setVehicle((prev) => ({ ...prev, vin }))}
           onLookupPlate={lookupPlate}
@@ -239,6 +310,17 @@ function VehicleStage({
   setPlate,
   plateState,
   setPlateState,
+  ymmYear,
+  setYmmYear,
+  ymmMake,
+  setYmmMake,
+  ymmModel,
+  setYmmModel,
+  availableMakes,
+  availableModels,
+  loadingMakes,
+  loadingModels,
+  onLookupYmm,
   vinInput,
   setVinInput,
   onLookupPlate,
@@ -252,6 +334,17 @@ function VehicleStage({
   setPlate: (v: string) => void;
   plateState: string;
   setPlateState: (v: string) => void;
+  ymmYear: string;
+  setYmmYear: (v: string) => void;
+  ymmMake: string;
+  setYmmMake: (v: string) => void;
+  ymmModel: string;
+  setYmmModel: (v: string) => void;
+  availableMakes: string[];
+  availableModels: string[];
+  loadingMakes: boolean;
+  loadingModels: boolean;
+  onLookupYmm: () => void;
   vinInput: string;
   setVinInput: (v: string) => void;
   onLookupPlate: () => void;
@@ -261,9 +354,30 @@ function VehicleStage({
 }) {
   const plateReady = plate.trim().length >= 2 && plateState.length === 2;
   const vinReady = vinInput.trim().length === 17;
+  const ymmReady = Boolean(ymmYear && ymmMake && ymmModel);
+
+  const tabClass = (active: boolean) =>
+    `flex-1 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
+      active
+        ? 'bg-pink-600 text-white shadow-sm'
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    }`;
 
   return (
     <div>
+      {/* 3-tab vehicle-lookup selector */}
+      <div className="mb-4 flex gap-2">
+        <button type="button" className={tabClass(mode === 'plate')} onClick={() => setMode('plate')}>
+          License plate
+        </button>
+        <button type="button" className={tabClass(mode === 'vin')} onClick={() => setMode('vin')}>
+          VIN
+        </button>
+        <button type="button" className={tabClass(mode === 'ymm')} onClick={() => setMode('ymm')}>
+          Year/Make/Model
+        </button>
+      </div>
+
       {mode === 'plate' && (
         <div className="grid gap-3">
           <div className="grid grid-cols-[1fr_120px] gap-3">
@@ -305,13 +419,6 @@ function VehicleStage({
                   ? 'Select state to continue'
                   : 'Get my price'}
           </button>
-          <button
-            type="button"
-            onClick={() => setMode('vin')}
-            className="text-sm text-gray-500 underline hover:text-pink-600"
-          >
-            Don&apos;t have your plate? Use VIN instead
-          </button>
         </div>
       )}
 
@@ -345,12 +452,66 @@ function VehicleStage({
                 ? `${vinInput.length}/17 characters`
                 : 'Get my price'}
           </button>
+        </div>
+      )}
+
+      {mode === 'ymm' && (
+        <div className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-gray-700">Year</span>
+              <select
+                value={ymmYear}
+                onChange={(e) => setYmmYear(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none"
+              >
+                <option value="">Year…</option>
+                {YMM_YEAR_OPTIONS.map((y) => <option key={y} value={String(y)}>{y}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-gray-700">Make</span>
+              <select
+                value={ymmMake}
+                onChange={(e) => setYmmMake(e.target.value)}
+                disabled={loadingMakes || availableMakes.length === 0}
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none disabled:bg-gray-50"
+              >
+                <option value="">{loadingMakes ? 'Loading…' : 'Make…'}</option>
+                {availableMakes.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-gray-700">Model</span>
+            <select
+              value={ymmModel}
+              onChange={(e) => setYmmModel(e.target.value)}
+              disabled={!ymmMake || loadingModels}
+              className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none disabled:bg-gray-50"
+            >
+              <option value="">
+                {!ymmMake ? 'Pick a make first' : loadingModels ? 'Loading…' : 'Model…'}
+              </option>
+              {availableModels.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
           <button
             type="button"
-            onClick={() => setMode('plate')}
-            className="text-sm text-gray-500 underline hover:text-pink-600"
+            onClick={onLookupYmm}
+            disabled={busy || !ymmReady}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
           >
-            Use license plate instead
+            {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+            {busy
+              ? 'Looking up your price…'
+              : !ymmYear
+                ? 'Pick a year'
+                : !ymmMake
+                  ? 'Pick a make'
+                  : !ymmModel
+                    ? 'Pick a model'
+                    : 'Get my price'}
           </button>
         </div>
       )}
