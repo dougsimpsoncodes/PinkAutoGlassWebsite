@@ -10,16 +10,16 @@
  *      manual-review path before showing a price.
  *   2. Otherwise, take the MAX of:
  *        - brand-tier markup ($200 non-luxury / $100 Tier 1 / $200 Tier 2)
- *        - wholesale-threshold markup ($200 / $250 / $300 / $400 by band)
- *        - effective tier markup = max(brandTier, threshold), so the
- *          threshold-floor dominates Tier 1/2 in most bands. Intent:
- *          Tier 1/2 trigger lookups + reasons, but the floor keeps prices
- *          from going below the wholesale-threshold cost-recovery line.
+ *        - wholesale-threshold markup ($200 under $350 / $300 at $350+)
+ *        - effective markup = max(brandTier, threshold), so the threshold
+ *          floor dominates Tier 1/2 in most bands. Intent: Tier 1/2 trigger
+ *          lookups + reasons, but the floor keeps prices from going below
+ *          the wholesale cost-recovery line.
  *   3. Add +$100 if heavy-duty / commercial vehicle.
- *   4. Add +$75 if vehicle has a HUD windshield (any brand).
  *
  * Light truck / SUV gets +$0 (volume play — bread-and-butter jobs aren't
- * taxed for being trucks).
+ * taxed for being trucks). HUD adder dropped 2026-05-29 per Doug — wholesale
+ * already prices HUD glass higher, so the adder double-counts.
  *
  * All amounts are in cents.
  */
@@ -39,8 +39,6 @@ export interface MarkupInput {
   model: string;
   /** Mygrant customer unit price in cents — drives the threshold rule. */
   wholesaleCents: number;
-  /** True if AutoBolt's features[] includes a heads-up display indicator. */
-  hasHud: boolean;
 }
 
 const TIER1_LUXURY = new Set([
@@ -117,13 +115,13 @@ const BASE_MARKUP_CENTS = 20_000;
 const TIER1_MARKUP_CENTS = 10_000;
 const TIER2_MARKUP_CENTS = 20_000;
 const HEAVY_DUTY_ADDER_CENTS = 10_000;
-const HUD_ADDER_CENTS = 7_500;
 
+// Simplified two-band wholesale-threshold floor (Doug 2026-05-29):
+//   - wholesale < $350  → $200 markup
+//   - wholesale >= $350 → $300 markup
 const THRESHOLD_BREAKPOINTS_CENTS = [
-  { ceiling: 25_000, markupCents: 20_000 },
-  { ceiling: 40_000, markupCents: 25_000 },
-  { ceiling: 60_000, markupCents: 30_000 },
-  { ceiling: Number.POSITIVE_INFINITY, markupCents: 40_000 },
+  { ceiling: 35_000, markupCents: 20_000 },
+  { ceiling: Number.POSITIVE_INFINITY, markupCents: 30_000 },
 ] as const;
 
 export function calculateMarkup(input: MarkupInput): MarkupResult {
@@ -158,11 +156,6 @@ export function calculateMarkup(input: MarkupInput): MarkupResult {
   if (isHeavyDuty(normalizedModel)) {
     markupCents += HEAVY_DUTY_ADDER_CENTS;
     reasons.push('heavy_duty_adder');
-  }
-
-  if (input.hasHud) {
-    markupCents += HUD_ADDER_CENTS;
-    reasons.push('hud_adder');
   }
 
   return { kind: 'priced', markupCents, tier, reasons };

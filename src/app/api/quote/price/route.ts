@@ -129,7 +129,6 @@ export async function POST(request: NextRequest) {
       make: effectiveInput.vehicle.make,
       model: effectiveInput.vehicle.model,
       wholesaleCents,
-      hasHud: mygrantResult.hasHud,
     });
 
     if (markupResult.kind === 'manual_review') {

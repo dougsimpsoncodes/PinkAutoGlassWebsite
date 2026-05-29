@@ -32,133 +32,121 @@ interface ManualReviewCase {
 const PRICED_CASES: PricedCase[] = [
   // Baseline non-luxury, low wholesale
   {
-    name: 'Honda Accord $189 wholesale, no HUD → base $200 markup',
-    input: { make: 'Honda', model: 'Accord', wholesaleCents: 18_900, hasHud: false },
+    name: 'Honda Accord $189 wholesale → base $200 markup',
+    input: { make: 'Honda', model: 'Accord', wholesaleCents: 18_900 },
     expectedMarkupCents: 20_000,
   },
   // Tier 1 below base: threshold wins
   {
     name: 'Audi A4 $189 wholesale → threshold $200 wins over Tier 1 $100',
-    input: { make: 'Audi', model: 'A4', wholesaleCents: 18_900, hasHud: false },
+    input: { make: 'Audi', model: 'A4', wholesaleCents: 18_900 },
     expectedMarkupCents: 20_000,
   },
   // Threshold wins over Tier 1 at higher band
   {
-    name: 'Audi Q7 $700 wholesale → threshold $400 wins over Tier 1 $100',
-    input: { make: 'Audi', model: 'Q7', wholesaleCents: 70_000, hasHud: false },
-    expectedMarkupCents: 40_000,
+    name: 'Audi Q7 $700 wholesale → threshold $300 (over-$350 band) wins over Tier 1 $100',
+    input: { make: 'Audi', model: 'Q7', wholesaleCents: 70_000 },
+    expectedMarkupCents: 30_000,
   },
-  // Tier 2 ties base: threshold wins above $250
+  // Tier 2 vs threshold
   {
     name: 'Tesla Model 3 $400 wholesale → threshold $300 wins over Tier 2 $200',
-    input: { make: 'Tesla', model: 'Model 3', wholesaleCents: 40_000, hasHud: false },
+    input: { make: 'Tesla', model: 'Model 3', wholesaleCents: 40_000 },
     expectedMarkupCents: 30_000,
   },
   {
-    name: 'Tesla Model Y $700 wholesale → threshold $400 wins over Tier 2 $200',
-    input: { make: 'Tesla', model: 'Model Y', wholesaleCents: 70_000, hasHud: false },
-    expectedMarkupCents: 40_000,
+    name: 'Tesla Model Y $700 wholesale → threshold $300 wins over Tier 2 $200',
+    input: { make: 'Tesla', model: 'Model Y', wholesaleCents: 70_000 },
+    expectedMarkupCents: 30_000,
   },
-  // Threshold bands (non-luxury)
+  // Threshold bands (non-luxury) — two-band simplified table
   {
-    name: '$249 wholesale → threshold band 0 ($200)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 24_900, hasHud: false },
+    name: '$249 wholesale → under-$350 band ($200)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 24_900 },
     expectedMarkupCents: 20_000,
   },
   {
-    name: '$250 wholesale → threshold band 1 ($250)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 25_000, hasHud: false },
-    expectedMarkupCents: 25_000,
+    name: '$250 wholesale → under-$350 band ($200)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 25_000 },
+    expectedMarkupCents: 20_000,
   },
   {
-    name: '$399 wholesale → threshold band 1 ($250)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 39_900, hasHud: false },
-    expectedMarkupCents: 25_000,
+    name: '$349 wholesale → under-$350 band ($200)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 34_900 },
+    expectedMarkupCents: 20_000,
   },
   {
-    name: '$400 wholesale → threshold band 2 ($300)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 40_000, hasHud: false },
+    name: '$350 wholesale → over-$350 band ($300)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 35_000 },
     expectedMarkupCents: 30_000,
   },
   {
-    name: '$599 wholesale → threshold band 2 ($300)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 59_900, hasHud: false },
+    name: '$599 wholesale → over-$350 band ($300)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 59_900 },
     expectedMarkupCents: 30_000,
   },
   {
-    name: '$600 wholesale → threshold band 3 ($400)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 60_000, hasHud: false },
-    expectedMarkupCents: 40_000,
+    name: '$600 wholesale → over-$350 band ($300)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 60_000 },
+    expectedMarkupCents: 30_000,
   },
   {
-    name: '$1500 wholesale → threshold band 3 ($400)',
-    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 150_000, hasHud: false },
-    expectedMarkupCents: 40_000,
-  },
-  // HUD adder on non-luxury
-  {
-    name: 'Honda Pilot HUD $450 wholesale → threshold $300 + HUD $75 = $375',
-    input: { make: 'Honda', model: 'Pilot', wholesaleCents: 45_000, hasHud: true },
-    expectedMarkupCents: 37_500,
-  },
-  // HUD adder on Tier 1 — threshold $300 dominates (Tier 1 = $100)
-  {
-    name: 'Audi Q7 HUD $450 wholesale → threshold $300 + HUD $75 = $375',
-    input: { make: 'Audi', model: 'Q7', wholesaleCents: 45_000, hasHud: true },
-    expectedMarkupCents: 37_500,
+    name: '$1500 wholesale → over-$350 band ($300)',
+    input: { make: 'Toyota', model: 'Camry', wholesaleCents: 150_000 },
+    expectedMarkupCents: 30_000,
   },
   // Heavy-duty adder
   {
-    name: 'Ford F-250 $300 wholesale → threshold $250 + HD $100 = $350',
-    input: { make: 'Ford', model: 'F-250 XLT', wholesaleCents: 30_000, hasHud: false },
-    expectedMarkupCents: 35_000,
+    name: 'Ford F-250 $300 wholesale → threshold $200 + HD $100 = $300',
+    input: { make: 'Ford', model: 'F-250 XLT', wholesaleCents: 30_000 },
+    expectedMarkupCents: 30_000,
   },
   {
-    name: 'Mercedes Sprinter $400 wholesale → threshold $300 + HD $100 = $400 (Tier 1 = $100 loses)',
-    input: { make: 'Mercedes-Benz', model: 'Sprinter 2500', wholesaleCents: 40_000, hasHud: false },
+    name: 'Mercedes Sprinter $400 wholesale → threshold $300 + HD $100 = $400',
+    input: { make: 'Mercedes-Benz', model: 'Sprinter 2500', wholesaleCents: 40_000 },
     expectedMarkupCents: 40_000,
   },
   {
-    name: 'Ram 3500 $300 wholesale → threshold $250 + HD $100 = $350',
-    input: { make: 'Ram', model: 'Ram 3500', wholesaleCents: 30_000, hasHud: false },
-    expectedMarkupCents: 35_000,
+    name: 'Ram 3500 $300 wholesale → threshold $200 + HD $100 = $300',
+    input: { make: 'Ram', model: 'Ram 3500', wholesaleCents: 30_000 },
+    expectedMarkupCents: 30_000,
   },
   {
-    name: 'Ford Transit $250 wholesale → threshold $250 + HD $100 = $350',
-    input: { make: 'Ford', model: 'Transit 250', wholesaleCents: 25_000, hasHud: false },
-    expectedMarkupCents: 35_000,
+    name: 'Ford Transit $250 wholesale → threshold $200 + HD $100 = $300',
+    input: { make: 'Ford', model: 'Transit 250', wholesaleCents: 25_000 },
+    expectedMarkupCents: 30_000,
   },
-  // Light truck — no adder (volume play)
+  // Light truck — no HD adder (volume play)
   {
-    name: 'Ford F-150 $300 wholesale → threshold $250, no HD adder',
-    input: { make: 'Ford', model: 'F-150 Lariat', wholesaleCents: 30_000, hasHud: false },
-    expectedMarkupCents: 25_000,
+    name: 'Ford F-150 $300 wholesale → threshold $200, no HD adder',
+    input: { make: 'Ford', model: 'F-150 Lariat', wholesaleCents: 30_000 },
+    expectedMarkupCents: 20_000,
   },
-  // Combined stack: Tier 1 + HD + HUD
+  // Combined stack: Tier 1 + HD (Escalade not in HD list)
   {
-    name: 'Cadillac Escalade HUD $700 wholesale → threshold $400 + HUD $75 = $475 (Escalade not in HD list)',
-    input: { make: 'Cadillac', model: 'Escalade', wholesaleCents: 70_000, hasHud: true },
-    expectedMarkupCents: 47_500,
+    name: 'Cadillac Escalade $700 wholesale → threshold $300, no HD adder (Escalade not in HD list)',
+    input: { make: 'Cadillac', model: 'Escalade', wholesaleCents: 70_000 },
+    expectedMarkupCents: 30_000,
   },
   // Brand normalization — Tier 1/2 still classify correctly, threshold floor applies
   {
     name: 'Lowercase make "audi" resolves to Tier 1 (threshold $200 wins over Tier 1 $100)',
-    input: { make: 'audi', model: 'A4', wholesaleCents: 18_900, hasHud: false },
+    input: { make: 'audi', model: 'A4', wholesaleCents: 18_900 },
     expectedMarkupCents: 20_000,
   },
   {
     name: 'Land Rover with space resolves to Tier 2 (Tier 2 $200 ties threshold $200)',
-    input: { make: 'Land Rover', model: 'Defender', wholesaleCents: 18_900, hasHud: false },
+    input: { make: 'Land Rover', model: 'Defender', wholesaleCents: 18_900 },
     expectedMarkupCents: 20_000,
   },
 ];
 
 const MANUAL_REVIEW_CASES: ManualReviewCase[] = [
-  { name: 'Bentley → exotic_brand', input: { make: 'Bentley', model: 'Continental GT', wholesaleCents: 250_000, hasHud: false } },
-  { name: 'Rolls-Royce → exotic_brand', input: { make: 'Rolls-Royce', model: 'Ghost', wholesaleCents: 250_000, hasHud: false } },
-  { name: 'Lucid → exotic_brand', input: { make: 'Lucid', model: 'Air', wholesaleCents: 80_000, hasHud: false } },
-  { name: 'Polestar → exotic_brand', input: { make: 'Polestar', model: '2', wholesaleCents: 35_000, hasHud: false } },
-  { name: 'Aston Martin → exotic_brand', input: { make: 'Aston Martin', model: 'DB11', wholesaleCents: 250_000, hasHud: false } },
+  { name: 'Bentley → exotic_brand', input: { make: 'Bentley', model: 'Continental GT', wholesaleCents: 250_000 } },
+  { name: 'Rolls-Royce → exotic_brand', input: { make: 'Rolls-Royce', model: 'Ghost', wholesaleCents: 250_000 } },
+  { name: 'Lucid → exotic_brand', input: { make: 'Lucid', model: 'Air', wholesaleCents: 80_000 } },
+  { name: 'Polestar → exotic_brand', input: { make: 'Polestar', model: '2', wholesaleCents: 35_000 } },
+  { name: 'Aston Martin → exotic_brand', input: { make: 'Aston Martin', model: 'DB11', wholesaleCents: 250_000 } },
 ];
 
 function assertPriced(c: PricedCase, result: MarkupResult): void {
