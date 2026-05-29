@@ -1,6 +1,29 @@
+import type { Metadata } from "next";
 import { Phone, MapPin, Clock, Star, Shield } from "lucide-react";
 import AutomatedQuoteForm from "@/components/AutomatedQuoteForm";
 import { combineSchemas } from "@/lib/schema";
+
+// Homepage-specific metadata — Colorado only. Layout's default mentions
+// AZ/Phoenix (correct for /arizona pages); we override here so `/` reads
+// as a pure CO landing page after the 2026-05-28 homepage migration.
+export const metadata: Metadata = {
+  title: "Get an Instant Windshield Quote | Pink Auto Glass — Colorado",
+  description: "Get an installed windshield replacement quote by license plate or VIN. Mobile service across the Front Range — Denver, Boulder, Fort Collins. Real price in seconds, no phone call needed.",
+  alternates: { canonical: "https://pinkautoglass.com/" },
+  openGraph: {
+    title: "Get an Instant Windshield Quote | Pink Auto Glass — Colorado",
+    description: "Real installed price in seconds. Mobile service across the Front Range. Book online — no phone call needed.",
+    url: "https://pinkautoglass.com/",
+    siteName: "Pink Auto Glass",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Get an Instant Windshield Quote | Pink Auto Glass — Colorado",
+    description: "Real installed price in seconds. Mobile service across the Front Range.",
+  },
+};
 
 /**
  * Homepage — Mockup B (locked 2026-05-28).
