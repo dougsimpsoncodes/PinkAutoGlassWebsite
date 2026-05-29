@@ -197,6 +197,7 @@
     background: #dcfce7; color: #15803d;
     white-space: nowrap;
   }
+  .pill-watch { background: #fef3c7; color: #b45309; }
   .ex-prices {
     display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     padding: 14px 16px;
@@ -334,7 +335,7 @@
       <li><strong>371 installs</strong> over the last 7 months ($131K revenue, $354 avg per job)</li>
       <li><strong>91% cash, 9% insurance</strong>. Pricing engine is built for the cash funnel.</li>
       <li><strong>Mobile converts 2.4&times; better</strong> than desktop (12.9% vs 5.4%)</li>
-      <li>Auto-quoter prices <strong>~29% higher</strong> on average vs current manual quotes (these 8 examples)</li>
+      <li>Auto-quoter base prices <strong>~14% higher</strong> on average vs current manual quotes (8 examples). Add ~$200 per accepted ADAS at install on top of that.</li>
     </ul>
   </div>
 </section>
@@ -349,7 +350,7 @@
     </div>
     <div class="card card-green">
       <span class="tag tag-green">✓ ADAS policy shipped (independent of homepage)</span>
-      <p>Per the partner ask: stop bundling $200 ADAS in quotes where 55% of customers decline at install. New tiered logic auto-classifies each vehicle and only bundles ADAS when it's functionally mandatory (Tesla, Subaru EyeSight, certain BMW/Mercedes). For everyone else, the tech walks them through it at install.</p>
+      <p>Per the partner ask: stop bundling $200 ADAS in quotes where 55% of customers decline at install. New tiered logic only bundles ADAS when the customer literally can't drive safely without recalibration: Tesla (Vision is the driving system) and Subaru EyeSight (auto-disables with a persistent dashboard warning). For everyone else (Lexus, BMW, Toyota TSS, Honda Sensing, Mercedes Distronic, etc.), the tech walks them through the optional recalibration at install.</p>
     </div>
     <div class="card card-amber">
       <span class="tag tag-amber">⏸ Holding the homepage launch for your sign-off today</span>
@@ -527,9 +528,9 @@
       <div class="price-row"><div class="label">ADAS calibration</div><div class="amt amt-emerald">$200</div></div>
       <div class="price-brands"><strong>New today (shipped to prod):</strong> tiered handling per vehicle.</div>
       <ul class="bulleted">
-        <li><strong>Mandatory</strong> (Tesla, Subaru EyeSight, certain BMW/Mercedes): bundled in quote</li>
-        <li><strong>Recommended</strong> (most 2018+ Toyota/Honda/Hyundai/Kia/VW/Audi): not in quote, tech walks the customer through accept/decline at install</li>
-        <li><strong>None</strong> (older, no-ADAS): no line at all</li>
+        <li><strong>Mandatory</strong> (Tesla with any camera, OR Subaru EyeSight): bundled in quote. Vehicles where the customer literally can't drive safely without recalibration.</li>
+        <li><strong>Recommended</strong> (everyone else with a windshield camera — Lexus, BMW, Toyota TSS, Honda Sensing, Mercedes, etc.): NOT in quote. Surfaced in the booking confirmation; tech walks the customer through accept/decline at install.</li>
+        <li><strong>None</strong> (pre-camera vehicles, base trims without a forward camera): no line at all.</li>
       </ul>
     </div>
 
@@ -563,13 +564,13 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2018 Lexus ES 300h Hybrid</div>
-        <span class="pill">+$321 (+76%)</span>
+        <span class="pill">+$121 (+29%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$422.03</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$743.34</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$543.34</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Threshold $250 (Tier 1 $100 floored by threshold) + HUD adder + ADAS (Static cal, mandatory)</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $250 (Tier 1 $100 floored by threshold) + HUD adder. ADAS (Static cal, Lexus Safety+) is recommended-tier under the new policy, surfaced in the booking confirmation rather than the quote. Optional +$200 at install.</div>
     </div>
 
     <div class="card ex">
@@ -593,7 +594,7 @@
         <div class="col"><div class="lbl">Original</div><div class="val">$349.12</div></div>
         <div class="col"><div class="lbl">New quoter</div><div class="val">$510.00</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Base $200 + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $250 ($260 glass → band 1). This trim returned no camera-calibration data from AutoBolt — no ADAS line in the quote.</div>
     </div>
 
     <div class="card ex">
@@ -623,34 +624,34 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2021 Toyota 4Runner</div>
-        <span class="pill">+$25 (+5%)</span>
+        <span class="pill pill-watch">−$175 (−34%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$513.30</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$537.93</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$337.93</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Base + wholesale threshold bump + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $250. The original invoice included $200 ADAS; under the new policy that recalibration is offered at install, not bundled in the quote. <strong>+$200 possible at install if customer accepts.</strong></div>
     </div>
 
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2025 Toyota Camry Hybrid</div>
-        <span class="pill">+$55 (+8%)</span>
+        <span class="pill pill-watch">−$145 (−21%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$673.93</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$729.23</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$529.23</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Base + HUD adder (+$75) + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $300 + HUD adder. Original invoice included $200 ADAS; under the new policy that's offered at install. <strong>+$200 possible at install if customer accepts.</strong></div>
     </div>
 
   </div>
 
   <div class="lift">
-    <div class="eyebrow">Across these 8 jobs</div>
-    <div class="big">+$919</div>
-    <div class="sub">more revenue · ~29% lift on average</div>
-    <div class="foot">Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine. Vehicles where it isn't confident enough to auto-price. Those will keep getting hand-quoted.</div>
+    <div class="eyebrow">Across these 8 jobs · base quote only</div>
+    <div class="big">+$319</div>
+    <div class="sub">more revenue · ~14% lift on average</div>
+    <div class="foot">Two jobs (4Runner, Camry) show negative because their original cash invoices bundled ADAS that the new policy moves to the install conversation. If those customers accept ADAS at install (+$200 each), this batch flips to roughly +$719 / ~22%. Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine and will keep getting hand-quoted.</div>
   </div>
 </section>
 
@@ -728,7 +729,7 @@
 
   <div class="to-head lose"><span class="ico">⚠</span> Trade-offs</div>
   <ul class="to-list lose">
-    <li><strong>Luxury impact varies by ADAS type.</strong> Tier 1/2 markup dropped from $300/$400 to $100/$200. Combined with ADAS now bundled only when mandatory (Static cal), BMW base trim (Dynamic) is +23%, Lexus Safety+ (Static) is +76%. Wider spread.</li>
+    <li><strong>"Convert first, sell ADAS at install" undercharges some non-luxury jobs upfront.</strong> Vehicles where the original invoice bundled $200 ADAS (e.g., 4Runner, Camry) now quote $200 lower at the auto-quoter step. Closing the gap relies on accept rate at install. Worth tracking close-to-install conversion.</li>
     <li><strong>~10% of jobs route to manual review</strong>: commercial vans, light trucks with unusual glass, exotics. Still need phone quotes for those.</li>
     <li><strong>Insurance flow unchanged.</strong> Auto-quoter is cash-only. Insurance bookings still come in via the legacy form / phone.</li>
     <li><strong>Less human judgment on edge cases.</strong> If the engine flags ADAS on a vehicle that really shouldn't need it, the quote inflates.</li>
