@@ -93,10 +93,21 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
   const [smsConsent, setSmsConsent] = useState(true);
   const [honeypot, setHoneypot] = useState('');
 
+  // Strip every non-digit, count to 10. Phone is valid only with 10 digits.
+  const phoneDigits = phone.replace(/\D/g, '');
   const ready = fullName.trim().length >= 2
-    && phone.trim().length >= 7
+    && phoneDigits.length === 10
     && street.trim().length >= 3
     && /^\d{5}(-\d{4})?$/.test(installZip.trim());
+
+  // Auto-format phone as (XXX) XXX-XXXX as the user types.
+  function formatPhoneInput(raw: string) {
+    const d = raw.replace(/\D/g, '').slice(0, 10);
+    if (d.length === 0) return '';
+    if (d.length < 4) return `(${d}`;
+    if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  }
 
   if (submit.kind === 'success') {
     return <BookingConfirmation success={submit.result} submitted={submit.submitted} />;
@@ -173,51 +184,64 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
 
       {/* Name + Phone paired */}
       <div className="grid grid-cols-2 gap-2">
-        <input
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Your name"
-          aria-label="Your name"
-          required
-          minLength={2}
-          autoComplete="name"
-        />
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Phone"
-          aria-label="Phone"
-          type="tel"
-          required
-          autoComplete="tel"
-          inputMode="tel"
-        />
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Name</span>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="Jane Doe"
+            aria-label="Your name"
+            required
+            minLength={2}
+            autoComplete="name"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Phone</span>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="(720) 555-1234"
+            aria-label="Phone"
+            type="tel"
+            required
+            autoComplete="tel"
+            inputMode="tel"
+            maxLength={14}
+          />
+        </label>
       </div>
 
       {/* Address + ZIP paired */}
       <div className="grid grid-cols-[1fr_100px] gap-2">
-        <input
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="Install address"
-          aria-label="Install address"
-          required
-          minLength={3}
-          autoComplete="street-address"
-        />
-        <input
-          value={installZip}
-          onChange={(e) => setInstallZip(e.target.value.replace(/[^0-9-]/g, '').slice(0, 10))}
-          className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
-          placeholder="ZIP"
-          aria-label="ZIP"
-          required
-          inputMode="numeric"
-          autoComplete="postal-code"
-        />
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Install address</span>
+          <input
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="1234 Main St"
+            aria-label="Install address"
+            required
+            minLength={3}
+            autoComplete="street-address"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">ZIP</span>
+          <input
+            value={installZip}
+            onChange={(e) => setInstallZip(e.target.value.replace(/[^0-9-]/g, '').slice(0, 10))}
+            className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
+            placeholder="80202"
+            aria-label="ZIP"
+            required
+            inputMode="numeric"
+            autoComplete="postal-code"
+          />
+        </label>
       </div>
 
       <label className="flex items-start gap-2 text-xs text-gray-600">
