@@ -121,3 +121,9 @@ scripts/page-queries.mjs
 # — a hardcoded absolute path that is not portable across machines. They
 # are useful local automation, not project infrastructure.
 emails/
+mockups/
+analysis/
+
+# One-off research / data-pull scripts (Google Ads / GSC / pricing variance, etc.)
+# Kept locally for reproducibility, not part of the build.
+scripts/_temp-*
