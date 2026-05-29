@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { isStateInServiceArea, OUT_OF_AREA_STATE_MESSAGE } from '@/lib/quote/service-area';
 import QuoteBookingForm from '@/components/QuoteBookingForm';
+import { trackFormSubmission } from '@/lib/tracking';
 
 /**
  * Price-first quote flow (2026-05-27 redesign, second iteration).
@@ -171,6 +172,18 @@ export default function AutomatedQuoteForm() {
       }
       setQuote(data);
       setStage('priced');
+      // Fire the same conversion event the legacy QuoteForm fires today,
+      // so Google Ads + Microsoft Ads conversion goals keep counting when this
+      // form lives on `/`. Per project memory `project-pink-auto-glass-homepage-migration`
+      // (council reco): reuse `quote_form` event name — no Ads account changes needed.
+      trackFormSubmission('quote_form', {
+        stage: 'priced',
+        quote_total_cents: data?.totalCents,
+        quote_id: data?.id,
+        vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
+        vehicle_make: v.make,
+        vehicle_model: v.model,
+      }).catch(() => { /* analytics never blocks UX */ });
     } catch {
       setNotice('Quote pricing is unavailable. Call (720) 918-7465.');
     }

@@ -5,6 +5,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { sendBookingNotifications } from '@/lib/quote/booking-notifications';
+import { assertEnvCoherent } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -49,6 +50,7 @@ interface QuoteSummary {
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rate = checkRateLimit(`quote-book:${ip}`, 8, 60_000);
     if (!rate.allowed) {

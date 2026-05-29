@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { CheckCircle2, Loader2, Phone } from 'lucide-react';
 import { getNextTwoWorkingDays, pillDateLabel, pillDayLabel, toIsoLocal } from '@/lib/quote/schedule-slots';
+import { trackFormSubmission } from '@/lib/tracking';
 
 /**
  * Booking form inside the priced-state PricedHero. Per the 2026-05-28 owner
@@ -130,6 +131,15 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
         result: { bookingToken: data.bookingToken, status: data.notification?.status, channels: data.notification?.channels || [] },
         submitted: { fullName, street, date: slot.date, window: slot.window, dayLabel: `${slot.dayLabel} ${slot.dateLabel}` },
       });
+      // Fire booking-conversion event with the same `quote_form` name so Google Ads
+      // + Microsoft Ads pick it up. Phone is captured here for enhanced conversions.
+      trackFormSubmission('quote_form', {
+        stage: 'booked',
+        booking_token: data.bookingToken,
+        phone,
+        install_date: slot.date,
+        install_window: slot.window,
+      }).catch(() => { /* analytics never blocks UX */ });
     } catch {
       setSubmit({ kind: 'error', message: 'Booking is temporarily unavailable. Please call (720) 918-7465.' });
     }
