@@ -335,7 +335,7 @@
       <li><strong>371 installs</strong> over the last 7 months ($131K revenue, $354 avg per job)</li>
       <li><strong>91% cash, 9% insurance</strong>. Pricing engine is built for the cash funnel.</li>
       <li><strong>Mobile converts 2.4&times; better</strong> than desktop (12.9% vs 5.4%)</li>
-      <li>Auto-quoter base prices <strong>~14% higher</strong> on average vs current manual quotes (8 examples). Add ~$200 per accepted ADAS at install on top of that.</li>
+      <li>Auto-quoter base prices <strong>~10% higher</strong> on average vs current manual quotes (8 examples). Add ~$200 per accepted ADAS at install on top of that.</li>
     </ul>
   </div>
 </section>
@@ -496,32 +496,18 @@
       <div class="price-note">Same floor logic: threshold wins when wholesale glass is more expensive.</div>
     </div>
 
-    <details class="card">
-      <summary>
-        <div class="summary-text">
-          <div class="label">Wholesale threshold bumps</div>
-          <div class="price-note">Applies when glass is more expensive (highest tier wins vs brand)</div>
-        </div>
-        <span class="chev">&#9656;</span>
-      </summary>
-      <div class="threshold-table">
-        <table>
-          <tr><td>Glass under $250</td><td class="amt-cell">$200 markup</td></tr>
-          <tr><td>$250 – $400</td><td class="amt-cell">$250 markup</td></tr>
-          <tr><td>$400 – $600</td><td class="amt-cell">$300 markup</td></tr>
-          <tr><td>$600+</td><td class="amt-cell">$400 markup</td></tr>
-        </table>
-      </div>
-    </details>
+    <div class="card">
+      <div class="price-row"><div class="label">Wholesale-threshold floor</div><div class="amt amt-slate">$200 / $300</div></div>
+      <div class="price-brands">Two bands. Highest of brand or threshold wins.</div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;">
+        <tr><td style="padding:6px 0; color:#475569; border-top:1px solid #e2e8f0;">Wholesale glass under $350</td><td style="padding:6px 0; text-align:right; font-family:ui-monospace, 'SF Mono', Menlo, monospace; font-weight:600; border-top:1px solid #e2e8f0;">$200 markup</td></tr>
+        <tr><td style="padding:6px 0; color:#475569; border-top:1px solid #e2e8f0;">Wholesale glass $350 and up</td><td style="padding:6px 0; text-align:right; font-family:ui-monospace, 'SF Mono', Menlo, monospace; font-weight:600; border-top:1px solid #e2e8f0;">$300 markup</td></tr>
+      </table>
+    </div>
 
     <div class="card">
       <div class="price-row"><div class="label">HD truck adder</div><div class="amt amt-slate">+$100</div></div>
       <div class="price-note">F-250+ · Silverado 2500+ · Ram 2500+ · Sprinter · Transit · ProMaster · NV · Savana · Express</div>
-    </div>
-
-    <div class="card">
-      <div class="price-row"><div class="label">HUD windshield adder</div><div class="amt amt-slate">+$75</div></div>
-      <div class="price-note">Any vehicle with heads-up display glass.</div>
     </div>
 
     <div class="card card-emerald">
@@ -564,13 +550,13 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2018 Lexus ES 300h Hybrid</div>
-        <span class="pill">+$121 (+29%)</span>
+        <span class="pill">+$71 (+17%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$422.03</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$543.34</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$493.34</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Threshold $250 (Tier 1 $100 floored by threshold) + HUD adder. ADAS (Static cal, Lexus Safety+) is recommended-tier under the new policy, surfaced in the booking confirmation rather than the quote. Optional +$200 at install.</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $200 (under-$350 band; Tier 1 $100 floored by threshold). ADAS (Static cal, Lexus Safety+) is recommended-tier — surfaced in the booking confirmation, not the quote. Optional +$200 at install.</div>
     </div>
 
     <div class="card ex">
@@ -588,13 +574,13 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2022 Honda CR-V</div>
-        <span class="pill">+$161 (+46%)</span>
+        <span class="pill">+$111 (+32%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$349.12</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$510.00</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$460.00</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $250 ($260 glass → band 1). This trim returned no camera-calibration data from AutoBolt — no ADAS line in the quote.</div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $200 ($260 glass, under-$350 band). This trim returned no camera-calibration data from AutoBolt — no ADAS line in the quote.</div>
     </div>
 
     <div class="card ex">
@@ -630,28 +616,28 @@
         <div class="col"><div class="lbl">Original</div><div class="val">$513.30</div></div>
         <div class="col"><div class="lbl">New quoter</div><div class="val">$337.93</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $250. The original invoice included $200 ADAS; under the new policy that recalibration is offered at install, not bundled in the quote. <strong>+$200 possible at install if customer accepts.</strong></div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $200 (under-$350 band). The original invoice included $200 ADAS; under the new policy that recalibration is offered at install, not bundled in the quote. <strong>+$200 possible at install if customer accepts.</strong></div>
     </div>
 
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2025 Toyota Camry Hybrid</div>
-        <span class="pill pill-watch">−$145 (−21%)</span>
+        <span class="pill pill-watch">−$195 (−29%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$673.93</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$529.23</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$479.23</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $250 ($279 glass → band 1). Original invoice included $200 ADAS; under the new policy that's offered at install. <strong>+$200 possible at install if customer accepts.</strong></div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $200 ($279 glass, under-$350 band). Original invoice included $200 ADAS; new policy offers it at install. <strong>+$200 possible at install if customer accepts.</strong></div>
     </div>
 
   </div>
 
   <div class="lift">
     <div class="eyebrow">Across these 8 jobs · base quote only</div>
-    <div class="big">+$319</div>
-    <div class="sub">more revenue · ~14% lift on average</div>
-    <div class="foot">Two jobs (4Runner, Camry) show negative because their original cash invoices bundled ADAS that the new policy moves to the install conversation. If those customers accept ADAS at install (+$200 each), this batch flips to roughly +$719 / ~22%. Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine and will keep getting hand-quoted.</div>
+    <div class="big">+$169</div>
+    <div class="sub">more revenue · ~10% lift on average</div>
+    <div class="foot">Two jobs (4Runner, Camry) show negative because their original cash invoices bundled ADAS that the new policy moves to the install conversation. If those customers accept ADAS at install (+$200 each), this batch flips to roughly +$569 / ~17%. Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine and will keep getting hand-quoted.</div>
   </div>
 </section>
 
