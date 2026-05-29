@@ -11,14 +11,48 @@ Staging exists so we can ship UI / content / schema changes against a real deplo
 
 ## What's already wired in this branch
 
-This PR (`feat/staging-environment-setup`) adds the application-side hooks. After merge to `main`, the code is staging-aware: it just needs an env var to behave that way.
+This PR (`feat/staging-environment-setup`) adds the application-side hooks. After merge to `main`, the code is staging-aware: it just needs env vars to behave that way.
 
-- `src/lib/env.ts` — `isStaging()` reads `NEXT_PUBLIC_APP_ENV`. Defaults to production-safe behavior when unset.
+- `src/lib/env.ts` — `isStaging()` reads `NEXT_PUBLIC_APP_ENV`. Defaults to production-safe behavior when unset. Also exports `assertEnvCoherent()` (see below).
 - `src/components/StagingBanner.tsx` — sticky amber bar at the top of every page when `NEXT_PUBLIC_APP_ENV=staging`. Invisible in prod.
 - `src/app/layout.tsx` — adds `robots: { index: false, follow: false }` Next.js metadata on staging.
 - `src/app/robots.ts` — returns a blanket `Disallow: /` rule on staging, so `/robots.txt` blocks all crawlers.
+- `scripts/verify-env-coherence.ts` — 7-case test that the assertion catches drift.
 
-Net effect: with `NEXT_PUBLIC_APP_ENV=staging` set, the staging deploy is non-indexable AND visibly labeled to humans.
+Net effect: with `NEXT_PUBLIC_APP_ENV=staging` set, the staging deploy is non-indexable AND visibly labeled to humans. With `STAGING_SUPABASE_PROJECT_REFS` set (see §3), it ALSO refuses to write to the wrong database if the env label and the Supabase URL ever drift apart.
+
+### Why two signals (not just one env var)
+
+A council review (Codex + Gemini, 2026-05-28) flagged the same root risk from different angles: a single env-var toggle is brittle — one misconfig on a hotfix branch can pollute prod analytics or write test data to prod tables.
+
+The fix is a belt-and-suspenders signal:
+
+| Signal | What it represents | Failure mode |
+| --- | --- | --- |
+| `NEXT_PUBLIC_APP_ENV` | Human-readable label, drives banner/robots/UI | Easy to mistype or forget on a hotfix |
+| Supabase project ref in `NEXT_PUBLIC_SUPABASE_URL` | The actual data destination | Cannot be forged — wrong ref = broken DB connection |
+
+`assertEnvCoherent()` compares them. If `NEXT_PUBLIC_APP_ENV=staging` but the Supabase ref isn't in `STAGING_SUPABASE_PROJECT_REFS` (or vice versa), it throws BEFORE the write happens. Defense in depth — banner protects humans, robots protects search engines, this protects the database.
+
+When `STAGING_SUPABASE_PROJECT_REFS` is unset, the assertion is a no-op (safe default — current prod behavior).
+
+### How to use `assertEnvCoherent()`
+
+Call it at the top of any API route that mutates production-relevant tables. The auto-quoter homepage migration PR will add the call in:
+
+- `src/app/api/lead/route.ts` (lead capture)
+- `src/app/api/quote/price/route.ts` (quote creation)
+- `src/app/api/quote/book/route.ts` (booking)
+- Any other write path that touches `leads`, `automated_quotes`, `automated_quote_bookings`
+
+```typescript
+import { assertEnvCoherent } from '@/lib/env';
+
+export async function POST(req: Request) {
+  assertEnvCoherent(); // throws on env drift, before any write
+  // ... existing logic
+}
+```
 
 ## One-time external setup (Doug)
 
@@ -59,6 +93,7 @@ In the new `pinkautoglasswebsite-staging` project's **Settings → Environment V
 | `NEXT_PUBLIC_SUPABASE_URL` | staging Supabase URL | from §1 step 4 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | staging anon key | from §1 step 4 |
 | `SUPABASE_SERVICE_ROLE_KEY` | staging service role key | from §1 step 4 |
+| `STAGING_SUPABASE_PROJECT_REFS` | staging Supabase project ref (the `<ref>` in `https://<ref>.supabase.co`) | **also add to PROD env vars with the same value** — both projects need to know what counts as staging |
 | `AUTOBOLT_API_KEY` | (use same key OR get a staging key from Nick) | prod env |
 | `MYGRANT_*` | prod values OK for now | prod env |
 | `RESEND_API_KEY` / `TWILIO_*` | **leave UNSET** initially | so staging cannot send real emails/SMS to real customers |
@@ -111,6 +146,8 @@ After Doug completes §1–§4, hit the staging URL and confirm:
 - [ ] Submitting a test quote writes to the staging Supabase project (NOT prod)
 - [ ] No Google Ads / Microsoft Ads conversion fires from the staging URL (check Tag Assistant)
 - [ ] No customer-facing email/SMS leaves the staging deploy (Resend/Twilio creds are unset)
+- [ ] `npx tsx scripts/verify-env-coherence.ts` passes (assertion catches synthetic drift cases)
+- [ ] Manual drift test: temporarily flip `NEXT_PUBLIC_APP_ENV` on staging Vercel to `production` and confirm the booking route throws "Env mismatch" before writing. Flip back.
 
 ## Open follow-ups (not in this PR)
 
