@@ -63,6 +63,20 @@ export interface BookingNotificationInput {
   };
 }
 
+/**
+ * Extra context for the TEAM alert (separate from customer notifications).
+ * Carries cost/glass/inventory fields that the customer never sees but
+ * Pink ops use to triage the booking.
+ */
+export interface TeamAlertContext {
+  supplierCostCents?: number | null;
+  glassBrand?: string | null;
+  glassPartNumber?: string | null;
+  glassDescription?: string | null;
+  qtyAvailable?: number | null;
+  estimatedDeliveryDate?: string | null;  // ISO YYYY-MM-DD
+}
+
 const CALLBACK_PHONE = '(720) 918-7465';
 const COMPANY_NAME = 'Pink Auto Glass';
 
@@ -193,4 +207,163 @@ export async function sendBookingNotifications(input: BookingNotificationInput):
     channels,
     firstError,
   };
+}
+
+// ---------------------------------------------------------------------------
+// TEAM ALERT — fired async after the booking row is durable. Separate from
+// customer notifications above so a failure in one doesn't affect the other.
+//
+// Council reco 2026-05-28 (Codex + Gemini unanimous): both channels, async
+// after DB write, never block the customer's API response.
+// ---------------------------------------------------------------------------
+
+function formatPhone(e164: string): string {
+  // +13104280616 → +1 (310) 428-0616
+  if (!e164.startsWith('+1') || e164.length !== 12) return e164;
+  return `+1 (${e164.slice(2, 5)}) ${e164.slice(5, 8)}-${e164.slice(8)}`;
+}
+
+function fmtMoneyCents(cents: number | null | undefined): string {
+  if (cents == null) return '—';
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function buildTeamEmailHtml(input: BookingNotificationInput, ctx: TeamAlertContext): string {
+  const price = input.quote.totalCents;
+  const cost = ctx.supplierCostCents ?? null;
+  const margin = (cost != null && price != null) ? (price - cost) : null;
+  const date = formatInstallDate(input.install.date);
+  const win = formatWindow(input.install.window);
+  const locationLine = [
+    input.install.city,
+    [input.install.state, input.install.zip].filter(Boolean).join(' '),
+  ].filter(Boolean).join(', ') || '—';
+  const glassLine = [ctx.glassBrand, ctx.glassPartNumber].filter(Boolean).join(' · ') || '—';
+  const inventoryLine = ctx.qtyAvailable != null
+    ? `${ctx.qtyAvailable} in stock${ctx.estimatedDeliveryDate ? ` · ETA ${formatInstallDate(ctx.estimatedDeliveryDate)}` : ''}`
+    : '—';
+
+  const row = (k: string, v: string, bold = false) =>
+    `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:13px;width:90px;">${k}</td><td style="padding:4px 0;color:#111827;${bold ? 'font-weight:700;font-size:16px;' : 'font-weight:600;font-size:14px;'}">${v}</td></tr>`;
+
+  return `<!DOCTYPE html>
+<html><body style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #111827; max-width: 600px; margin: 0 auto; padding: 24px;">
+  <h1 style="margin:0 0 16px 0;font-size:18px;">🚨 New Booking — ${input.bookingToken}</h1>
+
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;margin-bottom:4px;">Customer</div>
+    <table style="border-collapse:collapse;">
+      ${row('Name:', input.customer.fullName)}
+      ${row('Phone:', `<a href="tel:${input.customer.phoneE164}" style="color:#111827;text-decoration:none;">${formatPhone(input.customer.phoneE164)}</a>`)}
+      ${row('Email:', input.customer.email ? `<a href="mailto:${input.customer.email}" style="color:#111827;text-decoration:none;">${input.customer.email}</a>` : '—')}
+      ${row('Location:', `${input.install.street}<br>${locationLine}`)}
+    </table>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;margin-bottom:4px;">Vehicle</div>
+    <table style="border-collapse:collapse;">
+      ${row('Vehicle:', input.quote.vehicleSummary)}
+      ${row('Service:', 'Mobile · Replacement')}
+    </table>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;margin-bottom:4px;">Install</div>
+    <table style="border-collapse:collapse;">
+      ${row('When:', `${date} · ${win}`)}
+    </table>
+  </div>
+
+  <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:16px;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;margin-bottom:4px;">Pricing</div>
+    <table style="border-collapse:collapse;">
+      ${row('Price:', fmtMoneyCents(price), true)}
+      ${row('Glass:', ctx.glassDescription ? `${glassLine}<br><span style="color:#6b7280;font-size:12px;font-weight:400;">${ctx.glassDescription}</span>` : glassLine)}
+      ${row('Cost:', fmtMoneyCents(cost))}
+      ${row('Margin:', `<span style="color:#15803d;">${fmtMoneyCents(margin)}</span>`)}
+      ${row('Inventory:', inventoryLine)}
+    </table>
+  </div>
+</body></html>`;
+}
+
+function buildTeamSmsText(input: BookingNotificationInput, ctx: TeamAlertContext): string {
+  const date = formatInstallDate(input.install.date);
+  const win = input.install.window === 'AM' ? '8a-12p' : '12-5p';
+  const price = input.quote.totalCents != null ? `$${Math.round(input.quote.totalCents / 100)}` : '—';
+  const loc = [input.install.state, input.install.zip].filter(Boolean).join(' ') || '—';
+  const phone = formatPhone(input.customer.phoneE164);
+  return `🚨 ${input.bookingToken}: ${input.customer.fullName} | ${input.quote.vehicleSummary} | ${date} ${win} | ${price} | ${loc} | ${phone}`;
+}
+
+export interface TeamAlertOutcome {
+  status: 'sent' | 'partial' | 'failed' | 'skipped';
+  channels: BookingChannelResult[];
+}
+
+/**
+ * Fire team email + SMS. Never throws. Safe to call without awaiting.
+ * Both channels independently report sent/skipped/failed; failures are
+ * logged but do not affect each other or the caller.
+ *
+ * Skipped when:
+ *   - email: ADMIN_EMAIL env var not set
+ *   - sms:   ADMIN_PHONE env var not set
+ */
+export async function sendTeamAlert(
+  input: BookingNotificationInput,
+  ctx: TeamAlertContext
+): Promise<TeamAlertOutcome> {
+  const channels: BookingChannelResult[] = [];
+
+  // Email
+  const emailResult: BookingChannelResult = await (async () => {
+    const to = process.env.ADMIN_EMAIL?.trim();
+    if (!to) {
+      return { channel: 'email' as const, outcome: 'skipped' as const, reason: 'admin_email_unset' };
+    }
+    try {
+      const subjectPrice = input.quote.totalCents != null ? ` · $${Math.round(input.quote.totalCents / 100)}` : '';
+      const ok = await sendEmail({
+        to,
+        subject: `🚨 New Booking — ${input.bookingToken} (${input.customer.fullName} · ${input.quote.vehicleSummary}${subjectPrice})`,
+        html: buildTeamEmailHtml(input, ctx),
+      });
+      return ok
+        ? { channel: 'email' as const, outcome: 'sent' as const }
+        : { channel: 'email' as const, outcome: 'failed' as const, reason: 'resend_returned_false' };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown_error';
+      return { channel: 'email' as const, outcome: 'failed' as const, reason: message.slice(0, 200) };
+    }
+  })();
+  channels.push(emailResult);
+
+  // SMS
+  const smsResult: BookingChannelResult = await (async () => {
+    const to = process.env.ADMIN_PHONE?.trim();
+    if (!to) {
+      return { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'admin_phone_unset' };
+    }
+    try {
+      const ok = await sendSMS({ to, message: buildTeamSmsText(input, ctx) });
+      return ok
+        ? { channel: 'sms' as const, outcome: 'sent' as const }
+        : { channel: 'sms' as const, outcome: 'failed' as const, reason: 'sms_returned_false' };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown_error';
+      return { channel: 'sms' as const, outcome: 'failed' as const, reason: message.slice(0, 200) };
+    }
+  })();
+  channels.push(smsResult);
+
+  const e = emailResult.outcome;
+  const s = smsResult.outcome;
+  const status: TeamAlertOutcome['status'] =
+    (e === 'sent' && s === 'sent') ? 'sent' :
+    (e === 'skipped' && s === 'skipped') ? 'skipped' :
+    (e === 'failed' && s === 'failed') ? 'failed' : 'partial';
+
+  return { status, channels };
 }
