@@ -12,6 +12,7 @@ import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, extractInterchangeablesFromSummary, extractPrimaryFeaturesFromSummary, type CachedNagsLookup, type InterchangeableNagsPart } from '@/lib/autobolt/cache';
 import { checkCompatibility } from '@/lib/quote/nags-compatibility';
 import { assertEnvCoherent } from '@/lib/env';
+import { classifyAdasTier, type AdasTier } from '@/lib/quote/adas-tier';
 
 export const runtime = 'nodejs';
 
@@ -159,12 +160,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Per Doug 2026-05-29 + council (Codex + Gemini) tiered ADAS policy:
+    //  - Mandatory tier (camera calibration with Static type): bundle the
+    //    $200 line into the quote total. The customer sees the full price.
+    //  - Recommended tier (Dynamic-only camera calibration): NO line in the
+    //    quote. The booking confirmation email/SMS surfaces it; tech walks
+    //    customer through accept/decline at install. "Convert first, sell
+    //    ADAS at install."
+    //  - None: no ADAS line at all.
+    const adasTier: AdasTier = shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
+      ? classifyAdasTier(mygrantResult.adasSignal?.calibrations)
+      : 'none';
+    const adasCalibrationCents = Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10);
     const quote = buildCashWindshieldQuote({
       wholesaleCents,
       markupCents: markupResult.markupCents,
-      calibrationCents: shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
-        ? Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10)
-        : 0,
+      calibrationCents: adasTier === 'mandatory' ? adasCalibrationCents : 0,
       minTotalCents: Number.parseInt(process.env.QUOTE_MIN_TOTAL_CENTS || '29900', 10),
     });
 
@@ -173,6 +184,7 @@ export async function POST(request: NextRequest) {
       confidenceReasons: [
         ...quote.confidenceReasons,
         `markup_tier_${markupResult.tier}`,
+        `adas_tier_${adasTier}`,
         ...markupResult.reasons,
         ...selection.reasons,
       ],
@@ -197,6 +209,10 @@ export async function POST(request: NextRequest) {
       },
       selectedPart: publicPartSnapshot(selectedPart),
       adas: mygrantResult.adasSignal,
+      adasTier,
+      // When tier is "recommended", the booking confirmation surfaces the
+      // option at $200; the quote total stays competitive.
+      adasRecommendationCents: adasTier === 'recommended' ? adasCalibrationCents : 0,
       message: quoteWithMygrantConfidence.status === 'ready_exact'
         ? 'Your installed cash price is ready.'
         : 'Your installed price includes the expected calibration allowance.',
