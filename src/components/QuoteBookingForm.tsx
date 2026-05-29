@@ -207,13 +207,29 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
           <input
             value={phone}
             onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+            // Guard 2: onKeyDown strips letters before they ever reach the
+            // input on hardware keyboards. The onChange handler already
+            // strips non-digits, but blocking at keypress prevents the
+            // 1-frame flicker some users notice when typing letters fast.
+            onKeyDown={(e) => {
+              // Allow: digits, formatting/structural keys, modifier combos
+              if (e.metaKey || e.ctrlKey || e.altKey) return;
+              const allowed = ['Backspace', 'Delete', 'Tab', 'Enter', 'Home', 'End',
+                'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+              if (allowed.includes(e.key)) return;
+              if (/^\d$/.test(e.key)) return;
+              e.preventDefault();
+            }}
             className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-pink-500 focus:outline-none"
             placeholder="(720) 555-1234"
             aria-label="Phone"
             type="tel"
             required
             autoComplete="tel"
-            inputMode="tel"
+            // numeric (not tel) gives a pure number-pad on iOS — no * or #
+            // characters; less chance a user thinks the field accepts text.
+            inputMode="numeric"
+            pattern="[0-9() \-]*"
             maxLength={14}
           />
         </label>
