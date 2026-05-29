@@ -88,6 +88,7 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [street, setStreet] = useState('');
   const [installZip, setInstallZip] = useState('');
   const [smsConsent, setSmsConsent] = useState(true);
@@ -95,10 +96,14 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
 
   // Strip every non-digit, count to 10. Phone is valid only with 10 digits.
   const phoneDigits = phone.replace(/\D/g, '');
+  // Email is optional. When non-empty, must look email-shaped before submit.
+  const emailTrimmed = email.trim();
+  const emailValid = emailTrimmed === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed);
   const ready = fullName.trim().length >= 2
     && phoneDigits.length === 10
     && street.trim().length >= 3
-    && /^\d{5}(-\d{4})?$/.test(installZip.trim());
+    && /^\d{5}(-\d{4})?$/.test(installZip.trim())
+    && emailValid;
 
   // Auto-format phone as (XXX) XXX-XXXX as the user types.
   function formatPhoneInput(raw: string) {
@@ -125,7 +130,7 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quoteToken,
-          customer: { fullName, phone },
+          customer: { fullName, phone, email: emailTrimmed || undefined },
           install: { street, zip: installZip.trim(), date: slot.date, window: slot.window },
           smsConsent,
           honeypot,
@@ -243,6 +248,29 @@ export default function QuoteBookingForm({ quoteToken, totalDollars }: QuoteBook
           />
         </label>
       </div>
+
+      {/* Optional email — paper-trail confirmation for customers who want one.
+          Not required; phone is the dispatch channel. Per council reco 2026-05-28. */}
+      <label className="block">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+          Email <span className="text-gray-400 font-normal normal-case tracking-normal">(optional — for confirmation)</span>
+        </span>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={`w-full rounded-md border px-3 py-3 text-base focus:border-pink-500 focus:outline-none ${
+            emailValid ? 'border-gray-300' : 'border-red-400'
+          }`}
+          placeholder="you@example.com"
+          aria-label="Email (optional)"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+        />
+        {!emailValid && (
+          <span className="mt-1 block text-xs text-red-600">Please enter a valid email or leave blank.</span>
+        )}
+      </label>
 
       <label className="flex items-start gap-2 text-xs text-gray-600">
         <input
