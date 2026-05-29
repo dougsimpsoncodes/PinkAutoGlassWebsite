@@ -1,6 +1,13 @@
 import { MetadataRoute } from 'next'
+import { isStaging } from '@/lib/env'
 
 export default function robots(): MetadataRoute.Robots {
+  if (isStaging()) {
+    // Staging deploys must never appear in search results.
+    return {
+      rules: [{ userAgent: '*', disallow: '/' }],
+    }
+  }
   return {
     rules: [
       { userAgent: '*', allow: '/', disallow: ['/api/', '/tmp/', '/admin/'] },
