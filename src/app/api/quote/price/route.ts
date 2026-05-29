@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     //    ADAS at install."
     //  - None: no ADAS line at all.
     const adasTier: AdasTier = shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
-      ? classifyAdasTier(mygrantResult.adasSignal?.calibrations)
+      ? classifyAdasTier(mygrantResult.adasSignal?.calibrations, effectiveInput.vehicle.make)
       : 'none';
     const adasCalibrationCents = Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10);
     const quote = buildCashWindshieldQuote({
