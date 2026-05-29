@@ -9,8 +9,12 @@
  *   1. Exotic brand → return MANUAL_REVIEW; the quote route bails to the
  *      manual-review path before showing a price.
  *   2. Otherwise, take the MAX of:
- *        - brand-tier markup ($200 non-luxury / $300 Tier 1 / $400 Tier 2)
+ *        - brand-tier markup ($200 non-luxury / $100 Tier 1 / $200 Tier 2)
  *        - wholesale-threshold markup ($200 / $250 / $300 / $400 by band)
+ *        - effective tier markup = max(brandTier, threshold), so the
+ *          threshold-floor dominates Tier 1/2 in most bands. Intent:
+ *          Tier 1/2 trigger lookups + reasons, but the floor keeps prices
+ *          from going below the wholesale-threshold cost-recovery line.
  *   3. Add +$100 if heavy-duty / commercial vehicle.
  *   4. Add +$75 if vehicle has a HUD windshield (any brand).
  *
@@ -110,8 +114,8 @@ const HEAVY_DUTY_MODEL_PATTERNS = [
 ] as const;
 
 const BASE_MARKUP_CENTS = 20_000;
-const TIER1_MARKUP_CENTS = 30_000;
-const TIER2_MARKUP_CENTS = 40_000;
+const TIER1_MARKUP_CENTS = 10_000;
+const TIER2_MARKUP_CENTS = 20_000;
 const HEAVY_DUTY_ADDER_CENTS = 10_000;
 const HUD_ADDER_CENTS = 7_500;
 

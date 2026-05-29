@@ -304,7 +304,7 @@
       <li><strong>371 installs</strong> over the last 7 months ($131K revenue, $354 avg per job)</li>
       <li><strong>91% cash, 9% insurance</strong>. Pricing engine is built for the cash funnel.</li>
       <li><strong>Mobile converts 2.4&times; better</strong> than desktop (12.9% vs 5.4%)</li>
-      <li>Auto-quoter prices <strong>+19% higher</strong> on average vs current manual quotes</li>
+      <li>Auto-quoter prices <strong>+15% higher</strong> on average vs current manual quotes</li>
     </ul>
   </div>
 </section>
@@ -391,15 +391,15 @@
     </div>
 
     <div class="card card-purple">
-      <div class="price-row"><div class="label">Tier 1 luxury</div><div class="amt amt-purple">$300</div></div>
+      <div class="price-row"><div class="label">Tier 1 luxury</div><div class="amt amt-purple">+$100</div></div>
       <div class="price-brands"><strong>Audi · BMW · Lexus · Mercedes · Acura · Cadillac · Infiniti · Lincoln · Volvo</strong></div>
-      <div class="price-note">Replaces base markup (not stacked).</div>
+      <div class="price-note">Wholesale-threshold floor still applies, so on expensive glass the threshold can dominate.</div>
     </div>
 
     <div class="card card-rose-mid">
-      <div class="price-row"><div class="label">Tier 2 boundary luxury</div><div class="amt amt-rose">$400</div></div>
+      <div class="price-row"><div class="label">Tier 2 boundary luxury</div><div class="amt amt-rose">+$200</div></div>
       <div class="price-brands"><strong>Tesla · Porsche · Genesis · Jaguar · Land Rover · Range Rover</strong></div>
-      <div class="price-note">Replaces base + Tier 1.</div>
+      <div class="price-note">Same floor logic: threshold wins when wholesale glass is more expensive.</div>
     </div>
 
     <details class="card">
@@ -458,37 +458,37 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2023 Tesla Model 3</div>
-        <span class="pill">+$135 (+15%)</span>
+        <span class="pill">+$36 (+4%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$932.34</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$1,068.27</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$968.27</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Tier 2 brand ($400) + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Wholesale-threshold $300 (Tier 2 $200 floored by threshold) + ADAS</div>
     </div>
 
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2018 Lexus ES 300h Hybrid</div>
-        <span class="pill">+$371 (+88%)</span>
+        <span class="pill">+$271 (+64%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$422.03</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$793.34</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$693.34</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Tier 1 luxury ($300) + HUD adder + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $200 (Tier 1 $100 floored by threshold) + HUD adder + ADAS</div>
     </div>
 
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2020 BMW 230i</div>
-        <span class="pill">+$375 (+116%)</span>
+        <span class="pill">+$275 (+85%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$323.01</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$697.73</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$597.73</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Tier 1 luxury ($300) + ADAS (original was labor-only)</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $200 (Tier 1 $100 floored by threshold) + ADAS (original was labor-only)</div>
     </div>
 
     <div class="card ex">
@@ -555,8 +555,8 @@
 
   <div class="lift">
     <div class="eyebrow">Across these 8 jobs</div>
-    <div class="big">+$1,369</div>
-    <div class="sub">more revenue · ~40% lift on average</div>
+    <div class="big">+$1,069</div>
+    <div class="sub">more revenue · ~35% lift on average</div>
     <div class="foot">Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine. Vehicles where it isn't confident enough to auto-price. Those will keep getting hand-quoted.</div>
   </div>
 </section>
@@ -635,7 +635,7 @@
 
   <div class="to-head lose"><span class="ico">⚠</span> Trade-offs</div>
   <ul class="to-list lose">
-    <li><strong>Higher headline prices on luxury.</strong> BMW/Lexus jobs go up 80-100%. Some customers will balk and shop elsewhere.</li>
+    <li><strong>Luxury still goes up, just less.</strong> Tier 1/2 markup dropped from $300/$400 to $100/$200, so BMW/Lexus jobs land at +60-85% instead of +80-116%. Some luxury customers will still balk.</li>
     <li><strong>~10% of jobs route to manual review</strong>: commercial vans, light trucks with unusual glass, exotics. Still need phone quotes for those.</li>
     <li><strong>Insurance flow unchanged.</strong> Auto-quoter is cash-only. Insurance bookings still come in via the legacy form / phone.</li>
     <li><strong>Less human judgment on edge cases.</strong> If the engine flags ADAS on a vehicle that really shouldn't need it, the quote inflates.</li>

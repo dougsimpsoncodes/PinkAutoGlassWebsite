@@ -36,26 +36,26 @@ const PRICED_CASES: PricedCase[] = [
     input: { make: 'Honda', model: 'Accord', wholesaleCents: 18_900, hasHud: false },
     expectedMarkupCents: 20_000,
   },
-  // Brand tier wins over threshold
+  // Tier 1 below base: threshold wins
   {
-    name: 'Audi A4 $189 wholesale → Tier 1 $300 wins over threshold $200',
+    name: 'Audi A4 $189 wholesale → threshold $200 wins over Tier 1 $100',
     input: { make: 'Audi', model: 'A4', wholesaleCents: 18_900, hasHud: false },
-    expectedMarkupCents: 30_000,
+    expectedMarkupCents: 20_000,
   },
-  // Threshold wins over brand tier
+  // Threshold wins over Tier 1 at higher band
   {
-    name: 'Audi Q7 $700 wholesale → threshold $400 wins over Tier 1 $300',
+    name: 'Audi Q7 $700 wholesale → threshold $400 wins over Tier 1 $100',
     input: { make: 'Audi', model: 'Q7', wholesaleCents: 70_000, hasHud: false },
     expectedMarkupCents: 40_000,
   },
-  // Tier 2 brand
+  // Tier 2 ties base: threshold wins above $250
   {
-    name: 'Tesla Model 3 $400 wholesale → Tier 2 $400 wins over threshold $300',
+    name: 'Tesla Model 3 $400 wholesale → threshold $300 wins over Tier 2 $200',
     input: { make: 'Tesla', model: 'Model 3', wholesaleCents: 40_000, hasHud: false },
-    expectedMarkupCents: 40_000,
+    expectedMarkupCents: 30_000,
   },
   {
-    name: 'Tesla Model Y $700 wholesale → Tier 2 ties threshold at $400',
+    name: 'Tesla Model Y $700 wholesale → threshold $400 wins over Tier 2 $200',
     input: { make: 'Tesla', model: 'Model Y', wholesaleCents: 70_000, hasHud: false },
     expectedMarkupCents: 40_000,
   },
@@ -101,9 +101,9 @@ const PRICED_CASES: PricedCase[] = [
     input: { make: 'Honda', model: 'Pilot', wholesaleCents: 45_000, hasHud: true },
     expectedMarkupCents: 37_500,
   },
-  // HUD adder on Tier 1 (brand=threshold case)
+  // HUD adder on Tier 1 — threshold $300 dominates (Tier 1 = $100)
   {
-    name: 'Audi Q7 HUD $450 wholesale → max($300, $300) + HUD $75 = $375',
+    name: 'Audi Q7 HUD $450 wholesale → threshold $300 + HUD $75 = $375',
     input: { make: 'Audi', model: 'Q7', wholesaleCents: 45_000, hasHud: true },
     expectedMarkupCents: 37_500,
   },
@@ -114,7 +114,7 @@ const PRICED_CASES: PricedCase[] = [
     expectedMarkupCents: 35_000,
   },
   {
-    name: 'Mercedes Sprinter $400 wholesale → Tier 1 $300 + HD $100 = $400',
+    name: 'Mercedes Sprinter $400 wholesale → threshold $300 + HD $100 = $400 (Tier 1 = $100 loses)',
     input: { make: 'Mercedes-Benz', model: 'Sprinter 2500', wholesaleCents: 40_000, hasHud: false },
     expectedMarkupCents: 40_000,
   },
@@ -140,16 +140,16 @@ const PRICED_CASES: PricedCase[] = [
     input: { make: 'Cadillac', model: 'Escalade', wholesaleCents: 70_000, hasHud: true },
     expectedMarkupCents: 47_500,
   },
-  // Brand normalization
+  // Brand normalization — Tier 1/2 still classify correctly, threshold floor applies
   {
-    name: 'Lowercase make "audi" resolves to Tier 1',
+    name: 'Lowercase make "audi" resolves to Tier 1 (threshold $200 wins over Tier 1 $100)',
     input: { make: 'audi', model: 'A4', wholesaleCents: 18_900, hasHud: false },
-    expectedMarkupCents: 30_000,
+    expectedMarkupCents: 20_000,
   },
   {
-    name: 'Land Rover with space resolves to Tier 2',
+    name: 'Land Rover with space resolves to Tier 2 (Tier 2 $200 ties threshold $200)',
     input: { make: 'Land Rover', model: 'Defender', wholesaleCents: 18_900, hasHud: false },
-    expectedMarkupCents: 40_000,
+    expectedMarkupCents: 20_000,
   },
 ];
 
