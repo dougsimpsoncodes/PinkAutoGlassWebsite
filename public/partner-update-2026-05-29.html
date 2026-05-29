@@ -285,6 +285,7 @@
   <div class="nav-chips">
     <a href="#summary"   class="chip chip-active">Summary</a>
     <a href="#what"      class="chip">What it is</a>
+    <a href="#comms"     class="chip">After booking</a>
     <a href="#pricing"   class="chip">Pricing</a>
     <a href="#examples"  class="chip">Examples</a>
     <a href="#biz"       class="chip">Today</a>
@@ -304,7 +305,7 @@
       <li><strong>371 installs</strong> over the last 7 months ($131K revenue, $354 avg per job)</li>
       <li><strong>91% cash, 9% insurance</strong>. Pricing engine is built for the cash funnel.</li>
       <li><strong>Mobile converts 2.4&times; better</strong> than desktop (12.9% vs 5.4%)</li>
-      <li>Auto-quoter prices <strong>+15% higher</strong> on average vs current manual quotes</li>
+      <li>Auto-quoter prices <strong>~29% higher</strong> on average vs current manual quotes (these 8 examples)</li>
     </ul>
   </div>
 </section>
@@ -375,6 +376,69 @@
   <div class="quote-card">
     <div class="eyebrow">Customer message</div>
     <div class="q">"Get an instant quote and book your install. No phone calls, no callbacks, real price in seconds."</div>
+  </div>
+</section>
+
+<!-- ============ COMMUNICATIONS ============ -->
+<section id="comms">
+  <h2>What fires after booking</h2>
+  <p class="lede">Four messages go out the second the customer hits "Book this install." Two to them, two to your team. None of them slow down the "You're booked!" screen, so if email or SMS hiccups, the booking is still safe in the database.</p>
+
+  <h3 style="margin-top:0;">To the customer</h3>
+  <div class="stack">
+
+    <div class="card card-pink">
+      <span class="tag tag-pink">Customer · Email</span>
+      <div style="font-weight:700; font-size:15px; margin-bottom:6px;">Booking confirmation</div>
+      <p style="margin-bottom:10px;">Pink-branded confirmation with vehicle, install date + time window, address, final price (+ tax note), and a "what to do before we arrive" paragraph (clear the dashboard, etc.). <strong>If their car is recommended-tier ADAS</strong>, an orange callout explains the tech will walk them through the optional $200 recalibration at install. Their call.</p>
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:12px; color:#475569;">
+        <div style="font-weight:700; color:#db2777; margin-bottom:4px;">Subject: Pink Auto Glass: install booked — PAG-XXXX</div>
+        Vehicle: 2022 Honda Accord · When: Thu May 30, Morning (8a-12p) · Where: 123 Main St, Denver CO 80014 · Installed price: $549.00 (+ sales tax at install)
+      </div>
+    </div>
+
+    <div class="card card-pink">
+      <span class="tag tag-pink">Customer · SMS</span>
+      <div style="font-weight:700; font-size:15px; margin-bottom:6px;">Short text confirmation</div>
+      <p style="margin-bottom:10px;">One text with the essentials. <strong>Only fires if the customer checked the SMS consent box</strong> (TCPA rule) and we have the SMS flag on. If ADAS recommended, one extra sentence about the tech walking them through.</p>
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:12px; color:#475569; font-family:ui-monospace, 'SF Mono', Menlo, monospace;">
+        Pink Auto Glass: Doug Simpson, your install is booked. Thu May 30, Morning (8a-12p). Ref PAG-XXXX. Call (720) 918-7465 for changes. Reply STOP to opt out.
+      </div>
+    </div>
+
+  </div>
+
+  <h3>To your team</h3>
+  <div class="stack">
+
+    <div class="card">
+      <span class="tag tag-slate">Team · Email</span>
+      <div style="font-weight:700; font-size:15px; margin-bottom:6px;">Dispatch-ready alert</div>
+      <p style="margin-bottom:10px;">Monospace ops-style email. Customer name + phone (tap-to-call) + email, install address + when, vehicle, glass brand + part number, wholesale cost, <strong>margin</strong>, inventory + delivery ETA. Everything needed to dispatch the install. Sent to <code>ADMIN_EMAIL</code>.</p>
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:12px; color:#475569;">
+        <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">🚨 New Booking — PAG-XXXX (Doug Simpson · 2022 Honda Accord · $549)</div>
+        Customer: name, phone, email, location · Vehicle: 2022 Honda Accord · Install: Thu May 30, 8a-12p · Pricing: Price $549, Glass FYG · FW02893, Cost $189, <span style="color:#15803d; font-weight:600;">Margin $360</span>, Inventory: 4 in stock · ETA tomorrow
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-slate">Team · SMS</span>
+      <div style="font-weight:700; font-size:15px; margin-bottom:6px;">One-line dispatch ping</div>
+      <p style="margin-bottom:10px;">Single text that fits in one notification — perfect for the on-call dispatcher. Sent to <code>ADMIN_PHONE</code>.</p>
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; font-size:12px; color:#475569; font-family:ui-monospace, 'SF Mono', Menlo, monospace;">
+        🚨 PAG-XXXX: Doug Simpson | 2022 Honda Accord | Thu May 30 8a-12p | $549 | CO 80014 | +1 (720) 555-0100
+      </div>
+    </div>
+
+  </div>
+
+  <div class="quote-card" style="margin-top:24px;">
+    <div class="eyebrow">Worth knowing</div>
+    <ul class="bulleted" style="font-size:14px;">
+      <li>Team alerts fire <strong>after</strong> the booking is safely in the database, never blocking the customer's "You're booked!" screen.</li>
+      <li>Right now ADMIN_EMAIL is one inbox and ADMIN_PHONE is one number. Easy to fan out to more people later.</li>
+      <li>The orange ADAS callout in the customer email only appears for recommended-tier vehicles. Mandatory tier already has the $200 in the quote; "none" gets nothing.</li>
+    </ul>
   </div>
 </section>
 
@@ -470,25 +534,25 @@
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2018 Lexus ES 300h Hybrid</div>
-        <span class="pill">+$271 (+64%)</span>
+        <span class="pill">+$321 (+76%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$422.03</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$693.34</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$743.34</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Threshold $200 (Tier 1 $100 floored by threshold) + HUD adder + ADAS</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $250 (Tier 1 $100 floored by threshold) + HUD adder + ADAS (Static cal, mandatory)</div>
     </div>
 
     <div class="card ex">
       <div class="ex-head">
         <div class="ex-veh">2020 BMW 230i</div>
-        <span class="pill">+$275 (+85%)</span>
+        <span class="pill">+$75 (+23%)</span>
       </div>
       <div class="ex-prices">
         <div class="col"><div class="lbl">Original</div><div class="val">$323.01</div></div>
-        <div class="col"><div class="lbl">New quoter</div><div class="val">$597.73</div></div>
+        <div class="col"><div class="lbl">New quoter</div><div class="val">$397.73</div></div>
       </div>
-      <div class="ex-why"><strong>Why:</strong> Threshold $200 (Tier 1 $100 floored by threshold) + ADAS (original was labor-only)</div>
+      <div class="ex-why"><strong>Why:</strong> Threshold $200 (Tier 1 $100 floored by threshold). ADAS = Dynamic cal (recommended), surfaced in booking confirmation, not the quote.</div>
     </div>
 
     <div class="card ex">
@@ -555,8 +619,8 @@
 
   <div class="lift">
     <div class="eyebrow">Across these 8 jobs</div>
-    <div class="big">+$1,069</div>
-    <div class="sub">more revenue · ~35% lift on average</div>
+    <div class="big">+$919</div>
+    <div class="sub">more revenue · ~29% lift on average</div>
     <div class="foot">Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine. Vehicles where it isn't confident enough to auto-price. Those will keep getting hand-quoted.</div>
   </div>
 </section>
@@ -635,7 +699,7 @@
 
   <div class="to-head lose"><span class="ico">⚠</span> Trade-offs</div>
   <ul class="to-list lose">
-    <li><strong>Luxury still goes up, just less.</strong> Tier 1/2 markup dropped from $300/$400 to $100/$200, so BMW/Lexus jobs land at +60-85% instead of +80-116%. Some luxury customers will still balk.</li>
+    <li><strong>Luxury impact varies by ADAS type.</strong> Tier 1/2 markup dropped from $300/$400 to $100/$200. Combined with ADAS now bundled only when mandatory (Static cal), BMW base trim (Dynamic) is +23%, Lexus Safety+ (Static) is +76%. Wider spread.</li>
     <li><strong>~10% of jobs route to manual review</strong>: commercial vans, light trucks with unusual glass, exotics. Still need phone quotes for those.</li>
     <li><strong>Insurance flow unchanged.</strong> Auto-quoter is cash-only. Insurance bookings still come in via the legacy form / phone.</li>
     <li><strong>Less human judgment on edge cases.</strong> If the engine flags ADAS on a vehicle that really shouldn't need it, the quote inflates.</li>
