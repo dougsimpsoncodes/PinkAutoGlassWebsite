@@ -11,11 +11,8 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { type DateFilter, getMountainDayBounds, type MountainDayBounds } from './dateUtils';
-import {
-  ATTRIBUTION_WINDOW_MINUTES,
-  BUSINESS_PHONE_NUMBER,
-  MIN_CALL_DURATION_SECONDS,
-} from './constants';
+import { ATTRIBUTION_WINDOW_MINUTES } from './constants';
+import { isQualifyingCall } from './callQualifying';
 import {
   type Market,
   type MarketFilter,
@@ -23,8 +20,6 @@ import {
   classifyLeadMarket,
   normalizePhoneDigits,
 } from './market';
-
-const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -290,15 +285,11 @@ function deduplicateCallRows(
   existingCallPhones: Set<string>,
   sessionAttr: { googleSessions: any[]; microsoftSessions: any[] }
 ): UnifiedLeadRow[] {
-  // Filter qualifying calls (same rules as metricsBuilder)
-  const qualifying = calls.filter(call => {
-    const num = call.from_number || '';
-    if (num === BUSINESS_PHONE_NUMBER) return false;
-    if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) return false;
-    if ((call.duration || 0) < MIN_CALL_DURATION_SECONDS) return false;
-    if (!num) return false;
-    return true;
-  });
+  // Canonical qualifying-call gate — single source of truth (callQualifying.ts).
+  // The old inline copy here omitted the excluded/test-phone exclusion, so team
+  // test calls (30s+) leaked into the Leads page table (F07). isQualifyingCall
+  // enforces business#, toll-free, excluded AND test phones, plus min duration.
+  const qualifying = calls.filter(isQualifyingCall);
 
   // Dedup: one lead per unique phone, suppress phones already in leads table
   const seen = new Set<string>();
