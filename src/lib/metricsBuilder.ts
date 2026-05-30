@@ -498,9 +498,14 @@ async function fetchGrossRevenue(
   bounds: MountainDayBounds,
   market: MarketFilter
 ): Promise<{ total: number; invoiceCount: number }> {
+  // Gross Revenue = customer-paid revenue (omega_installs.total_revenue), NOT
+  // cost-of-goods. This previously summed parts_cost + labor_cost (COGS), which
+  // made the Exec Dashboard "Gross Revenue" card show cost and disagree with the
+  // ROI / total-revenue page (which sums total_revenue). total_revenue is the
+  // canonical revenue column. See tasks/2026-05-30-reporting-consistency-audit.md (F01).
   const { data } = await supabase
     .from('omega_installs')
-    .select('parts_cost, labor_cost, matched_lead_id')
+    .select('total_revenue, matched_lead_id')
     .gte('install_date', bounds.startDate)
     .lte('install_date', bounds.endDate);
 
@@ -538,7 +543,7 @@ async function fetchGrossRevenue(
   }
 
   const total = rows.reduce((sum: number, r: any) =>
-    sum + (r.parts_cost || 0) + (r.labor_cost || 0), 0);
+    sum + (r.total_revenue || 0), 0);
 
   return { total, invoiceCount: rows.length };
 }
