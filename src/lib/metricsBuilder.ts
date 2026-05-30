@@ -50,6 +50,7 @@ import {
   classifyLeadMarket,
   normalizePhoneDigits,
 } from './market';
+import { getGrossRevenue } from './grossRevenue';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -498,54 +499,10 @@ async function fetchGrossRevenue(
   bounds: MountainDayBounds,
   market: MarketFilter
 ): Promise<{ total: number; invoiceCount: number }> {
-  // Gross Revenue = customer-paid revenue (omega_installs.total_revenue), NOT
-  // cost-of-goods. This previously summed parts_cost + labor_cost (COGS), which
-  // made the Exec Dashboard "Gross Revenue" card show cost and disagree with the
-  // ROI / total-revenue page (which sums total_revenue). total_revenue is the
-  // canonical revenue column. See tasks/2026-05-30-reporting-consistency-audit.md (F01).
-  const { data } = await supabase
-    .from('omega_installs')
-    .select('total_revenue, matched_lead_id')
-    .gte('install_date', bounds.startDate)
-    .lte('install_date', bounds.endDate);
-
-  let rows = data || [];
-
-  if (market !== 'all') {
-    const leadIds = [...new Set(rows.map((row: any) => row.matched_lead_id).filter(Boolean))];
-
-    let allowedLeadIds = new Set<string>();
-    if (leadIds.length > 0) {
-      // Batch in groups of 100 to avoid PostgREST URL length limits
-      const BATCH_SIZE = 100;
-      const allLeads: any[] = [];
-      for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
-        const batch = leadIds.slice(i, i + BATCH_SIZE);
-        const { data: batchLeads } = await supabase
-          .from('leads')
-          .select('id, state, zip, utm_source')
-          .in('id', batch);
-        allLeads.push(...(batchLeads || []));
-      }
-      allowedLeadIds = new Set(
-        allLeads
-          .filter((lead: any) => classifyLeadMarket(lead) === market)
-          .map((lead: any) => lead.id)
-      );
-    }
-
-    // Keep rows that EITHER match the market OR have no matched_lead_id (unclassifiable)
-    // Unmatched installs (cash jobs, walk-ins) cannot be attributed to a market,
-    // so they are included in both market views rather than silently dropped.
-    rows = rows.filter((row: any) =>
-      !row.matched_lead_id || allowedLeadIds.has(row.matched_lead_id)
-    );
-  }
-
-  const total = rows.reduce((sum: number, r: any) =>
-    sum + (r.total_revenue || 0), 0);
-
-  return { total, invoiceCount: rows.length };
+  // Delegates to the single shared helper so the Exec Dashboard and the ROI /
+  // total-revenue page can never drift on column choice OR market handling
+  // (F01 / 3b — see tasks/2026-05-30-reporting-consistency-audit.md).
+  return getGrossRevenue(supabase, { startDate: bounds.startDate, endDate: bounds.endDate }, market);
 }
 
 async function fetchTraffic(

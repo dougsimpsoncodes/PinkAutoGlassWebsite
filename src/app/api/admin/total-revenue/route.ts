@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getMountainDateRange, type DateFilter } from '@/lib/dashboardData';
 import { classifyLeadMarket, type Market } from '@/lib/market';
+import { getGrossRevenue } from '@/lib/grossRevenue';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,34 +36,32 @@ export async function GET(request: NextRequest) {
 
     const client = getSupabaseClient();
 
-    // Build date-filtered queries
-    // Include matched_lead_id for market filtering via lead lookup
-    let grossQuery = client.from('omega_installs').select('total_revenue, matched_lead_id');
-    // Include utm_source for market classification when state/zip is missing
+    // Attributed revenue (leads matched to invoices), date-filtered on created_at.
     let attributedQuery = client.from('leads').select('revenue_amount, state, zip, utm_source').eq('is_test', false).not('revenue_amount', 'is', null);
 
-    // Apply date filter: explicit startDate/endDate takes priority over period
+    // Resolve the gross-revenue date range (install_date). Explicit startDate/endDate
+    // (from the ROI page) overrides period.
+    let grossStart: string | null = null;
+    let grossEnd: string | null = null;
     if (startDateParam && endDateParam) {
-      const startISO = `${startDateParam}T00:00:00.000Z`;
-      const endISO = `${endDateParam}T23:59:59.999Z`;
-      grossQuery = grossQuery
-        .gte('install_date', startDateParam)
-        .lte('install_date', endDateParam);
+      grossStart = startDateParam;
+      grossEnd = endDateParam;
       attributedQuery = attributedQuery
-        .gte('created_at', startISO)
-        .lte('created_at', endISO);
+        .gte('created_at', `${startDateParam}T00:00:00.000Z`)
+        .lte('created_at', `${endDateParam}T23:59:59.999Z`);
     } else if (period !== 'all') {
       const { start, end } = getMountainDateRange(period);
-      grossQuery = grossQuery
-        .gte('install_date', start.toISOString())
-        .lte('install_date', end.toISOString());
+      grossStart = start.toISOString();
+      grossEnd = end.toISOString();
       attributedQuery = attributedQuery
         .gte('created_at', start.toISOString())
         .lte('created_at', end.toISOString());
     }
 
-    const [grossResult, attributedResult] = await Promise.all([
-      grossQuery,
+    // Gross revenue via the shared canonical helper — same column AND market rule
+    // as the Exec Dashboard so the two surfaces can't drift (F01 / 3b).
+    const [gross, attributedResult] = await Promise.all([
+      getGrossRevenue(client, { startDate: grossStart, endDate: grossEnd }, market),
       attributedQuery,
     ]);
 
@@ -72,41 +71,8 @@ export async function GET(request: NextRequest) {
       attributedRows = attributedRows.filter((lead: any) => classifyLeadMarket(lead) === market);
     }
 
-    // Market-filter gross revenue via matched_lead_id lookup (same pattern as metricsBuilder.fetchGrossRevenue)
-    let grossRows = grossResult.data || [];
-    if (market !== 'all') {
-      const leadIds = [...new Set(grossRows.map((row: any) => row.matched_lead_id).filter(Boolean))];
-      let allowedLeadIds = new Set<string>();
-      if (leadIds.length > 0) {
-        const BATCH_SIZE = 100;
-        const allLeads: any[] = [];
-        for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
-          const batch = leadIds.slice(i, i + BATCH_SIZE);
-          const { data: batchLeads } = await client
-            .from('leads')
-            .select('id, state, zip, utm_source') // include utm_source for full market classification
-            .in('id', batch);
-          allLeads.push(...(batchLeads || []));
-        }
-        allowedLeadIds = new Set(
-          allLeads
-            .filter((lead: any) => classifyLeadMarket(lead) === market)
-            .map((lead: any) => lead.id)
-        );
-      }
-      // For market-specific views: only include installs that are matched to a lead in that market.
-      // Unmatched cash jobs have no geo signal and are excluded from specific-market revenue
-      // to prevent them from inflating both market totals.
-      grossRows = grossRows.filter((row: any) =>
-        row.matched_lead_id && allowedLeadIds.has(row.matched_lead_id)
-      );
-    }
-
-    const grossRevenue = grossRows.reduce(
-      (sum: number, row: any) => sum + (row.total_revenue || 0),
-      0
-    );
-    const invoiceCount = grossRows.length;
+    const grossRevenue = gross.total;
+    const invoiceCount = gross.invoiceCount;
 
     const attributedRevenue = attributedRows.reduce(
       (sum: number, row: any) => sum + (row.revenue_amount || 0),
