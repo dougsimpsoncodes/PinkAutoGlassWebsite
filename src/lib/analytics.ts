@@ -311,7 +311,8 @@ export const trackMicrosoftAdsEvent = (
  * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
 export const trackMicrosoftAdsCallClick = (source: string, transactionId?: string) => {
-  trackMicrosoftAdsEvent('phone_click', 'conversion', source, undefined, transactionId);
+  // Send the same value Google gets so Microsoft value-based bidding doesn't train on $0.
+  trackMicrosoftAdsEvent('phone_click', 'conversion', source, CALL_CONVERSION_VALUE_USD, transactionId);
 };
 
 /**
@@ -320,7 +321,8 @@ export const trackMicrosoftAdsCallClick = (source: string, transactionId?: strin
  * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
 export const trackMicrosoftAdsTextClick = (source: string, transactionId?: string) => {
-  trackMicrosoftAdsEvent('text_click', 'conversion', source, undefined, transactionId);
+  // Send the same value Google gets so Microsoft value-based bidding doesn't train on $0.
+  trackMicrosoftAdsEvent('text_click', 'conversion', source, TEXT_CONVERSION_VALUE_USD, transactionId);
 };
 
 /**
@@ -328,6 +330,8 @@ export const trackMicrosoftAdsTextClick = (source: string, transactionId?: strin
  * Maps to "Quick quote" conversion goal in Microsoft Ads (ActionExpression: form_submit)
  * IMPORTANT: Action name must match the goal's ActionExpression exactly
  */
-export const trackMicrosoftAdsLeadForm = (formName: string, value?: number, transactionId?: string) => {
+export const trackMicrosoftAdsLeadForm = (formName: string, value: number = FORM_CONVERSION_VALUE_USD, transactionId?: string) => {
+  // Default to the shared form value so callers passing undefined (e.g. tracking.ts)
+  // still send a real value — Microsoft was training on $0 while Google got $91.
   trackMicrosoftAdsEvent('form_submit', 'conversion', formName, value, transactionId);
 };
