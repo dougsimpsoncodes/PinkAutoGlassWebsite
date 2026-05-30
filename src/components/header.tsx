@@ -47,7 +47,7 @@ export default function Header() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile Layout: Horizontal — logo left, phone right */}
-        <nav className="md:hidden flex items-center justify-between py-2" role="navigation" aria-label="Main navigation">
+        <nav className="md:hidden flex items-center justify-between py-1" role="navigation" aria-label="Main navigation">
           <Link
             href="/"
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
@@ -59,7 +59,7 @@ export default function Header() {
               width={500}
               height={500}
               className="w-auto"
-              style={{ height: '56px' }}
+              style={{ height: '72px' }}
               priority
             />
           </Link>
