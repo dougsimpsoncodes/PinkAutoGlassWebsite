@@ -318,10 +318,11 @@ export default function QuoterFunnelPage() {
             period (from booking records), but only{' '}
             {attributedBookings} could be source-attributed via session events.{' '}
             <strong>{bookingDelta} booking{bookingDelta !== 1 ? 's' : ''}</strong> cannot be
-            attributed to a traffic source. This is caused by a known deduplication issue in the
-            event pipeline (a session&apos;s first <code>form_submit</code> blocks the second),
-            which is being resolved separately. The &quot;Booked&quot; bar reflects attributed
-            events only.
+            attributed to a traffic source. This gap is primarily due to a known deduplication
+            issue in the event pipeline (a session&apos;s first <code>form_submit</code> suppresses
+            the second), and partly due to range-edge or session-less bookings. The fix is in
+            progress separately. The &quot;Booked&quot; bar and table reflect attributed events
+            only; use the confirmed total card for true volume.
           </div>
         </div>
       )}

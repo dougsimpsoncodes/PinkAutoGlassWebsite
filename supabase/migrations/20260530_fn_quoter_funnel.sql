@@ -45,6 +45,10 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, extensions
 AS $$
+-- PL/pgSQL OUT-parameter names (source, stage, cnt) collide with CTE column
+-- aliases of the same name.  This directive resolves all ambiguous references
+-- to the column rather than the variable, which is the correct behaviour.
+#variable_conflict use_column
 BEGIN
   RETURN QUERY
   WITH sessions AS (
