@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getMountainDateRange, type DateFilter } from '@/lib/dashboardData';
-import { classifyLeadMarket, type Market } from '@/lib/market';
+import { type Market } from '@/lib/market';
 import { getGrossRevenue } from '@/lib/grossRevenue';
+import { getAttributedRevenue } from '@/lib/attributedRevenue';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,49 +37,31 @@ export async function GET(request: NextRequest) {
 
     const client = getSupabaseClient();
 
-    // Attributed revenue (leads matched to invoices), date-filtered on created_at.
-    let attributedQuery = client.from('leads').select('revenue_amount, state, zip, utm_source').eq('is_test', false).not('revenue_amount', 'is', null);
-
-    // Resolve the gross-revenue date range (install_date). Explicit startDate/endDate
-    // (from the ROI page) overrides period.
-    let grossStart: string | null = null;
-    let grossEnd: string | null = null;
+    // Resolve the reporting date range. Explicit startDate/endDate (from the ROI
+    // page) overrides period. Gross uses it as install_date; attributed as close_date.
+    let rangeStart: string | null = null;
+    let rangeEnd: string | null = null;
     if (startDateParam && endDateParam) {
-      grossStart = startDateParam;
-      grossEnd = endDateParam;
-      attributedQuery = attributedQuery
-        .gte('created_at', `${startDateParam}T00:00:00.000Z`)
-        .lte('created_at', `${endDateParam}T23:59:59.999Z`);
+      rangeStart = startDateParam;
+      rangeEnd = endDateParam;
     } else if (period !== 'all') {
       const { start, end } = getMountainDateRange(period);
-      grossStart = start.toISOString();
-      grossEnd = end.toISOString();
-      attributedQuery = attributedQuery
-        .gte('created_at', start.toISOString())
-        .lte('created_at', end.toISOString());
+      rangeStart = start.toISOString();
+      rangeEnd = end.toISOString();
     }
 
-    // Gross revenue via the shared canonical helper — same column AND market rule
-    // as the Exec Dashboard so the two surfaces can't drift (F01 / 3b).
-    const [gross, attributedResult] = await Promise.all([
-      getGrossRevenue(client, { startDate: grossStart, endDate: grossEnd }, market),
-      attributedQuery,
+    // Gross (install_date) + attributed (close_date, completed) via the shared
+    // canonical helpers — same column + market + status rules as the Exec
+    // Dashboard, so the surfaces can't drift (F01/3b/F09).
+    const [gross, attributed] = await Promise.all([
+      getGrossRevenue(client, { startDate: rangeStart, endDate: rangeEnd }, market),
+      getAttributedRevenue(client, { startDate: rangeStart, endDate: rangeEnd }, market),
     ]);
-
-    // Market-filter attributed leads (exclude unclassifiable from specific-market views)
-    let attributedRows = attributedResult.data || [];
-    if (market !== 'all') {
-      attributedRows = attributedRows.filter((lead: any) => classifyLeadMarket(lead) === market);
-    }
 
     const grossRevenue = gross.total;
     const invoiceCount = gross.invoiceCount;
-
-    const attributedRevenue = attributedRows.reduce(
-      (sum: number, row: any) => sum + (row.revenue_amount || 0),
-      0
-    );
-    const attributedLeadCount = attributedRows.length;
+    const attributedRevenue = attributed.total;
+    const attributedLeadCount = attributed.leadCount;
 
     const attributionRate =
       grossRevenue > 0

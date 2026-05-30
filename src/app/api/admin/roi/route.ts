@@ -111,14 +111,15 @@ export async function GET(req: NextRequest) {
         .gte('created_at', startDateTime)
         .lte('created_at', endDateTime),
 
-      // Leads with revenue (include state, zip, utm_source for market filtering)
+      // Attributed revenue = COMPLETED jobs recognized on close_date, not created_at (F09).
       client
         .from('leads')
-        .select('phone_e164, revenue_amount, ad_platform, created_at, state, zip, utm_source')
+        .select('phone_e164, revenue_amount, ad_platform, close_date, state, zip, utm_source')
         .eq('is_test', false)
+        .eq('status', 'completed')
         .not('revenue_amount', 'is', null)
-        .gte('created_at', startDateTime)
-        .lte('created_at', endDateTime),
+        .gte('close_date', startDateTime)
+        .lte('close_date', endDateTime),
     ]);
 
     // =============================================================================
