@@ -26,7 +26,9 @@
     "ci:guard:pricing-builder": "tsx scripts/verify-pricing-builder.ts",
     "ci:guard:schedule-slots": "tsx scripts/verify-schedule-slots.ts",
     "ci:guard:env-coherence": "tsx scripts/verify-env-coherence.ts",
-    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt && npm run ci:guard:pricing && npm run ci:guard:nags-compat && npm run ci:guard:scoring && npm run ci:guard:pricing-builder && npm run ci:guard:schedule-slots && npm run ci:guard:env-coherence",
+    "ci:guard:adas-tier": "tsx scripts/verify-adas-tier.ts",
+    "ci:guard:quote-telemetry": "tsx scripts/verify-quote-telemetry-isolation.ts",
+    "ci:guards": "npm run ci:guard:ad-platform && npm run ci:guard:mygrant && npm run ci:guard:autobolt && npm run ci:guard:pricing && npm run ci:guard:nags-compat && npm run ci:guard:scoring && npm run ci:guard:pricing-builder && npm run ci:guard:schedule-slots && npm run ci:guard:env-coherence && npm run ci:guard:adas-tier && npm run ci:guard:quote-telemetry",
     "env:pull": "vercel env pull .env.local && sed -i '' 's/\\\\n\"/\"/g' .env.local && echo '✓ .env.local pulled and sanitized (no \\n)'",
     "postinstall": "git config core.hooksPath .git-hooks 2>/dev/null || true"
   },

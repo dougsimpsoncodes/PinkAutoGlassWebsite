@@ -8,6 +8,10 @@ import { Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { resolveMarket, getPhoneForMarket } from "@/lib/market"
 
+// Client-mirror of isStaging() — server helper isn't usable in a "use client" file,
+// but NEXT_PUBLIC_APP_ENV is exposed to the browser so the check works the same way.
+const IS_STAGING = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
@@ -29,7 +33,8 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed left-0 right-0 z-50 transition-all duration-300",
+        IS_STAGING ? "top-7" : "top-0",
         isScrolled
           ? "bg-white shadow-md"
           : "bg-white/95 backdrop-blur-sm border-b border-gray-100"
