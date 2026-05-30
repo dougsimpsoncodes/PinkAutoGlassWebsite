@@ -138,6 +138,8 @@ export async function GET(req: NextRequest) {
         return await getTopPages(startDate, market);
       case 'sessions':
         return await getSessions(startDate, market);
+      case 'quoter_funnel':
+        return await getQuoterFunnel(startDate, new Date(bounds.endUTC), market);
       default:
         return await getOverviewMetrics(startDate, market);
     }
@@ -519,4 +521,113 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
     ok: true,
     data: results,
   });
+}
+
+// ============================================================================
+// QUOTER FUNNEL — source-segmented conversion funnel for the auto-quoter
+// ============================================================================
+
+/** Row shape returned by fn_quoter_funnel */
+interface FunnelRpcRow {
+  source: string;
+  stage: string;
+  cnt: number;
+}
+
+/** Shape returned by this handler to the client page */
+interface QuoterFunnelPayload {
+  /** Funnel data keyed as funnelRows[source][stage] = count */
+  funnelRows: Record<string, Record<string, number>>;
+  /** All distinct sources in the data set */
+  sources: string[];
+  /** Ordered stage names */
+  stages: string[];
+  /**
+   * True total bookings from automated_quote_bookings (unaffected by the
+   * conversion_events dedup bug). Compared to sum of booked by source to
+   * produce the data-quality delta shown on the page.
+   */
+  trueTotalBookings: number;
+}
+
+/**
+ * Calls fn_quoter_funnel via Supabase RPC (service-role), then fetches the
+ * true-total booking count from automated_quote_bookings.  Returns structured
+ * data so the page never works with raw session rows.
+ *
+ * endDate is passed explicitly (from bounds.endUTC) so today/yesterday get
+ * tight upper bounds instead of an implicit NOW().
+ */
+async function getQuoterFunnel(
+  startDate: Date,
+  endDate: Date,
+  market: MarketFilter,
+): Promise<NextResponse> {
+  const supabase = getSupabaseClient();
+
+  // --- Call the RPC ---
+  const { data: rpcRows, error: rpcError } = await supabase.rpc(
+    'fn_quoter_funnel',
+    {
+      range_start:  startDate.toISOString(),
+      range_end:    endDate.toISOString(),
+      exclude_test: true,
+      p_market:     market,
+    },
+  );
+
+  if (rpcError) {
+    console.error('fn_quoter_funnel RPC error:', rpcError);
+    return NextResponse.json(
+      { ok: false, error: 'Funnel query failed', detail: rpcError.message },
+      { status: 500 },
+    );
+  }
+
+  // --- True-total bookings (not source-attributed) ---
+  // automated_quote_bookings has no session_id, so we count all real bookings
+  // in range to surface the data-quality delta vs the events-based booked count.
+  const { count: trueTotalBookings, error: bookingError } = await supabase
+    .from('automated_quote_bookings')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', startDate.toISOString())
+    .lt('created_at', endDate.toISOString())
+    .eq('is_test', false);
+
+  if (bookingError) {
+    console.error('automated_quote_bookings count error:', bookingError);
+    // Non-fatal: return funnel data without the booking count
+  }
+
+  // --- Reshape RPC rows into funnelRows[source][stage] = count ---
+  const STAGE_ORDER = [
+    'traffic_source',
+    'landed_quoter',
+    'started_quote',
+    'price_shown',
+    'booked',
+  ] as const;
+
+  const rows: FunnelRpcRow[] = (rpcRows as FunnelRpcRow[]) || [];
+  const sourceSet = new Set<string>();
+  const funnelRows: Record<string, Record<string, number>> = {};
+
+  for (const row of rows) {
+    sourceSet.add(row.source);
+    if (!funnelRows[row.source]) funnelRows[row.source] = {};
+    // fn_quoter_funnel returns cnt as bigint which Supabase deserialises to
+    // number in JS; no cast needed.
+    funnelRows[row.source][row.stage] = Number(row.cnt);
+  }
+
+  const sources = Array.from(sourceSet).sort();
+
+  const payload: QuoterFunnelPayload = {
+    funnelRows,
+    sources,
+    stages: [...STAGE_ORDER],
+    trueTotalBookings: trueTotalBookings ?? 0,
+  };
+
+  return NextResponse.json({ ok: true, data: payload });
 }
