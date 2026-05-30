@@ -27,7 +27,7 @@ export const runtime = 'nodejs';
  *       "revenue": 18750.00,
  *       "costPerCustomer": 27.79,
  *       "revenuePerCustomer": 416.67,
- *       "roi": 15.0,  // (Revenue / Cost)
+ *       "roas": 15.0,  // (Revenue / Cost) — return on ad spend, not ROI
  *       "profit": 17499.50
  *     },
  *     ...
@@ -38,7 +38,7 @@ export const runtime = 'nodejs';
  *     "totalRevenue": 45000.00,
  *     "avgCostPerCustomer": 41.03,
  *     "avgRevenuePerCustomer": 576.92,
- *     "overallROI": 14.06,
+ *     "overallROAS": 14.06,
  *     "totalProfit": 41800.00
  *   }
  * }
@@ -218,7 +218,8 @@ export async function GET(req: NextRequest) {
     ) => {
       const costPerCustomer = customers > 0 ? cost / customers : 0;
       const revenuePerCustomer = customers > 0 ? revenue / customers : 0;
-      const roi = cost > 0 ? (revenue / cost) : 0;
+      // revenue / cost is ROAS (return on ad spend), not ROI. Named accordingly (F15).
+      const roas = cost > 0 ? (revenue / cost) : 0;
       const profit = revenue - cost;
 
       return {
@@ -227,7 +228,7 @@ export async function GET(req: NextRequest) {
         revenue: parseFloat(revenue.toFixed(2)),
         costPerCustomer: parseFloat(costPerCustomer.toFixed(2)),
         revenuePerCustomer: parseFloat(revenuePerCustomer.toFixed(2)),
-        roi: parseFloat(roi.toFixed(2)),
+        roas: parseFloat(roas.toFixed(2)),
         profit: parseFloat(profit.toFixed(2)),
         profitMargin: revenue > 0 ? parseFloat(((profit / revenue) * 100).toFixed(2)) : 0,
       };
@@ -271,7 +272,7 @@ export async function GET(req: NextRequest) {
       totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       avgCostPerCustomer: totalCustomers > 0 ? parseFloat((totalCost / totalCustomers).toFixed(2)) : 0,
       avgRevenuePerCustomer: totalCustomers > 0 ? parseFloat((totalRevenue / totalCustomers).toFixed(2)) : 0,
-      overallROI: totalCost > 0 ? parseFloat((totalRevenue / totalCost).toFixed(2)) : 0,
+      overallROAS: totalCost > 0 ? parseFloat((totalRevenue / totalCost).toFixed(2)) : 0,
       totalProfit: parseFloat(totalProfit.toFixed(2)),
       profitMargin: totalRevenue > 0 ? parseFloat(((totalProfit / totalRevenue) * 100).toFixed(2)) : 0,
     };
@@ -280,7 +281,7 @@ export async function GET(req: NextRequest) {
       totalCustomers,
       totalCost: `$${totalCost.toFixed(2)}`,
       totalRevenue: `$${totalRevenue.toFixed(2)}`,
-      roi: `${totals.overallROI}x`,
+      roas: `${totals.overallROAS}x`,
     });
 
     return NextResponse.json({
