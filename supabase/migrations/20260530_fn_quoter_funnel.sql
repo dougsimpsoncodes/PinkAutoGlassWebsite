@@ -51,8 +51,9 @@ AS $$
 #variable_conflict use_column
 BEGIN
   RETURN QUERY
-  WITH sessions AS (
-    -- Base: all sessions in range after test exclusion and market filter.
+  WITH base AS (
+    -- Base: all sessions in range after test exclusion and market filter,
+    -- with source classified once.
     SELECT
       us.session_id,
       CASE
@@ -75,89 +76,89 @@ BEGIN
       AND (p_market = 'all' OR us.market = p_market)
   ),
 
-  -- Stage 1: Traffic Source — every session
-  stage_traffic AS (
-    SELECT source, 'traffic_source' AS stage, count(*) AS cnt
-    FROM sessions
-    GROUP BY source
+  -- Per-session RAW signal for each funnel step. Each comes from an INDEPENDENT
+  -- event source, so a session can have a downstream signal while missing an
+  -- upstream one (e.g. the fire-and-forget quote_attempt diagnostic fails to
+  -- write but the priced conversion records). We reconcile that below.
+  --   sig_landed  — page_view on the quoter surface (homepage '/' or '/quote*').
+  --                 AutomatedQuoteForm mounts at src/app/page.tsx ('/') and
+  --                 src/app/quote/page.tsx ('/quote').
+  --   sig_started — a quote_attempt_* analytics event.
+  --   sig_priced  — form_submit conversion with metadata.stage = 'priced'.
+  --   sig_booked  — form_submit conversion with metadata.stage = 'booked'.
+  signals AS (
+    SELECT
+      b.session_id,
+      b.source,
+      EXISTS (
+        SELECT 1 FROM public.page_views pv
+        WHERE pv.session_id = b.session_id
+          AND (pv.page_path = '/' OR pv.page_path LIKE '/quote%')
+      ) AS sig_landed,
+      EXISTS (
+        SELECT 1 FROM public.analytics_events ae
+        WHERE ae.session_id = b.session_id
+          AND ae.event_name IN (
+            'quote_attempt_plate',
+            'quote_attempt_vin',
+            'quote_attempt_ymm'
+          )
+      ) AS sig_started,
+      EXISTS (
+        SELECT 1 FROM public.conversion_events ce
+        WHERE ce.session_id = b.session_id
+          AND ce.event_type = 'form_submit'
+          AND ce.metadata->>'stage' = 'priced'
+      ) AS sig_priced,
+      EXISTS (
+        SELECT 1 FROM public.conversion_events ce
+        WHERE ce.session_id = b.session_id
+          AND ce.event_type = 'form_submit'
+          AND ce.metadata->>'stage' = 'booked'
+      ) AS sig_booked
+    FROM base b
   ),
 
-  -- Stage 2: Landed on Quoter — has a page_view on the quoter surface
-  --   homepage ('/')  or  any /quote path
-  --   AutomatedQuoteForm mounts at src/app/page.tsx (→ path '/')
-  --   and src/app/quote/page.tsx (→ path '/quote').
-  stage_landed AS (
-    SELECT s.source, 'landed_quoter' AS stage, count(DISTINCT s.session_id) AS cnt
-    FROM sessions s
-    WHERE EXISTS (
-      SELECT 1
-      FROM public.page_views pv
-      WHERE pv.session_id = s.session_id
-        AND (pv.page_path = '/' OR pv.page_path LIKE '/quote%')
-    )
-    GROUP BY s.source
-  ),
-
-  -- Stage 3: Started a Quote — has a quote_attempt_* analytics event
-  stage_started AS (
-    SELECT s.source, 'started_quote' AS stage, count(DISTINCT s.session_id) AS cnt
-    FROM sessions s
-    WHERE EXISTS (
-      SELECT 1
-      FROM public.analytics_events ae
-      WHERE ae.session_id = s.session_id
-        AND ae.event_name IN (
-          'quote_attempt_plate',
-          'quote_attempt_vin',
-          'quote_attempt_ymm'
-        )
-    )
-    GROUP BY s.source
-  ),
-
-  -- Stage 4: Price Shown — form_submit conversion with stage='priced'
-  --   trackFormSubmission('quote_form', {stage:'priced'}) writes:
-  --     event_type = 'form_submit', metadata = {stage:'priced', ...}
-  stage_priced AS (
-    SELECT s.source, 'price_shown' AS stage, count(DISTINCT s.session_id) AS cnt
-    FROM sessions s
-    WHERE EXISTS (
-      SELECT 1
-      FROM public.conversion_events ce
-      WHERE ce.session_id = s.session_id
-        AND ce.event_type = 'form_submit'
-        AND ce.metadata->>'stage' = 'priced'
-    )
-    GROUP BY s.source
-  ),
-
-  -- Stage 5: Booked — form_submit conversion with stage='booked'
-  --   trackFormSubmission('quote_form', {stage:'booked'}) in QuoteBookingForm
-  --   NOTE: This undercounts today due to a known dedup bug (first form_submit
-  --   per session wins — so if 'priced' fired first, 'booked' is suppressed).
-  --   The true booking total must be fetched separately from automated_quote_bookings.
-  stage_booked AS (
-    SELECT s.source, 'booked' AS stage, count(DISTINCT s.session_id) AS cnt
-    FROM sessions s
-    WHERE EXISTS (
-      SELECT 1
-      FROM public.conversion_events ce
-      WHERE ce.session_id = s.session_id
-        AND ce.event_type = 'form_submit'
-        AND ce.metadata->>'stage' = 'booked'
-    )
-    GROUP BY s.source
+  -- MONOTONIC "reached" flags. Reaching a stage in the auto-quoter flow
+  -- necessarily implies reaching every shallower stage (you cannot be priced
+  -- without starting a quote; requestPrice() is only ever called from the three
+  -- lookup handlers, each of which is the quote_attempt). So a deeper signal
+  -- back-fills the shallower stages. This makes the funnel monotonic BY
+  -- CONSTRUCTION (traffic >= landed >= started >= priced >= booked) and immune
+  -- to a missing upstream telemetry event.
+  reached AS (
+    SELECT
+      session_id,
+      source,
+      TRUE                                                    AS r_traffic,
+      (sig_landed OR sig_started OR sig_priced OR sig_booked) AS r_landed,
+      (sig_started OR sig_priced OR sig_booked)               AS r_started,
+      (sig_priced OR sig_booked)                              AS r_priced,
+      sig_booked                                              AS r_booked
+    FROM signals
   )
 
-  SELECT source, stage, cnt FROM stage_traffic
+  -- One (source, stage, cnt) row per stage. cnt = sessions that REACHED the
+  -- stage (cumulative), so the funnel only narrows downward.
+  -- NOTE on 'booked': counted from conversion_events, which undercounts today
+  -- due to a known per-session dedup bug (first form_submit per session wins,
+  -- so a 'booked' after a 'priced' in the same session is suppressed). The TRUE
+  -- booking total is fetched separately from automated_quote_bookings in the
+  -- API route and surfaced as a data-quality delta on the page.
+  SELECT source, 'traffic_source'::text AS stage, count(*)::bigint AS cnt
+    FROM reached WHERE r_traffic GROUP BY source
   UNION ALL
-  SELECT source, stage, cnt FROM stage_landed
+  SELECT source, 'landed_quoter'::text, count(*)::bigint
+    FROM reached WHERE r_landed GROUP BY source
   UNION ALL
-  SELECT source, stage, cnt FROM stage_started
+  SELECT source, 'started_quote'::text, count(*)::bigint
+    FROM reached WHERE r_started GROUP BY source
   UNION ALL
-  SELECT source, stage, cnt FROM stage_priced
+  SELECT source, 'price_shown'::text, count(*)::bigint
+    FROM reached WHERE r_priced GROUP BY source
   UNION ALL
-  SELECT source, stage, cnt FROM stage_booked
+  SELECT source, 'booked'::text, count(*)::bigint
+    FROM reached WHERE r_booked GROUP BY source
   ORDER BY source, stage;
 END;
 $$;
