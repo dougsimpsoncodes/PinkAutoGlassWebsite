@@ -47,19 +47,19 @@ export default function Header() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile Layout: Horizontal — logo left, phone right */}
-        <nav className="md:hidden flex items-center justify-between py-1" role="navigation" aria-label="Main navigation">
+        <nav className="md:hidden flex items-center justify-between py-2" role="navigation" aria-label="Main navigation">
           <Link
             href="/"
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
             aria-label="Pink Auto Glass - Go to homepage"
           >
             <Image
-              src="/pink-logo-horizontal.png"
+              src="/pink-logo-wordmark.png"
               alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-              width={500}
-              height={500}
+              width={444}
+              height={158}
               className="w-auto"
-              style={{ height: '72px' }}
+              style={{ height: '52px' }}
               priority
             />
           </Link>
