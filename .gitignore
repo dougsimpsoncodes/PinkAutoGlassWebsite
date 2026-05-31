@@ -127,3 +127,4 @@ analysis/
 # One-off research / data-pull scripts (Google Ads / GSC / pricing variance, etc.)
 # Kept locally for reproducibility, not part of the build.
 scripts/_temp-*
+.backups/
