@@ -32,6 +32,7 @@ interface AutomatedQuoteRow {
   supplier_cost_cents: number | null;
   quote_total_cents: number | null;
   confidence_reasons: string[] | null;
+  is_test: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +49,7 @@ export default function AutomatedQuotesDashboard() {
   const [quotes, setQuotes] = useState<AutomatedQuoteRow[]>([]);
   const [status, setStatus] = useState('all');
   const [search, setSearch] = useState('');
+  const [showTest, setShowTest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -57,6 +59,7 @@ export default function AutomatedQuotesDashboard() {
     try {
       const params = new URLSearchParams({ limit: '100' });
       if (status !== 'all') params.set('status', status);
+      if (showTest) params.set('includeTest', 'true');
       const response = await fetch(`/api/admin/quotes?${params}`);
       const data = await response.json();
       if (!response.ok || !data.ok) {
@@ -68,7 +71,7 @@ export default function AutomatedQuotesDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [status]);
+  }, [status, showTest]);
 
   useEffect(() => {
     fetchQuotes();
@@ -109,16 +112,30 @@ export default function AutomatedQuotesDashboard() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Automated Quotes</h1>
-            <p className="mt-1 text-gray-600">Quote attempts, manual confirmations, and customer follow-up references.</p>
+            <p className="mt-1 text-gray-600">
+              {showTest ? 'Showing real + test quotes.' : 'Showing real customer quotes (test/tester traffic hidden).'}
+            </p>
           </div>
-          <button
-            onClick={fetchQuotes}
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 font-semibold text-white disabled:opacity-60"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowTest(v => !v)}
+              className={`inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold ${
+                showTest
+                  ? 'border-amber-300 bg-amber-50 text-amber-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+              }`}
+            >
+              {showTest ? 'Hide test quotes' : 'Show test quotes'}
+            </button>
+            <button
+              onClick={fetchQuotes}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 font-semibold text-white disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
@@ -186,6 +203,7 @@ export default function AutomatedQuotesDashboard() {
                     <tr key={quote.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-4 py-3 align-top">
                         <div className="font-mono font-semibold text-gray-900">{shortQuoteToken(quote.quote_token)}</div>
+                        {quote.is_test && <div className="mt-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Test</div>}
                         {quote.lead_id && <div className="mt-1 text-xs text-green-700">Lead linked</div>}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 align-top">

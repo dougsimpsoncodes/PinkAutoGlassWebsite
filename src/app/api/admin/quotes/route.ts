@@ -27,6 +27,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    // Default to REAL quotes only — test/tester traffic is ~90%+ of rows and
+    // buries real signal. Opt in with ?includeTest=true (the page's "Show test" toggle).
+    const includeTest = searchParams.get('includeTest') === 'true';
     const limit = clampNumber(searchParams.get('limit'), 1, 200, 100);
     const offset = clampNumber(searchParams.get('offset'), 0, 10_000, 0);
 
@@ -64,11 +67,16 @@ export async function GET(request: NextRequest) {
         supplier_cost_cents,
         quote_total_cents,
         confidence_reasons,
+        is_test,
         created_at,
         updated_at
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
+
+    if (!includeTest) {
+      query = query.eq('is_test', false);
+    }
 
     if (status && ALLOWED_STATUSES.has(status)) {
       query = query.eq('status', status);
