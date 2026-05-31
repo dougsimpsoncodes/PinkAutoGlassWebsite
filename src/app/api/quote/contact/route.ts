@@ -7,6 +7,7 @@ import { isExcludedPhone, isTestPhone } from '@/lib/constants';
 import { sendAdminAlertEmail } from '@/lib/notifications/email';
 import { sendAdminSMS } from '@/lib/notifications/sms';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { findOrCreateQuoteLead, splitName, shortQuoteToken } from '@/lib/quote/leadSync';
 
 export const runtime = 'nodejs';
 
@@ -109,14 +110,27 @@ export async function POST(request: NextRequest) {
     }
 
     const name = splitName(input.fullName);
-    const leadId = await findOrCreateLead({
-      admin,
-      anon,
-      input,
-      quote,
+    const attribution = buildAttribution({
+      bodyGclid: input.gclid?.trim() || undefined,
+      bodyMsclkid: input.msclkid?.trim() || undefined,
+      utmSource: input.utmSource?.trim() || undefined,
+      utmMedium: input.utmMedium?.trim() || undefined,
+      utmCampaign: input.utmCampaign?.trim() || undefined,
+      utmTerm: input.utmTerm?.trim() || undefined,
+      utmContent: input.utmContent?.trim() || undefined,
+    });
+    const leadId = await findOrCreateQuoteLead(admin, anon, quote, {
       firstName: name.firstName,
       lastName: name.lastName,
-      request,
+      phone: input.phone,
+      email: input.email || null,
+      smsConsent: input.smsConsent,
+      state: input.state || undefined,
+      zip: input.zip || undefined,
+      clientId: input.clientId || undefined,
+      sessionId: input.sessionId || request.cookies.get('session_id')?.value || null,
+      attribution,
+      // status omitted → preserves prior /contact behavior (no status change)
     });
 
     const nextQuoteStatus = quote.status === 'manual_review' ? 'needs_confirmation' : quote.status;
@@ -157,142 +171,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function findOrCreateLead({
-  admin,
-  anon,
-  input,
-  quote,
-  firstName,
-  lastName,
-  request,
-}: {
-  admin: PublicSupabaseClient;
-  anon: PublicSupabaseClient;
-  input: QuoteContactInput;
-  quote: AutomatedQuoteRow;
-  firstName: string;
-  lastName: string;
-  request: NextRequest;
-}): Promise<string> {
-  if (quote.lead_id) {
-    await updateLead(admin, quote.lead_id, input, quote, firstName, lastName);
-    return quote.lead_id;
-  }
-
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: existingLead } = await admin
-    .from('leads')
-    .select('id')
-    .eq('phone_e164', input.phone)
-    .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
-    .gte('created_at', sevenDaysAgo)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single<{ id: string }>();
-
-  const existingLeadId = typeof existingLead?.id === 'string' ? existingLead.id : null;
-  if (existingLeadId) {
-    await updateLead(admin, existingLeadId, input, quote, firstName, lastName);
-    return existingLeadId;
-  }
-
-  const leadId = crypto.randomUUID();
-  const attribution = buildAttribution({
-    bodyGclid: emptyToUndefined(input.gclid),
-    bodyMsclkid: emptyToUndefined(input.msclkid),
-    utmSource: emptyToUndefined(input.utmSource),
-    utmMedium: emptyToUndefined(input.utmMedium),
-    utmCampaign: emptyToUndefined(input.utmCampaign),
-    utmTerm: emptyToUndefined(input.utmTerm),
-    utmContent: emptyToUndefined(input.utmContent),
-  });
-
-  const { error } = await anon.rpc('fn_insert_lead', {
-    p_id: leadId,
-    p_payload: {
-      firstName,
-      lastName,
-      email: input.email || null,
-      phoneE164: input.phone,
-      vehicleYear: quote.vehicle_year,
-      vehicleMake: quote.vehicle_make,
-      vehicleModel: quote.vehicle_model,
-      serviceType: 'replacement',
-      mobileService: true,
-      state: input.state || quote.state,
-      zip: input.zip || quote.zip,
-      clientId: emptyToUndefined(input.clientId),
-      sessionId: emptyToUndefined(input.sessionId) || request.cookies.get('session_id')?.value || null,
-      smsConsent: input.smsConsent,
-      privacyAcknowledgment: true,
-      termsAccepted: true,
-      isTest: isExcludedPhone(input.phone) || isTestPhone(input.phone),
-      ...attribution,
-    },
-  });
-
-  if (error) {
-    console.error('[quote-contact] lead insert failed:', error.message);
-    throw new Error('Failed to create lead for quote contact.');
-  }
-
-  await updateLead(admin, leadId, input, quote, firstName, lastName);
-  return leadId;
-}
-
-async function updateLead(
-  admin: PublicSupabaseClient,
-  leadId: string,
-  input: QuoteContactInput,
-  quote: AutomatedQuoteRow,
-  firstName: string,
-  lastName: string
-) {
-  const quoteRef = shortQuoteToken(quote.quote_token);
-  const newNote = [
-    `Automated quote ${quoteRef}`,
-    quote.status ? `status: ${quote.status}` : null,
-    quote.vehicle_year || quote.vehicle_make || quote.vehicle_model
-      ? `vehicle: ${[quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ')}`
-      : null,
-  ].filter(Boolean).join(' | ');
-
-  const { data: existing } = await admin
-    .from('leads')
-    .select('notes')
-    .eq('id', leadId)
-    .single<{ notes: string | null }>();
-  const existingNotes = existing?.notes?.trim() || '';
-  const notes = !existingNotes
-    ? newNote
-    : existingNotes.includes(`Automated quote ${quoteRef}`)
-      ? existingNotes
-      : `${existingNotes}\n${newNote}`;
-
-  const { error } = await admin
-    .from('leads')
-    .update({
-      first_name: firstName,
-      last_name: lastName || null,
-      ...(input.email ? { email: input.email } : {}),
-      phone_e164: input.phone,
-      vehicle_year: quote.vehicle_year,
-      vehicle_make: quote.vehicle_make,
-      vehicle_model: quote.vehicle_model,
-      zip: input.zip || quote.zip,
-      state: input.state || quote.state,
-      service_type: 'replacement',
-      quote_amount: quote.quote_total_cents ? quote.quote_total_cents / 100 : null,
-      notes,
-    })
-    .eq('id', leadId);
-
-  if (error) {
-    console.error('[quote-contact] lead update failed:', error.message);
-    throw new Error('Failed to update lead for quote contact.');
-  }
-}
-
 async function notifyAdmins(input: QuoteContactInput, quote: AutomatedQuoteRow, name: { firstName: string; lastName: string }, leadId: string) {
   if (isExcludedPhone(input.phone) || isTestPhone(input.phone)) return;
 
@@ -318,22 +196,6 @@ async function notifyAdmins(input: QuoteContactInput, quote: AutomatedQuoteRow, 
     sendAdminAlertEmail(`Automated Quote ${ref}: ${name.firstName}`, html),
     sendAdminSMS(sms),
   ]);
-}
-
-function splitName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] || 'Customer',
-    lastName: parts.slice(1).join(' '),
-  };
-}
-
-function emptyToUndefined(value?: string) {
-  return value && value.trim() ? value.trim() : undefined;
-}
-
-function shortQuoteToken(token: string): string {
-  return token.slice(0, 8).toUpperCase();
 }
 
 function escapeHtml(value: string): string {
