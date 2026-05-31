@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
+import { isAnsweringServiceNumber } from '@/lib/answeringService';
+import { ingestAnsweringServiceMessage } from '@/lib/answeringServiceIngest';
 import {
   classifyMessage,
   recordOptOut,
@@ -230,8 +232,20 @@ export async function POST(req: NextRequest) {
       console.log(`Stored inbound SMS ${messageId} from ${fromNumber}`);
     }
 
-    // --- Create or update lead from inbound SMS ---
-    if (fromNumber) {
+    // --- Answering-service intake: parse the card into real CALL lead(s) ---
+    // These texts are an accounting/intake feed, not customer texts. The raw SMS
+    // is already archived above. We never create an 'sms' lead for the service
+    // number; each parsed customer becomes an ordinary 'call' lead (deduped on the
+    // customer's real phone). See tasks/2026-05-30-reporting-consistency-audit.md.
+    if (isAnsweringServiceNumber(fromNumber)) {
+      try {
+        const res = await ingestAnsweringServiceMessage(supabase, { messageText, messageTime });
+        console.log(`Answering-service intake from ${fromNumber}: created=${res.created} enriched=${res.enriched} skip=${res.skippedNonLead} review=${res.manualReview}`);
+      } catch (asErr: any) {
+        console.error('Answering-service ingest failed:', asErr?.message || asErr);
+      }
+    } else if (fromNumber) {
+      // --- Create or update lead from a normal inbound customer SMS ---
       try {
         const seventyTwoHoursAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
 
@@ -281,8 +295,9 @@ export async function POST(req: NextRequest) {
     // Auto-reply: one greeting per phone number per calendar day (UTC).
     // Uses a deterministic message_id so the DB unique constraint prevents double-sends
     // even under concurrent webhook retries — insert succeeds only once per day.
-    // Skip auto-reply for opted-out numbers.
-    if (fromNumber && isCustomerSmsEnabled() && !senderOptedOut) {
+    // Skip auto-reply for opted-out numbers and for the answering service (it's
+    // an intake feed, not a customer).
+    if (fromNumber && !isAnsweringServiceNumber(fromNumber) && isCustomerSmsEnabled() && !senderOptedOut) {
       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
       const autoReplyMsgId = `auto-reply-${fromNumber}-${today}`;
       const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';
