@@ -14,8 +14,8 @@
  *     and surfaced via the returned status, not propagated.
  */
 
-import { sendEmail } from '@/lib/notifications/email';
-import { sendSMS } from '@/lib/notifications/sms';
+import { sendEmail, sendAdminAlertEmail } from '@/lib/notifications/email';
+import { sendSMS, sendAdminSMS } from '@/lib/notifications/sms';
 import { centsToDollars } from '@/lib/quote/pricing';
 
 export type BookingNotificationStatus =
@@ -323,13 +323,27 @@ export interface TeamAlertOutcome {
 }
 
 /**
- * Fire team email + SMS. Never throws. Safe to call without awaiting.
- * Both channels independently report sent/skipped/failed; failures are
- * logged but do not affect each other or the caller.
+ * Fire team email + SMS for a new booking. Never throws. Safe to call without
+ * awaiting.
  *
- * Skipped when:
- *   - email: ADMIN_EMAIL env var not set
- *   - sms:   ADMIN_PHONE env var not set
+ * Recipient resolution is DELEGATED to the shared admin helpers
+ * (sendAdminAlertEmail / sendAdminSMS) — the SAME ones the legacy lead/booking
+ * forms use — so the new quoter's booking alerts land in the exact inboxes the
+ * team already watches. This is deliberate: the previous implementation read
+ * ADMIN_EMAIL / ADMIN_PHONE directly and passed the raw value as a SINGLE
+ * recipient. Because those env vars are comma-separated lists in prod
+ * (multiple teammates), the unsplit string was an invalid recipient and the
+ * SMS silently failed — a booked customer produced NO internal alert while the
+ * old form (which splits on commas) kept working. Routing through the helpers
+ * fixes both channels for all recipients and removes the divergence.
+ *   - sendAdminAlertEmail: prefers ADMIN_EMAIL_ALERTS, falls back to
+ *     ADMIN_EMAIL, comma-splits, fallback address if neither set.
+ *   - sendAdminSMS: reads ADMIN_PHONE, comma-splits, sends to each.
+ * Both return true if at least one recipient succeeded.
+ *
+ * Team alerts are INTERNAL ops notifications — they intentionally do NOT gate
+ * on ENABLE_CUSTOMER_SMS or customer sms_consent (those govern messages to the
+ * customer, not to staff).
  */
 export async function sendTeamAlert(
   input: BookingNotificationInput,
@@ -337,46 +351,44 @@ export async function sendTeamAlert(
 ): Promise<TeamAlertOutcome> {
   const channels: BookingChannelResult[] = [];
 
-  // Email
+  // Email — delegate recipient resolution + comma-splitting to the shared helper.
   const emailResult: BookingChannelResult = await (async () => {
-    const to = process.env.ADMIN_EMAIL?.trim();
-    if (!to) {
-      return { channel: 'email' as const, outcome: 'skipped' as const, reason: 'admin_email_unset' };
-    }
     try {
       const subjectPrice = input.quote.totalCents != null ? ` · $${Math.round(input.quote.totalCents / 100)}` : '';
-      const ok = await sendEmail({
-        to,
-        subject: `🚨 New Booking — ${input.bookingToken} (${input.customer.fullName} · ${input.quote.vehicleSummary}${subjectPrice})`,
-        html: buildTeamEmailHtml(input, ctx),
-      });
+      const ok = await sendAdminAlertEmail(
+        `🚨 New Booking — ${input.bookingToken} (${input.customer.fullName} · ${input.quote.vehicleSummary}${subjectPrice})`,
+        buildTeamEmailHtml(input, ctx),
+      );
       return ok
         ? { channel: 'email' as const, outcome: 'sent' as const }
-        : { channel: 'email' as const, outcome: 'failed' as const, reason: 'resend_returned_false' };
+        : { channel: 'email' as const, outcome: 'failed' as const, reason: 'admin_alert_email_returned_false' };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'unknown_error';
       return { channel: 'email' as const, outcome: 'failed' as const, reason: message.slice(0, 200) };
     }
   })();
   channels.push(emailResult);
+  if (emailResult.outcome === 'failed') {
+    console.error(`[team-alert] booking ${input.bookingToken}: team EMAIL failed — ${emailResult.reason}`);
+  }
 
-  // SMS
+  // SMS — delegate to the shared helper, which comma-splits ADMIN_PHONE and
+  // sends to each teammate. No ENABLE_CUSTOMER_SMS / consent gate: internal.
   const smsResult: BookingChannelResult = await (async () => {
-    const to = process.env.ADMIN_PHONE?.trim();
-    if (!to) {
-      return { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'admin_phone_unset' };
-    }
     try {
-      const ok = await sendSMS({ to, message: buildTeamSmsText(input, ctx) });
+      const ok = await sendAdminSMS(buildTeamSmsText(input, ctx));
       return ok
         ? { channel: 'sms' as const, outcome: 'sent' as const }
-        : { channel: 'sms' as const, outcome: 'failed' as const, reason: 'sms_returned_false' };
+        : { channel: 'sms' as const, outcome: 'failed' as const, reason: 'admin_sms_returned_false' };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'unknown_error';
       return { channel: 'sms' as const, outcome: 'failed' as const, reason: message.slice(0, 200) };
     }
   })();
   channels.push(smsResult);
+  if (smsResult.outcome === 'failed') {
+    console.error(`[team-alert] booking ${input.bookingToken}: team SMS failed — ${smsResult.reason}`);
+  }
 
   const e = emailResult.outcome;
   const s = smsResult.outcome;
@@ -384,6 +396,13 @@ export async function sendTeamAlert(
     (e === 'sent' && s === 'sent') ? 'sent' :
     (e === 'skipped' && s === 'skipped') ? 'skipped' :
     (e === 'failed' && s === 'failed') ? 'failed' : 'partial';
+
+  // A booking that produced NO internal alert at all is an ops emergency —
+  // log loudly so it surfaces in Vercel logs / monitoring even though we never
+  // throw (the booking row is already durable).
+  if (status === 'failed') {
+    console.error(`[team-alert] booking ${input.bookingToken}: BOTH channels failed — no internal notification sent. Email=${emailResult.reason} SMS=${smsResult.reason}`);
+  }
 
   return { status, channels };
 }
