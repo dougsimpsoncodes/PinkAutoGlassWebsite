@@ -122,7 +122,10 @@ export default function GoogleAdsPage() {
 
   const fetchData = useCallback(async (filter: DateFilter) => {
     try {
-      const response = await fetch(`/api/admin/dashboard/google-ads?period=${filter}`);
+      // Pass the market filter so Google spend is scoped to the same market as
+      // the leads it's divided by (Cost/Lead, ROAS). See F04 in
+      // tasks/2026-05-30-reporting-consistency-audit.md.
+      const response = await fetch(`/api/admin/dashboard/google-ads?period=${filter}&market=${market}`);
       if (!response.ok) {
         throw new Error('Failed to fetch Google Ads data');
       }
@@ -134,7 +137,7 @@ export default function GoogleAdsPage() {
       setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     }
-  }, []);
+  }, [market]);
 
   // Refresh all data when global sync triggers
   const refreshAllData = useCallback(async () => {

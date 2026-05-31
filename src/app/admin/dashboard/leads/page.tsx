@@ -607,7 +607,7 @@ export default function LeadManagementDashboard() {
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-500" />
             <div className="flex gap-1">
-              {(['all', 'call', 'form'] as const).map(type => (
+              {(['all', 'call', 'form', 'text'] as const).map(type => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type)}
@@ -617,7 +617,7 @@ export default function LeadManagementDashboard() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {type === 'all' ? 'All' : type === 'call' ? 'Calls' : 'Forms'}
+                  {type === 'all' ? 'All' : type === 'call' ? 'Calls' : type === 'form' ? 'Forms' : 'Texts'}
                 </button>
               ))}
             </div>

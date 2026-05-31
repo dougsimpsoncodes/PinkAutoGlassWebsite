@@ -7,6 +7,7 @@ import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-notifications';
 import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
 import { assertEnvCoherent } from '@/lib/env';
+import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
 
 export const runtime = 'nodejs';
 
@@ -39,6 +40,10 @@ const bookingSchema = z.object({
 interface QuoteSummary {
   id: string;
   status: string;
+  // Attribution + linkage for the leads sync (Item 9 / F02).
+  lead_id: string | null;
+  session_id: string | null;
+  is_test: boolean | null;
   zip: string | null;
   state: string | null;
   vehicle_year: number | null;
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
     // 1) Look up the quote. Service role bypasses RLS.
     const { data: quoteRow, error: lookupError } = await supabase
       .from('automated_quotes')
-      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, selected_brand, selected_part_description, selected_nags_number, supplier_cost_cents, selected_qty_available, selected_estimated_delivery_date, confidence_reasons')
+      .select('id, status, lead_id, session_id, is_test, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, selected_brand, selected_part_description, selected_nags_number, supplier_cost_cents, selected_qty_available, selected_estimated_delivery_date, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .maybeSingle<QuoteSummary>();
 
@@ -211,6 +216,41 @@ export async function POST(request: NextRequest) {
         { error: 'Booking failed. Please call (720) 918-7465 to book by phone.' },
         { status: 500 }
       );
+    }
+
+    // 7b) Mirror the booked customer into the leads pipeline as a 'form' lead so
+    // quoter bookings show up in Leads/Dashboard/ROI like any other lead (Item 9 /
+    // F02). Best-effort: the booking row is already durable — a lead-sync failure
+    // must NEVER fail the booking. Revenue is left null (Omega completion owns it,
+    // F09); status='scheduled'; WHERE resolved from the quote's session.
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (url && anonKey) {
+        const anon = createClient(url, anonKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const name = splitName(input.customer.fullName);
+        const attribution = await buildAttributionFromSession(supabase, quoteRow.session_id);
+        const leadId = await findOrCreateQuoteLead(supabase, anon, quoteRow, {
+          firstName: name.firstName,
+          lastName: name.lastName,
+          phone: phoneE164,
+          email: input.customer.email?.trim() || null,
+          smsConsent: input.smsConsent,
+          state: quoteRow.state,
+          zip: installZip || quoteRow.zip,
+          sessionId: quoteRow.session_id,
+          attribution,
+          isTest: quoteRow.is_test ?? false,
+          status: 'scheduled',
+        });
+        if (!quoteRow.lead_id && leadId) {
+          await supabase.from('automated_quotes').update({ lead_id: leadId }).eq('id', quoteRow.id);
+        }
+      }
+    } catch (leadErr) {
+      console.error('[quote-book] lead sync failed (booking still saved):', leadErr instanceof Error ? leadErr.message : leadErr);
     }
 
     // 7) Notifications — non-blocking. Booking row is durable; if these
