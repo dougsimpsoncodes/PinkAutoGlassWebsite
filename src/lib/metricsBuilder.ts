@@ -526,7 +526,10 @@ async function fetchTraffic(
     .from('page_views')
     .select('id')
     .gte('created_at', bounds.startUTC)
-    .lte('created_at', bounds.endUTC);
+    .lte('created_at', bounds.endUTC)
+    // Exclude admin + test page views, consistent with the analytics route (F11).
+    .not('page_path', 'like', '/admin%')
+    .not('page_path', 'like', '/test%');
 
   if (market !== 'all') {
     sessionsQuery = sessionsQuery.eq('market', market);
@@ -554,7 +557,9 @@ async function fetchClickEvents(
     .select('event_type')
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC)
-    .not('page_path', 'like', '/admin%');
+    .not('page_path', 'like', '/admin%')
+    // Also exclude /test% — was missing here vs the analytics route (F12).
+    .not('page_path', 'like', '/test%');
 
   if (market !== 'all') {
     query = query.eq('market', market);

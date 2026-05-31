@@ -281,7 +281,7 @@ export default function WebsiteTrafficPage() {
         {/* KPI row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
-            { label: 'Unique Visitors', value: overview?.total_visitors?.toLocaleString() ?? '0' },
+            { label: 'Visitors', value: overview?.total_visitors?.toLocaleString() ?? '0' },
             { label: 'Page Views', value: overview?.total_page_views?.toLocaleString() ?? '0' },
             { label: 'Pages / Visit', value: overview?.total_visitors ? (overview.total_page_views / overview.total_visitors).toFixed(1) : '0' },
             { label: 'Click Events', value: overview?.total_conversions?.toLocaleString() ?? '0' },
