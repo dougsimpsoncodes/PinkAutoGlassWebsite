@@ -45,6 +45,9 @@ const STATUS_OPTIONS = [
   { value: 'ready_estimate', label: 'Estimate' },
 ];
 
+// Quotes the engine couldn't confidently price — the triage queue.
+const NEEDS_ATTENTION = new Set(['manual_review', 'needs_confirmation']);
+
 export default function AutomatedQuotesDashboard() {
   const [quotes, setQuotes] = useState<AutomatedQuoteRow[]>([]);
   const [status, setStatus] = useState('all');
@@ -106,6 +109,23 @@ export default function AutomatedQuotesDashboard() {
     priced: quotes.filter(q => q.quote_total_cents && q.quote_total_cents > 0).length,
   }), [quotes]);
 
+  // Triage workbench: surface quotes the engine couldn't confidently price as an
+  // actionable queue, sorted to the top so staff can resolve them fast.
+  const sortedQuotes = useMemo(() => {
+    return [...filteredQuotes].sort((a, b) => {
+      const aNeeds = NEEDS_ATTENTION.has(a.status) ? 0 : 1;
+      const bNeeds = NEEDS_ATTENTION.has(b.status) ? 0 : 1;
+      return aNeeds - bNeeds; // needs-attention first; createdAt order preserved within groups
+    });
+  }, [filteredQuotes]);
+
+  const needsReview = useMemo(
+    () => filteredQuotes.filter(q => NEEDS_ATTENTION.has(q.status)).length,
+    [filteredQuotes]
+  );
+
+  const [reviewQuote, setReviewQuote] = useState<AutomatedQuoteRow | null>(null);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -145,6 +165,19 @@ export default function AutomatedQuotesDashboard() {
           <SummaryTile icon={<CheckCircle2 className="h-5 w-5" />} label="Priced" value={summary.priced} />
         </div>
 
+        {needsReview > 0 && (
+          <button
+            onClick={() => setStatus('manual_review')}
+            className="flex w-full items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-left hover:bg-amber-100"
+          >
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600" />
+            <div>
+              <div className="font-semibold text-amber-900">{needsReview} quote{needsReview === 1 ? '' : 's'} need review</div>
+              <div className="text-sm text-amber-700">The engine couldn&apos;t confidently price these — set a price or decline so the customer can book.</div>
+            </div>
+          </button>
+        )}
+
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-gray-200 p-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-2">
@@ -182,7 +215,7 @@ export default function AutomatedQuotesDashboard() {
               <Loader2 className="h-5 w-5 animate-spin" />
               Loading quotes...
             </div>
-          ) : filteredQuotes.length === 0 ? (
+          ) : sortedQuotes.length === 0 ? (
             <div className="p-10 text-center text-gray-500">No automated quotes match this view.</div>
           ) : (
             <div className="overflow-x-auto">
@@ -199,8 +232,8 @@ export default function AutomatedQuotesDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
-                  {filteredQuotes.map(quote => (
-                    <tr key={quote.id} className="hover:bg-gray-50">
+                  {sortedQuotes.map(quote => (
+                    <tr key={quote.id} className={`hover:bg-gray-50 ${NEEDS_ATTENTION.has(quote.status) ? 'bg-amber-50/40' : ''}`}>
                       <td className="whitespace-nowrap px-4 py-3 align-top">
                         <div className="font-mono font-semibold text-gray-900">{shortQuoteToken(quote.quote_token)}</div>
                         {quote.is_test && <div className="mt-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Test</div>}
@@ -209,6 +242,19 @@ export default function AutomatedQuotesDashboard() {
                       <td className="whitespace-nowrap px-4 py-3 align-top">
                         <StatusBadge status={quote.status} />
                         {quote.status_reason && <div className="mt-1 max-w-56 truncate text-xs text-gray-500">{quote.status_reason}</div>}
+                        {NEEDS_ATTENTION.has(quote.status) && (
+                          <>
+                            {quote.confidence_reasons && quote.confidence_reasons.length > 0 && (
+                              <div className="mt-1 max-w-56 text-[11px] text-gray-400">{quote.confidence_reasons.slice(0, 2).join(', ')}</div>
+                            )}
+                            <button
+                              onClick={() => setReviewQuote(quote)}
+                              className="mt-2 inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-50"
+                            >
+                              Review
+                            </button>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3 align-top">
                         <div className="font-medium text-gray-900">{customerName(quote) || 'No contact yet'}</div>
@@ -252,7 +298,107 @@ export default function AutomatedQuotesDashboard() {
           )}
         </div>
       </div>
+
+      {reviewQuote && (
+        <ReviewModal
+          quote={reviewQuote}
+          onClose={() => setReviewQuote(null)}
+          onSaved={() => { setReviewQuote(null); fetchQuotes(); }}
+        />
+      )}
     </DashboardLayout>
+  );
+}
+
+function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; onClose: () => void; onSaved: () => void }) {
+  const [price, setPrice] = useState(quote.quote_total_cents ? String(Math.round(quote.quote_total_cents / 100)) : '');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const patch = async (body: Record<string, unknown>) => {
+    setSaving(true);
+    setErr('');
+    try {
+      const res = await fetch('/api/admin/quotes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: quote.id, ...body }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Update failed.');
+      onSaved();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Update failed.');
+      setSaving(false);
+    }
+  };
+
+  const saveReady = () => {
+    const dollars = Number(price);
+    if (!Number.isFinite(dollars) || dollars <= 0) { setErr('Enter a valid price.'); return; }
+    patch({ quote_total_cents: Math.round(dollars * 100), status: 'ready_exact' });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Review quote {shortQuoteToken(quote.quote_token)}</h2>
+            <p className="text-sm text-gray-600">{vehicleLabel(quote) || 'Unknown vehicle'}{quote.vin ? ` · ${quote.vin}` : ''}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+
+        {quote.confidence_reasons && quote.confidence_reasons.length > 0 && (
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="font-semibold">Why it needs review</div>
+            <ul className="mt-1 list-disc pl-5">
+              {quote.confidence_reasons.map((r, i) => <li key={i}>{r}</li>)}
+            </ul>
+          </div>
+        )}
+
+        <label className="block text-sm font-medium text-gray-700">Set price (USD)</label>
+        <div className="mt-1 flex items-center gap-2">
+          <span className="text-gray-500">$</span>
+          <input
+            type="number"
+            min="0"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            placeholder="e.g. 450"
+            className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
+          />
+          {quote.supplier_cost_cents != null && (
+            <span className="text-xs text-gray-500">Supplier cost {formatCents(quote.supplier_cost_cents)}</span>
+          )}
+        </div>
+
+        {err && <div className="mt-3 text-sm text-red-600">{err}</div>}
+
+        <div className="mt-6 flex items-center justify-between gap-2">
+          <button
+            onClick={() => patch({ status: 'declined' })}
+            disabled={saving}
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Decline quote
+          </button>
+          <div className="flex gap-2">
+            <button onClick={onClose} disabled={saving} className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50">Cancel</button>
+            <button
+              onClick={saveReady}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save price &amp; mark ready
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
