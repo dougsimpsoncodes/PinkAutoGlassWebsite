@@ -32,7 +32,10 @@
  * - Same phone calling multiple times in any period = 1 lead
  * - This matches fetchUnifiedLeads() which groups by phone globally
  * - Calls from business number, toll-free, or < 30s duration are excluded
- * - Calls are NOT suppressed when phone exists in leads table (repeat customers are valid)
+ * - A call is suppressed ONLY when its phone is a call-type lead created in the
+ *   SAME period (prevents same-period double-count). A call-lead from a PRIOR
+ *   period does NOT suppress a new call — repeat customers across periods are
+ *   counted (period-scoped; council 2026-06-01).
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -159,7 +162,7 @@ export async function buildMetrics(
     fetchGrossRevenue(supabase, bounds, market),
     fetchTraffic(supabase, bounds, market),
     fetchClickEvents(supabase, bounds, market),
-    fetchCallLeadPhones(supabase),
+    fetchCallLeadPhones(supabase, bounds),
     fetchSessionAttribution(supabase, bounds),
     // Attributed revenue is keyed on close_date (completed jobs), NOT created_at,
     // so it is fetched independently of the created_at-bounded lead queries (F09).
@@ -415,24 +418,32 @@ function deduplicateCalls(
 }
 
 /**
- * Fetch phone numbers that already exist as call-type leads in the leads table.
- * These are suppressed from ringcentral_calls to avoid double-counting.
- * When a market filter is active, only suppress call leads that can be
- * classified into that same market, so unclassified persisted call leads
- * do not hide otherwise-valid filtered RingCentral rows.
+ * Phone numbers that are call-type leads in the leads table FOR THE CURRENT
+ * PERIOD. RingCentral calls from these phones are suppressed in deduplicateCalls
+ * to avoid double-counting a call already represented as a same-period call-lead.
+ *
+ * Period-scoped (council 2026-06-01, option A): a call-lead from a PRIOR period
+ * must NOT suppress a brand-new qualifying call from a repeat caller. Previously
+ * this query had no date bound, so a stale lead silenced today's calls on both
+ * sides and undercounted "Qualifying Leads". This mirrors fetchFormLeads, which
+ * only counts leads created within the period.
+ *
+ * Market-agnostic on purpose: a person is a person regardless of which market
+ * their lead classifies into. Filtering this set per-market caused
+ * Sum(markets) > All (the same call would survive dedup in one market but be
+ * suppressed in 'all' mode).
  */
 async function fetchCallLeadPhones(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  bounds: MountainDayBounds
 ): Promise<Set<string>> {
-  // Market-agnostic on purpose: a person is a person regardless of which market
-  // their form lead classifies into. Filtering this set per-market caused
-  // Sum(markets) > All (the same call would survive dedup in one market but
-  // be suppressed in 'all' mode).
   const { data } = await supabase
     .from('leads')
     .select('phone_e164')
     .eq('is_test', false)
-    .eq('first_contact_method', 'call');
+    .eq('first_contact_method', 'call')
+    .gte('created_at', bounds.startUTC)
+    .lte('created_at', bounds.endUTC);
 
   const phones = new Set<string>();
   for (const row of data || []) {

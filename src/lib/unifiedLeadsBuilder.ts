@@ -109,7 +109,7 @@ export async function buildUnifiedLeads(
   const [formLeads, callsData, existingCallPhones, sessionAttr] = await Promise.all([
     fetchFormLeadRows(supabase, bounds, market),
     fetchCallRows(supabase, bounds, market),
-    fetchCallLeadPhones(supabase),
+    fetchCallLeadPhones(supabase, bounds),
     fetchSessionAttribution(supabase, bounds),
   ]);
 
@@ -224,22 +224,32 @@ async function fetchCallRows(
 }
 
 /**
- * Get call-type lead phone numbers used for suppression.
- * When a market filter is active, only suppress call leads that can be
- * classified into that same market, matching metricsBuilder behavior.
+ * Call-type lead phone numbers (FOR THE CURRENT PERIOD) used to suppress
+ * ringcentral_calls already represented as a same-period call-lead.
+ *
+ * Period-scoped (council 2026-06-01, option A) to stay in lock-step with
+ * metricsBuilder.fetchCallLeadPhones: a call-lead from a PRIOR period must NOT
+ * suppress a brand-new qualifying call from a repeat caller (it would be counted
+ * by neither side -> undercount). Both the Exec Dashboard (metricsBuilder) and
+ * this Leads/unified path bound suppression to the same window so the two
+ * canonical admin views agree (codex pre-deploy 2026-06-01).
+ *
+ * Market-agnostic on purpose: a person is a person regardless of which market
+ * their lead classifies into. Filtering this set per-market caused
+ * Sum(markets) > All (the same call would survive dedup in one market but be
+ * suppressed in 'all' mode).
  */
 async function fetchCallLeadPhones(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  bounds: MountainDayBounds
 ): Promise<Set<string>> {
-  // Market-agnostic on purpose: a person is a person regardless of which market
-  // their form lead classifies into. Filtering this set per-market caused
-  // Sum(markets) > All (the same call would survive dedup in one market but
-  // be suppressed in 'all' mode).
   const { data } = await supabase
     .from('leads')
     .select('phone_e164')
     .eq('is_test', false)
-    .eq('first_contact_method', 'call');
+    .eq('first_contact_method', 'call')
+    .gte('created_at', bounds.startUTC)
+    .lte('created_at', bounds.endUTC);
 
   const phones = new Set<string>();
   for (const row of data || []) {
