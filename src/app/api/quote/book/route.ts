@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -10,6 +10,10 @@ import { assertEnvCoherent } from '@/lib/env';
 import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
 
 export const runtime = 'nodejs';
+// The team alert runs in an `after()` callback (post-response) and includes a
+// RingCentral JWT login on cold lambdas (~1.5s) before the SMS POST. Give the
+// function comfortable headroom so that background leg can never be cut off.
+export const maxDuration = 30;
 
 const bookingSchema = z.object({
   quoteToken: z.string().trim().min(8).max(64),
@@ -263,45 +267,55 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join(' ');
 
-    // Team alert — fire-and-forget, never blocks the customer response.
-    // Council reco 2026-05-28 (Codex + Gemini unanimous): async after DB
-    // write so provider delays don't slow down "You're booked!" for the
-    // customer. Errors are logged inside sendTeamAlert; we don't await.
-    void sendTeamAlert(
-      {
-        bookingToken: rpcResult.booking_token,
-        customer: {
-          fullName: input.customer.fullName,
-          phoneE164,
-          email: input.customer.email?.trim() || null,
-          smsConsent: input.smsConsent,
+    // Team alert — scheduled with Next.js `after()` so it runs AFTER the
+    // response is sent (never blocks the customer's "You're booked!" — council
+    // reco 2026-05-28, Codex + Gemini unanimous) WHILE keeping the serverless
+    // function alive until it finishes.
+    //
+    // Why not a bare `void` promise (the prior implementation): once the handler
+    // returned, Vercel froze the lambda and the SECOND leg of the alert — the
+    // team SMS, gated behind a ~1.5s RingCentral JWT cold-login — was cut off
+    // mid-POST, while the FIRST leg (team email) had already landed. Result:
+    // bookings produced an email alert but no SMS, intermittently (warm lambdas
+    // reused a cached RC client and finished in time; cold ones didn't).
+    // `after()` (waitUntil under the hood) keeps BOTH channels reliable. Errors
+    // are logged inside sendTeamAlert; the .catch is a last-resort backstop so a
+    // rejection can't escape the callback unlogged.
+    after(() =>
+      sendTeamAlert(
+        {
+          bookingToken: rpcResult.booking_token,
+          customer: {
+            fullName: input.customer.fullName,
+            phoneE164,
+            email: input.customer.email?.trim() || null,
+            smsConsent: input.smsConsent,
+          },
+          install: {
+            street: input.install.street,
+            city: installCity || null,
+            state: quoteRow.state,
+            zip: installZip,
+            date: input.install.date,
+            window: input.install.window,
+          },
+          quote: {
+            totalCents: quoteRow.quote_total_cents || 0,
+            vehicleSummary: vehicleSummary || 'your vehicle',
+          },
         },
-        install: {
-          street: input.install.street,
-          city: installCity || null,
-          state: quoteRow.state,
-          zip: installZip,
-          date: input.install.date,
-          window: input.install.window,
-        },
-        quote: {
-          totalCents: quoteRow.quote_total_cents || 0,
-          vehicleSummary: vehicleSummary || 'your vehicle',
-        },
-      },
-      {
-        supplierCostCents: quoteRow.supplier_cost_cents,
-        glassBrand: quoteRow.selected_brand,
-        glassPartNumber: quoteRow.selected_nags_number,
-        glassDescription: quoteRow.selected_part_description,
-        qtyAvailable: quoteRow.selected_qty_available,
-        estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
-      }
-    ).catch((err) => {
-      // Last-resort logger — sendTeamAlert itself never throws but the
-      // void-promise contract means we still want a backstop log.
-      console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
-    });
+        {
+          supplierCostCents: quoteRow.supplier_cost_cents,
+          glassBrand: quoteRow.selected_brand,
+          glassPartNumber: quoteRow.selected_nags_number,
+          glassDescription: quoteRow.selected_part_description,
+          qtyAvailable: quoteRow.selected_qty_available,
+          estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
+        }
+      ).catch((err) => {
+        console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
+      })
+    );
 
     const adasTier = readAdasTier(quoteRow.confidence_reasons);
     const notification = await sendBookingNotifications({
