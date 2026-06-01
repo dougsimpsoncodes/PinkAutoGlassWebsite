@@ -27,7 +27,12 @@ export async function getAttributedRevenue(
 ): Promise<AttributedRevenueResult> {
   let query = supabase
     .from('leads')
-    .select('ad_platform, gclid, msclkid, revenue_amount, state, zip, utm_source')
+    // `market` MUST be selected: classifyLeadMarket() treats the market column
+    // as the authoritative first signal (set by the lead trigger / callLeadSync).
+    // Without it, completed leads whose market was set server-side but which
+    // lack state/zip/UTM classify as null and get dropped from market-filtered
+    // attributed revenue (codex pre-deploy F-market-1, 2026-05-31).
+    .select('ad_platform, gclid, msclkid, revenue_amount, market, state, zip, utm_source')
     .eq('is_test', false)
     .eq('status', 'completed')
     .not('revenue_amount', 'is', null);

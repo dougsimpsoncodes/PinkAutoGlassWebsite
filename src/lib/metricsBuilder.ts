@@ -52,6 +52,7 @@ import {
 } from './market';
 import { getGrossRevenue } from './grossRevenue';
 import { getAttributedRevenue } from './attributedRevenue';
+import { isQualifyingCall } from './callQualifying';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -344,14 +345,19 @@ function deduplicateCalls(
   let excludedBusinessNumber = 0;
   let excludedTollFree = 0;
 
-  // Filter qualifying calls
+  // Filter qualifying calls via the SHARED helper so this dashboard path agrees
+  // with unifiedLeadsBuilder / the Leads page (codex pre-deploy F-market-4,
+  // 2026-05-31). The shared helper additionally drops non-Inbound calls and
+  // excluded/test phones, which this inline filter did NOT — exactly the gap
+  // that made dashboard totals disagree with the Leads page. Per-reason counters
+  // are kept best-effort for the debug payload.
   const qualifying = calls.filter(call => {
+    if (isQualifyingCall(call)) return true;
     const num = call.from_number || '';
-    if (num === BUSINESS_PHONE_NUMBER) { excludedBusinessNumber++; return false; }
-    if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) { excludedTollFree++; return false; }
-    if ((call.duration || 0) < MIN_CALL_DURATION_SECONDS) { excludedDuration++; return false; }
-    if (!num) return false;
-    return true;
+    if (num === BUSINESS_PHONE_NUMBER) excludedBusinessNumber++;
+    else if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) excludedTollFree++;
+    else if ((call.duration || 0) < MIN_CALL_DURATION_SECONDS) excludedDuration++;
+    return false;
   });
 
   // Dedup: one lead per unique phone number (matches Leads page global dedup)

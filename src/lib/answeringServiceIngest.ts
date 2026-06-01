@@ -17,6 +17,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isExcludedPhone, isTestPhone } from './constants';
+import { classifyCallMarket } from './market';
 import {
   parseAnsweringServiceMessage,
   type ParsedAnsweringServiceCustomer,
@@ -136,7 +137,9 @@ export async function ingestAnsweringServiceMessage(
     const callNumbers = [phone, c.callerIdE164].filter((n): n is string => !!n);
     let callQuery = supabase
       .from('ringcentral_calls')
-      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign')
+      // to_number is needed to derive the lead's market (codex pre-deploy
+      // F-market-5, 2026-05-31) — same signal callLeadSync uses.
+      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign, to_number')
       .in('from_number', callNumbers)
       .eq('direction', 'Inbound')
       .order('start_time', { ascending: false })
@@ -168,6 +171,10 @@ export async function ingestAnsweringServiceMessage(
       insert.utm_source = (call as { utm_source: string | null }).utm_source ?? null;
       insert.utm_medium = (call as { utm_medium: string | null }).utm_medium ?? null;
       insert.utm_campaign = (call as { utm_campaign: string | null }).utm_campaign ?? null;
+      // Derive market from the inbound call's to_number, like callLeadSync —
+      // otherwise CO/AZ lead+revenue filters drop these calls (F-market-5).
+      const callMarket = classifyCallMarket((call as { to_number: string | null }).to_number);
+      if (callMarket) insert.market = callMarket;
     } else {
       // Net-new (service-only). Never fabricate a paid source — default to direct.
       insert.ad_platform = 'direct';

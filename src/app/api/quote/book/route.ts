@@ -204,6 +204,9 @@ export async function POST(request: NextRequest) {
       variant_id: input.variantId?.trim() || 'control',
       ip_address: ip === 'unknown' ? '' : ip,
       user_agent: request.headers.get('user-agent') || '',
+      // Booking inherits is_test from its parent quote so test/dev bookings are
+      // excluded from reporting like the quote is (codex pre-deploy F-market-3).
+      is_test: quoteRow.is_test ?? false,
     };
 
     const { data: rpcResult, error: rpcError } = await supabase

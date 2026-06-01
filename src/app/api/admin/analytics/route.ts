@@ -545,9 +545,11 @@ interface QuoterFunnelPayload {
   /**
    * True total bookings from automated_quote_bookings (unaffected by the
    * conversion_events dedup bug). Compared to sum of booked by source to
-   * produce the data-quality delta shown on the page.
+   * produce the data-quality delta shown on the page. NULL for a specific
+   * market view (the table can't be market-scoped) — the delta is only
+   * meaningful for the 'all' view.
    */
-  trueTotalBookings: number;
+  trueTotalBookings: number | null;
 }
 
 /**
@@ -585,18 +587,26 @@ async function getQuoterFunnel(
   }
 
   // --- True-total bookings (not source-attributed) ---
-  // automated_quote_bookings has no session_id, so we count all real bookings
-  // in range to surface the data-quality delta vs the events-based booked count.
-  const { count: trueTotalBookings, error: bookingError } = await supabase
-    .from('automated_quote_bookings')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', startDate.toISOString())
-    .lt('created_at', endDate.toISOString())
-    .eq('is_test', false);
-
-  if (bookingError) {
-    console.error('automated_quote_bookings count error:', bookingError);
-    // Non-fatal: return funnel data without the booking count
+  // automated_quote_bookings has NO market column and NO session_id, so it
+  // cannot be market-scoped. Only count it for the 'all' view; for a specific
+  // market it stays null, because comparing an ALL-market booking total against
+  // the market-scoped attributed/funnel counts overstates "unattributed"
+  // bookings in CO/AZ views (codex pre-deploy F-market-2, 2026-05-31). The page
+  // suppresses the data-quality delta + confirmed-total card when null.
+  let trueTotalBookings: number | null = null;
+  if (market === 'all') {
+    const { count, error: bookingError } = await supabase
+      .from('automated_quote_bookings')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', startDate.toISOString())
+      .lt('created_at', endDate.toISOString())
+      .eq('is_test', false);
+    if (bookingError) {
+      console.error('automated_quote_bookings count error:', bookingError);
+      // Non-fatal: leave trueTotalBookings null
+    } else {
+      trueTotalBookings = count ?? 0;
+    }
   }
 
   // --- Reshape RPC rows into funnelRows[source][stage] = count ---
@@ -626,7 +636,7 @@ async function getQuoterFunnel(
     funnelRows,
     sources,
     stages: [...STAGE_ORDER],
-    trueTotalBookings: trueTotalBookings ?? 0,
+    trueTotalBookings,
   };
 
   return NextResponse.json({ ok: true, data: payload });

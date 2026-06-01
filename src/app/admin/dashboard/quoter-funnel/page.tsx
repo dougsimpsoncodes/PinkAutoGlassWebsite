@@ -62,7 +62,8 @@ interface FunnelPayload {
   funnelRows: Record<string, Record<string, number>>;
   sources: string[];
   stages: string[];
-  trueTotalBookings: number;
+  /** null in a specific-market view (table can't be market-scoped). */
+  trueTotalBookings: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,15 +133,18 @@ export default function QuoterFunnelPage() {
 
   const sources: string[] = data?.sources ?? [];
   const funnelRows: Record<string, Record<string, number>> = data?.funnelRows ?? {};
-  const trueTotalBookings: number = data?.trueTotalBookings ?? 0;
+  // null = market-scoped view where the (non-market-scoped) booking total
+  // would be misleading; the delta + confirmed-total card are suppressed.
+  const trueTotalBookings: number | null = data?.trueTotalBookings ?? null;
 
   /** Total booked count attributed via conversion_events */
   const attributedBookings = sources.reduce(
     (acc, src) => acc + (funnelRows[src]?.booked ?? 0),
     0,
   );
-  /** Delta between true total and attributed — caused by the known dedup bug */
-  const bookingDelta = trueTotalBookings - attributedBookings;
+  /** Delta between true total and attributed — caused by the known dedup bug.
+   *  Only meaningful when the true total exists (all-market view). */
+  const bookingDelta = trueTotalBookings !== null ? trueTotalBookings - attributedBookings : 0;
 
   /** Top-of-funnel (traffic_source) total — used to normalise bar widths */
   const topTotal = stageTotal(funnelRows, sources, 'traffic_source');
@@ -505,10 +509,10 @@ export default function QuoterFunnelPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
           <div className="text-sm text-gray-600 mb-1">Bookings (confirmed total)</div>
           <div className="text-3xl font-bold text-gray-900">
-            {trueTotalBookings.toLocaleString()}
+            {trueTotalBookings !== null ? trueTotalBookings.toLocaleString() : '—'}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            From booking records
+            {trueTotalBookings !== null ? 'From booking records' : 'All-markets only (not market-scoped)'}
             {bookingDelta > 0 && (
               <span className="text-amber-600 font-medium ml-1">
                 ({bookingDelta} unattributed)
