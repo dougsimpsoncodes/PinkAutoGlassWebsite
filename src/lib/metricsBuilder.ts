@@ -576,7 +576,12 @@ async function fetchClickEvents(
     .lte('created_at', bounds.endUTC)
     .not('page_path', 'like', '/admin%')
     // Also exclude /test% — was missing here vs the analytics route (F12).
-    .not('page_path', 'like', '/test%');
+    .not('page_path', 'like', '/test%')
+    // Exclude quoter diagnostic events — 'quote_priced' is written as its own
+    // event_type (Phase-0, 2026-06-01) so it never inflates form_submit counts;
+    // also exclude it from total so the dashboard's "total click events" stays
+    // consistent with the sum of its named categories.
+    .not('event_type', 'eq', 'quote_priced');
 
   if (market !== 'all') {
     query = query.eq('market', market);

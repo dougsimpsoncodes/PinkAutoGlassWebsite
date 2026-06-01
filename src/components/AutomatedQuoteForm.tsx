@@ -286,9 +286,13 @@ export default function AutomatedQuoteForm() {
       setStage('priced');
 
       if (data.status !== 'manual_review' && data.pricing) {
-        // A real installed price was shown. Fire the lead conversion (the same
-        // single Google + Microsoft Ads lead label booking_form uses; reused
-        // here per the homepage-migration council reco — no Ads changes needed).
+        // A real price was shown — log this as a funnel 'priced' event so the
+        // Quoter Funnel report can count it, but do NOT fire the Ads bidding
+        // conversion. Price-shown is a non-contact, window-shopping step; firing
+        // it here trained Google/Microsoft toward price curiosity instead of
+        // bookable leads. The bidding conversion fires at booking (QuoteBookingForm)
+        // or lead-capture (YMM-miss "text me my price") — the first real contact.
+        // (council 2026-06-01, unanimous option A)
         trackFormSubmission('quote_form', {
           stage: 'priced',
           quote_total_cents: data?.totalCents,
@@ -298,7 +302,7 @@ export default function AutomatedQuoteForm() {
           vehicle_model: v.model,
           surface: quoteSurface(),
           market: resolveQuoteMarket(plateState),
-        }).catch(() => { /* analytics never blocks UX */ });
+        }, { fireAds: false }).catch(() => { /* analytics never blocks UX */ });
       } else {
         // No price (today YMM always lands here — no YMM->NAGS decoder).
         // Do NOT fire a lead conversion: nothing was captured, so counting it

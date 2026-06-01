@@ -189,7 +189,9 @@ async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startDate.toISOString())
         .not('page_path', 'like', '/admin%')
-        .not('page_path', 'like', '/test%'),
+        .not('page_path', 'like', '/test%')
+        // Phase-0: 'quote_priced' is a diagnostic event, not a real conversion.
+        .not('event_type', 'eq', 'quote_priced'),
       market
     ),
   ]);
@@ -246,6 +248,8 @@ async function getConversions(startDate: Date, market: MarketFilter) {
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
+      // Phase-0: exclude the quoter price-shown diagnostic event.
+      .not('event_type', 'eq', 'quote_priced')
       .order('created_at', { ascending: false }),
     market
   );
@@ -302,11 +306,12 @@ async function getSessions(startDate: Date, market: MarketFilter) {
 
   if (sessionsError) throw sessionsError;
 
-  // Get conversion counts per session
+  // Get conversion counts per session — exclude quote_priced diagnostic events.
   const { data: conversions, error: conversionsError } = await supabase
     .from('conversion_events')
     .select('session_id')
-    .gte('created_at', startDate.toISOString());
+    .gte('created_at', startDate.toISOString())
+    .not('event_type', 'eq', 'quote_priced');
 
   if (conversionsError) throw conversionsError;
 
@@ -351,13 +356,14 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
 
   if (pageViewsError) throw pageViewsError;
 
-  // Get all conversions - exclude admin and test pages
+  // Get all conversions - exclude admin/test pages and quote_priced diagnostics.
   const { data: conversions, error: conversionsError } = await supabase
     .from('conversion_events')
     .select('session_id, utm_source, page_path')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
-    .not('page_path', 'like', '/test%');
+    .not('page_path', 'like', '/test%')
+    .not('event_type', 'eq', 'quote_priced');
 
   if (conversionsError) throw conversionsError;
 
@@ -433,6 +439,7 @@ async function getConversionsDetail(startDate: Date, market: MarketFilter) {
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
+      .not('event_type', 'eq', 'quote_priced')
       .order('created_at', { ascending: false }),
     market
   );
@@ -461,7 +468,8 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
       .select('page_path, session_id')
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
-      .not('page_path', 'like', '/test%'),
+      .not('page_path', 'like', '/test%')
+      .not('event_type', 'eq', 'quote_priced'),
     market
   );
   if (conversionsError) throw conversionsError;
