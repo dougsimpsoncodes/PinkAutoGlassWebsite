@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
@@ -16,6 +16,10 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+// The auto-reply send + its DB status update run in an `after()` callback
+// (post-response) so RingCentral still gets a fast 200; give the function
+// headroom so that background work can never be cut by the lambda freeze.
+export const maxDuration = 30;
 
 const AUTO_REPLY_MESSAGE =
   'Thanks for texting Pink Auto Glass where a portion of every sale goes to breast cancer research. Someone will get back to you quickly.';
@@ -318,21 +322,29 @@ export async function POST(req: NextRequest) {
         });
 
       if (!reserveErr) {
-        // Slot reserved — send the auto-reply
-        sendCustomerSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE })
-          .then((sent) => {
+        // Slot reserved — send the auto-reply AFTER the response is flushed.
+        // RingCentral gets its fast 200 immediately; `after()` (waitUntil under
+        // the hood) keeps the function alive so neither the provider send NOR the
+        // 'Sent' status update can be cut off by the post-response lambda freeze.
+        // (Same serverless-freeze class as the quoter team alert — see
+        // src/app/api/quote/book/route.ts. The prior code fired this un-awaited
+        // AND never awaited the nested status update, so both were at risk.)
+        // Never throws — the booking/intake rows are already durable.
+        after(async () => {
+          try {
+            const sent = await sendCustomerSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE });
             if (sent) {
               console.log(`Auto-reply sent to ${fromNumber}`);
-              supabase
+              const { error: updateErr } = await supabase
                 .from('ringcentral_sms')
                 .update({ message_status: 'Sent' })
-                .eq('message_id', autoReplyMsgId)
-                .then(({ error: updateErr }) => {
-                  if (updateErr) console.error('Failed to update auto-reply status:', updateErr.message);
-                });
+                .eq('message_id', autoReplyMsgId);
+              if (updateErr) console.error('Failed to update auto-reply status:', updateErr.message);
             }
-          })
-          .catch((err) => console.error('Auto-reply failed:', err));
+          } catch (err) {
+            console.error('Auto-reply failed:', err);
+          }
+        });
       } else if (reserveErr.code === '23505') {
         console.log(`Auto-reply already sent to ${fromNumber} today, skipping`);
       } else {
