@@ -8,6 +8,7 @@ import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-not
 import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
 import { assertEnvCoherent } from '@/lib/env';
 import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
+import { isTeamOrTestContact } from '@/lib/constants';
 
 export const runtime = 'nodejs';
 // The team alert runs in an `after()` callback (post-response) and includes a
@@ -192,6 +193,19 @@ export async function POST(request: NextRequest) {
     // Cached in-process — second booking from the same ZIP is free.
     const installCity = (await lookupCityFromZip(installZip)) || '';
 
+    // Auto-tag team/test submissions so internal/dev bookings stay out of
+    // reporting. The quoter booking path previously skipped this check (which the
+    // legacy lead form already does), so team & ad-hoc test bookings leaked in as
+    // real — e.g. PAG-26BE ("Kody Test"), PAG-8389 ("Test"/555). is_test =
+    // inherited from the parent quote OR detected from the customer details here.
+    const autoTestTag = isTeamOrTestContact({
+      phoneE164,
+      fullName: input.customer.fullName,
+      email: input.customer.email,
+      street: input.install.street,
+    });
+    const isTest = (quoteRow.is_test ?? false) || autoTestTag;
+
     // 7) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
     const insertPayload = {
       quote_id: quoteRow.id,
@@ -208,9 +222,9 @@ export async function POST(request: NextRequest) {
       variant_id: input.variantId?.trim() || 'control',
       ip_address: ip === 'unknown' ? '' : ip,
       user_agent: request.headers.get('user-agent') || '',
-      // Booking inherits is_test from its parent quote so test/dev bookings are
-      // excluded from reporting like the quote is (codex pre-deploy F-market-3).
-      is_test: quoteRow.is_test ?? false,
+      // is_test = inherited from the parent quote OR auto-detected team/test
+      // (autoTestTag above) — keeps internal/dev bookings out of reporting.
+      is_test: isTest,
     };
 
     const { data: rpcResult, error: rpcError } = await supabase
@@ -223,6 +237,28 @@ export async function POST(request: NextRequest) {
         { error: 'Booking failed. Please call (720) 918-7465 to book by phone.' },
         { status: 500 }
       );
+    }
+
+    // If auto-detected as team/test, propagate the flag to the parent quote AND
+    // its session so neither is counted as real in the funnel / traffic. The
+    // session join only matters once quotes carry session_id (today it's always
+    // null), but tag it defensively for when that gap is closed. Best-effort —
+    // the booking is already durable, so a tag failure must never fail the request.
+    if (autoTestTag) {
+      if (!quoteRow.is_test) {
+        const { error: qErr } = await supabase
+          .from('automated_quotes')
+          .update({ is_test: true })
+          .eq('id', quoteRow.id);
+        if (qErr) console.error('[quote-book] quote is_test back-tag failed:', qErr.message);
+      }
+      if (quoteRow.session_id) {
+        const { error: sErr } = await supabase
+          .from('user_sessions')
+          .update({ is_test: true })
+          .eq('session_id', quoteRow.session_id);
+        if (sErr) console.error('[quote-book] session is_test back-tag failed:', sErr.message);
+      }
     }
 
     // 7b) Mirror the booked customer into the leads pipeline as a 'form' lead so
@@ -249,11 +285,17 @@ export async function POST(request: NextRequest) {
           zip: installZip || quoteRow.zip,
           sessionId: quoteRow.session_id,
           attribution,
-          isTest: quoteRow.is_test ?? false,
+          isTest,
           status: 'scheduled',
         });
         if (!quoteRow.lead_id && leadId) {
           await supabase.from('automated_quotes').update({ lead_id: leadId }).eq('id', quoteRow.id);
+        }
+        // Ensure the resolved lead is tagged test when this booking is team/test.
+        // findOrCreateQuoteLead only stamps is_test on NEW inserts, so a reused or
+        // pre-existing lead would otherwise stay visible in reporting (codex P2).
+        if (isTest && leadId) {
+          await supabase.from('leads').update({ is_test: true }).eq('id', leadId).eq('is_test', false);
         }
       }
     } catch (leadErr) {
