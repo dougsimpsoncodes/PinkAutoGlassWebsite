@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getMountainDayBounds, type DateFilter } from '@/lib/dateUtils';
+import { isMarketFilter } from '@/lib/market';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,11 +16,30 @@ const ALLOWED_STATUSES = new Set([
   'expired',
 ]);
 
+const ALLOWED_PERIODS = new Set<DateFilter>(['today', 'yesterday', '7days', '30days', 'all']);
+
+interface LeadSummary {
+  id: string;
+  status: string | null;
+  ad_platform: string | null;
+  utm_source: string | null;
+  utm_campaign: string | null;
+  market: string | null;
+}
+
+interface BookingSummary {
+  id: string;
+  quote_id: string;
+  booking_token: string;
+  status: string;
+  preferred_install_date: string | null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceKey) {
+    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !adminKey) {
       return NextResponse.json(
         { ok: false, error: 'Supabase admin credentials are not configured.' },
         { status: 503 }
@@ -27,13 +48,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const market = searchParams.get('market');
+    const periodParam = searchParams.get('period');
+    const period: DateFilter = ALLOWED_PERIODS.has(periodParam as DateFilter) ? (periodParam as DateFilter) : 'today';
     // Default to REAL quotes only — test/tester traffic is ~90%+ of rows and
     // buries real signal. Opt in with ?includeTest=true (the page's "Show test" toggle).
     const includeTest = searchParams.get('includeTest') === 'true';
-    const limit = clampNumber(searchParams.get('limit'), 1, 200, 100);
+    const limit = clampNumber(searchParams.get('limit'), 1, 500, 250);
     const offset = clampNumber(searchParams.get('offset'), 0, 10_000, 0);
+    const bounds = getMountainDayBounds(period);
 
-    const client = createClient(supabaseUrl, serviceKey, {
+    const client = createClient(supabaseUrl, adminKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
@@ -52,6 +77,8 @@ export async function GET(request: NextRequest) {
         email,
         zip,
         state,
+        market,
+        session_id,
         vin,
         vehicle_year,
         vehicle_make,
@@ -71,6 +98,8 @@ export async function GET(request: NextRequest) {
         created_at,
         updated_at
       `, { count: 'exact' })
+      .gte('created_at', bounds.startUTC)
+      .lte('created_at', bounds.endUTC)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -80,6 +109,9 @@ export async function GET(request: NextRequest) {
 
     if (status && ALLOWED_STATUSES.has(status)) {
       query = query.eq('status', status);
+    }
+    if (isMarketFilter(market) && market !== 'all') {
+      query = query.eq('market', market);
     }
 
     const { data, error, count } = await query;
@@ -91,9 +123,68 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const quotes = data || [];
+    const leadIds = Array.from(new Set(quotes.map((quote) => quote.lead_id).filter(Boolean))) as string[];
+    const quoteIds = quotes.map((quote) => quote.id);
+
+    let leadMap = new Map<string, LeadSummary>();
+    let bookingMap = new Map<string, BookingSummary>();
+
+    if (leadIds.length > 0) {
+      const { data: leads, error: leadsError } = await client
+        .from('leads')
+        .select('id, status, ad_platform, utm_source, utm_campaign, market')
+        .in('id', leadIds);
+
+      if (leadsError) {
+        console.error('[admin-quotes] lead enrichment failed:', leadsError.message);
+        return NextResponse.json(
+          { ok: false, error: leadsError.message },
+          { status: 500 }
+        );
+      }
+
+      leadMap = new Map((leads || []).map((lead) => [lead.id, lead as LeadSummary]));
+    }
+
+    if (quoteIds.length > 0) {
+      const { data: bookings, error: bookingsError } = await client
+        .from('automated_quote_bookings')
+        .select('id, quote_id, booking_token, status, preferred_install_date')
+        .in('quote_id', quoteIds);
+
+      if (bookingsError) {
+        console.error('[admin-quotes] booking enrichment failed:', bookingsError.message);
+        return NextResponse.json(
+          { ok: false, error: bookingsError.message },
+          { status: 500 }
+        );
+      }
+
+      bookingMap = new Map((bookings || []).map((booking) => [booking.quote_id, booking as BookingSummary]));
+    }
+
+    const enrichedQuotes = quotes.map((quote) => {
+      const lead = quote.lead_id ? leadMap.get(quote.lead_id) || null : null;
+      const booking = bookingMap.get(quote.id) || null;
+
+      return {
+        ...quote,
+        lead_status: lead?.status || null,
+        ad_platform: lead?.ad_platform || null,
+        utm_source: lead?.utm_source || null,
+        utm_campaign: lead?.utm_campaign || null,
+        resolved_market: lead?.market || quote.market || null,
+        booking_id: booking?.id || null,
+        booking_token: booking?.booking_token || null,
+        booking_status: booking?.status || null,
+        booking_date: booking?.preferred_install_date || null,
+      };
+    });
+
     return NextResponse.json({
       ok: true,
-      quotes: data || [],
+      quotes: enrichedQuotes,
       count: count || 0,
       limit,
       offset,

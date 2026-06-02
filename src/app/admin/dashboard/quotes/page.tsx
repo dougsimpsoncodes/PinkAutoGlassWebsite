@@ -1,9 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/admin/DashboardLayout';
-import { AlertTriangle, BadgeDollarSign, Car, CheckCircle2, Clock, Loader2, Phone, RefreshCw, Search } from 'lucide-react';
+import DateFilterBar, { type DateFilter } from '@/components/admin/DateFilterBar';
+import { useMarket } from '@/contexts/MarketContext';
+import {
+  Car,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Clock,
+  Filter,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  RefreshCw,
+  Search,
+} from 'lucide-react';
 
 interface AutomatedQuoteRow {
   id: string;
@@ -17,6 +31,8 @@ interface AutomatedQuoteRow {
   email: string | null;
   zip: string | null;
   state: string | null;
+  market: string | null;
+  session_id: string | null;
   vin: string | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
@@ -35,114 +51,145 @@ interface AutomatedQuoteRow {
   is_test: boolean | null;
   created_at: string;
   updated_at: string;
+  lead_status: string | null;
+  ad_platform: string | null;
+  utm_source: string | null;
+  utm_campaign: string | null;
+  resolved_market: string | null;
+  booking_id: string | null;
+  booking_token: string | null;
+  booking_status: string | null;
+  booking_date: string | null;
 }
 
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'manual_review', label: 'Manual review' },
-  { value: 'needs_confirmation', label: 'Needs confirmation' },
-  { value: 'ready_exact', label: 'Exact price' },
-  { value: 'ready_estimate', label: 'Estimate' },
-];
+type QuoteFilter = 'all' | 'follow_up' | 'priced' | 'booked';
+type LeadFilter = 'all' | 'none' | 'new' | 'contacted' | 'quoted' | 'scheduled';
+type SortColumn = 'date' | 'customer' | 'vehicle' | 'lead_status' | 'outcome';
+type SortDirection = 'asc' | 'desc';
 
-// Quotes the engine couldn't confidently price — the triage queue.
-const NEEDS_ATTENTION = new Set(['manual_review', 'needs_confirmation']);
+const FOLLOW_UP_STATUSES = new Set(['manual_review', 'needs_confirmation']);
+const READY_STATUSES = new Set(['ready_exact', 'ready_estimate']);
 
 export default function AutomatedQuotesDashboard() {
+  const { market } = useMarket();
+  const marketLabel = market === 'all' ? 'All Markets' : market === 'colorado' ? 'Denver / CO' : 'Phoenix / AZ';
+
   const [quotes, setQuotes] = useState<AutomatedQuoteRow[]>([]);
-  const [status, setStatus] = useState('all');
-  const [search, setSearch] = useState('');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [quoteFilter, setQuoteFilter] = useState<QuoteFilter>('all');
+  const [leadFilter, setLeadFilter] = useState<LeadFilter>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showTest, setShowTest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [reviewQuote, setReviewQuote] = useState<AutomatedQuoteRow | null>(null);
 
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const params = new URLSearchParams({ limit: '100' });
-      if (status !== 'all') params.set('status', status);
+      const params = new URLSearchParams({
+        limit: '500',
+        period: dateFilter,
+        market,
+      });
       if (showTest) params.set('includeTest', 'true');
-      const response = await fetch(`/api/admin/quotes?${params}`);
+
+      const response = await fetch(`/api/admin/quotes?${params.toString()}`, { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok || !data.ok) {
         throw new Error(data.error || 'Failed to load automated quotes.');
       }
+
       setQuotes(data.quotes || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load automated quotes.');
     } finally {
       setLoading(false);
     }
-  }, [status, showTest]);
+  }, [dateFilter, market, showTest]);
 
   useEffect(() => {
     fetchQuotes();
   }, [fetchQuotes]);
 
   const filteredQuotes = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return quotes;
-    return quotes.filter((quote) => {
-      const haystack = [
-        quote.quote_token,
-        quote.first_name,
-        quote.last_name,
-        quote.phone_e164,
-        quote.email,
-        quote.vehicle_year,
-        quote.vehicle_make,
-        quote.vehicle_model,
-        quote.vehicle_trim,
-        quote.vin,
-        quote.selected_product_id,
-        quote.selected_nags_number,
-      ].filter(Boolean).join(' ').toLowerCase();
-      return haystack.includes(term);
-    });
-  }, [quotes, search]);
+    return quotes
+      .filter((quote) => {
+        if (quoteFilter === 'follow_up' && !needsManualFollowUp(quote)) return false;
+        if (quoteFilter === 'priced' && (!isPriceReady(quote) || hasBooking(quote))) return false;
+        if (quoteFilter === 'booked' && !hasBooking(quote)) return false;
+        if (leadFilter !== 'all' && normalizeLeadStatus(quote) !== leadFilter) return false;
 
-  const summary = useMemo(() => ({
-    total: quotes.length,
-    contactReady: quotes.filter(q => q.phone_e164).length,
-    needsWork: quotes.filter(q => q.status === 'manual_review' || q.status === 'needs_confirmation').length,
-    priced: quotes.filter(q => q.quote_total_cents && q.quote_total_cents > 0).length,
-  }), [quotes]);
+        if (!searchTerm.trim()) return true;
+        const haystack = [
+          quote.quote_token,
+          quote.first_name,
+          quote.last_name,
+          quote.phone_e164,
+          quote.email,
+          quote.vehicle_year,
+          quote.vehicle_make,
+          quote.vehicle_model,
+          quote.vehicle_trim,
+          quote.vin,
+          quote.selected_part_description,
+          quote.selected_nags_number,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
 
-  // Triage workbench: surface quotes the engine couldn't confidently price as an
-  // actionable queue, sorted to the top so staff can resolve them fast.
-  const sortedQuotes = useMemo(() => {
-    return [...filteredQuotes].sort((a, b) => {
-      const aNeeds = NEEDS_ATTENTION.has(a.status) ? 0 : 1;
-      const bNeeds = NEEDS_ATTENTION.has(b.status) ? 0 : 1;
-      return aNeeds - bNeeds; // needs-attention first; createdAt order preserved within groups
-    });
-  }, [filteredQuotes]);
+        return haystack.includes(searchTerm.trim().toLowerCase());
+      })
+      .sort((a, b) => compareQuotes(a, b, sortColumn, sortDirection));
+  }, [quotes, quoteFilter, leadFilter, searchTerm, sortColumn, sortDirection]);
 
-  const needsReview = useMemo(
-    () => filteredQuotes.filter(q => NEEDS_ATTENTION.has(q.status)).length,
-    [filteredQuotes]
-  );
+  const stats = useMemo(() => {
+    const total = quotes.length;
+    const booked = quotes.filter(hasBooking).length;
+    const quotedNotBooked = quotes.filter((quote) => isPriceReady(quote) && !hasBooking(quote)).length;
+    const needsContactCount = quotes.filter(needsContact).length;
 
-  const [reviewQuote, setReviewQuote] = useState<AutomatedQuoteRow | null>(null);
+    return {
+      total,
+      needsContact: needsContactCount,
+      booked,
+      quotedNotBooked,
+    };
+  }, [quotes]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    setSortColumn(column);
+    setSortDirection(column === 'date' ? 'desc' : 'asc');
+  };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Automated Quotes</h1>
-            <p className="mt-1 text-gray-600">
-              {showTest ? 'Showing real + test quotes.' : 'Showing real customer quotes (test/tester traffic hidden).'}
-            </p>
+            <p className="mt-1 text-gray-600">Homepage quote requests with customer, vehicle, lead, and booking context.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
+              <MapPin className="w-4 h-4 text-pink-600" />
+              Showing {marketLabel}
+            </div>
             <button
-              onClick={() => setShowTest(v => !v)}
-              className={`inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold ${
+              onClick={() => setShowTest((current) => !current)}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 showTest
-                  ? 'border-amber-300 bg-amber-50 text-amber-800'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                  ? 'border border-amber-300 bg-amber-50 text-amber-800'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
               {showTest ? 'Hide test quotes' : 'Show test quotes'}
@@ -150,152 +197,253 @@ export default function AutomatedQuotesDashboard() {
             <button
               onClick={fetchQuotes}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 font-semibold text-white disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-60"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               Refresh
             </button>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <SummaryTile icon={<BadgeDollarSign className="h-5 w-5" />} label="Attempts" value={summary.total} />
-          <SummaryTile icon={<Phone className="h-5 w-5" />} label="With Contact" value={summary.contactReady} />
-          <SummaryTile icon={<AlertTriangle className="h-5 w-5" />} label="Needs Work" value={summary.needsWork} />
-          <SummaryTile icon={<CheckCircle2 className="h-5 w-5" />} label="Priced" value={summary.priced} />
+        <DateFilterBar
+          dateFilter={dateFilter}
+          onFilterChange={setDateFilter}
+          dateDisplay={getDateRangeDisplay(quotes)}
+          color="gray"
+          showSync={false}
+        />
+
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-200">
+            <SummaryStat label="TOTAL QUOTE REQUESTS" value={stats.total} detail="All quote attempts" />
+            <SummaryStat label="NEEDS CONTACT" value={stats.needsContact} valueClassName="text-amber-600" detail="Needs a human follow-up to finish the quote" />
+            <SummaryStat label="BOOKED AFTER QUOTE" value={stats.booked} valueClassName="text-green-600" detail="Quote delivered and appointment set" />
+            <SummaryStat label="QUOTED, NOT BOOKED" value={stats.quotedNotBooked} valueClassName="text-blue-600" detail="Price-ready quotes still open" />
+          </div>
         </div>
 
-        {needsReview > 0 && (
-          <button
-            onClick={() => setStatus('manual_review')}
-            className="flex w-full items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-left hover:bg-amber-100"
-          >
-            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600" />
-            <div>
-              <div className="font-semibold text-amber-900">{needsReview} quote{needsReview === 1 ? '' : 's'} need review</div>
-              <div className="text-sm text-amber-700">The engine couldn&apos;t confidently price these — set a price or decline so the customer can book.</div>
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name, phone, email, or vehicle..."
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                />
+              </div>
             </div>
-          </button>
-        )}
 
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-gray-200 p-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {STATUS_OPTIONS.map(option => (
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <div className="flex gap-1">
+                {[
+                  { value: 'all', label: 'All' },
+                  { value: 'follow_up', label: 'Needs Contact' },
+                  { value: 'priced', label: 'Quoted' },
+                  { value: 'booked', label: 'Booked' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setQuoteFilter(option.value as QuoteFilter)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      quoteFilter === option.value
+                        ? 'bg-pink-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-1 flex-wrap">
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'none', label: 'No Lead Record' },
+                { value: 'new', label: 'Lead Created' },
+                { value: 'contacted', label: 'Contacted' },
+                { value: 'quoted', label: 'Quoted' },
+                { value: 'scheduled', label: 'Scheduled' },
+              ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setStatus(option.value)}
-                  className={`rounded-md border px-3 py-2 text-sm font-semibold ${
-                    status === option.value
-                      ? 'border-pink-600 bg-pink-600 text-white'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-pink-300'
+                  onClick={() => setLeadFilter(option.value as LeadFilter)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    leadFilter === option.value
+                      ? 'bg-pink-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   {option.label}
                 </button>
               ))}
             </div>
-            <label className="relative block w-full lg:w-80">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-pink-500 focus:outline-none"
-                placeholder="Search ref, phone, vehicle, VIN"
-              />
-            </label>
           </div>
+        </div>
 
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
           {error && (
-            <div className="m-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+            <div className="m-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
           )}
 
-          {loading ? (
-            <div className="flex items-center justify-center gap-2 p-10 text-gray-500">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading quotes...
-            </div>
-          ) : sortedQuotes.length === 0 ? (
-            <div className="p-10 text-center text-gray-500">No automated quotes match this view.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <HeaderCell>Type</HeaderCell>
+                  <HeaderCell>Source</HeaderCell>
+                  <SortableHeader column="customer" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Name / Phone</SortableHeader>
+                  <HeaderCell>Details</HeaderCell>
+                  <SortableHeader column="vehicle" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Vehicle</SortableHeader>
+                  <SortableHeader column="date" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Date</SortableHeader>
+                  <SortableHeader column="lead_status" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Lead Status</SortableHeader>
+                  <SortableHeader column="outcome" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Quote Outcome</SortableHeader>
+                  <HeaderCell>Actions</HeaderCell>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {loading ? (
                   <tr>
-                    <Th>Reference</Th>
-                    <Th>Status</Th>
-                    <Th>Customer</Th>
-                    <Th>Vehicle</Th>
-                    <Th>Part</Th>
-                    <Th>Price</Th>
-                    <Th>Created</Th>
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                      <div className="inline-flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading automated quotes...
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
-                  {sortedQuotes.map(quote => (
-                    <tr key={quote.id} className={`hover:bg-gray-50 ${NEEDS_ATTENTION.has(quote.status) ? 'bg-amber-50/40' : ''}`}>
-                      <td className="whitespace-nowrap px-4 py-3 align-top">
-                        <div className="font-mono font-semibold text-gray-900">{shortQuoteToken(quote.quote_token)}</div>
-                        {quote.is_test && <div className="mt-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Test</div>}
-                        {quote.lead_id && <div className="mt-1 text-xs text-green-700">Lead linked</div>}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 align-top">
-                        <StatusBadge status={quote.status} />
-                        {quote.status_reason && <div className="mt-1 max-w-56 truncate text-xs text-gray-500">{quote.status_reason}</div>}
-                        {NEEDS_ATTENTION.has(quote.status) && (
-                          <>
-                            {quote.confidence_reasons && quote.confidence_reasons.length > 0 && (
-                              <div className="mt-1 max-w-56 text-[11px] text-gray-400">{quote.confidence_reasons.slice(0, 2).join(', ')}</div>
-                            )}
-                            <button
-                              onClick={() => setReviewQuote(quote)}
-                              className="mt-2 inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-50"
-                            >
-                              Review
-                            </button>
-                          </>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 align-top">
-                        <div className="font-medium text-gray-900">{customerName(quote) || 'No contact yet'}</div>
-                        {quote.phone_e164 && <a href={`tel:${quote.phone_e164}`} className="mt-1 block text-pink-700 hover:underline">{quote.phone_e164}</a>}
-                        {quote.email && <a href={`mailto:${quote.email}`} className="mt-1 block text-gray-600 hover:underline">{quote.email}</a>}
-                      </td>
-                      <td className="px-4 py-3 align-top">
-                        <div className="flex gap-2">
-                          <Car className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-900">{vehicleLabel(quote) || 'Unknown vehicle'}</div>
-                            {quote.vin && <div className="mt-1 font-mono text-xs text-gray-500">{quote.vin}</div>}
-                            {(quote.zip || quote.state) && <div className="mt-1 text-xs text-gray-500">{[quote.zip, quote.state].filter(Boolean).join(', ')}</div>}
+                ) : filteredQuotes.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                      No automated quotes found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredQuotes.map((quote) => {
+                    const leadStatus = normalizeLeadStatus(quote);
+                    const outcome = getQuoteOutcome(quote);
+                    const followUp = needsContact(quote);
+
+                    return (
+                      <tr key={quote.id} className={followUp ? 'bg-amber-50/40 hover:bg-amber-50' : 'hover:bg-gray-50'}>
+                        <td className="px-4 py-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                            Quote
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <div className="text-sm font-medium text-gray-900">{formatSourceLabel(quote)}</div>
+                          {quote.utm_campaign && (
+                            <div className="text-xs text-gray-500 mt-0.5">{quote.utm_campaign}</div>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <div className="font-medium text-gray-900">{customerName(quote) || 'No contact yet'}</div>
+                          {quote.phone_e164 ? (
+                            <div className="text-sm text-gray-500">{formatPhoneNumber(quote.phone_e164)}</div>
+                          ) : (
+                            <div className="text-sm text-gray-400">No phone captured</div>
+                          )}
+                          {quote.email && (
+                            <div className="text-sm text-gray-500">{quote.email}</div>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <div className="text-sm text-gray-700">{detailCopy(quote)}</div>
+                          {quote.lead_id && (
+                            <div className="text-xs text-green-600 mt-1">Lead linked</div>
+                          )}
+                          {reasonSummary(quote) && (
+                            <div className="text-xs text-gray-500 mt-1">{reasonSummary(quote)}</div>
+                          )}
+                          {reasonChips(quote).length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {reasonChips(quote).map((chip) => (
+                                <span
+                                  key={chip}
+                                  className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-700"
+                                >
+                                  {chip}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-4 text-sm text-gray-600">
+                          <div className="flex gap-2">
+                            <Car className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <div className="font-medium text-gray-900">{vehicleLabel(quote) || 'Unknown vehicle'}</div>
+                              {quote.vin && <div className="text-xs text-gray-500 mt-1 font-mono">{quote.vin}</div>}
+                              {(quote.zip || quote.state) && (
+                                <div className="text-xs text-gray-500 mt-1">{[quote.zip, quote.state].filter(Boolean).join(', ')}</div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 align-top">
-                        <div className="max-w-64 font-medium text-gray-900">{quote.selected_part_description || 'No confident part'}</div>
-                        <div className="mt-1 text-xs text-gray-500">
-                          {[quote.selected_brand, quote.selected_product_id, nagsLabel(quote)].filter(Boolean).join(' | ') || 'Pending match'}
-                        </div>
-                        {quote.selected_qty_available !== null && (
-                          <div className="mt-1 text-xs text-gray-500">Qty {quote.selected_qty_available}</div>
-                        )}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 align-top">
-                        <div className="font-semibold text-gray-900">{quote.quote_total_cents ? formatCents(quote.quote_total_cents) : '-'}</div>
-                        {quote.supplier_cost_cents && <div className="mt-1 text-xs text-gray-500">Cost {formatCents(quote.supplier_cost_cents)}</div>}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 align-top text-gray-600">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 text-gray-400" />
-                          {formatDate(quote.created_at)}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                        </td>
+
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <div className="inline-flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                            {formatDate(quote.created_at)}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <LeadStatusBadge status={leadStatus} />
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <OutcomeBadge outcome={outcome} />
+                          {isPriceReady(quote) && !hasBooking(quote) && quote.quote_total_cents ? (
+                            <div className="text-xs text-gray-500 mt-1">{formatCents(quote.quote_total_cents)}</div>
+                          ) : null}
+                          {quote.booking_date && (
+                            <div className="text-xs text-gray-500 mt-1">Install {formatShortDate(quote.booking_date)}</div>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2">
+                            {followUp ? (
+                              <button
+                                onClick={() => setReviewQuote(quote)}
+                                className="text-pink-600 hover:text-pink-900 font-medium text-sm"
+                              >
+                                Contact
+                              </button>
+                            ) : (
+                              <span className="text-sm text-gray-400">{hasBooking(quote) ? 'Booked' : 'Open'}</span>
+                            )}
+                            {quote.email && (
+                              <a href={`mailto:${quote.email}`} className="text-blue-600 hover:text-blue-800" aria-label="Email customer">
+                                <Mail className="w-4 h-4" />
+                              </a>
+                            )}
+                            {quote.phone_e164 && (
+                              <a href={`tel:${quote.phone_e164}`} className="text-green-600 hover:text-green-800" aria-label="Call customer">
+                                <Phone className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -303,7 +451,10 @@ export default function AutomatedQuotesDashboard() {
         <ReviewModal
           quote={reviewQuote}
           onClose={() => setReviewQuote(null)}
-          onSaved={() => { setReviewQuote(null); fetchQuotes(); }}
+          onSaved={() => {
+            setReviewQuote(null);
+            fetchQuotes();
+          }}
         />
       )}
     </DashboardLayout>
@@ -335,17 +486,23 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
 
   const saveReady = () => {
     const dollars = Number(price);
-    if (!Number.isFinite(dollars) || dollars <= 0) { setErr('Enter a valid price.'); return; }
+    if (!Number.isFinite(dollars) || dollars <= 0) {
+      setErr('Enter a valid price.');
+      return;
+    }
     patch({ quote_total_cents: Math.round(dollars * 100), status: 'ready_exact' });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Review quote {shortQuoteToken(quote.quote_token)}</h2>
-            <p className="text-sm text-gray-600">{vehicleLabel(quote) || 'Unknown vehicle'}{quote.vin ? ` · ${quote.vin}` : ''}</p>
+            <p className="text-sm text-gray-600">
+              {vehicleLabel(quote) || 'Unknown vehicle'}
+              {quote.vin ? ` · ${quote.vin}` : ''}
+            </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
         </div>
@@ -354,7 +511,9 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
           <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             <div className="font-semibold">Why it needs review</div>
             <ul className="mt-1 list-disc pl-5">
-              {quote.confidence_reasons.map((r, i) => <li key={i}>{r}</li>)}
+              {quote.confidence_reasons.map((reason, index) => (
+                <li key={index}>{reason}</li>
+              ))}
             </ul>
           </div>
         )}
@@ -366,7 +525,7 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
             type="number"
             min="0"
             value={price}
-            onChange={e => setPrice(e.target.value)}
+            onChange={(event) => setPrice(event.target.value)}
             placeholder="e.g. 450"
             className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
           />
@@ -386,7 +545,13 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
             Decline quote
           </button>
           <div className="flex gap-2">
-            <button onClick={onClose} disabled={saving} className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50">Cancel</button>
+            <button
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            >
+              Cancel
+            </button>
             <button
               onClick={saveReady}
               disabled={saving}
@@ -402,39 +567,295 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
   );
 }
 
-function SummaryTile({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+function SummaryStat({
+  label,
+  value,
+  detail,
+  valueClassName = 'text-gray-900',
+}: {
+  label: string;
+  value: number;
+  detail: string;
+  valueClassName?: string;
+}) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm font-medium text-gray-500">{label}</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">{value}</div>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-pink-50 text-pink-600">{icon}</div>
-      </div>
+    <div className="p-4 text-center hover:bg-gray-50 transition-colors">
+      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</div>
+      <div className={`text-3xl font-bold ${valueClassName}`}>{value}</div>
+      <div className="text-xs text-gray-400 mt-1">{detail}</div>
     </div>
   );
 }
 
-function Th({ children }: { children: ReactNode }) {
-  return <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{children}</th>;
+function HeaderCell({ children }: { children: ReactNode }) {
+  return <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{children}</th>;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    ready_exact: 'bg-green-100 text-green-800',
-    ready_estimate: 'bg-blue-100 text-blue-800',
-    needs_confirmation: 'bg-amber-100 text-amber-800',
-    manual_review: 'bg-orange-100 text-orange-800',
-    accepted: 'bg-emerald-100 text-emerald-800',
-    declined: 'bg-gray-100 text-gray-700',
-    expired: 'bg-gray-100 text-gray-700',
-  };
+function SortableHeader({
+  children,
+  column,
+  sortColumn,
+  sortDirection,
+  onClick,
+}: {
+  children: ReactNode;
+  column: SortColumn;
+  sortColumn: SortColumn;
+  sortDirection: SortDirection;
+  onClick: (column: SortColumn) => void;
+}) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase ${styles[status] || 'bg-gray-100 text-gray-700'}`}>
-      {status.replace(/_/g, ' ')}
+    <th
+      onClick={() => onClick(column)}
+      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+    >
+      {children}
+      <SortIcon column={column} sortColumn={sortColumn} sortDirection={sortDirection} />
+    </th>
+  );
+}
+
+function SortIcon({
+  column,
+  sortColumn,
+  sortDirection,
+}: {
+  column: SortColumn;
+  sortColumn: SortColumn;
+  sortDirection: SortDirection;
+}) {
+  if (sortColumn !== column) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline" />;
+  return sortDirection === 'asc'
+    ? <ChevronUp className="w-3.5 h-3.5 ml-1 inline" />
+    : <ChevronDown className="w-3.5 h-3.5 ml-1 inline" />;
+}
+
+function LeadStatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    new: 'bg-blue-100 text-blue-800',
+    contacted: 'bg-amber-100 text-amber-800',
+    quoted: 'bg-purple-100 text-purple-800',
+    scheduled: 'bg-indigo-100 text-indigo-800',
+    completed: 'bg-green-100 text-green-800',
+    lost: 'bg-red-100 text-red-800',
+    none: 'bg-gray-100 text-gray-700',
+  };
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase ${styles[status] || styles.none}`}>
+      {leadStatusLabel(status)}
     </span>
   );
+}
+
+function leadStatusLabel(status: string): string {
+  switch (status) {
+    case 'none':
+      return 'No lead record';
+    case 'new':
+      return 'Lead created';
+    default:
+      return status;
+  }
+}
+
+function OutcomeBadge({ outcome }: { outcome: QuoteOutcome }) {
+  const styles: Record<QuoteOutcome, string> = {
+    booked: 'bg-green-100 text-green-800',
+    quoted_not_booked: 'bg-blue-100 text-blue-800',
+    follow_up_needed: 'bg-orange-100 text-orange-800',
+    declined: 'bg-gray-100 text-gray-700',
+    expired: 'bg-gray-100 text-gray-700',
+    other: 'bg-gray-100 text-gray-700',
+  };
+
+  const labels: Record<QuoteOutcome, string> = {
+    booked: 'Booked after quote',
+    quoted_not_booked: 'Quoted, not booked',
+    follow_up_needed: 'Needs contact',
+    declined: 'Declined',
+    expired: 'Expired',
+    other: 'Open',
+  };
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase ${styles[outcome]}`}>
+      {labels[outcome]}
+    </span>
+  );
+}
+
+type QuoteOutcome = 'booked' | 'quoted_not_booked' | 'follow_up_needed' | 'declined' | 'expired' | 'other';
+
+function hasBooking(quote: AutomatedQuoteRow): boolean {
+  return !!quote.booking_id;
+}
+
+function hasContactInfo(quote: AutomatedQuoteRow): boolean {
+  return !!(quote.phone_e164 || quote.email);
+}
+
+function isPriceReady(quote: AutomatedQuoteRow): boolean {
+  return READY_STATUSES.has(quote.status);
+}
+
+function needsManualFollowUp(quote: AutomatedQuoteRow): boolean {
+  return FOLLOW_UP_STATUSES.has(quote.status);
+}
+
+function normalizeLeadStatus(quote: AutomatedQuoteRow): string {
+  return quote.lead_status || (hasContactInfo(quote) ? 'new' : 'none');
+}
+
+function needsContact(quote: AutomatedQuoteRow): boolean {
+  if (hasBooking(quote)) return false;
+  if (needsManualFollowUp(quote)) return true;
+  return hasContactInfo(quote) && (!quote.lead_status || quote.lead_status === 'new');
+}
+
+function getQuoteOutcome(quote: AutomatedQuoteRow): QuoteOutcome {
+  if (hasBooking(quote)) return 'booked';
+  if (needsContact(quote)) return 'follow_up_needed';
+  if (isPriceReady(quote)) return 'quoted_not_booked';
+  if (quote.status === 'declined') return 'declined';
+  if (quote.status === 'expired') return 'expired';
+  return 'other';
+}
+
+function formatSourceLabel(quote: AutomatedQuoteRow): string {
+  const utmSource = quote.utm_source?.trim();
+  const adPlatform = quote.ad_platform?.trim().toLowerCase();
+
+  if (utmSource) return utmSource === 'organic' ? 'Organic' : toTitleLabel(utmSource);
+  if (adPlatform === 'google') return 'Google Ads';
+  if (adPlatform === 'bing' || adPlatform === 'microsoft') return 'Bing Ads';
+  if (adPlatform === 'organic') return 'Organic';
+  if (adPlatform === 'direct') return 'Direct';
+  return 'Homepage Quote';
+}
+
+function detailCopy(quote: AutomatedQuoteRow): string {
+  if (hasBooking(quote)) {
+    return quote.booking_date
+      ? `Customer booked an install for ${formatShortDate(quote.booking_date)}.`
+      : 'Customer received a quote and booked an appointment.';
+  }
+
+  if (needsManualFollowUp(quote)) {
+    if (hasContactInfo(quote)) {
+      return 'Customer asked for a quote, but the engine could not finish it confidently. Review manually, then follow up.';
+    }
+    return 'Customer asked for a quote, but no confident price or usable contact info was captured.';
+  }
+
+  if (isPriceReady(quote) && needsContact(quote)) {
+    return 'Price is ready, but this quote still looks untouched in CRM.';
+  }
+
+  if (isPriceReady(quote)) {
+    return 'Customer received a price quote and has not booked yet.';
+  }
+
+  if (quote.status === 'declined') return 'Quote was declined.';
+  if (quote.status === 'expired') return 'Quote expired before booking.';
+  return 'Quote is still in progress.';
+}
+
+function reasonSummary(quote: AutomatedQuoteRow): string | null {
+  const labels = summarizeReasons(getReasonTokens(quote));
+  if (labels.length === 0) return null;
+  return labels.join(' · ');
+}
+
+function reasonChips(quote: AutomatedQuoteRow): string[] {
+  const labels = chipReasons(getReasonTokens(quote));
+  return labels.slice(0, 4);
+}
+
+function getReasonTokens(quote: AutomatedQuoteRow): string[] {
+  return quote.confidence_reasons?.length
+    ? quote.confidence_reasons
+    : quote.status_reason?.split(',').map((part) => part.trim()).filter(Boolean) || [];
+}
+
+function summarizeReasons(reasons: string[]): string[] {
+  const summary: string[] = [];
+
+  if (reasons.some((reason) => reason.startsWith('selected_') || reason.includes('high_confidence'))) {
+    summary.push('Glass match found');
+  }
+
+  if (reasons.includes('markup_pricing_formula')) {
+    summary.push('Price calculated');
+  }
+
+  if (reasons.some((reason) => reason.startsWith('adas_tier_'))) {
+    const adasReason = reasons.find((reason) => reason.startsWith('adas_tier_'));
+    if (adasReason === 'adas_tier_mandatory') summary.push('ADAS calibration required');
+    else if (adasReason === 'adas_tier_recommended') summary.push('ADAS may be needed');
+  }
+
+  if (reasons.includes('missing_customer_unit_price')) {
+    summary.push('Manual pricing needed');
+  }
+
+  if (reasons.includes('no_windshield_candidates')) {
+    summary.push('No windshield match found');
+  }
+
+  if (reasons.some((reason) => reason.includes('needs_confirmation') || reason.includes('mygrant_confidence_medium'))) {
+    summary.push('Needs confirmation');
+  }
+
+  if (reasons.some((reason) => reason.includes('autobolt_missing_vin'))) {
+    summary.push('VIN lookup incomplete');
+  }
+
+  return summary.slice(0, 3);
+}
+
+function chipReasons(reasons: string[]): string[] {
+  const chips: string[] = [];
+
+  if (reasons.includes('markup_pricing_formula')) chips.push('Auto-priced');
+  if (reasons.some((reason) => reason.startsWith('adas_tier_none'))) chips.push('No ADAS');
+  if (reasons.some((reason) => reason.startsWith('adas_tier_recommended'))) chips.push('ADAS review');
+  if (reasons.some((reason) => reason.startsWith('adas_tier_mandatory'))) chips.push('ADAS required');
+  if (reasons.some((reason) => reason.includes('inventory_available'))) chips.push('In stock');
+  if (reasons.some((reason) => reason.includes('branch_available'))) chips.push('Local branch');
+  if (reasons.includes('missing_customer_unit_price')) chips.push('Need manual price');
+  if (reasons.includes('no_windshield_candidates')) chips.push('No match');
+  if (reasons.some((reason) => reason.includes('autobolt_missing_vin'))) chips.push('VIN issue');
+  if (reasons.some((reason) => reason.includes('mygrant_vehicle_status_e610'))) chips.push('Catalog blocked');
+
+  return Array.from(new Set(chips));
+}
+
+function toTitleLabel(value: string): string {
+  return value
+    .replace(/[_-]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function compareQuotes(a: AutomatedQuoteRow, b: AutomatedQuoteRow, column: SortColumn, direction: SortDirection): number {
+  const dir = direction === 'asc' ? 1 : -1;
+
+  switch (column) {
+    case 'customer':
+      return dir * customerName(a).localeCompare(customerName(b));
+    case 'vehicle':
+      return dir * vehicleLabel(a).localeCompare(vehicleLabel(b));
+    case 'lead_status':
+      return dir * normalizeLeadStatus(a).localeCompare(normalizeLeadStatus(b));
+    case 'outcome':
+      return dir * getQuoteOutcome(a).localeCompare(getQuoteOutcome(b));
+    case 'date':
+    default:
+      return dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }
 }
 
 function customerName(quote: AutomatedQuoteRow): string {
@@ -443,10 +864,6 @@ function customerName(quote: AutomatedQuoteRow): string {
 
 function vehicleLabel(quote: AutomatedQuoteRow): string {
   return [quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ');
-}
-
-function nagsLabel(quote: AutomatedQuoteRow): string {
-  return [quote.selected_nags_prefix, quote.selected_nags_number].filter(Boolean).join('');
 }
 
 function shortQuoteToken(token: string): string {
@@ -467,5 +884,27 @@ function formatDate(value: string): string {
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    hour12: true,
   });
+}
+
+function formatShortDate(value: string): string {
+  return new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function getDateRangeDisplay(quotes: AutomatedQuoteRow[]): string {
+  if (quotes.length === 0) return 'No quotes in selected range';
+  return `${formatShortDate(quotes[quotes.length - 1].created_at)} - ${formatShortDate(quotes[0].created_at)}`;
+}
+
+function formatPhoneNumber(num: string) {
+  if (!num) return '';
+  const cleaned = num.replace(/\D/g, '');
+  if (cleaned.length === 11 && cleaned.startsWith('1')) {
+    return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  }
+  return num;
 }

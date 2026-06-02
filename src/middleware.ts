@@ -17,13 +17,15 @@ export async function middleware(request: NextRequest) {
 
   const hostname = request.nextUrl.hostname.toLowerCase();
   const pathname = request.nextUrl.pathname.toLowerCase();
+  const isLocalDevHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
   // Check if this is an admin route
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
   const isHealthApi = request.nextUrl.pathname.startsWith('/api/health');
+  const shouldBypassDevAdminAuth = process.env.NODE_ENV === 'development' && isLocalDevHost;
 
   // Protect admin routes with HTTP Basic Auth
-  if (isAdminRoute || isAdminApi || isHealthApi) {
+  if ((isAdminRoute || isAdminApi || isHealthApi) && !shouldBypassDevAdminAuth) {
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
