@@ -37,6 +37,27 @@ function platformRank(platform: string | null): number {
 }
 
 /**
+ * Resolve the authoritative ad platform for a call using all available signals.
+ * Priority: Google hard match > Google call view > Microsoft upload > ad_platform fallback.
+ *
+ * Google's call match (google_ads_call_match=true) means the caller dialed Google's
+ * forwarding number — that is proof the click came from Google, regardless of whether
+ * the call was also uploaded to Microsoft Ads. Google wins when both markers are present.
+ */
+function inferCallPlatform(call: {
+  ad_platform: string | null;
+  google_ads_call_match?: boolean | null;
+  google_ads_call_resource_name?: string | null;
+  microsoft_ads_uploaded_at?: string | null;
+  attribution_method?: string | null;
+}): string | null {
+  if (call.google_ads_call_match || call.google_ads_call_resource_name) return 'google';
+  if (call.attribution_method === 'google_call_view') return 'google';
+  if (call.microsoft_ads_uploaded_at || call.attribution_method === 'microsoft_uploaded_call') return 'microsoft';
+  return call.ad_platform || null;
+}
+
+/**
  * Sync call-based leads from RingCentral call logs.
  *
  * For each qualifying inbound call:
@@ -54,7 +75,7 @@ export async function syncCallLeads(
   // 1. Fetch qualifying inbound calls
   const { data: calls, error: callsError } = await supabase
     .from('ringcentral_calls')
-    .select('call_id, from_number, to_number, start_time, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id')
+    .select('call_id, from_number, to_number, start_time, ad_platform, utm_source, utm_medium, utm_campaign, website_session_id, google_ads_call_match, google_ads_call_resource_name, microsoft_ads_uploaded_at, attribution_method')
     .eq('direction', 'Inbound')
     .gte('duration', MIN_CALL_DURATION_SECONDS)
     .gte('start_time', `${startDate}T00:00:00.000Z`)
@@ -72,19 +93,21 @@ export async function syncCallLeads(
     return result;
   }
 
-  // 2. Deduplicate by from_number — keep the call with the best ad_platform
+  // 2. Deduplicate by from_number — keep the call with the best resolved platform
   const byPhone = new Map<string, { from_number: string; to_number: string | null; start_time: string; ad_platform: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; website_session_id: string | null }>();
   for (const call of calls) {
     const phone = call.from_number;
     if (!phone) continue;
 
+    const resolvedPlatform = inferCallPlatform(call);
     const existing = byPhone.get(phone);
-    if (!existing || platformRank(call.ad_platform) < platformRank(existing.ad_platform)) {
+    const existingPlatform = existing ? existing.ad_platform : null;
+    if (!existing || platformRank(resolvedPlatform) < platformRank(existingPlatform)) {
       byPhone.set(phone, {
         from_number: phone,
         to_number: call.to_number || null,
         start_time: call.start_time,
-        ad_platform: call.ad_platform,
+        ad_platform: resolvedPlatform,
         utm_source: call.utm_source || null,
         utm_medium: call.utm_medium || null,
         utm_campaign: call.utm_campaign || null,
