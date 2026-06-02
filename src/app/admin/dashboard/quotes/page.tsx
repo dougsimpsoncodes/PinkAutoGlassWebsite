@@ -118,7 +118,7 @@ export default function AutomatedQuotesDashboard() {
   const filteredQuotes = useMemo(() => {
     return quotes
       .filter((quote) => {
-        if (quoteFilter === 'follow_up' && !needsManualFollowUp(quote)) return false;
+        if (quoteFilter === 'follow_up' && !needsContact(quote)) return false;
         if (quoteFilter === 'priced' && (!isPriceReady(quote) || hasBooking(quote))) return false;
         if (quoteFilter === 'booked' && !hasBooking(quote)) return false;
         if (leadFilter !== 'all' && normalizeLeadStatus(quote) !== leadFilter) return false;
@@ -704,7 +704,7 @@ function needsManualFollowUp(quote: AutomatedQuoteRow): boolean {
 }
 
 function normalizeLeadStatus(quote: AutomatedQuoteRow): string {
-  return quote.lead_status || (hasContactInfo(quote) ? 'new' : 'none');
+  return quote.lead_status || 'none';
 }
 
 function needsContact(quote: AutomatedQuoteRow): boolean {
