@@ -33,6 +33,7 @@ interface AutomatedQuoteRow {
   state: string | null;
   market: string | null;
   session_id: string | null;
+  plate_last4: string | null;
   vin: string | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
@@ -111,8 +112,39 @@ export default function AutomatedQuotesDashboard() {
     fetchQuotes();
   }, [fetchQuotes]);
 
+  // Collapse same-VIN rows to the "best" one: scheduled > lead > quote_only, then most recent.
+  // YMM quotes (no VIN) are never merged since we can't reliably identify the same vehicle.
+  const deduplicatedQuotes = useMemo(() => {
+    const vinGroups = new Map<string, AutomatedQuoteRow[]>();
+    const noVinRows: AutomatedQuoteRow[] = [];
+
+    for (const quote of quotes) {
+      if (quote.vin) {
+        const group = vinGroups.get(quote.vin) ?? [];
+        group.push(quote);
+        vinGroups.set(quote.vin, group);
+      } else {
+        noVinRows.push(quote);
+      }
+    }
+
+    const STATUS_RANK: Record<string, number> = { scheduled: 0, lead: 1, quote_only: 2 };
+    const dedupedVin: AutomatedQuoteRow[] = [];
+    for (const group of vinGroups.values()) {
+      const best = group.slice().sort((a, b) => {
+        const rankA = STATUS_RANK[normalizeLeadStatus(a)] ?? 3;
+        const rankB = STATUS_RANK[normalizeLeadStatus(b)] ?? 3;
+        if (rankA !== rankB) return rankA - rankB;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      })[0];
+      dedupedVin.push(best);
+    }
+
+    return [...dedupedVin, ...noVinRows];
+  }, [quotes]);
+
   const filteredQuotes = useMemo(() => {
-    return quotes
+    return deduplicatedQuotes
       .filter((quote) => {
         if (statusFilter !== 'all' && normalizeLeadStatus(quote) !== statusFilter) return false;
 
@@ -138,14 +170,14 @@ export default function AutomatedQuotesDashboard() {
         return haystack.includes(searchTerm.trim().toLowerCase());
       })
       .sort((a, b) => compareQuotes(a, b, sortColumn, sortDirection));
-  }, [quotes, statusFilter, searchTerm, sortColumn, sortDirection]);
+  }, [deduplicatedQuotes, statusFilter, searchTerm, sortColumn, sortDirection]);
 
   const stats = useMemo(() => ({
-    total: quotes.length,
-    scheduled: quotes.filter((q) => normalizeLeadStatus(q) === 'scheduled').length,
-    lead: quotes.filter((q) => normalizeLeadStatus(q) === 'lead').length,
-    quoteOnly: quotes.filter((q) => normalizeLeadStatus(q) === 'quote_only').length,
-  }), [quotes]);
+    total: deduplicatedQuotes.length,
+    scheduled: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'scheduled').length,
+    lead: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'lead').length,
+    quoteOnly: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'quote_only').length,
+  }), [deduplicatedQuotes]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -349,6 +381,7 @@ export default function AutomatedQuotesDashboard() {
                               {(quote.zip || quote.state) && (
                                 <div className="text-xs text-gray-500 mt-1">{[quote.zip, quote.state].filter(Boolean).join(', ')}</div>
                               )}
+                              <LookupMethodBadge quote={quote} />
                             </div>
                           </div>
                         </td>
@@ -599,6 +632,28 @@ function LeadStatusBadge({ status }: { status: 'scheduled' | 'lead' | 'quote_onl
   const { style, label } = config[status];
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase ${style}`}>
+      {label}
+    </span>
+  );
+}
+
+function LookupMethodBadge({ quote }: { quote: AutomatedQuoteRow }) {
+  let label: string;
+  let style: string;
+
+  if (quote.plate_last4) {
+    label = 'Plate';
+    style = 'bg-emerald-50 text-emerald-700';
+  } else if (quote.vin) {
+    label = 'VIN';
+    style = 'bg-blue-50 text-blue-700';
+  } else {
+    label = 'YMM';
+    style = 'bg-gray-100 text-gray-600';
+  }
+
+  return (
+    <span className={`inline-flex items-center mt-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style}`}>
       {label}
     </span>
   );

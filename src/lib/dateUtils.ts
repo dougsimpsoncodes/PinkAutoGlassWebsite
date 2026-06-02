@@ -115,10 +115,18 @@ function _mtDateStr(d: Date): string {
 
 /** Get UTC offset in ms for a given date in Denver (positive = behind UTC) */
 function _getMtOffsetMs(dateStr: string): number {
-  const refNoon = new Date(`${dateStr}T12:00:00Z`);
-  const mtNoonStr = refNoon.toLocaleString('en-US', { timeZone: 'America/Denver' });
-  const mtNoon = new Date(mtNoonStr);
-  return refNoon.getTime() - mtNoon.getTime();
+  // Use Intl.DateTimeFormat.formatToParts to read Denver's hour directly.
+  // Avoids the `new Date(localeString)` trap: parsing a locale string uses the
+  // *host* local timezone, not Denver — on a Mountain Time machine that cancels
+  // the conversion and returns 0, making "today" start at midnight UTC (6 PM MDT).
+  const refNoon = new Date(`${dateStr}T12:00:00.000Z`);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    hour: '2-digit',
+    hour12: false,
+  }).formatToParts(refNoon);
+  const denverHour = parseInt(parts.find((p) => p.type === 'hour')?.value ?? '6', 10);
+  return (12 - denverHour) * 3_600_000;
 }
 
 /**

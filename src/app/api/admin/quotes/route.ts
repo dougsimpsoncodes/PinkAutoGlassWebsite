@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
         state,
         market,
         session_id,
+        plate_last4,
         vin,
         vehicle_year,
         vehicle_make,
