@@ -37,6 +37,7 @@ interface BookingSummary {
   booking_token: string;
   status: string;
   preferred_install_date: string | null;
+  preferred_install_window: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
     if (quoteIds.length > 0) {
       const { data: bookings, error: bookingsError } = await client
         .from('automated_quote_bookings')
-        .select('id, quote_id, booking_token, status, preferred_install_date')
+        .select('id, quote_id, booking_token, status, preferred_install_date, preferred_install_window')
         .in('quote_id', quoteIds);
 
       if (bookingsError) {
@@ -189,6 +190,7 @@ export async function GET(request: NextRequest) {
         booking_token: booking?.booking_token || null,
         booking_status: booking?.status || null,
         booking_date: booking?.preferred_install_date || null,
+        booking_window: booking?.preferred_install_window || null,
       };
     });
 

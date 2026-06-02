@@ -60,6 +60,7 @@ interface AutomatedQuoteRow {
   booking_token: string | null;
   booking_status: string | null;
   booking_date: string | null;
+  booking_window: string | null;
 }
 
 type StatusFilter = 'all' | 'scheduled' | 'lead' | 'quote_only';
@@ -362,7 +363,10 @@ export default function AutomatedQuotesDashboard() {
                         <td className="px-4 py-4">
                           <LeadStatusBadge status={leadStatus} />
                           {quote.booking_date && (
-                            <div className="text-xs text-gray-500 mt-1">Install {formatShortDate(quote.booking_date)}</div>
+                            <div className="text-xs text-gray-600 mt-1 font-medium">
+                              {formatShortDate(quote.booking_date)}
+                              {quote.booking_window && ` · ${quote.booking_window}`}
+                            </div>
                           )}
                           {!hasBooking(quote) && quote.quote_total_cents ? (
                             <div className="text-xs text-gray-500 mt-1">{formatCents(quote.quote_total_cents)}</div>
