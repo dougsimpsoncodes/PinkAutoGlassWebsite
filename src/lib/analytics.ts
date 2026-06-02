@@ -4,15 +4,20 @@ export const GA_MEASUREMENT_ID = 'G-F7WMMDK4H4';
 
 // Google Ads Conversion IDs
 export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
+// "Booking" — the original "Submit lead form" action, repurposed for confirmed bookings only.
 export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
 export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
 export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
+// "Callback (text-me-price)" — secondary action for YMM name+phone captures.
+// TODO: replace placeholder once created in Google Ads dashboard.
+export const GOOGLE_ADS_CALLBACK_LABEL = 'PENDING_GOOGLE_ADS_DASHBOARD';
 
-// Expected conversion value per event (USD). Must match DEFAULT_FORM_VALUE /
-// DEFAULT_CALL_VALUE in offlineConversionSync.ts — Smart Bidding trains on both
-// the live events fired here and the offline uploads, so drift breaks bidding.
-// Form: 25.2% close × $360 avg ticket. Call/text: 15.3% close × $360 avg ticket.
-export const FORM_CONVERSION_VALUE_USD = 91;
+// Tiered conversion values (USD) — each stage signals a different intent level.
+// Booking: confirmed appointment. Callback: gave name+phone, no booking. Lead: form/call/text.
+// offlineConversionSync.ts DEFAULT_FORM_VALUE must stay in sync with BOOKING_CONVERSION_VALUE_USD.
+export const BOOKING_CONVERSION_VALUE_USD = 150;
+export const CALLBACK_CONVERSION_VALUE_USD = 75;
+export const FORM_CONVERSION_VALUE_USD = 91;  // legacy lead forms (non-quoter paths)
 export const CALL_CONVERSION_VALUE_USD = 55;
 export const TEXT_CONVERSION_VALUE_USD = 55;
 
@@ -251,9 +256,15 @@ export const setEnhancedConversionData = (userData: { email?: string; phone?: st
 };
 
 // Track lead form submission conversion (booking form, quote form)
-export const trackLeadFormConversion = (leadId: string, userData?: { email?: string; phone?: string }) => {
+export const trackLeadFormConversion = (leadId: string, userData?: { email?: string; phone?: string }, value: number = FORM_CONVERSION_VALUE_USD) => {
   if (userData) setEnhancedConversionData(userData);
-  trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL, FORM_CONVERSION_VALUE_USD);
+  trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL, value);
+};
+
+// Track YMM callback (name+phone captured, no booking) — secondary action, $75.
+export const trackCallbackConversion = (transactionId: string) => {
+  if (GOOGLE_ADS_CALLBACK_LABEL === 'PENDING_GOOGLE_ADS_DASHBOARD') return; // label not yet wired
+  trackGoogleAdsConversion(transactionId, GOOGLE_ADS_CALLBACK_LABEL, CALLBACK_CONVERSION_VALUE_USD);
 };
 
 // Track text/SMS click conversion

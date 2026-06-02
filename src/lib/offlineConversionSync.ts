@@ -43,7 +43,10 @@ const DEFAULT_CALL_VALUE = 55;
 // Default conversion value for form leads (25.2% close rate × $360 avg ticket)
 const DEFAULT_FORM_VALUE = 91;
 
-// Optional: separate conversion action for form leads
+// Optional: separate conversion action for form leads.
+// SAFETY: if enabled, this action MUST be a distinct action from GOOGLE_ADS_LEAD_FORM_LABEL
+// (the online gtag action). Using the same action would double-count every gclid form lead —
+// once from the live gtag fire and once from this offline upload.
 const GOOGLE_ADS_FORM_CONVERSION_ACTION_ID = process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
 const MICROSOFT_OFFLINE_FORM_CONVERSION_NAME = process.env.MICROSOFT_OFFLINE_FORM_CONVERSION_NAME;
 
