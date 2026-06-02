@@ -365,7 +365,7 @@ export default function AutomatedQuotesDashboard() {
                           {quote.booking_date && (
                             <div className="text-xs text-gray-600 mt-1 font-medium">
                               {formatShortDate(quote.booking_date)}
-                              {quote.booking_window && ` · ${quote.booking_window}`}
+                              {quote.booking_window && ` · ${formatInstallWindow(quote.booking_window)}`}
                             </div>
                           )}
                           {!hasBooking(quote) && quote.quote_total_cents ? (
@@ -635,9 +635,11 @@ function hasContactInfo(quote: AutomatedQuoteRow): boolean {
 
 function detailCopy(quote: AutomatedQuoteRow): string {
   if (hasBooking(quote)) {
-    return quote.booking_date
-      ? `Customer booked an install for ${formatShortDate(quote.booking_date)}.`
-      : 'Customer received a quote and booked an appointment.';
+    if (quote.booking_date) {
+      const window = quote.booking_window ? ` (${formatInstallWindow(quote.booking_window)})` : '';
+      return `Customer booked an install for ${formatShortDate(quote.booking_date)}${window}.`;
+    }
+    return 'Customer received a quote and booked an appointment.';
   }
 
   if (MANUAL_REVIEW_STATUSES.has(quote.status)) {
@@ -785,10 +787,20 @@ function formatDate(value: string): string {
 }
 
 function formatShortDate(value: string): string {
-  return new Date(value).toLocaleDateString('en-US', {
+  // Parse the date portion as local midnight to avoid UTC→local timezone shift.
+  // new Date('YYYY-MM-DD') parses as UTC midnight, which in Mountain time
+  // shifts the displayed date back one day.
+  const [y, m, d] = value.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   });
+}
+
+function formatInstallWindow(window: string | null): string {
+  if (window === 'AM') return '8a–12p';
+  if (window === 'PM') return '12p–5p';
+  return window || '';
 }
 
 function getDateRangeDisplay(quotes: AutomatedQuoteRow[]): string {
