@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#db2777" />
+<title>Pink Auto Glass · Auto-quoter update · May 29</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { -webkit-tap-highlight-color: transparent; }
+  .gradient-pink { background: linear-gradient(135deg, #db2777 0%, #9d174d 100%); }
+  .sticky-nav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .card { box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .pill { display: inline-flex; align-items: center; gap: .25rem; padding: .25rem .65rem; border-radius: 9999px; font-size: .75rem; font-weight: 600; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary { list-style: none; cursor: pointer; }
+  details[open] summary .chev { transform: rotate(90deg); }
+  .chev { transition: transform .15s; display: inline-block; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+
+<!-- Sticky top nav -->
+<nav class="sticky top-0 z-40 bg-white/90 border-b border-slate-200 sticky-nav">
+  <div class="px-4 py-3">
+    <div class="font-bold text-pink-600 text-base">PINK AUTO GLASS</div>
+    <div class="text-xs text-slate-500">Auto-quoter update · May 29, 2026</div>
+  </div>
+  <div class="px-4 pb-3 flex gap-2 overflow-x-auto whitespace-nowrap text-xs">
+    <a href="#summary" class="px-3 py-1.5 rounded-full bg-pink-100 text-pink-700 font-semibold">Summary</a>
+    <a href="#what" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">What it is</a>
+    <a href="#pricing" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">Pricing</a>
+    <a href="#examples" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">Examples</a>
+    <a href="#biz" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">Today</a>
+    <a href="#tradeoffs" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">Trade-offs</a>
+    <a href="#decisions" class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-semibold">Decisions</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="gradient-pink text-white px-5 py-10">
+  <div class="text-xs uppercase tracking-wider text-pink-200 font-semibold mb-3">PARTNER UPDATE</div>
+  <h1 class="text-3xl font-bold leading-tight mb-4">The new auto-quoter is ready. Here's where we stand.</h1>
+  <p class="text-pink-100 leading-relaxed text-base mb-5">
+    A walkthrough of what we built, how it changes pricing, what's working in the business today, and the four open decisions we need your input on.
+  </p>
+  <div class="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
+    <div class="text-xs uppercase tracking-wider text-pink-100 font-semibold mb-2">Headlines</div>
+    <ul class="space-y-1.5 text-sm">
+      <li>· <strong>371 installs</strong> over the last 7 months ($131K revenue, $354 avg per job)</li>
+      <li>· <strong>91% cash, 9% insurance</strong> — pricing engine is built for the cash funnel</li>
+      <li>· <strong>Mobile customers convert 2.4× better</strong> than desktop (12.9% vs 5.4%)</li>
+      <li>· Auto-quoter prices <strong>+19% higher</strong> on average vs current manual quotes</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<section id="summary" class="px-5 py-8">
+  <h2 class="text-2xl font-bold mb-3">Where we are right now</h2>
+  <div class="space-y-3">
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="text-xs uppercase tracking-wider text-green-700 font-bold mb-1.5">✓ Shipped to staging, ready for prod</div>
+      <p class="text-sm text-slate-700">The new auto-quoter is fully built and tested: license plate / VIN / Year-Make-Model lookup, instant price, inline booking, customer confirmation, team alerts, and write-barrier safety checks. End-to-end smoke-tested on iPhone.</p>
+    </div>
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="text-xs uppercase tracking-wider text-green-700 font-bold mb-1.5">✓ ADAS policy shipped (independent of homepage)</div>
+      <p class="text-sm text-slate-700">Per the partner ask: stop bundling \$200 ADAS in quotes where 55% of customers decline at install. New tiered logic auto-classifies each vehicle and only bundles ADAS when it's functionally mandatory (Tesla, Subaru EyeSight, certain BMWs). For everyone else, the tech walks them through it at install.</p>
+    </div>
+    <div class="card bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="text-xs uppercase tracking-wider text-amber-700 font-bold mb-1.5">⏸ Holding the homepage launch for your sign-off today</div>
+      <p class="text-sm text-amber-950">The new auto-quoter is currently only at <code>/quote</code>. The full homepage redesign that puts it front and center is built and tested but not live. Pending this meeting.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IT IS -->
+<section id="what" class="px-5 py-8 bg-white border-y border-slate-200">
+  <h2 class="text-2xl font-bold mb-3">What the auto-quoter actually does</h2>
+  <p class="text-sm text-slate-700 mb-5">Four steps. No phone call required. Customer can complete on iPhone in under a minute.</p>
+
+  <ol class="space-y-3">
+    <li class="card bg-pink-50 border border-pink-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <div class="bg-pink-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+        <div>
+          <div class="font-bold mb-1">Identify the vehicle</div>
+          <p class="text-sm text-slate-700">License plate (default) + state, OR VIN, OR Year/Make/Model dropdowns. Plate lookup decodes the VIN automatically via AutoBolt's plate-to-VIN API.</p>
+        </div>
+      </div>
+    </li>
+    <li class="card bg-pink-50 border border-pink-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <div class="bg-pink-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+        <div>
+          <div class="font-bold mb-1">Look up the glass</div>
+          <p class="text-sm text-slate-700">Mygrant API returns the exact NAGS part for the vehicle + trim. Filters out incompatible parts (no HUD glass for non-HUD trims, etc.). Confirms inventory + delivery ETA at our branch.</p>
+        </div>
+      </div>
+    </li>
+    <li class="card bg-pink-50 border border-pink-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <div class="bg-pink-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+        <div>
+          <div class="font-bold mb-1">Calculate the price</div>
+          <p class="text-sm text-slate-700">Pricing engine applies our locked markup rules (see below). Customer sees a real installed price in seconds. \$299 minimum floor on every quote.</p>
+        </div>
+      </div>
+    </li>
+    <li class="card bg-pink-50 border border-pink-200 rounded-xl p-4">
+      <div class="flex items-start gap-3">
+        <div class="bg-pink-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm flex-shrink-0">4</div>
+        <div>
+          <div class="font-bold mb-1">Book the install</div>
+          <p class="text-sm text-slate-700">Inline form: name + phone + address + ZIP + a time pill (Tomorrow AM / Tomorrow PM / next working day AM/PM). Customer + team alert SMS + email fire automatically. ZIP-to-city handled server-side.</p>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="mt-6 card bg-slate-100 rounded-xl p-4">
+    <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Customer message</div>
+    <p class="text-sm text-slate-700 italic">"Get an instant quote and book your install — no phone calls, no callbacks, real price in seconds."</p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="px-5 py-8">
+  <h2 class="text-2xl font-bold mb-3">How we price now</h2>
+  <p class="text-sm text-slate-700 mb-5">Stacking rules. Each adjustment layers on top of the next.</p>
+
+  <div class="space-y-3">
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">Base markup</div>
+        <div class="font-mono font-bold text-pink-600">\$200</div>
+      </div>
+      <div class="text-xs text-slate-600">Every quote. Replaces the legacy labor + supplies + min-floor model.</div>
+    </div>
+
+    <div class="card bg-purple-50 border border-purple-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">Tier 1 luxury</div>
+        <div class="font-mono font-bold text-purple-700">\$300</div>
+      </div>
+      <div class="text-xs text-slate-700 mb-1"><strong>Audi · BMW · Lexus · Mercedes · Acura · Cadillac · Infiniti · Lincoln · Volvo</strong></div>
+      <div class="text-xs text-slate-600">Replaces base markup (not stacked).</div>
+    </div>
+
+    <div class="card bg-rose-50 border border-rose-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">Tier 2 boundary luxury</div>
+        <div class="font-mono font-bold text-rose-700">\$400</div>
+      </div>
+      <div class="text-xs text-slate-700 mb-1"><strong>Tesla · Porsche · Genesis · Jaguar · Land Rover · Range Rover</strong></div>
+      <div class="text-xs text-slate-600">Replaces base + Tier 1.</div>
+    </div>
+
+    <details class="card bg-white border border-slate-200 rounded-xl">
+      <summary class="p-4 flex items-center justify-between">
+        <div>
+          <div class="font-bold text-base">Wholesale threshold bumps</div>
+          <div class="text-xs text-slate-600 mt-1">Applies when glass is more expensive (highest tier wins vs brand)</div>
+        </div>
+        <span class="chev text-pink-600 text-lg">▸</span>
+      </summary>
+      <div class="px-4 pb-4">
+        <table class="w-full text-xs">
+          <tr class="border-t border-slate-200"><td class="py-2 text-slate-600">Glass under \$250</td><td class="py-2 text-right font-mono font-semibold">\$200 markup</td></tr>
+          <tr class="border-t border-slate-200"><td class="py-2 text-slate-600">\$250 – \$400</td><td class="py-2 text-right font-mono font-semibold">\$250 markup</td></tr>
+          <tr class="border-t border-slate-200"><td class="py-2 text-slate-600">\$400 – \$600</td><td class="py-2 text-right font-mono font-semibold">\$300 markup</td></tr>
+          <tr class="border-t border-slate-200"><td class="py-2 text-slate-600">\$600+</td><td class="py-2 text-right font-mono font-semibold">\$400 markup</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">HD truck adder</div>
+        <div class="font-mono font-bold text-slate-700">+\$100</div>
+      </div>
+      <div class="text-xs text-slate-600">F-250+ · Silverado 2500+ · Ram 2500+ · Sprinter · Transit · ProMaster · NV · Savana · Express</div>
+    </div>
+
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">HUD windshield adder</div>
+        <div class="font-mono font-bold text-slate-700">+\$75</div>
+      </div>
+      <div class="text-xs text-slate-600">Any vehicle with heads-up display glass.</div>
+    </div>
+
+    <div class="card bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">ADAS calibration</div>
+        <div class="font-mono font-bold text-emerald-700">\$200</div>
+      </div>
+      <div class="text-xs text-slate-700 mb-2"><strong>New today (shipped to prod):</strong> tiered handling per vehicle.</div>
+      <ul class="text-xs text-slate-700 space-y-1 list-disc pl-4">
+        <li><strong>Mandatory</strong> (Tesla, Subaru EyeSight, certain BMW/Mercedes): bundled in quote</li>
+        <li><strong>Recommended</strong> (most 2018+ Toyota/Honda/Hyundai/Kia/VW/Audi): not in quote — tech walks customer through accept/decline at install</li>
+        <li><strong>None</strong> (older, no-ADAS): no line at all</li>
+      </ul>
+    </div>
+
+    <div class="card bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="font-bold text-base">Minimum total floor</div>
+        <div class="font-mono font-bold text-amber-700">\$299</div>
+      </div>
+      <div class="text-xs text-slate-600">If the computed total would be below \$299, we round up. Prevents money-loser quotes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- EXAMPLES -->
+<section id="examples" class="px-5 py-8 bg-white border-y border-slate-200">
+  <h2 class="text-2xl font-bold mb-3">Before / after — 8 real installs</h2>
+  <p class="text-sm text-slate-700 mb-5">Cash-paid jobs from the last 60 days. Compares what we actually charged vs what the new auto-quoter would charge for the same vehicle today.</p>
+
+  <div class="space-y-3">
+    <!-- Tesla -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2023 Tesla Model 3</div>
+        <span class="pill bg-green-100 text-green-700">+\$135 (+15%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$932.34</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$1,068.27</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Tier 2 brand (\$400) + ADAS</div>
+    </div>
+
+    <!-- Lexus -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2018 Lexus ES 300h Hybrid</div>
+        <span class="pill bg-green-100 text-green-700">+\$371 (+88%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$422.03</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$793.34</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Tier 1 luxury (\$300) + HUD adder + ADAS</div>
+    </div>
+
+    <!-- BMW -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2020 BMW 230i</div>
+        <span class="pill bg-green-100 text-green-700">+\$375 (+116%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$323.01</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$697.73</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Tier 1 luxury (\$300) + ADAS — original was labor-only</div>
+    </div>
+
+    <!-- CR-V -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2022 Honda CR-V</div>
+        <span class="pill bg-green-100 text-green-700">+\$161 (+46%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$349.12</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$510.00</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Base \$200 + ADAS</div>
+    </div>
+
+    <!-- Subaru -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2017 Subaru Outback</div>
+        <span class="pill bg-green-100 text-green-700">+\$167 (+44%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$381.77</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$548.84</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Base \$200 + EyeSight ADAS (mandatory)</div>
+    </div>
+
+    <!-- Silverado 2500 -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2021 Chevy Silverado 2500</div>
+        <span class="pill bg-green-100 text-green-700">+\$79 (+23%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$343.91</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$423.25</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Base \$200 + HD truck adder (+\$100)</div>
+    </div>
+
+    <!-- 4Runner -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2021 Toyota 4Runner</div>
+        <span class="pill bg-green-100 text-green-700">+\$25 (+5%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$513.30</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$537.93</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Base + wholesale threshold bump + ADAS</div>
+    </div>
+
+    <!-- Camry Hybrid -->
+    <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-semibold text-sm">2025 Toyota Camry Hybrid</div>
+        <span class="pill bg-green-100 text-green-700">+\$55 (+8%)</span>
+      </div>
+      <div class="px-4 py-3 grid grid-cols-2 gap-3 text-sm">
+        <div><div class="text-xs text-slate-500">Original</div><div class="font-bold font-mono">\$673.93</div></div>
+        <div><div class="text-xs text-slate-500">New quoter</div><div class="font-bold font-mono">\$729.23</div></div>
+      </div>
+      <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 text-xs text-amber-950"><strong>Why:</strong> Base + HUD adder (+\$75) + ADAS</div>
+    </div>
+  </div>
+
+  <!-- Average lift -->
+  <div class="mt-6 card bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+    <div class="text-xs uppercase tracking-wider text-pink-700 font-bold mb-1">Across these 8 jobs</div>
+    <div class="text-3xl font-bold text-pink-700">+\$1,369</div>
+    <div class="text-sm text-pink-950 mt-1">more revenue · ~40% lift on average</div>
+    <div class="text-xs text-slate-600 mt-2 italic">Two more jobs (Sprinter van + Ram 1500) routed to manual review by the engine — vehicles where it isn't confident enough to auto-price. Those will keep getting hand-quoted.</div>
+  </div>
+</section>
+
+<!-- BIZ TODAY -->
+<section id="biz" class="px-5 py-8">
+  <h2 class="text-2xl font-bold mb-3">Where we are today</h2>
+  <p class="text-sm text-slate-700 mb-5">Operational snapshot of the business this tool is built for.</p>
+
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    <div class="card bg-white border border-slate-200 rounded-xl p-3 text-center">
+      <div class="text-2xl font-bold">371</div>
+      <div class="text-xs text-slate-600 mt-1">installs · 7 months</div>
+    </div>
+    <div class="card bg-white border border-slate-200 rounded-xl p-3 text-center">
+      <div class="text-2xl font-bold">\$131K</div>
+      <div class="text-xs text-slate-600 mt-1">total revenue</div>
+    </div>
+    <div class="card bg-white border border-slate-200 rounded-xl p-3 text-center">
+      <div class="text-2xl font-bold">\$354</div>
+      <div class="text-xs text-slate-600 mt-1">avg per job</div>
+    </div>
+    <div class="card bg-white border border-slate-200 rounded-xl p-3 text-center">
+      <div class="text-2xl font-bold">91%</div>
+      <div class="text-xs text-slate-600 mt-1">cash · 9% insurance</div>
+    </div>
+  </div>
+
+  <h3 class="text-lg font-bold mb-3">Conversion by device (last 30 days)</h3>
+  <div class="space-y-3 mb-6">
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex justify-between items-baseline mb-2">
+        <div class="font-semibold">📱 Mobile</div>
+        <div class="text-pink-600 font-bold">12.9%</div>
+      </div>
+      <div class="text-xs text-slate-600">1,053 sessions · 136 conversions</div>
+      <div class="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div class="bg-pink-600 h-full" style="width: 100%"></div>
+      </div>
+    </div>
+    <div class="card bg-white border border-slate-200 rounded-xl p-4">
+      <div class="flex justify-between items-baseline mb-2">
+        <div class="font-semibold">💻 Desktop</div>
+        <div class="text-slate-600 font-bold">5.4%</div>
+      </div>
+      <div class="text-xs text-slate-600">906 sessions · 49 conversions</div>
+      <div class="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div class="bg-slate-400 h-full" style="width: 42%"></div>
+      </div>
+    </div>
+    <div class="text-xs text-slate-500 italic mt-2">→ Mobile converts 2.4× better. Mobile-first design is the right bet.</div>
+  </div>
+
+  <h3 class="text-lg font-bold mb-3">Top vehicle makes (volume)</h3>
+  <div class="card bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <table class="w-full text-sm">
+      <tbody>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Toyota</td><td class="px-4 py-2.5 text-right font-mono font-semibold">53</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$350</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Ford</td><td class="px-4 py-2.5 text-right font-mono font-semibold">51</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$323</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Chevrolet</td><td class="px-4 py-2.5 text-right font-mono font-semibold">39</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$325</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Subaru</td><td class="px-4 py-2.5 text-right font-mono font-semibold">32</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$351</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Honda</td><td class="px-4 py-2.5 text-right font-mono font-semibold">28</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$339</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Jeep</td><td class="px-4 py-2.5 text-right font-mono font-semibold">24</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$376</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Nissan</td><td class="px-4 py-2.5 text-right font-mono font-semibold">15</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$359</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">Ram</td><td class="px-4 py-2.5 text-right font-mono font-semibold">12</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">\$406</td></tr>
+        <tr class="border-b border-slate-100"><td class="px-4 py-2.5">GMC / Hyundai / Dodge / Kia</td><td class="px-4 py-2.5 text-right font-mono font-semibold">≤11 ea</td><td class="px-4 py-2.5 text-right text-xs text-slate-500">~\$340</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="text-xs text-slate-500 italic mt-2">Truck-leaning fleet · Tier 1+2 luxury together = <10% of volume but the highest per-job impact under the new pricing.</div>
+
+  <h3 class="text-lg font-bold mt-6 mb-3">Where customers land on the site</h3>
+  <div class="card bg-white border border-slate-200 rounded-xl p-4">
+    <div class="text-sm text-slate-700 mb-3">Only <strong>25% of visitors land on the homepage</strong>. The other 75% land on:</div>
+    <ul class="space-y-1 text-sm list-disc pl-5 text-slate-700">
+      <li>City pages: <code>/locations/denver-co</code>, Colorado Springs, Aurora, Boulder</li>
+      <li>Service pages: windshield-replacement, mobile-service, insurance-claims</li>
+      <li>Vehicle brand pages: Tesla, Honda, Ford, etc.</li>
+      <li>Blog posts driving SEO traffic</li>
+    </ul>
+    <div class="text-xs text-slate-500 italic mt-3">→ Adding the auto-quoter to these deep pages is a separate decision (see Decisions section).</div>
+  </div>
+</section>
+
+<!-- TRADEOFFS -->
+<section id="tradeoffs" class="px-5 py-8 bg-white border-y border-slate-200">
+  <h2 class="text-2xl font-bold mb-3">What we gain, what we trade off</h2>
+
+  <div class="space-y-4">
+    <div>
+      <h3 class="text-base font-bold text-green-700 mb-2 flex items-center gap-2">
+        <span class="text-xl">✓</span> Gains
+      </h3>
+      <ul class="space-y-2 text-sm text-slate-700">
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>Conversion lift on mobile</strong> — price-first beats info-first for the 2.4× higher mobile cohort
+        </li>
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>~40% revenue lift per closed quote</strong> on average vs current manual pricing (see examples)
+        </li>
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>Removes the phone call</strong> from price discovery — customers who don't want to talk get served
+        </li>
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>Consistent pricing</strong> — same vehicle, same answer, no human discretion variance
+        </li>
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>Tech notifications include vehicle data + glass + cost + margin</strong> — better install-day prep
+        </li>
+        <li class="card bg-green-50 border border-green-200 rounded-lg p-3">
+          <strong>ADAS tiered handling</strong> — addresses the 55% decline pattern without losing the safety-critical work
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-base font-bold text-rose-700 mb-2 flex items-center gap-2">
+        <span class="text-xl">⚠</span> Trade-offs
+      </h3>
+      <ul class="space-y-2 text-sm text-slate-700">
+        <li class="card bg-rose-50 border border-rose-200 rounded-lg p-3">
+          <strong>Higher headline prices on luxury</strong> — BMW/Lexus jobs go up 80-100%. Some customers will balk and shop elsewhere
+        </li>
+        <li class="card bg-rose-50 border border-rose-200 rounded-lg p-3">
+          <strong>~10% of jobs route to manual review</strong> — commercial vans, light trucks with unusual glass, exotics. Still need phone quotes for those
+        </li>
+        <li class="card bg-rose-50 border border-rose-200 rounded-lg p-3">
+          <strong>Insurance flow unchanged</strong> — auto-quoter is cash-only. Insurance bookings still come in via the legacy form / phone
+        </li>
+        <li class="card bg-rose-50 border border-rose-200 rounded-lg p-3">
+          <strong>Less human judgment on edge cases</strong> — if the engine flags ADAS on a vehicle that really shouldn't need it, the quote inflates
+        </li>
+        <li class="card bg-rose-50 border border-rose-200 rounded-lg p-3">
+          <strong>Mygrant + AutoBolt dependency</strong> — when those APIs are down, the quote tool routes to a phone CTA
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- DECISIONS -->
+<section id="decisions" class="px-5 py-8 gradient-pink text-white">
+  <h2 class="text-2xl font-bold mb-3">Decisions we need your input on</h2>
+  <p class="text-pink-100 text-sm mb-5">Four open items. Each one is small individually but compounds.</p>
+
+  <div class="space-y-3">
+    <div class="bg-white text-slate-900 rounded-xl p-4">
+      <div class="flex items-baseline justify-between mb-2">
+        <div class="font-bold text-base">1 · Launch the new homepage today?</div>
+        <span class="pill bg-amber-100 text-amber-700">Decision</span>
+      </div>
+      <p class="text-sm text-slate-700 mb-2">The new homepage with the auto-quoter front and center is built and tested. Currently the homepage still shows the legacy 2-form layout. Auto-quoter lives at <code>/quote</code>.</p>
+      <div class="text-xs text-slate-600 italic">Rollback is one command if conversion drops sharply in week 1.</div>
+    </div>
+
+    <div class="bg-white text-slate-900 rounded-xl p-4">
+      <div class="flex items-baseline justify-between mb-2">
+        <div class="font-bold text-base">2 · Add the auto-quoter to deep pages?</div>
+        <span class="pill bg-amber-100 text-amber-700">Decision</span>
+      </div>
+      <p class="text-sm text-slate-700 mb-2">75% of customers don't land on the homepage. Plan: drop the same quoter onto the top 5 city pages + top 2 service pages where deep-page conversions already happen.</p>
+      <div class="text-xs text-slate-600 italic">~7 templates · same code as homepage · separate PR · 1-2 week build.</div>
+    </div>
+
+    <div class="bg-white text-slate-900 rounded-xl p-4">
+      <div class="flex items-baseline justify-between mb-2">
+        <div class="font-bold text-base">3 · Push deep-page conversion lift via ads?</div>
+        <span class="pill bg-amber-100 text-amber-700">Decision</span>
+      </div>
+      <p class="text-sm text-slate-700 mb-2">Top-converting landing pages right now: <code>/locations/denver-co</code> (13.3% conversion) outperforms the homepage (3.5%). Worth shifting Google Ads spend toward city-page landing destinations once they have the quoter embedded.</p>
+      <div class="text-xs text-slate-600 italic">Discussion + plan, no code change yet.</div>
+    </div>
+
+    <div class="bg-white text-slate-900 rounded-xl p-4">
+      <div class="flex items-baseline justify-between mb-2">
+        <div class="font-bold text-base">4 · Track close rate end-to-end?</div>
+        <span class="pill bg-amber-100 text-amber-700">Decision</span>
+      </div>
+      <p class="text-sm text-slate-700 mb-2">Right now we measure conversions to <em>booking</em>. We don't measure conversion from <em>quote shown</em> to <em>install completed</em>. Need a small piece of tracking that connects quote-tool sessions to Omega install records.</p>
+      <div class="text-xs text-slate-600 italic">Would close the loop on whether luxury pricing actually closes — or just shows.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-slate-900 text-slate-400 py-8 px-5 text-center text-xs">
+  <div class="font-bold text-pink-400 text-base mb-1">PINK AUTO GLASS</div>
+  <div>Partner update · May 29, 2026</div>
+  <div class="mt-2 text-slate-500">All numbers pulled from Omega install records + site analytics. Pricing examples are real recent jobs with anonymized customer data.</div>
+</footer>
+
+</body>
+</html>
