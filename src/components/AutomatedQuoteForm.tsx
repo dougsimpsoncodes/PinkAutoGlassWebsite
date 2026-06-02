@@ -467,7 +467,6 @@ function VehicleStage({
                 onChange={(event) => setPlate(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-lg font-semibold tracking-wide focus:border-pink-500 focus:outline-none"
                 placeholder="ABC1234"
-                autoFocus
                 autoComplete="off"
               />
             </label>
@@ -511,7 +510,6 @@ function VehicleStage({
               className="w-full rounded-md border border-gray-300 px-3 py-3 font-mono text-base tracking-wider focus:border-pink-500 focus:outline-none"
               maxLength={17}
               placeholder="1HGCV1F30NA000000"
-              autoFocus
               autoComplete="off"
             />
             <span className="mt-1 block text-xs text-gray-500">
