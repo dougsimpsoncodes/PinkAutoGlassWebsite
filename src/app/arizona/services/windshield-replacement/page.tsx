@@ -7,6 +7,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   robots: { index: false },
@@ -118,6 +119,8 @@ export default function WindshieldReplacementPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         <section className="py-8 bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

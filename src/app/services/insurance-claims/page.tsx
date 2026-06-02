@@ -7,6 +7,7 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   title: 'Auto Glass Insurance Claims Help Colorado | We Bill Direct',
@@ -89,6 +90,8 @@ export default function InsuranceClaimsPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
