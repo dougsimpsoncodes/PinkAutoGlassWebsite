@@ -235,7 +235,6 @@ export async function POST(req: NextRequest) {
         const nameParts = (call.from_name || '').trim().split(' ');
         return {
           phone_e164: call.from_number,
-          phone: call.from_number,
           first_name: nameParts[0] || 'Caller',
           last_name: nameParts.slice(1).join(' ') || '',
           utm_source: 'ringcentral_call',
