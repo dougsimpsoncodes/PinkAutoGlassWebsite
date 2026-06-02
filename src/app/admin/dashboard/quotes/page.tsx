@@ -62,13 +62,9 @@ interface AutomatedQuoteRow {
   booking_date: string | null;
 }
 
-type QuoteFilter = 'all' | 'follow_up' | 'priced' | 'booked';
-type LeadFilter = 'all' | 'none' | 'new' | 'contacted' | 'quoted' | 'scheduled';
-type SortColumn = 'date' | 'customer' | 'vehicle' | 'lead_status' | 'outcome';
+type StatusFilter = 'all' | 'scheduled' | 'lead' | 'quote_only';
+type SortColumn = 'date' | 'customer' | 'vehicle' | 'lead_status';
 type SortDirection = 'asc' | 'desc';
-
-const FOLLOW_UP_STATUSES = new Set(['manual_review', 'needs_confirmation']);
-const READY_STATUSES = new Set(['ready_exact', 'ready_estimate']);
 
 export default function AutomatedQuotesDashboard() {
   const { market } = useMarket();
@@ -76,8 +72,7 @@ export default function AutomatedQuotesDashboard() {
 
   const [quotes, setQuotes] = useState<AutomatedQuoteRow[]>([]);
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
-  const [quoteFilter, setQuoteFilter] = useState<QuoteFilter>('all');
-  const [leadFilter, setLeadFilter] = useState<LeadFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showTest, setShowTest] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -118,10 +113,7 @@ export default function AutomatedQuotesDashboard() {
   const filteredQuotes = useMemo(() => {
     return quotes
       .filter((quote) => {
-        if (quoteFilter === 'follow_up' && !needsContact(quote)) return false;
-        if (quoteFilter === 'priced' && (!isPriceReady(quote) || hasBooking(quote))) return false;
-        if (quoteFilter === 'booked' && !hasBooking(quote)) return false;
-        if (leadFilter !== 'all' && normalizeLeadStatus(quote) !== leadFilter) return false;
+        if (statusFilter !== 'all' && normalizeLeadStatus(quote) !== statusFilter) return false;
 
         if (!searchTerm.trim()) return true;
         const haystack = [
@@ -145,21 +137,14 @@ export default function AutomatedQuotesDashboard() {
         return haystack.includes(searchTerm.trim().toLowerCase());
       })
       .sort((a, b) => compareQuotes(a, b, sortColumn, sortDirection));
-  }, [quotes, quoteFilter, leadFilter, searchTerm, sortColumn, sortDirection]);
+  }, [quotes, statusFilter, searchTerm, sortColumn, sortDirection]);
 
-  const stats = useMemo(() => {
-    const total = quotes.length;
-    const booked = quotes.filter(hasBooking).length;
-    const quotedNotBooked = quotes.filter((quote) => isPriceReady(quote) && !hasBooking(quote)).length;
-    const needsContactCount = quotes.filter(needsContact).length;
-
-    return {
-      total,
-      needsContact: needsContactCount,
-      booked,
-      quotedNotBooked,
-    };
-  }, [quotes]);
+  const stats = useMemo(() => ({
+    total: quotes.length,
+    scheduled: quotes.filter((q) => normalizeLeadStatus(q) === 'scheduled').length,
+    lead: quotes.filter((q) => normalizeLeadStatus(q) === 'lead').length,
+    quoteOnly: quotes.filter((q) => normalizeLeadStatus(q) === 'quote_only').length,
+  }), [quotes]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -216,9 +201,9 @@ export default function AutomatedQuotesDashboard() {
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-200">
             <SummaryStat label="TOTAL QUOTE REQUESTS" value={stats.total} detail="All quote attempts" />
-            <SummaryStat label="NEEDS CONTACT" value={stats.needsContact} valueClassName="text-amber-600" detail="Needs a human follow-up to finish the quote" />
-            <SummaryStat label="BOOKED AFTER QUOTE" value={stats.booked} valueClassName="text-green-600" detail="Quote delivered and appointment set" />
-            <SummaryStat label="QUOTED, NOT BOOKED" value={stats.quotedNotBooked} valueClassName="text-blue-600" detail="Price-ready quotes still open" />
+            <SummaryStat label="SCHEDULED" value={stats.scheduled} valueClassName="text-green-600" detail="Install booked" />
+            <SummaryStat label="LEAD" value={stats.lead} valueClassName="text-blue-600" detail="Contact captured, not yet booked" />
+            <SummaryStat label="QUOTE ONLY" value={stats.quoteOnly} valueClassName="text-gray-500" detail="Price shown, no contact captured" />
           </div>
         </div>
 
@@ -242,15 +227,15 @@ export default function AutomatedQuotesDashboard() {
               <div className="flex gap-1">
                 {[
                   { value: 'all', label: 'All' },
-                  { value: 'follow_up', label: 'Needs Contact' },
-                  { value: 'priced', label: 'Quoted' },
-                  { value: 'booked', label: 'Booked' },
+                  { value: 'scheduled', label: 'Scheduled' },
+                  { value: 'lead', label: 'Lead' },
+                  { value: 'quote_only', label: 'Quote Only' },
                 ].map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setQuoteFilter(option.value as QuoteFilter)}
+                    onClick={() => setStatusFilter(option.value as StatusFilter)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      quoteFilter === option.value
+                      statusFilter === option.value
                         ? 'bg-pink-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
@@ -259,29 +244,6 @@ export default function AutomatedQuotesDashboard() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div className="flex gap-1 flex-wrap">
-              {[
-                { value: 'all', label: 'All' },
-                { value: 'none', label: 'No Lead Record' },
-                { value: 'new', label: 'Lead Created' },
-                { value: 'contacted', label: 'Contacted' },
-                { value: 'quoted', label: 'Quoted' },
-                { value: 'scheduled', label: 'Scheduled' },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setLeadFilter(option.value as LeadFilter)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    leadFilter === option.value
-                      ? 'bg-pink-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
             </div>
           </div>
         </div>
@@ -303,8 +265,7 @@ export default function AutomatedQuotesDashboard() {
                   <HeaderCell>Details</HeaderCell>
                   <SortableHeader column="vehicle" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Vehicle</SortableHeader>
                   <SortableHeader column="date" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Date</SortableHeader>
-                  <SortableHeader column="lead_status" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Lead Status</SortableHeader>
-                  <SortableHeader column="outcome" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Quote Outcome</SortableHeader>
+                  <SortableHeader column="lead_status" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Status</SortableHeader>
                   <HeaderCell>Actions</HeaderCell>
                 </tr>
               </thead>
@@ -327,11 +288,10 @@ export default function AutomatedQuotesDashboard() {
                 ) : (
                   filteredQuotes.map((quote) => {
                     const leadStatus = normalizeLeadStatus(quote);
-                    const outcome = getQuoteOutcome(quote);
-                    const followUp = needsContact(quote);
+                    const isLead = leadStatus === 'lead';
 
                     return (
-                      <tr key={quote.id} className={followUp ? 'bg-amber-50/40 hover:bg-amber-50' : 'hover:bg-gray-50'}>
+                      <tr key={quote.id} className={isLead ? 'bg-amber-50/40 hover:bg-amber-50' : 'hover:bg-gray-50'}>
                         <td className="px-4 py-4">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
                             Quote
@@ -401,21 +361,17 @@ export default function AutomatedQuotesDashboard() {
 
                         <td className="px-4 py-4">
                           <LeadStatusBadge status={leadStatus} />
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <OutcomeBadge outcome={outcome} />
-                          {isPriceReady(quote) && !hasBooking(quote) && quote.quote_total_cents ? (
-                            <div className="text-xs text-gray-500 mt-1">{formatCents(quote.quote_total_cents)}</div>
-                          ) : null}
                           {quote.booking_date && (
                             <div className="text-xs text-gray-500 mt-1">Install {formatShortDate(quote.booking_date)}</div>
                           )}
+                          {!hasBooking(quote) && quote.quote_total_cents ? (
+                            <div className="text-xs text-gray-500 mt-1">{formatCents(quote.quote_total_cents)}</div>
+                          ) : null}
                         </td>
 
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
-                            {followUp ? (
+                            {isLead ? (
                               <button
                                 onClick={() => setReviewQuote(quote)}
                                 className="text-pink-600 hover:text-pink-900 font-medium text-sm"
@@ -423,7 +379,7 @@ export default function AutomatedQuotesDashboard() {
                                 Contact
                               </button>
                             ) : (
-                              <span className="text-sm text-gray-400">{hasBooking(quote) ? 'Booked' : 'Open'}</span>
+                              <span className="text-sm text-gray-400">{leadStatus === 'scheduled' ? 'Booked' : '—'}</span>
                             )}
                             {quote.email && (
                               <a href={`mailto:${quote.email}`} className="text-blue-600 hover:text-blue-800" aria-label="Email customer">
@@ -630,96 +586,28 @@ function SortIcon({
     : <ChevronDown className="w-3.5 h-3.5 ml-1 inline" />;
 }
 
-function LeadStatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-800',
-    contacted: 'bg-amber-100 text-amber-800',
-    quoted: 'bg-purple-100 text-purple-800',
-    scheduled: 'bg-indigo-100 text-indigo-800',
-    completed: 'bg-green-100 text-green-800',
-    lost: 'bg-red-100 text-red-800',
-    none: 'bg-gray-100 text-gray-700',
+function LeadStatusBadge({ status }: { status: 'scheduled' | 'lead' | 'quote_only' }) {
+  const config: Record<string, { style: string; label: string }> = {
+    scheduled: { style: 'bg-green-100 text-green-800', label: 'Scheduled' },
+    lead: { style: 'bg-blue-100 text-blue-800', label: 'Lead' },
+    quote_only: { style: 'bg-gray-100 text-gray-600', label: 'Quote Only' },
   };
-
+  const { style, label } = config[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase ${styles[status] || styles.none}`}>
-      {leadStatusLabel(status)}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase ${style}`}>
+      {label}
     </span>
   );
 }
-
-function leadStatusLabel(status: string): string {
-  switch (status) {
-    case 'none':
-      return 'No lead record';
-    case 'new':
-      return 'Lead created';
-    default:
-      return status;
-  }
-}
-
-function OutcomeBadge({ outcome }: { outcome: QuoteOutcome }) {
-  const styles: Record<QuoteOutcome, string> = {
-    booked: 'bg-green-100 text-green-800',
-    quoted_not_booked: 'bg-blue-100 text-blue-800',
-    follow_up_needed: 'bg-orange-100 text-orange-800',
-    declined: 'bg-gray-100 text-gray-700',
-    expired: 'bg-gray-100 text-gray-700',
-    other: 'bg-gray-100 text-gray-700',
-  };
-
-  const labels: Record<QuoteOutcome, string> = {
-    booked: 'Booked after quote',
-    quoted_not_booked: 'Quoted, not booked',
-    follow_up_needed: 'Needs contact',
-    declined: 'Declined',
-    expired: 'Expired',
-    other: 'Open',
-  };
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase ${styles[outcome]}`}>
-      {labels[outcome]}
-    </span>
-  );
-}
-
-type QuoteOutcome = 'booked' | 'quoted_not_booked' | 'follow_up_needed' | 'declined' | 'expired' | 'other';
 
 function hasBooking(quote: AutomatedQuoteRow): boolean {
   return !!quote.booking_id;
 }
 
-function hasContactInfo(quote: AutomatedQuoteRow): boolean {
-  return !!(quote.phone_e164 || quote.email);
-}
-
-function isPriceReady(quote: AutomatedQuoteRow): boolean {
-  return READY_STATUSES.has(quote.status);
-}
-
-function needsManualFollowUp(quote: AutomatedQuoteRow): boolean {
-  return FOLLOW_UP_STATUSES.has(quote.status);
-}
-
-function normalizeLeadStatus(quote: AutomatedQuoteRow): string {
-  return quote.lead_status || 'none';
-}
-
-function needsContact(quote: AutomatedQuoteRow): boolean {
-  if (hasBooking(quote)) return false;
-  if (needsManualFollowUp(quote)) return true;
-  return hasContactInfo(quote) && (!quote.lead_status || quote.lead_status === 'new');
-}
-
-function getQuoteOutcome(quote: AutomatedQuoteRow): QuoteOutcome {
-  if (hasBooking(quote)) return 'booked';
-  if (needsContact(quote)) return 'follow_up_needed';
-  if (isPriceReady(quote)) return 'quoted_not_booked';
-  if (quote.status === 'declined') return 'declined';
-  if (quote.status === 'expired') return 'expired';
-  return 'other';
+function normalizeLeadStatus(quote: AutomatedQuoteRow): 'scheduled' | 'lead' | 'quote_only' {
+  if (hasBooking(quote)) return 'scheduled';
+  if (quote.lead_id) return 'lead';
+  return 'quote_only';
 }
 
 function formatSourceLabel(quote: AutomatedQuoteRow): string {
@@ -850,8 +738,6 @@ function compareQuotes(a: AutomatedQuoteRow, b: AutomatedQuoteRow, column: SortC
       return dir * vehicleLabel(a).localeCompare(vehicleLabel(b));
     case 'lead_status':
       return dir * normalizeLeadStatus(a).localeCompare(normalizeLeadStatus(b));
-    case 'outcome':
-      return dir * getQuoteOutcome(a).localeCompare(getQuoteOutcome(b));
     case 'date':
     default:
       return dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
