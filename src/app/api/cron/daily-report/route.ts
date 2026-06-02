@@ -1005,6 +1005,39 @@ export async function GET(request: NextRequest) {
       console.log('📧 Zero phone calls warning email sent');
     }
 
+    // ALERT 4: google_ads_calls sync watermark — catches the March 2026 class of
+    // silent failure where the table froze for weeks with no visible indicator.
+    // dataStatus.googleAdsWorking only checks campaign data, not call sync.
+    try {
+      const { data: watermarkRow } = await createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false, autoRefreshToken: false } }
+      )
+        .from('google_ads_calls')
+        .select('sync_timestamp')
+        .order('sync_timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const lastSync = watermarkRow?.sync_timestamp ? new Date(watermarkRow.sync_timestamp) : null;
+      const ageHours = lastSync ? (Date.now() - lastSync.getTime()) / 3_600_000 : Infinity;
+
+      if (ageHours > 24) {
+        console.warn(`⚠️ ALERT: google_ads_calls last sync ${lastSync ? lastSync.toISOString() : 'never'} — ${Math.round(ageHours)}h ago`);
+        await sendAdminEmail(
+          '⚠️ Warning: Google Ads Call Sync Stale',
+          `<h1 style="color:#b45309">⚠️ Google Ads Call Sync Is Stale</h1>
+           <p>The <code>google_ads_calls</code> table has not been updated in <strong>${Math.round(ageHours)} hours</strong>.</p>
+           <p>Last sync: ${lastSync ? lastSync.toLocaleString('en-US', { timeZone: 'America/Denver' }) + ' MT' : 'never recorded'}</p>
+           <p>This is the same failure class as March 2026 (6 weeks of frozen call data). Check the <code>sync-search-data</code> cron logs in Vercel.</p>`
+        );
+        console.log('📧 Google Ads call sync staleness alert sent');
+      }
+    } catch (watermarkErr) {
+      console.warn('Watermark check failed (non-fatal):', watermarkErr instanceof Error ? watermarkErr.message : watermarkErr);
+    }
+
     // Determine data status for quality indicators
     const dataStatus = {
       googleAdsWorking: data.campaigns.length > 0,
