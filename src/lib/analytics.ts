@@ -8,9 +8,8 @@ export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
 export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
 export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
 export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
-// "Callback (text-me-price)" — secondary action for YMM name+phone captures.
-// TODO: replace placeholder once created in Google Ads dashboard.
-export const GOOGLE_ADS_CALLBACK_LABEL = 'PENDING_GOOGLE_ADS_DASHBOARD';
+// "Callback (text-me-price)" — secondary action for YMM name+phone captures. ID 7633459171.
+export const GOOGLE_ADS_CALLBACK_LABEL = 'snihCOOv9bccEJSayehB';
 
 // Tiered conversion values (USD) — each stage signals a different intent level.
 // Booking: confirmed appointment. Callback: gave name+phone, no booking. Lead: form/call/text.
