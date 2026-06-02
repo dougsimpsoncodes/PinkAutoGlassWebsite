@@ -6,6 +6,7 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Colorado Springs | Mobile',
@@ -91,6 +92,8 @@ export default function ColoradoSpringsLocationPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         {/* Trust Signals */}
         <section className="py-8 bg-white border-b">

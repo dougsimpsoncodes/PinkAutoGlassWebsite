@@ -5,6 +5,7 @@ import { Calendar, Clock, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { getAllBlogPosts, getBlogPostBySlug, getRelatedPosts, BlogContent } from '@/data/blog';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import CTAButtons from '@/components/CTAButtons';
+import QuoterEmbed from '@/components/QuoterEmbed';
 import { getArticleSchema, combineSchemas, getSchemaJSON } from '@/lib/schema';
 import { getBreadcrumbSchema } from '@/lib/schema';
 
@@ -228,6 +229,8 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
           <div className="container mx-auto px-4 py-6">
             <Breadcrumbs items={breadcrumbItems} />
           </div>
+
+          <QuoterEmbed />
 
           {/* Article Content */}
           <div className="container mx-auto px-4 py-8">

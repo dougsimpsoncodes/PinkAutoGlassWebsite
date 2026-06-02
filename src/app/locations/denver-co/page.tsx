@@ -8,6 +8,7 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import GoogleReviewsWidget from '@/components/GoogleReviewsWidget';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Denver CO | Mobile, $0 Deductible',
@@ -93,6 +94,8 @@ export default function DenverLocationPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         {/* Trust Signals */}
         <section className="py-8 bg-white border-b">
