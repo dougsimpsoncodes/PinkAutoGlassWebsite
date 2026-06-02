@@ -13,6 +13,7 @@ import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLook
 import { checkCompatibility } from '@/lib/quote/nags-compatibility';
 import { assertEnvCoherent } from '@/lib/env';
 import { classifyAdasTier, type AdasTier } from '@/lib/quote/adas-tier';
+import { classifyLeadMarket } from '@/lib/market';
 
 export const runtime = 'nodejs';
 
@@ -653,6 +654,7 @@ async function storeAutomatedQuote(
       pricing_version: quote.pricingVersion,
       zip: input.zip || null,
       state: input.state || null,
+      market: classifyLeadMarket({ state: input.state || null, zip: input.zip || null }) || null,
       ip_address: context.ipAddress || null,
       user_agent: context.userAgent || null,
       plate_last4: input.plateLast4 || null,
