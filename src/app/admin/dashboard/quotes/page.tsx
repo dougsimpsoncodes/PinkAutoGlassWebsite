@@ -272,7 +272,7 @@ export default function AutomatedQuotesDashboard() {
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       <div className="inline-flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Loading automated quotes...
@@ -281,7 +281,7 @@ export default function AutomatedQuotesDashboard() {
                   </tr>
                 ) : filteredQuotes.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       No automated quotes found
                     </td>
                   </tr>
@@ -622,6 +622,13 @@ function formatSourceLabel(quote: AutomatedQuoteRow): string {
   return 'Homepage Quote';
 }
 
+const MANUAL_REVIEW_STATUSES = new Set(['manual_review', 'needs_confirmation']);
+const PRICED_STATUSES = new Set(['ready_exact', 'ready_estimate']);
+
+function hasContactInfo(quote: AutomatedQuoteRow): boolean {
+  return !!(quote.phone_e164 || quote.email);
+}
+
 function detailCopy(quote: AutomatedQuoteRow): string {
   if (hasBooking(quote)) {
     return quote.booking_date
@@ -629,18 +636,17 @@ function detailCopy(quote: AutomatedQuoteRow): string {
       : 'Customer received a quote and booked an appointment.';
   }
 
-  if (needsManualFollowUp(quote)) {
-    if (hasContactInfo(quote)) {
-      return 'Customer asked for a quote, but the engine could not finish it confidently. Review manually, then follow up.';
-    }
-    return 'Customer asked for a quote, but no confident price or usable contact info was captured.';
+  if (MANUAL_REVIEW_STATUSES.has(quote.status)) {
+    return hasContactInfo(quote)
+      ? 'Customer asked for a quote, but the engine could not finish it confidently. Review manually, then follow up.'
+      : 'Customer asked for a quote, but no confident price or usable contact info was captured.';
   }
 
-  if (isPriceReady(quote) && needsContact(quote)) {
+  if (PRICED_STATUSES.has(quote.status) && quote.lead_id) {
     return 'Price is ready, but this quote still looks untouched in CRM.';
   }
 
-  if (isPriceReady(quote)) {
+  if (PRICED_STATUSES.has(quote.status)) {
     return 'Customer received a price quote and has not booked yet.';
   }
 
