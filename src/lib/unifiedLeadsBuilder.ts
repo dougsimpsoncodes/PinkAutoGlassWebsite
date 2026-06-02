@@ -321,7 +321,8 @@ function deduplicateCallRows(
     let platform: string | null = null;
     const hasCanonicalMethod =
       call.attribution_method === 'google_call_view' ||
-      call.attribution_method === 'direct_match';
+      call.attribution_method === 'direct_match' ||
+      call.attribution_method === 'microsoft_uploaded_call';
     if (hasCanonicalMethod && call.ad_platform) {
       platform = call.ad_platform;
     } else {
