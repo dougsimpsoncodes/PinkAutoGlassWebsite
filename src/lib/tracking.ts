@@ -736,23 +736,24 @@ export async function trackFormSubmission(
   // stays a diagnostic-only funnel event. (council 2026-06-01, unanimous)
   if (opts?.fireAds === false) return;
 
-  // Fire the Ads lead conversion AT MOST ONCE per session. Mark AFTER the tags
-  // fire (not before) so a tag-load race can't permanently block a later retry:
-  // if gtag/uetq hasn't loaded yet, the call is a no-op but the key would already
-  // be set, silencing the next real attempt. (codex P1 catch 2026-06-01)
-  // Fire the Ads lead conversion. The ad platforms dedup by transaction_id
-  // (leadId or sessionId), so no client-side session key is needed here —
-  // each distinct lead with its own leadId fires independently, and the same
-  // leadId is idempotent at the platform level. (council 2026-06-01)
-  const transactionId = metadata?.leadId || getSessionId();
-  if (transactionId) {
+  // Resolve transaction id — accept both camelCase (leadId) and snake_case (lead_id)
+  // from callers. Falls back to sessionId so Google/Microsoft can still dedup.
+  const transactionId = metadata?.leadId || metadata?.lead_id || getSessionId();
+  const stage = (metadata?.stage as string) || 'default';
+
+  if (stage === 'ymm_text_capture') {
+    // Callback stage: name+phone captured via YMM miss nudge, no booking.
+    // Fires a secondary $75 Callback conversion action (separate from $150 Booking).
+    analytics.trackCallbackConversion(transactionId);
+    analytics.trackMicrosoftAdsLeadForm(formName, analytics.CALLBACK_CONVERSION_VALUE_USD, transactionId ? `form_${transactionId}` : undefined);
+  } else {
+    // Booking stage ($150) or legacy lead form ($91 default).
+    const conversionValue = stage === 'booked' ? analytics.BOOKING_CONVERSION_VALUE_USD : undefined;
     const email = metadata?.email;
     const phone = metadata?.phone;
-    analytics.trackLeadFormConversion(transactionId, { email, phone });
+    analytics.trackLeadFormConversion(transactionId, { email, phone }, conversionValue);
+    analytics.trackMicrosoftAdsLeadForm(formName, conversionValue, transactionId ? `form_${transactionId}` : undefined);
   }
-
-  // Fire Microsoft Ads UET form submission conversion (dedup by leadId or session)
-  analytics.trackMicrosoftAdsLeadForm(formName, undefined, transactionId ? `form_${transactionId}` : undefined);
 }
 
 /**
