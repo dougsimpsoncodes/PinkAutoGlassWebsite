@@ -25,6 +25,10 @@ interface LeadSummary {
   utm_source: string | null;
   utm_campaign: string | null;
   market: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  phone_e164: string | null;
+  email: string | null;
 }
 
 interface BookingSummary {
@@ -133,7 +137,7 @@ export async function GET(request: NextRequest) {
     if (leadIds.length > 0) {
       const { data: leads, error: leadsError } = await client
         .from('leads')
-        .select('id, status, ad_platform, utm_source, utm_campaign, market')
+        .select('id, status, ad_platform, utm_source, utm_campaign, market, first_name, last_name, phone_e164, email')
         .in('id', leadIds);
 
       if (leadsError) {
@@ -170,6 +174,12 @@ export async function GET(request: NextRequest) {
 
       return {
         ...quote,
+        // Fall back to lead contact info when the quote row itself has none
+        // (happens when contact is captured at booking time via QuoteBookingForm)
+        first_name: quote.first_name || lead?.first_name || null,
+        last_name: quote.last_name || lead?.last_name || null,
+        phone_e164: quote.phone_e164 || lead?.phone_e164 || null,
+        email: quote.email || lead?.email || null,
         lead_status: lead?.status || null,
         ad_platform: lead?.ad_platform || null,
         utm_source: lead?.utm_source || null,
