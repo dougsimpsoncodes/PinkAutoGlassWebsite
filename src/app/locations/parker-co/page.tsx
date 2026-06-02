@@ -6,6 +6,7 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Parker CO | Mobile, $0 Deductible',
@@ -85,6 +86,8 @@ export default function ParkerLocationPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         <section className="py-8 bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

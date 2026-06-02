@@ -20,6 +20,7 @@ import {
   Grid2x2,
   FileText,
   BadgeDollarSign,
+  TrendingDown,
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Search Ads Control', href: '/admin/dashboard/search-ads-control', icon: Target },
     { name: 'Leads', href: '/admin/dashboard/leads', icon: Users },
     { name: 'Automated Quotes', href: '/admin/dashboard/quotes', icon: BadgeDollarSign },
+    { name: 'Quoter Funnel', href: '/admin/dashboard/quoter-funnel', icon: TrendingDown },
     { name: 'Call Analytics', href: '/admin/dashboard/calls', icon: Phone },
     { name: 'Website & Traffic', href: '/admin/dashboard/website-analytics', icon: BarChart3 },
     { name: 'Satellite Sites', href: '/admin/dashboard/satellite-domains', icon: Globe },

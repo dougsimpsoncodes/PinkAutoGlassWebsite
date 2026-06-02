@@ -389,7 +389,7 @@ export async function fetchCallConversions(
       metrics.conversions_value
     FROM campaign
     WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
-      AND segments.conversion_action_category = 'PHONE_CALL'
+      AND segments.conversion_action_category = 'PHONE_CALL_LEAD'
       AND campaign.status != 'REMOVED'
     ORDER BY segments.date DESC
   `;

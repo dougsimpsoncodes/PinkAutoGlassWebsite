@@ -1,12 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
-import { sendBookingNotifications } from '@/lib/quote/booking-notifications';
+import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-notifications';
+import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
+import { assertEnvCoherent } from '@/lib/env';
+import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
+import { isTeamOrTestContact } from '@/lib/constants';
 
 export const runtime = 'nodejs';
+// The team alert runs in an `after()` callback (post-response) and includes a
+// RingCentral JWT login on cold lambdas (~1.5s) before the SMS POST. Give the
+// function comfortable headroom so that background leg can never be cut off.
+export const maxDuration = 30;
 
 const bookingSchema = z.object({
   quoteToken: z.string().trim().min(8).max(64),
@@ -37,6 +45,10 @@ const bookingSchema = z.object({
 interface QuoteSummary {
   id: string;
   status: string;
+  // Attribution + linkage for the leads sync (Item 9 / F02).
+  lead_id: string | null;
+  session_id: string | null;
+  is_test: boolean | null;
   zip: string | null;
   state: string | null;
   vehicle_year: number | null;
@@ -45,6 +57,13 @@ interface QuoteSummary {
   vehicle_trim: string | null;
   quote_total_cents: number | null;
   quote_token: string;
+  // Used by the team alert for cost / margin / glass-selection lines.
+  selected_brand: string | null;
+  selected_part_description: string | null;
+  selected_nags_number: string | null;
+  supplier_cost_cents: number | null;
+  selected_qty_available: number | null;
+  selected_estimated_delivery_date: string | null;
   // Used to surface a Tier-2 ADAS recommendation in the booking
   // confirmation when calibration wasn't bundled in the quote total.
   confidence_reasons: string[] | null;
@@ -66,6 +85,7 @@ function readAdasTier(reasons: string[] | null | undefined): 'mandatory' | 'reco
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rate = checkRateLimit(`quote-book:${ip}`, 8, 60_000);
     if (!rate.allowed) {
@@ -102,7 +122,7 @@ export async function POST(request: NextRequest) {
     // 1) Look up the quote. Service role bypasses RLS.
     const { data: quoteRow, error: lookupError } = await supabase
       .from('automated_quotes')
-      .select('id, status, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, confidence_reasons')
+      .select('id, status, lead_id, session_id, is_test, zip, state, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, quote_total_cents, quote_token, selected_brand, selected_part_description, selected_nags_number, supplier_cost_cents, selected_qty_available, selected_estimated_delivery_date, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .maybeSingle<QuoteSummary>();
 
@@ -168,14 +188,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
+    // 6) Resolve city from ZIP via Google Geocoding. Best-effort: never
+    // throws, returns null on any error so the booking still proceeds.
+    // Cached in-process — second booking from the same ZIP is free.
+    const installCity = (await lookupCityFromZip(installZip)) || '';
+
+    // Auto-tag team/test submissions so internal/dev bookings stay out of
+    // reporting. The quoter booking path previously skipped this check (which the
+    // legacy lead form already does), so team & ad-hoc test bookings leaked in as
+    // real — e.g. PAG-26BE ("Kody Test"), PAG-8389 ("Test"/555). is_test =
+    // inherited from the parent quote OR detected from the customer details here.
+    const autoTestTag = isTeamOrTestContact({
+      phoneE164,
+      fullName: input.customer.fullName,
+      email: input.customer.email,
+      street: input.install.street,
+    });
+    const isTest = (quoteRow.is_test ?? false) || autoTestTag;
+
+    // 7) Insert booking via the RPC. Returns id + customer-facing PAG-XXXX token.
     const insertPayload = {
       quote_id: quoteRow.id,
       full_name: input.customer.fullName,
       phone_e164: phoneE164,
       email: (input.customer.email || '').trim(),
       install_street: input.install.street,
-      install_city: '',  // derivable from ZIP; left blank for v1
+      install_city: installCity,
       install_state: quoteRow.state || '',
       install_zip: installZip,
       preferred_install_date: input.install.date,
@@ -184,6 +222,9 @@ export async function POST(request: NextRequest) {
       variant_id: input.variantId?.trim() || 'control',
       ip_address: ip === 'unknown' ? '' : ip,
       user_agent: request.headers.get('user-agent') || '',
+      // is_test = inherited from the parent quote OR auto-detected team/test
+      // (autoTestTag above) — keeps internal/dev bookings out of reporting.
+      is_test: isTest,
     };
 
     const { data: rpcResult, error: rpcError } = await supabase
@@ -198,12 +239,126 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // If auto-detected as team/test, propagate the flag to the parent quote AND
+    // its session so neither is counted as real in the funnel / traffic. The
+    // session join only matters once quotes carry session_id (today it's always
+    // null), but tag it defensively for when that gap is closed. Best-effort —
+    // the booking is already durable, so a tag failure must never fail the request.
+    if (autoTestTag) {
+      if (!quoteRow.is_test) {
+        const { error: qErr } = await supabase
+          .from('automated_quotes')
+          .update({ is_test: true })
+          .eq('id', quoteRow.id);
+        if (qErr) console.error('[quote-book] quote is_test back-tag failed:', qErr.message);
+      }
+      if (quoteRow.session_id) {
+        const { error: sErr } = await supabase
+          .from('user_sessions')
+          .update({ is_test: true })
+          .eq('session_id', quoteRow.session_id);
+        if (sErr) console.error('[quote-book] session is_test back-tag failed:', sErr.message);
+      }
+    }
+
+    // 7b) Mirror the booked customer into the leads pipeline as a 'form' lead so
+    // quoter bookings show up in Leads/Dashboard/ROI like any other lead (Item 9 /
+    // F02). Best-effort: the booking row is already durable — a lead-sync failure
+    // must NEVER fail the booking. Revenue is left null (Omega completion owns it,
+    // F09); status='scheduled'; WHERE resolved from the quote's session.
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (url && anonKey) {
+        const anon = createClient(url, anonKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const name = splitName(input.customer.fullName);
+        const attribution = await buildAttributionFromSession(supabase, quoteRow.session_id);
+        const leadId = await findOrCreateQuoteLead(supabase, anon, quoteRow, {
+          firstName: name.firstName,
+          lastName: name.lastName,
+          phone: phoneE164,
+          email: input.customer.email?.trim() || null,
+          smsConsent: input.smsConsent,
+          state: quoteRow.state,
+          zip: installZip || quoteRow.zip,
+          sessionId: quoteRow.session_id,
+          attribution,
+          isTest,
+          status: 'scheduled',
+        });
+        if (!quoteRow.lead_id && leadId) {
+          await supabase.from('automated_quotes').update({ lead_id: leadId }).eq('id', quoteRow.id);
+        }
+        // Ensure the resolved lead is tagged test when this booking is team/test.
+        // findOrCreateQuoteLead only stamps is_test on NEW inserts, so a reused or
+        // pre-existing lead would otherwise stay visible in reporting (codex P2).
+        if (isTest && leadId) {
+          await supabase.from('leads').update({ is_test: true }).eq('id', leadId).eq('is_test', false);
+        }
+      }
+    } catch (leadErr) {
+      console.error('[quote-book] lead sync failed (booking still saved):', leadErr instanceof Error ? leadErr.message : leadErr);
+    }
+
     // 7) Notifications — non-blocking. Booking row is durable; if these
     // fail the customer still has the on-screen confirmation and ops
     // can chase notification_status from the row.
     const vehicleSummary = [quoteRow.vehicle_year, quoteRow.vehicle_make, quoteRow.vehicle_model, quoteRow.vehicle_trim]
       .filter(Boolean)
       .join(' ');
+
+    // Team alert — scheduled with Next.js `after()` so it runs AFTER the
+    // response is sent (never blocks the customer's "You're booked!" — council
+    // reco 2026-05-28, Codex + Gemini unanimous) WHILE keeping the serverless
+    // function alive until it finishes.
+    //
+    // Why not a bare `void` promise (the prior implementation): once the handler
+    // returned, Vercel froze the lambda and the SECOND leg of the alert — the
+    // team SMS, gated behind a ~1.5s RingCentral JWT cold-login — was cut off
+    // mid-POST, while the FIRST leg (team email) had already landed. Result:
+    // bookings produced an email alert but no SMS, intermittently (warm lambdas
+    // reused a cached RC client and finished in time; cold ones didn't).
+    // `after()` (waitUntil under the hood) keeps BOTH channels reliable. Errors
+    // are logged inside sendTeamAlert; the .catch is a last-resort backstop so a
+    // rejection can't escape the callback unlogged.
+    after(() =>
+      sendTeamAlert(
+        {
+          bookingToken: rpcResult.booking_token,
+          customer: {
+            fullName: input.customer.fullName,
+            phoneE164,
+            email: input.customer.email?.trim() || null,
+            smsConsent: input.smsConsent,
+          },
+          install: {
+            street: input.install.street,
+            city: installCity || null,
+            state: quoteRow.state,
+            zip: installZip,
+            date: input.install.date,
+            window: input.install.window,
+          },
+          quote: {
+            totalCents: quoteRow.quote_total_cents || 0,
+            vehicleSummary: vehicleSummary || 'your vehicle',
+          },
+        },
+        {
+          supplierCostCents: quoteRow.supplier_cost_cents,
+          glassBrand: quoteRow.selected_brand,
+          glassPartNumber: quoteRow.selected_nags_number,
+          glassDescription: quoteRow.selected_part_description,
+          qtyAvailable: quoteRow.selected_qty_available,
+          estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
+        }
+      ).catch((err) => {
+        console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
+      })
+    );
+
     const adasTier = readAdasTier(quoteRow.confidence_reasons);
     const notification = await sendBookingNotifications({
       bookingToken: rpcResult.booking_token,

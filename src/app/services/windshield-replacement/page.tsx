@@ -8,6 +8,7 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
+import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
   title: 'Mobile Windshield Replacement Denver | Same-Day Service',
@@ -119,6 +120,8 @@ export default function WindshieldReplacementPage() {
             </div>
           </div>
         </section>
+
+        <QuoterEmbed />
 
         {/* Trust Signals */}
         <section className="py-8 bg-white border-b">

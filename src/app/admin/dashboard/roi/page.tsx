@@ -24,7 +24,7 @@ interface PlatformROI {
   revenue: number;
   costPerCustomer: number;
   revenuePerCustomer: number;
-  roi: number;
+  roas: number;
   profit: number;
   profitMargin: number;
 }
@@ -43,7 +43,7 @@ interface ROIData {
     totalRevenue: number;
     avgCostPerCustomer: number;
     avgRevenuePerCustomer: number;
-    overallROI: number;
+    overallROAS: number;
     totalProfit: number;
     profitMargin: number;
   };
@@ -159,7 +159,7 @@ export default function AdPerformancePage() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Ad Performance</h1>
-          <p className="text-gray-600 mt-1">Funnel, revenue, and ROI by platform</p>
+          <p className="text-gray-600 mt-1">Funnel, revenue, and ROAS by platform</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
@@ -253,9 +253,9 @@ export default function AdPerformancePage() {
                 <div className="text-xs opacity-75 mt-1">Margin: {roiData.totals.profitMargin}%</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5">
-                <div className="flex items-center gap-2 mb-1 text-sm opacity-90"><TrendingUp className="w-4 h-4" />Overall ROI</div>
-                <div className="text-3xl font-bold">{roiData.totals.overallROI.toFixed(2)}x</div>
-                <div className="text-xs opacity-75 mt-1">${roiData.totals.overallROI.toFixed(2)} per $1 spent</div>
+                <div className="flex items-center gap-2 mb-1 text-sm opacity-90"><TrendingUp className="w-4 h-4" />Overall ROAS</div>
+                <div className="text-3xl font-bold">{roiData.totals.overallROAS.toFixed(2)}x</div>
+                <div className="text-xs opacity-75 mt-1">${roiData.totals.overallROAS.toFixed(2)} per $1 spent</div>
               </div>
             </div>
             <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 grid grid-cols-3 gap-4">
@@ -288,7 +288,7 @@ export default function AdPerformancePage() {
                       <span className="text-2xl">{platform.icon}</span>
                       <h3 className="font-bold text-gray-900">{platform.name}</h3>
                     </div>
-                    {paid && metrics.roi >= 1 && (
+                    {paid && metrics.roas >= 1 && (
                       <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Profitable</span>
                     )}
                   </div>
@@ -309,9 +309,9 @@ export default function AdPerformancePage() {
                     </div>
                     {paid && (
                       <div className="bg-gray-50 rounded p-3">
-                        <div className="text-xs text-gray-500 mb-0.5">ROI</div>
-                        <div className={`text-xl font-bold ${metrics.roi >= 1 ? 'text-green-600' : 'text-red-600'}`}>
-                          {metrics.roi.toFixed(2)}x
+                        <div className="text-xs text-gray-500 mb-0.5">ROAS</div>
+                        <div className={`text-xl font-bold ${metrics.roas >= 1 ? 'text-green-600' : 'text-red-600'}`}>
+                          {metrics.roas.toFixed(2)}x
                         </div>
                       </div>
                     )}
@@ -423,7 +423,7 @@ export default function AdPerformancePage() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
         <h3 className="text-base font-bold text-blue-900 mb-3">Key Insights</h3>
         <ul className="space-y-1.5 text-sm text-blue-800">
-          <li><strong>ROI</strong> = Attributed Revenue / Ad Spend. Low attribution rate means true ROI is likely higher.</li>
+          <li><strong>ROAS</strong> = Attributed Revenue / Ad Spend — dollars returned per $1 spent. Low attribution rate means true ROAS is likely higher.</li>
           <li><strong>Attribution gap</strong> — Microsoft shows higher attributed revenue because form leads (with phone numbers) match invoices better than call-only leads.</li>
           <li><strong>To improve attribution</strong> — use a dedicated Google Ads forwarding number so call customers can be matched to invoices by phone.</li>
           <li><strong>Funnel</strong> — each customer counted once (first touch). Calls deduplicated by phone number.</li>

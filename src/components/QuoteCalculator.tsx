@@ -186,7 +186,7 @@ export default function QuoteCalculator() {
               )}
             </div>
             <Link
-              href="/quote"
+              href="/"
               className="inline-block w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors"
             >
               Get Exact Quote & Book Now

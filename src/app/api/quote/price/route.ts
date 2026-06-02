@@ -11,7 +11,9 @@ import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, extractInterchangeablesFromSummary, extractPrimaryFeaturesFromSummary, type CachedNagsLookup, type InterchangeableNagsPart } from '@/lib/autobolt/cache';
 import { checkCompatibility } from '@/lib/quote/nags-compatibility';
+import { assertEnvCoherent } from '@/lib/env';
 import { classifyAdasTier, type AdasTier } from '@/lib/quote/adas-tier';
+import { classifyLeadMarket } from '@/lib/market';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +52,7 @@ interface PersistenceContext {
 
 export async function POST(request: NextRequest) {
   try {
+    assertEnvCoherent(); // refuse to write if NEXT_PUBLIC_APP_ENV and Supabase ref disagree
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateCheck = checkRateLimit(`quote-price:${ip}`, 8, 60_000);
     if (!rateCheck.allowed) {
@@ -127,7 +130,6 @@ export async function POST(request: NextRequest) {
       make: effectiveInput.vehicle.make,
       model: effectiveInput.vehicle.model,
       wholesaleCents,
-      hasHud: mygrantResult.hasHud,
     });
 
     if (markupResult.kind === 'manual_review') {
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
     //    ADAS at install."
     //  - None: no ADAS line at all.
     const adasTier: AdasTier = shouldIncludeCalibration(effectiveInput, mygrantResult.adasSignal)
-      ? classifyAdasTier(mygrantResult.adasSignal?.calibrations)
+      ? classifyAdasTier(mygrantResult.adasSignal?.calibrations, effectiveInput.vehicle.make)
       : 'none';
     const adasCalibrationCents = Number.parseInt(process.env.QUOTE_ADAS_CALIBRATION_CENTS || '20000', 10);
     const quote = buildCashWindshieldQuote({
@@ -652,6 +654,7 @@ async function storeAutomatedQuote(
       pricing_version: quote.pricingVersion,
       zip: input.zip || null,
       state: input.state || null,
+      market: classifyLeadMarket({ state: input.state || null, zip: input.zip || null }) || null,
       ip_address: context.ipAddress || null,
       user_agent: context.userAgent || null,
       plate_last4: input.plateLast4 || null,

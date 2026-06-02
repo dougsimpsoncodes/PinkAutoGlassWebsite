@@ -6,6 +6,7 @@ import { buildAttribution } from "@/lib/attribution";
 import { sendEmail, sendAdminAlertEmail } from "@/lib/notifications/email";
 import { sendAdminSMS } from "@/lib/notifications/sms";
 import { sendCustomerSMS } from "@/lib/notifications/beetexting";
+import { isTeamOrTestContact } from "@/lib/constants";
 import {
   getCustomerConfirmationEmail,
   getAdminBookingNotificationEmail,
@@ -285,12 +286,22 @@ export async function POST(req: NextRequest) {
     // Use finalAttribution (immutable) - never spread utmParams directly
     // Destructure to omit phone/zipCode (they're renamed to phoneE164/zip)
     const { phone, zipCode, ...restValidatedData } = validatedData;
+    // Team/test auto-tag — parity with the auto-quoter booking path so internal/
+    // dev/team booking-form submissions stay out of reporting. (This path
+    // previously set no is_test at all, so every booking-form lead counted as real.)
+    const isTest = isTeamOrTestContact({
+      phoneE164: phone,
+      fullName: `${validatedData.firstName} ${validatedData.lastName}`,
+      email: validatedData.email,
+      street: validatedData.streetAddress,
+    });
     const leadData = {
       ...restValidatedData,
       phoneE164: phone, // Map phone -> phoneE164
       zip: zipCode, // Map zipCode -> zip
       sessionId,
       first_contact_method: 'form', // This is a form submission
+      isTest, // fn_insert_lead maps p_payload->>'isTest' -> is_test column
       ...finalAttribution, // Immutable attribution: gclid, msclkid, ad_platform, utm_*
     };
 
@@ -326,6 +337,9 @@ export async function POST(req: NextRequest) {
           service_type: validatedData.serviceType,
           preferred_date: validatedData.preferredDate,
           time_window: validatedData.timeWindow,
+          // Promote a reused lead to test when this submission is team/test —
+          // never un-tag an existing real lead.
+          ...(isTest ? { is_test: true } : {}),
         })
         .eq('id', existingLead.id);
       console.log(`📋 Dedup: Updated existing booking lead ${existingLead.id} (same phone within 7 days)`);

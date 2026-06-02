@@ -495,18 +495,31 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
 
-  // Check for duplicate conversion in this session (for form_submit only)
-  // Phone/text clicks allow multiple per session since user might call multiple times
-  if (event.eventType === 'form_submit' && hasConversionFired('form_submit')) {
-    console.log('⚠️ Duplicate form_submit blocked for session:', sessionId);
+  // Per-session de-dup for form_submit, keyed BY STAGE so each funnel stage
+  // (priced / booked / ymm_text_capture / default) records its OWN conversion_events
+  // row. A single global 'form_submit' key previously let the first fire
+  // (price-shown) suppress 'booked' — which both undercounted the quoter funnel's
+  // booked stage AND pinned the Ads bidding conversion to price-shown. The Ads
+  // fire is de-duped separately in trackFormSubmission. (council 2026-06-01)
+  // Phone/text clicks allow multiple per session since user might call multiple times.
+  const formSubmitStage = (event.metadata?.stage as string) || 'default';
+  if (event.eventType === 'form_submit' && hasConversionFired('form_submit_' + formSubmitStage)) {
+    console.log('⚠️ Duplicate form_submit blocked for session/stage:', sessionId, formSubmitStage);
     return false;
   }
+
+  // Use a distinct event_type for the quoter 'priced' diagnostic so every
+  // existing form_submit counter is unaffected without retrofitting filters.
+  // fn_quoter_funnel detects this as sig_priced via 'quote_priced' event_type.
+  const dbEventType = (event.eventType === 'form_submit' && formSubmitStage === 'priced')
+    ? 'quote_priced'
+    : event.eventType;
 
   // Track in database — denormalize market from the parent session
   const { data, error } = await supabase.from('conversion_events').insert({
     session_id: sessionId,
     visitor_id: visitorId,
-    event_type: event.eventType,
+    event_type: dbEventType,
     event_category: 'conversion',
     page_path: window.location.pathname,
     button_text: event.buttonText,
@@ -532,9 +545,9 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     // Only duplicate blocking (above) should suppress ad conversions.
   }
 
-  // Mark form submissions as fired to prevent duplicates
+  // Mark THIS form_submit stage as fired (stage-aware de-dup, see above).
   if (event.eventType === 'form_submit') {
-    markConversionFired('form_submit');
+    markConversionFired('form_submit_' + formSubmitStage);
   }
 
   console.log('✅ Conversion tracked:', event.eventType, event.buttonLocation);
@@ -546,6 +559,14 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     form_submit: 'form_submit',
     quote_generated: 'quote_generated',
   };
+
+  // Skip GA4 form_submit for the 'priced' stage — price-shown is a diagnostic
+  // event; firing GA4's form_submit here would double-count priced→booked sessions
+  // in GA4 audiences/conversions even though server-side dashboards filter it.
+  // The DB conversion_events row is still written above for the Quoter Funnel.
+  if (event.eventType === 'form_submit' && (event.metadata as any)?.stage === 'priced') {
+    return true;
+  }
 
   analytics.event({
     action: gaEventMap[event.eventType],
@@ -691,8 +712,13 @@ export function trackTextClick(source: string, buttonText?: string) {
 /**
  * Track form submission
  */
-export async function trackFormSubmission(formName: string, metadata?: Record<string, any>) {
-  // Await trackConversion — only fire ad platform conversions if DB insert succeeds
+export async function trackFormSubmission(
+  formName: string,
+  metadata?: Record<string, any>,
+  opts?: { fireAds?: boolean }
+) {
+  // Always log the conversion_events row (stage-aware de-dup) so the quoter funnel
+  // sees every stage. The Ads BIDDING conversion is gated separately below.
   const tracked = await trackConversion({
     eventType: 'form_submit',
     buttonLocation: formName,
@@ -701,9 +727,23 @@ export async function trackFormSubmission(formName: string, metadata?: Record<st
   // Note: trackConversion already fires analytics.event() via gaEventMap
   // so we don't call analytics.trackFormSubmit() to avoid duplicate GA events
 
-  if (!tracked) return; // DB insert failed or duplicate — don't fire ad conversions
+  if (!tracked) return; // DB insert failed or duplicate stage — nothing more to do
 
-  // Fire Google Ads form conversion with leadId or session as transaction_id
+  // Ads bidding conversion: fire ONLY for contact-captured steps (booking +
+  // lead-capture), NEVER for price-shown (a non-contact, window-shopping event).
+  // Firing it at price-shown trained Google/Microsoft toward price curiosity
+  // instead of bookable leads; price-shown now passes opts.fireAds=false and
+  // stays a diagnostic-only funnel event. (council 2026-06-01, unanimous)
+  if (opts?.fireAds === false) return;
+
+  // Fire the Ads lead conversion AT MOST ONCE per session. Mark AFTER the tags
+  // fire (not before) so a tag-load race can't permanently block a later retry:
+  // if gtag/uetq hasn't loaded yet, the call is a no-op but the key would already
+  // be set, silencing the next real attempt. (codex P1 catch 2026-06-01)
+  // Fire the Ads lead conversion. The ad platforms dedup by transaction_id
+  // (leadId or sessionId), so no client-side session key is needed here —
+  // each distinct lead with its own leadId fires independently, and the same
+  // leadId is idempotent at the platform level. (council 2026-06-01)
   const transactionId = metadata?.leadId || getSessionId();
   if (transactionId) {
     const email = metadata?.email;

@@ -32,7 +32,10 @@
  * - Same phone calling multiple times in any period = 1 lead
  * - This matches fetchUnifiedLeads() which groups by phone globally
  * - Calls from business number, toll-free, or < 30s duration are excluded
- * - Calls are NOT suppressed when phone exists in leads table (repeat customers are valid)
+ * - A call is suppressed ONLY when its phone is a call-type lead created in the
+ *   SAME period (prevents same-period double-count). A call-lead from a PRIOR
+ *   period does NOT suppress a new call — repeat customers across periods are
+ *   counted (period-scoped; council 2026-06-01).
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -50,6 +53,9 @@ import {
   classifyLeadMarket,
   normalizePhoneDigits,
 } from './market';
+import { getGrossRevenue } from './grossRevenue';
+import { getAttributedRevenue } from './attributedRevenue';
+import { isQualifyingCall } from './callQualifying';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -148,6 +154,7 @@ export async function buildMetrics(
     clickEventsResult,
     existingCallPhones,
     sessionAttribution,
+    attributedRev,
   ] = await Promise.all([
     fetchSpend(supabase, bounds, market),
     fetchFormLeads(supabase, bounds, market),
@@ -155,8 +162,11 @@ export async function buildMetrics(
     fetchGrossRevenue(supabase, bounds, market),
     fetchTraffic(supabase, bounds, market),
     fetchClickEvents(supabase, bounds, market),
-    fetchCallLeadPhones(supabase),
+    fetchCallLeadPhones(supabase, bounds),
     fetchSessionAttribution(supabase, bounds),
+    // Attributed revenue is keyed on close_date (completed jobs), NOT created_at,
+    // so it is fetched independently of the created_at-bounded lead queries (F09).
+    getAttributedRevenue(supabase, { startDate: bounds.startDate, endDate: bounds.endDate }, market),
   ]);
 
   // Process calls into deduplicated leads, suppressing phones already in leads table
@@ -168,8 +178,6 @@ export async function buildMetrics(
   // Build platform breakdowns
   const byPlatform = buildPlatformBreakdown(allLeads);
 
-  // Build revenue attribution
-  const revenueByPlatform = buildRevenueByPlatform(formLeadsResult.leads);
 
   const metrics: UnifiedMetrics = {
     period: {
@@ -189,8 +197,8 @@ export async function buildMetrics(
     },
     revenue: {
       gross: revenueGrossResult.total,
-      attributed: formLeadsResult.leads.reduce((sum, l) => sum + (l.revenue || 0), 0),
-      byPlatform: revenueByPlatform,
+      attributed: attributedRev.total,
+      byPlatform: attributedRev.byPlatform,
     },
     traffic: trafficResult,
     clickEvents: clickEventsResult,
@@ -208,7 +216,7 @@ export async function buildMetrics(
       callsDeduplicated: callDedup.deduplicated,
       callsSuppressedByLeadsTable: callDedup.suppressedByLeadsTable,
       grossRevenueInvoices: revenueGrossResult.invoiceCount,
-      attributedRevenueLeads: formLeadsResult.leads.filter(l => (l.revenue || 0) > 0).length,
+      attributedRevenueLeads: attributedRev.leadCount,
     };
   }
 
@@ -340,14 +348,19 @@ function deduplicateCalls(
   let excludedBusinessNumber = 0;
   let excludedTollFree = 0;
 
-  // Filter qualifying calls
+  // Filter qualifying calls via the SHARED helper so this dashboard path agrees
+  // with unifiedLeadsBuilder / the Leads page (codex pre-deploy F-market-4,
+  // 2026-05-31). The shared helper additionally drops non-Inbound calls and
+  // excluded/test phones, which this inline filter did NOT — exactly the gap
+  // that made dashboard totals disagree with the Leads page. Per-reason counters
+  // are kept best-effort for the debug payload.
   const qualifying = calls.filter(call => {
+    if (isQualifyingCall(call)) return true;
     const num = call.from_number || '';
-    if (num === BUSINESS_PHONE_NUMBER) { excludedBusinessNumber++; return false; }
-    if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) { excludedTollFree++; return false; }
-    if ((call.duration || 0) < MIN_CALL_DURATION_SECONDS) { excludedDuration++; return false; }
-    if (!num) return false;
-    return true;
+    if (num === BUSINESS_PHONE_NUMBER) excludedBusinessNumber++;
+    else if (TOLL_FREE_PREFIXES.some(p => num.startsWith(p))) excludedTollFree++;
+    else if ((call.duration || 0) < MIN_CALL_DURATION_SECONDS) excludedDuration++;
+    return false;
   });
 
   // Dedup: one lead per unique phone number (matches Leads page global dedup)
@@ -405,24 +418,32 @@ function deduplicateCalls(
 }
 
 /**
- * Fetch phone numbers that already exist as call-type leads in the leads table.
- * These are suppressed from ringcentral_calls to avoid double-counting.
- * When a market filter is active, only suppress call leads that can be
- * classified into that same market, so unclassified persisted call leads
- * do not hide otherwise-valid filtered RingCentral rows.
+ * Phone numbers that are call-type leads in the leads table FOR THE CURRENT
+ * PERIOD. RingCentral calls from these phones are suppressed in deduplicateCalls
+ * to avoid double-counting a call already represented as a same-period call-lead.
+ *
+ * Period-scoped (council 2026-06-01, option A): a call-lead from a PRIOR period
+ * must NOT suppress a brand-new qualifying call from a repeat caller. Previously
+ * this query had no date bound, so a stale lead silenced today's calls on both
+ * sides and undercounted "Qualifying Leads". This mirrors fetchFormLeads, which
+ * only counts leads created within the period.
+ *
+ * Market-agnostic on purpose: a person is a person regardless of which market
+ * their lead classifies into. Filtering this set per-market caused
+ * Sum(markets) > All (the same call would survive dedup in one market but be
+ * suppressed in 'all' mode).
  */
 async function fetchCallLeadPhones(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  bounds: MountainDayBounds
 ): Promise<Set<string>> {
-  // Market-agnostic on purpose: a person is a person regardless of which market
-  // their form lead classifies into. Filtering this set per-market caused
-  // Sum(markets) > All (the same call would survive dedup in one market but
-  // be suppressed in 'all' mode).
   const { data } = await supabase
     .from('leads')
     .select('phone_e164')
     .eq('is_test', false)
-    .eq('first_contact_method', 'call');
+    .eq('first_contact_method', 'call')
+    .gte('created_at', bounds.startUTC)
+    .lte('created_at', bounds.endUTC);
 
   const phones = new Set<string>();
   for (const row of data || []) {
@@ -498,49 +519,10 @@ async function fetchGrossRevenue(
   bounds: MountainDayBounds,
   market: MarketFilter
 ): Promise<{ total: number; invoiceCount: number }> {
-  const { data } = await supabase
-    .from('omega_installs')
-    .select('parts_cost, labor_cost, matched_lead_id')
-    .gte('install_date', bounds.startDate)
-    .lte('install_date', bounds.endDate);
-
-  let rows = data || [];
-
-  if (market !== 'all') {
-    const leadIds = [...new Set(rows.map((row: any) => row.matched_lead_id).filter(Boolean))];
-
-    let allowedLeadIds = new Set<string>();
-    if (leadIds.length > 0) {
-      // Batch in groups of 100 to avoid PostgREST URL length limits
-      const BATCH_SIZE = 100;
-      const allLeads: any[] = [];
-      for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
-        const batch = leadIds.slice(i, i + BATCH_SIZE);
-        const { data: batchLeads } = await supabase
-          .from('leads')
-          .select('id, state, zip, utm_source')
-          .in('id', batch);
-        allLeads.push(...(batchLeads || []));
-      }
-      allowedLeadIds = new Set(
-        allLeads
-          .filter((lead: any) => classifyLeadMarket(lead) === market)
-          .map((lead: any) => lead.id)
-      );
-    }
-
-    // Keep rows that EITHER match the market OR have no matched_lead_id (unclassifiable)
-    // Unmatched installs (cash jobs, walk-ins) cannot be attributed to a market,
-    // so they are included in both market views rather than silently dropped.
-    rows = rows.filter((row: any) =>
-      !row.matched_lead_id || allowedLeadIds.has(row.matched_lead_id)
-    );
-  }
-
-  const total = rows.reduce((sum: number, r: any) =>
-    sum + (r.parts_cost || 0) + (r.labor_cost || 0), 0);
-
-  return { total, invoiceCount: rows.length };
+  // Delegates to the single shared helper so the Exec Dashboard and the ROI /
+  // total-revenue page can never drift on column choice OR market handling
+  // (F01 / 3b — see tasks/2026-05-30-reporting-consistency-audit.md).
+  return getGrossRevenue(supabase, { startDate: bounds.startDate, endDate: bounds.endDate }, market);
 }
 
 async function fetchTraffic(
@@ -561,7 +543,10 @@ async function fetchTraffic(
     .from('page_views')
     .select('id')
     .gte('created_at', bounds.startUTC)
-    .lte('created_at', bounds.endUTC);
+    .lte('created_at', bounds.endUTC)
+    // Exclude admin + test page views, consistent with the analytics route (F11).
+    .not('page_path', 'like', '/admin%')
+    .not('page_path', 'like', '/test%');
 
   if (market !== 'all') {
     sessionsQuery = sessionsQuery.eq('market', market);
@@ -589,7 +574,14 @@ async function fetchClickEvents(
     .select('event_type')
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC)
-    .not('page_path', 'like', '/admin%');
+    .not('page_path', 'like', '/admin%')
+    // Also exclude /test% — was missing here vs the analytics route (F12).
+    .not('page_path', 'like', '/test%')
+    // Exclude quoter diagnostic events — 'quote_priced' is written as its own
+    // event_type (Phase-0, 2026-06-01) so it never inflates form_submit counts;
+    // also exclude it from total so the dashboard's "total click events" stays
+    // consistent with the sum of its named categories.
+    .not('event_type', 'eq', 'quote_priced');
 
   if (market !== 'all') {
     query = query.eq('market', market);
@@ -624,15 +616,3 @@ function buildPlatformBreakdown(leads: MetricLead[]): UnifiedMetrics['leads']['b
   return result;
 }
 
-function buildRevenueByPlatform(leads: MetricLead[]): UnifiedMetrics['revenue']['byPlatform'] {
-  const result = { google: 0, microsoft: 0, unattributed: 0 };
-
-  for (const lead of leads) {
-    if (!lead.revenue) continue;
-    if (lead.platform === 'google') result.google += lead.revenue;
-    else if (lead.platform === 'microsoft') result.microsoft += lead.revenue;
-    else result.unattributed += lead.revenue;
-  }
-
-  return result;
-}

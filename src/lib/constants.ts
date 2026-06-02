@@ -72,3 +72,43 @@ export function isTestPhone(phoneE164: string): boolean {
   }
   return _testPhones.has(phoneE164);
 }
+
+// US "555" exchange (XXX-555-XXXX) is reserved for fiction — real numbers
+// effectively never use it, so it is a safe ad-hoc test marker.
+const TEST_555_PHONE = /^\+1\d{3}555\d{4}$/;
+const TEAM_EMAIL_DOMAIN = '@pinkautoglass.com';
+
+/**
+ * Detect a team-member or test submission from the customer details captured at
+ * booking/lead time, so it can be tagged is_test=true and kept out of reporting.
+ *
+ * Combines the env-list phone checks (EXCLUDED_DRIP_PHONES / TEST_PHONES) with a
+ * few strong, unambiguous markers, because env lists miss ad-hoc tests (a "Test"
+ * booking, a 555 number) and team members using a number not yet on the list.
+ *
+ * Deliberately CONSERVATIVE — it only fires on signals a real customer would
+ * essentially never produce, because a false positive HIDES a real booking from
+ * reporting. is_test is a reversible reporting flag, never a hard block.
+ *
+ * Fires when ANY of:
+ *  - phone is in EXCLUDED_DRIP_PHONES / TEST_PHONES, or uses the 555 test exchange
+ *  - the name contains "test" as a standalone word (e.g. "Kody Test", "Test")
+ *  - the install street is literally "TEST"
+ *  - the email is on the @pinkautoglass.com team domain
+ */
+export function isTeamOrTestContact(contact: {
+  phoneE164?: string | null;
+  fullName?: string | null;
+  email?: string | null;
+  street?: string | null;
+}): boolean {
+  const phone = (contact.phoneE164 || '').trim();
+  if (phone && (isExcludedPhone(phone) || isTestPhone(phone) || TEST_555_PHONE.test(phone))) {
+    return true;
+  }
+  if (/\btest\b/.test((contact.fullName || '').toLowerCase())) return true;
+  if ((contact.street || '').trim().toLowerCase() === 'test') return true;
+  const email = (contact.email || '').trim().toLowerCase();
+  if (email && email.endsWith(TEAM_EMAIL_DOMAIN)) return true;
+  return false;
+}

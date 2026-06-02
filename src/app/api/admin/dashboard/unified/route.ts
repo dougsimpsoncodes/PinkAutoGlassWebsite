@@ -8,6 +8,7 @@ import {
   getCallAttributionMetrics,
   DateFilter,
 } from '@/lib/dashboardData';
+import { getAttributedRevenue } from '@/lib/attributedRevenue';
 
 /**
  * Unified Dashboard API Route
@@ -41,19 +42,14 @@ export async function GET(request: NextRequest) {
     // Fetch call metrics, revenue, cost-of-goods, paid platform data, and call attribution in parallel
     const [
       callMetrics,
-      revenueResult,
+      attributedRev,
       costResult,
       paidMetrics,
       callAttribution,
     ] = await Promise.all([
       getCallMetrics(supabase, start, end),
-      // Lightweight revenue query (just sum revenue_amount from leads table)
-      supabase
-        .from('leads')
-        .select('revenue_amount')
-        .eq('is_test', false)
-        .gte('created_at', start.toISOString())
-        .lte('created_at', end.toISOString()),
+      // Attributed revenue = completed jobs recognized on close_date (F09).
+      getAttributedRevenue(supabase, { startDate: start.toISOString(), endDate: end.toISOString() }, 'all'),
       // Cost-of-goods from omega_installs (parts + labor)
       supabase
         .from('omega_installs')
@@ -68,11 +64,8 @@ export async function GET(request: NextRequest) {
     const googleApiData = paidMetrics.google;
     const microsoftApiData = paidMetrics.microsoft;
 
-    // Calculate revenue from leads
-    const totalRevenue = (revenueResult.data || []).reduce(
-      (sum, l) => sum + (l.revenue_amount || 0),
-      0
-    );
+    // Attributed revenue (completed jobs, close_date) from the shared helper.
+    const totalRevenue = attributedRev.total;
 
     // Calculate cost-of-goods from omega_installs
     const costOfGoods = (costResult.data || []).reduce(

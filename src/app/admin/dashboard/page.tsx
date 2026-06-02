@@ -253,13 +253,14 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Google vs Microsoft</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-1">Google vs Microsoft</h2>
+          <p className="text-xs text-gray-500 mb-4">Spend and ad-attributed <em>leads</em> (delivered form/call conversions tied to a platform) — not visits. For ad clicks &amp; sessions by source, see the Quoter Funnel.</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
               <div className="text-sm font-medium text-blue-800">Google</div>
               <div className="text-xs text-blue-700 mt-2">Spend</div>
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(m.spend.google)}</div>
-              <div className="text-xs text-blue-700 mt-2">Leads</div>
+              <div className="text-xs text-blue-700 mt-2">Attributed Leads</div>
               <div className="text-lg font-semibold text-blue-900">{formatNumber(m.leads.byPlatform.google.total)}</div>
               <div className="text-xs text-blue-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-blue-900">{formatCurrency(m.revenue.byPlatform.google)}</div>
@@ -268,7 +269,7 @@ export default function AdminDashboard() {
               <div className="text-sm font-medium text-cyan-800">Microsoft</div>
               <div className="text-xs text-cyan-700 mt-2">Spend</div>
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(m.spend.microsoft)}</div>
-              <div className="text-xs text-cyan-700 mt-2">Leads</div>
+              <div className="text-xs text-cyan-700 mt-2">Attributed Leads</div>
               <div className="text-lg font-semibold text-cyan-900">{formatNumber(m.leads.byPlatform.microsoft.total)}</div>
               <div className="text-xs text-cyan-700 mt-2">Attributed Rev</div>
               <div className="text-lg font-semibold text-cyan-900">{formatCurrency(m.revenue.byPlatform.microsoft)}</div>

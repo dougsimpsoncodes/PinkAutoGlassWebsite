@@ -105,7 +105,6 @@ export async function GET(req: NextRequest) {
       { data: gscDailyData, error: gscDailyError },
       { data: leadData },
       { data: callData },
-      { data: textData },
     ] = await Promise.all([
       // Google Ads search terms
       fetchRowsWithDateFallback(
@@ -159,14 +158,11 @@ export async function GET(req: NextRequest) {
         .gte('start_time', startTimestamp)
         .lte('start_time', endTimestamp)
         .not('utm_term', 'is', null),
-      // Text click attribution
-      supabase
-        .from('conversion_events')
-        .select('utm_term')
-        .eq('event_type', 'text_click')
-        .gte('created_at', startTimestamp)
-        .lte('created_at', endTimestamp)
-        .not('utm_term', 'is', null),
+      // NOTE: conversion_events.text_click (browser "text us" taps) used to be
+      // counted here as per-term text LEADS — that's World-1 intent, not a
+      // delivered lead, and it inflated lead counts / deflated cost-per-lead
+      // (F17). Removed. Real SMS leads carry no utm_term, so there is no per-term
+      // text-lead source; `texts` stays 0 in the output.
     ]);
 
     if (organicError) console.error('Error fetching organic data:', organicError);
@@ -270,13 +266,7 @@ export async function GET(req: NextRequest) {
       leadsByTerm.get(term)!.calls = phones.size;
     });
 
-    // Text clicks
-    textData?.forEach((text: any) => {
-      const term = (text.utm_term || '').toLowerCase().trim();
-      if (!term) return;
-      if (!leadsByTerm.has(term)) leadsByTerm.set(term, { calls: 0, quotes: 0, texts: 0 });
-      leadsByTerm.get(term)!.texts++;
-    });
+    // (text_click intent events intentionally NOT counted as leads — see F17 note above)
 
     // ─── Build unified rows (one row per search term) ───
     const allTerms = new Set([

@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendCustomerSMS } from '@/lib/notifications/beetexting';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
+import { isAnsweringServiceNumber } from '@/lib/answeringService';
+import { ingestAnsweringServiceMessage } from '@/lib/answeringServiceIngest';
 import {
   classifyMessage,
   recordOptOut,
@@ -14,6 +16,10 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+// The auto-reply send + its DB status update run in an `after()` callback
+// (post-response) so RingCentral still gets a fast 200; give the function
+// headroom so that background work can never be cut by the lambda freeze.
+export const maxDuration = 30;
 
 const AUTO_REPLY_MESSAGE =
   'Thanks for texting Pink Auto Glass where a portion of every sale goes to breast cancer research. Someone will get back to you quickly.';
@@ -230,8 +236,20 @@ export async function POST(req: NextRequest) {
       console.log(`Stored inbound SMS ${messageId} from ${fromNumber}`);
     }
 
-    // --- Create or update lead from inbound SMS ---
-    if (fromNumber) {
+    // --- Answering-service intake: parse the card into real CALL lead(s) ---
+    // These texts are an accounting/intake feed, not customer texts. The raw SMS
+    // is already archived above. We never create an 'sms' lead for the service
+    // number; each parsed customer becomes an ordinary 'call' lead (deduped on the
+    // customer's real phone). See tasks/2026-05-30-reporting-consistency-audit.md.
+    if (isAnsweringServiceNumber(fromNumber)) {
+      try {
+        const res = await ingestAnsweringServiceMessage(supabase, { messageText, messageTime });
+        console.log(`Answering-service intake from ${fromNumber}: created=${res.created} enriched=${res.enriched} skip=${res.skippedNonLead} review=${res.manualReview}`);
+      } catch (asErr: any) {
+        console.error('Answering-service ingest failed:', asErr?.message || asErr);
+      }
+    } else if (fromNumber) {
+      // --- Create or update lead from a normal inbound customer SMS ---
       try {
         const seventyTwoHoursAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
 
@@ -281,8 +299,9 @@ export async function POST(req: NextRequest) {
     // Auto-reply: one greeting per phone number per calendar day (UTC).
     // Uses a deterministic message_id so the DB unique constraint prevents double-sends
     // even under concurrent webhook retries — insert succeeds only once per day.
-    // Skip auto-reply for opted-out numbers.
-    if (fromNumber && isCustomerSmsEnabled() && !senderOptedOut) {
+    // Skip auto-reply for opted-out numbers and for the answering service (it's
+    // an intake feed, not a customer).
+    if (fromNumber && !isAnsweringServiceNumber(fromNumber) && isCustomerSmsEnabled() && !senderOptedOut) {
       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
       const autoReplyMsgId = `auto-reply-${fromNumber}-${today}`;
       const fromNum = process.env.RINGCENTRAL_PHONE_NUMBER || '';
@@ -303,21 +322,29 @@ export async function POST(req: NextRequest) {
         });
 
       if (!reserveErr) {
-        // Slot reserved — send the auto-reply
-        sendCustomerSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE })
-          .then((sent) => {
+        // Slot reserved — send the auto-reply AFTER the response is flushed.
+        // RingCentral gets its fast 200 immediately; `after()` (waitUntil under
+        // the hood) keeps the function alive so neither the provider send NOR the
+        // 'Sent' status update can be cut off by the post-response lambda freeze.
+        // (Same serverless-freeze class as the quoter team alert — see
+        // src/app/api/quote/book/route.ts. The prior code fired this un-awaited
+        // AND never awaited the nested status update, so both were at risk.)
+        // Never throws — the booking/intake rows are already durable.
+        after(async () => {
+          try {
+            const sent = await sendCustomerSMS({ to: fromNumber, message: AUTO_REPLY_MESSAGE });
             if (sent) {
               console.log(`Auto-reply sent to ${fromNumber}`);
-              supabase
+              const { error: updateErr } = await supabase
                 .from('ringcentral_sms')
                 .update({ message_status: 'Sent' })
-                .eq('message_id', autoReplyMsgId)
-                .then(({ error: updateErr }) => {
-                  if (updateErr) console.error('Failed to update auto-reply status:', updateErr.message);
-                });
+                .eq('message_id', autoReplyMsgId);
+              if (updateErr) console.error('Failed to update auto-reply status:', updateErr.message);
             }
-          })
-          .catch((err) => console.error('Auto-reply failed:', err));
+          } catch (err) {
+            console.error('Auto-reply failed:', err);
+          }
+        });
       } else if (reserveErr.code === '23505') {
         console.log(`Auto-reply already sent to ${fromNumber} today, skipping`);
       } else {

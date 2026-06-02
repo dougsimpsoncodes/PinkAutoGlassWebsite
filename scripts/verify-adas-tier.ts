@@ -2,67 +2,104 @@
  * Compile-time verifier for src/lib/quote/adas-tier.ts.
  * Run via `npm run ci:guard:adas-tier`.
  *
- * Lock the tiered ADAS rule:
- *   - MANDATORY: any Windshield Camera System calibration with type
- *     containing "Static" (Static alone or Dual: Static + Dynamic)
- *   - RECOMMENDED: any Windshield Camera System calibration with type
- *     "Dynamic" only
- *   - NONE: no camera calibrations, OR only rain-sensor initialization
+ * Lock Doug's brand-aware ADAS policy (2026-05-29):
+ *   - MANDATORY: Tesla with any camera cal, OR Subaru with a
+ *     Dual: Static + Dynamic camera cal (EyeSight).
+ *   - RECOMMENDED: any other vehicle with a windshield camera cal
+ *     (Lexus, BMW, Honda, Toyota, Mercedes, etc.) regardless of
+ *     Static/Dynamic/Dual — the customer can decline at install.
+ *   - NONE: no camera calibration at all.
  *
- * Cases are drawn from real AutoBolt responses captured 2026-05-29
- * (Subaru EyeSight, Tesla Vision, BMW DAP, Lexus, Honda CR-V base trim, etc.).
+ * Cases are drawn from real AutoBolt responses captured 2026-05-29.
  */
 import { classifyAdasTier } from '../src/lib/quote/adas-tier';
 
 interface Case {
   name: string;
   calibrations: Array<{ type?: string | null; sensor?: string | null }>;
+  make?: string | null;
   expect: 'mandatory' | 'recommended' | 'none';
 }
 
 const cases: Case[] = [
-  // === MANDATORY tier ===
+  // === MANDATORY tier (Tesla + Subaru EyeSight only) ===
   {
-    name: 'Subaru EyeSight (Dual: Static + Dynamic, Windshield Camera)',
+    name: 'Tesla Model 3 (Dual: Static + Dynamic) — Vision is core driving',
     calibrations: [{ type: 'Dual: Static + Dynamic', sensor: 'Windshield Camera System' }],
+    make: 'Tesla',
     expect: 'mandatory',
   },
   {
-    name: 'Tesla Vision (Dual: Static + Dynamic, Windshield Camera)',
-    calibrations: [{ type: 'Dual: Static + Dynamic', sensor: 'Windshield Camera System' }],
-    expect: 'mandatory',
-  },
-  {
-    name: 'Lexus Safety+ (Static, Windshield Camera)',
+    name: 'Tesla Model Y (Static cal) — any Tesla camera cal = mandatory',
     calibrations: [{ type: 'Static', sensor: 'Windshield Camera System' }],
+    make: 'Tesla',
     expect: 'mandatory',
   },
   {
-    name: 'Mandatory plus harmless rain-sensor init alongside',
+    name: 'Subaru Outback EyeSight (Dual: Static + Dynamic)',
+    calibrations: [{ type: 'Dual: Static + Dynamic', sensor: 'Windshield Camera System' }],
+    make: 'Subaru',
+    expect: 'mandatory',
+  },
+  {
+    name: 'Subaru Forester EyeSight + rain-sensor init alongside',
     calibrations: [
-      { type: 'Static', sensor: 'Windshield Camera System' },
+      { type: 'Dual: Static + Dynamic', sensor: 'Windshield Camera System' },
       { type: 'Initialization', sensor: 'Rain Sensor' },
     ],
+    make: 'Subaru',
     expect: 'mandatory',
   },
 
-  // === RECOMMENDED tier ===
+  // === RECOMMENDED tier (everyone else with a camera cal) ===
   {
-    name: 'BMW base-trim camera (Dynamic only, Windshield Camera)',
+    name: 'Lexus Safety+ Static cal — recommended (not mandatory per Doug)',
+    calibrations: [{ type: 'Static', sensor: 'Windshield Camera System' }],
+    make: 'Lexus',
+    expect: 'recommended',
+  },
+  {
+    name: 'Honda CR-V Dual cal (Honda Sensing) — recommended',
+    calibrations: [{ type: 'Dual: Static + Dynamic', sensor: 'Windshield Camera System' }],
+    make: 'Honda',
+    expect: 'recommended',
+  },
+  {
+    name: 'BMW base-trim Dynamic cal — recommended',
     calibrations: [
       { type: 'Dynamic', sensor: 'Windshield Camera System' },
       { type: 'Initialization', sensor: 'Rain Sensor' },
     ],
+    make: 'BMW',
     expect: 'recommended',
   },
   {
-    name: 'Honda Sensing higher trim (Dynamic only)',
+    name: 'Toyota 4Runner Static cal — recommended',
+    calibrations: [{ type: 'Static', sensor: 'Windshield Camera System' }],
+    make: 'Toyota',
+    expect: 'recommended',
+  },
+  {
+    name: 'Mercedes-Benz Static cal — recommended',
+    calibrations: [{ type: 'Static', sensor: 'Windshield Camera System' }],
+    make: 'Mercedes-Benz',
+    expect: 'recommended',
+  },
+  {
+    name: 'Subaru with plain Dynamic cal (no EyeSight signal) — recommended',
     calibrations: [{ type: 'Dynamic', sensor: 'Windshield Camera System' }],
+    make: 'Subaru',
     expect: 'recommended',
   },
   {
-    name: 'Camera calibration with unknown/missing type — conservative to recommended',
+    name: 'Camera cal with unknown type, non-Tesla/Subaru — recommended',
     calibrations: [{ type: null, sensor: 'Windshield Camera System' }],
+    make: 'Audi',
+    expect: 'recommended',
+  },
+  {
+    name: 'Camera cal, missing make — defaults to recommended (no mandatory inference)',
+    calibrations: [{ type: 'Static', sensor: 'Windshield Camera System' }],
     expect: 'recommended',
   },
 
@@ -70,16 +107,19 @@ const cases: Case[] = [
   {
     name: 'Honda CR-V LX base trim (no calibration at all)',
     calibrations: [],
+    make: 'Honda',
     expect: 'none',
   },
   {
     name: 'Pre-camera vehicle with only rain-sensor init',
     calibrations: [{ type: 'Initialization', sensor: 'Rain Sensor' }],
+    make: 'Ford',
     expect: 'none',
   },
   {
     name: '2016 Subaru Impreza — no ADAS calibration',
     calibrations: [],
+    make: 'Subaru',
     expect: 'none',
   },
   {
@@ -95,15 +135,16 @@ const cases: Case[] = [
     expect: 'none',
   },
   {
-    name: 'Empty sensor string (defensive)',
+    name: 'Tesla with empty sensor string (defensive)',
     calibrations: [{ type: 'Static', sensor: '' }],
+    make: 'Tesla',
     expect: 'none',
   },
 ];
 
 let failed = 0;
 for (const c of cases) {
-  const got = classifyAdasTier(c.calibrations as any);
+  const got = classifyAdasTier(c.calibrations as any, c.make);
   const ok = got === c.expect;
   if (!ok) failed++;
   console.log(`  ${ok ? '✓' : '✗'} ${c.name}  →  expected=${c.expect}, got=${got}`);

@@ -8,6 +8,10 @@ import { Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { resolveMarket, getPhoneForMarket } from "@/lib/market"
 
+// Client-mirror of isStaging() — server helper isn't usable in a "use client" file,
+// but NEXT_PUBLIC_APP_ENV is exposed to the browser so the check works the same way.
+const IS_STAGING = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
@@ -29,7 +33,8 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed left-0 right-0 z-50 transition-all duration-300",
+        IS_STAGING ? "top-7" : "top-0",
         isScrolled
           ? "bg-white shadow-md"
           : "bg-white/95 backdrop-blur-sm border-b border-gray-100"
@@ -49,24 +54,32 @@ export default function Header() {
             aria-label="Pink Auto Glass - Go to homepage"
           >
             <Image
-              src="/pink-logo-horizontal.png"
+              src="/pink-logo-wordmark.png"
               alt="Pink Auto Glass - Mobile Windshield Repair & Replacement Denver"
-              width={500}
-              height={500}
+              width={444}
+              height={158}
               className="w-auto"
-              style={{ height: '56px' }}
+              style={{ height: '52px' }}
               priority
             />
           </Link>
 
-          <a
-            href={tel}
-            className="flex items-center space-x-1.5 text-gray-700 hover:text-pink-600 transition-colors text-base font-medium min-h-[44px] px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
-            aria-label="Call Pink Auto Glass"
-          >
-            <Phone className="w-5 h-5" />
-            <span>{displayPhone}</span>
-          </a>
+          <div className="flex items-center space-x-2">
+            <Link
+              href="/quote"
+              className="rounded-full bg-pink-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 min-h-[44px] flex items-center"
+            >
+              Get a quote
+            </Link>
+            <a
+              href={tel}
+              className="flex items-center space-x-1.5 text-gray-700 hover:text-pink-600 transition-colors text-base font-medium min-h-[44px] px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
+              aria-label="Call Pink Auto Glass"
+            >
+              <Phone className="w-5 h-5" />
+              <span>{displayPhone}</span>
+            </a>
+          </div>
         </nav>
 
         {/* Desktop/Tablet Layout: Horizontal */}
@@ -95,6 +108,12 @@ export default function Header() {
 
           {/* CTA Section (Right) */}
           <div className="flex items-center space-x-4">
+            <Link
+              href="/quote"
+              className="rounded-full bg-pink-600 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
+            >
+              See your price
+            </Link>
             <a
               href={tel}
               className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"

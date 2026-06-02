@@ -3,31 +3,36 @@
  * the customer-facing quote, surfaced as a post-conversion recommendation,
  * or omitted entirely.
  *
- * Decision drivers come from AutoBolt's `calibrations[]` array (each entry
- * has a `type` and `sensor`). The rule:
+ * Doug's policy 2026-05-29: "mandatory" means the customer literally cannot
+ * drive the vehicle safely without recalibration — the system is core to
+ * driving (Tesla Vision) or auto-disables with a persistent dashboard
+ * warning the customer can't ignore (Subaru EyeSight). For everything else,
+ * even when the windshield camera technically uses a Static target, the
+ * customer can decline at install and the car drives normally with a few
+ * warning lights. Convert first, sell ADAS at install for those.
  *
- *   MANDATORY — Any windshield-camera calibration with type containing
- *               "Static" (i.e., "Static" alone or "Dual: Static + Dynamic").
- *               These vehicles require target-board calibration (Subaru
- *               EyeSight, Tesla Vision, Lexus Safety+, certain BMW DAP and
- *               Mercedes Distronic trims). Without it the ADAS system is
- *               disabled or throws errors. Bundle $200 in the quote total.
+ *   MANDATORY — Brand-specific narrow list:
+ *               • Any Tesla with a camera calibration (Vision IS the driving
+ *                 system; without it Autopilot/steering features fail hard).
+ *               • Subaru with a Dual: Static + Dynamic camera calibration
+ *                 (EyeSight system — auto-disables, dashboard warning that
+ *                 stays on until recalibrated).
+ *               These bundle $200 into the quote total.
  *
- *   RECOMMENDED — Any windshield-camera calibration with type "Dynamic"
- *                 only. The system self-calibrates over a few miles of
- *                 driving; the car drives normally before/after. Most
- *                 Toyota TSS, Honda Sensing, BMW base-trim, etc. land here.
- *                 NOT bundled in the quote. Surfaced in the booking
- *                 confirmation email/SMS so the tech can walk the customer
- *                 through accept/decline at install.
+ *   RECOMMENDED — Any other vehicle with a windshield-camera calibration,
+ *                 regardless of Static / Dynamic / Dual. Most Toyota TSS,
+ *                 Honda Sensing, Lexus Safety+, BMW DAP, Mercedes Distronic,
+ *                 etc. land here. NOT bundled in the quote. Surfaced in the
+ *                 booking confirmation email/SMS so the tech can walk the
+ *                 customer through accept/decline at install.
  *
- *   NONE — No windshield-camera calibration in the array. Pre-2018 vehicles,
- *          base trims without forward camera, and "rain sensor init only"
- *          land here. No ADAS line, no recommendation.
+ *   NONE — No windshield-camera calibration in the array. Pre-camera
+ *          vehicles, base trims without forward camera, and "rain sensor
+ *          init only" land here. No ADAS line, no recommendation.
  *
- * Council reco 2026-05-29 (Codex + Gemini): the type=Static signal is the
- * cleanest functional-mandatory line. Doug locked this design 2026-05-29:
- * convert first, sell ADAS at install for the recommended tier.
+ * AutoBolt's calibration.type (Static/Dynamic/Dual) is still used to detect
+ * EyeSight on Subaru, but it is NOT the mandatory/recommended switch on its
+ * own — brand is.
  */
 
 export type AdasTier = 'mandatory' | 'recommended' | 'none';
@@ -49,29 +54,35 @@ function isCameraCalibration(c: CalibrationSignal): boolean {
 }
 
 /**
- * Returns true when the calibration type requires target-board (Static)
- * work. AutoBolt reports this as "Static" or "Dual: Static + Dynamic".
+ * Subarus with a Dual: Static + Dynamic camera calibration are reliably
+ * EyeSight-equipped. Plain "Static" or "Dynamic" alone are rare on Subaru
+ * camera systems and don't carry the same auto-disable behavior.
  */
-function isStaticType(c: CalibrationSignal): boolean {
+function isSubaruEyeSightCal(c: CalibrationSignal): boolean {
   const type = (c.type ?? '').toLowerCase();
-  return type.includes('static');
+  return type.includes('static') && type.includes('dynamic');
+}
+
+function normalizeMake(make: string | null | undefined): string {
+  return (make ?? '').trim().toLowerCase();
 }
 
 /**
- * Returns true when the calibration type is drive-around (Dynamic only).
+ * @param calibrations  AutoBolt's calibration array for the resolved part.
+ * @param make          Vehicle make. Required to classify mandatory tier
+ *                      correctly — brand drives the decision, not cal type.
  */
-function isDynamicOnlyType(c: CalibrationSignal): boolean {
-  const type = (c.type ?? '').toLowerCase();
-  return type === 'dynamic' || (type.includes('dynamic') && !type.includes('static'));
-}
-
-export function classifyAdasTier(calibrations: CalibrationSignal[] | null | undefined): AdasTier {
+export function classifyAdasTier(
+  calibrations: CalibrationSignal[] | null | undefined,
+  make?: string | null,
+): AdasTier {
   const list = calibrations ?? [];
   const cameraCals = list.filter(isCameraCalibration);
   if (cameraCals.length === 0) return 'none';
-  if (cameraCals.some(isStaticType)) return 'mandatory';
-  if (cameraCals.some(isDynamicOnlyType)) return 'recommended';
-  // Camera calibration is present but type is missing/unknown — be
-  // conservative and treat as recommended (visible but not bundled).
+
+  const brand = normalizeMake(make);
+  if (brand === 'tesla') return 'mandatory';
+  if (brand === 'subaru' && cameraCals.some(isSubaruEyeSightCal)) return 'mandatory';
+
   return 'recommended';
 }

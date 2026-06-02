@@ -8,7 +8,7 @@ Live client site at `pinkautoglass.com`; as of 2026-04-12 the latest investigate
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
 
 ## Current Focus
-Automated quote engine MVP foundation (exact cash windshield quote when confident, estimate/manual review otherwise) AND ongoing measurement/attribution hardening so Denver paid/SEO decisions are based on stricter call attribution data. RingCentral recording-analysis pilot for Denver closed-vs-lost is scoped; secrets-safe local OAuth for Search Console is unblocked.
+Quoter sitewide rollout — embedding `QuoterEmbed` (AutomatedQuoteForm wrapper) across high-traffic pages so visitors can get an instant price without navigating to /quote. 9 pages live as of 2026-06-01, covering ~61% of total site traffic. Tracking tags (Google AW-17667607828, Microsoft UET 343218744) are global in layout.tsx and require no per-page changes.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
@@ -16,15 +16,16 @@ Automated quote engine MVP foundation (exact cash windshield quote when confiden
 ## Known Issues
 - `scripts/auto-fix/project-map.json` points PinkAutoGlassWebsite at a stale workspace path instead of this repo, which can misroute future auto-fix attempts.
 - Working tree currently contains unrelated local changes in `tasks/todo.md` and `tasks/2026-04-12-google-ads-call-attribution-cascade-fix.md`; avoid touching them during automated fixes.
+- 2026-06-01 same-day lead checks can look scarier in `leads` than in RingCentral because call rows are fresher than lead rows; use `ringcentral_calls` for real-time phone-volume checks.
+- 2026-06-01 admin RingCentral sync was still inserting removed `leads.phone`, so new qualifying call rows could exist in `ringcentral_calls` without persisting as `leads`; local code fix is pending approved production deploy/backfill.
+- Homepage quoter rollout may be reducing phone-first intent even though site traffic is not down. Morning 2026-06-01 evidence: normal/high sessions, lower-than-late-May call volume, only one priced quote and no quoter booking by midday.
 
 ## Next Steps (priority order)
-1. If resumed, finish won-cohort cleanup for the RingCentral pilot so the final comparison uses only true acquisition-win calls; then refresh the findings memo and scorecard accordingly.
-2. Decide whether to operationalize `analysis/ringcentral-pilot/CALL-CLOSE-SOP.md` into a shorter rep cheat sheet and manager QA checklist.
-3. Apply the new attribution-health snapshot migration + deploy the cron route so monitoring becomes live.
-4. Apply the new `leads.session_id` backfill migration, then verify legacy reads can be narrowed further.
-5. Keep dual-platform conflicts quarantined from bidding exports until stronger tie-break evidence exists.
-6. Decide whether to make the attribution-health route snapshot yesterday-only or configurable for broader windows once live data accumulates.
-7. Continue monitoring CI/CD alerts; only apply a code fix if a currently failing run reproduces.
+1. **QuoterEmbed rollout** — Phase 2: add global "See your price" link in Header.tsx (one edit, covers all 263 routes). Council 3/3 approved this as the next step.
+2. **Admin quotes dashboard redesign** — in-progress local changes (quotes/page.tsx + api/admin/quotes/route.ts) need review and commit. Not yet verified as working.
+3. **RingCentral sync bug** — local fix pending for stale `leads.phone` insert; needs deploy + backfill before call leads reliably persist.
+4. **Monitor quoter vs call volume** — morning 2026-06-01 showed lower call volume; watch for next 3-5 days before deciding if a phone-first homepage fast-follow is needed.
+5. Continue monitoring CI/CD alerts; only apply a code fix if a currently failing run reproduces.
 
 ## Key Files
 - `.github/workflows/` — CI/CD and security workflows
@@ -43,6 +44,10 @@ Automated quote engine MVP foundation (exact cash windshield quote when confiden
 - **PlateToVIN API** — selected as MVP plate lookup provider. Client foundation lives in `src/lib/platelookup/client.ts`; smoke script: `npx tsx scripts/platetovin-smoke.ts --plate=ABC123 --state=CO`.
 
 ## Change Log
+- 2026-06-01: QuoterEmbed rollout — created `src/components/QuoterEmbed.tsx` (AutomatedQuoteForm + heading + trust pills). Added to 6 service pages (windshield-replacement, mobile-service, insurance-claims, windshield-repair, adas-calibration, arizona/windshield-replacement), 3 location pages (Denver, Colorado Springs, Parker), and the blog [slug] template (covers all blog posts). Total quoter-reachable traffic: ~61%. Tracking is automatic — surface tags from pathname, conversion labels unchanged, Google/Microsoft scripts global in layout.tsx. Commits: 3e5b51e, 9af671c, c003fd8.
+- 2026-06-01: Fixed Ads bidding conversion — moved quote_form fire from price-shown (fireAds:false) to booking/lead-capture only. Council unanimous. Commit 85a19eb.
+- 2026-06-01: Investigated partner concern that the homepage auto-quoter hurt Monday leads. Verified production deployment is newer than the May 31 handoff (`a489826`, deployed 10:13 MST). Live data at ~12:08 MST showed 29 real sessions / 50 page views from 7am-to-now, 7 accepted inbound Colorado calls / 6 unique 30s+ callers, 2 phone-clicks, 1 priced quoter event, 0 quoter bookings. Traffic was not down; call volume was about half of the prior Tue-Fri morning baseline and quoter engagement had not replaced those calls. Recommendation: do not full-revert blindly, but strongly consider a reversible phone-first homepage fast-follow if calls stay soft.
+- 2026-06-01: Follow-up found a reporting/lead-persistence bug in `src/app/api/admin/sync/ringcentral/route.ts`: the admin sync insert still sent stale `phone` alongside `phone_e164`, while production `leads` uses `phone_e164`. Patched locally to remove `phone`, set `first_contact_method: 'call'`, and classify `market` from the called number. `npm run ci:guard:env-coherence` and `npm run build` passed; full `tsc --noEmit` still fails on the repo's existing baseline, with no RingCentral route errors.
 - 2026-04-12: Created project state file in the active repo and logged self-healed investigation for `ci_failure_210`.
 - 2026-04-14: Started call attribution remediation. Audited production data, identified the 3 ad_platform writers, found the orphaned Phase 2 resolver, drafted the 3-PR plan, ran reviews via Claude self-read + Gemini + Codex.
 - 2026-04-15: PR1 merged (commit 3e9ac57). Migration applied to live DB. Dashboard builders updated. PR2 work scheduled for next session — see `tasks/2026-04-14-attribution-remediation.md` "Resume here" section.

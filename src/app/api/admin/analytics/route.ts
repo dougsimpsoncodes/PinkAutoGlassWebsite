@@ -138,6 +138,8 @@ export async function GET(req: NextRequest) {
         return await getTopPages(startDate, market);
       case 'sessions':
         return await getSessions(startDate, market);
+      case 'quoter_funnel':
+        return await getQuoterFunnel(startDate, new Date(bounds.endUTC), market);
       default:
         return await getOverviewMetrics(startDate, market);
     }
@@ -187,7 +189,9 @@ async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startDate.toISOString())
         .not('page_path', 'like', '/admin%')
-        .not('page_path', 'like', '/test%'),
+        .not('page_path', 'like', '/test%')
+        // Phase-0: 'quote_priced' is a diagnostic event, not a real conversion.
+        .not('event_type', 'eq', 'quote_priced'),
       market
     ),
   ]);
@@ -244,6 +248,8 @@ async function getConversions(startDate: Date, market: MarketFilter) {
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
+      // Phase-0: exclude the quoter price-shown diagnostic event.
+      .not('event_type', 'eq', 'quote_priced')
       .order('created_at', { ascending: false }),
     market
   );
@@ -300,11 +306,12 @@ async function getSessions(startDate: Date, market: MarketFilter) {
 
   if (sessionsError) throw sessionsError;
 
-  // Get conversion counts per session
+  // Get conversion counts per session — exclude quote_priced diagnostic events.
   const { data: conversions, error: conversionsError } = await supabase
     .from('conversion_events')
     .select('session_id')
-    .gte('created_at', startDate.toISOString());
+    .gte('created_at', startDate.toISOString())
+    .not('event_type', 'eq', 'quote_priced');
 
   if (conversionsError) throw conversionsError;
 
@@ -349,13 +356,14 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
 
   if (pageViewsError) throw pageViewsError;
 
-  // Get all conversions - exclude admin and test pages
+  // Get all conversions - exclude admin/test pages and quote_priced diagnostics.
   const { data: conversions, error: conversionsError } = await supabase
     .from('conversion_events')
     .select('session_id, utm_source, page_path')
     .gte('created_at', startDate.toISOString())
     .not('page_path', 'like', '/admin%')
-    .not('page_path', 'like', '/test%');
+    .not('page_path', 'like', '/test%')
+    .not('event_type', 'eq', 'quote_priced');
 
   if (conversionsError) throw conversionsError;
 
@@ -431,6 +439,7 @@ async function getConversionsDetail(startDate: Date, market: MarketFilter) {
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
+      .not('event_type', 'eq', 'quote_priced')
       .order('created_at', { ascending: false }),
     market
   );
@@ -459,7 +468,8 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
       .select('page_path, session_id')
       .gte('created_at', startDate.toISOString())
       .not('page_path', 'like', '/admin%')
-      .not('page_path', 'like', '/test%'),
+      .not('page_path', 'like', '/test%')
+      .not('event_type', 'eq', 'quote_priced'),
     market
   );
   if (conversionsError) throw conversionsError;
@@ -519,4 +529,123 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
     ok: true,
     data: results,
   });
+}
+
+// ============================================================================
+// QUOTER FUNNEL — source-segmented conversion funnel for the auto-quoter
+// ============================================================================
+
+/** Row shape returned by fn_quoter_funnel */
+interface FunnelRpcRow {
+  source: string;
+  stage: string;
+  cnt: number;
+}
+
+/** Shape returned by this handler to the client page */
+interface QuoterFunnelPayload {
+  /** Funnel data keyed as funnelRows[source][stage] = count */
+  funnelRows: Record<string, Record<string, number>>;
+  /** All distinct sources in the data set */
+  sources: string[];
+  /** Ordered stage names */
+  stages: string[];
+  /**
+   * True total bookings from automated_quote_bookings (unaffected by the
+   * conversion_events dedup bug). Compared to sum of booked by source to
+   * produce the data-quality delta shown on the page. NULL for a specific
+   * market view (the table can't be market-scoped) — the delta is only
+   * meaningful for the 'all' view.
+   */
+  trueTotalBookings: number | null;
+}
+
+/**
+ * Calls fn_quoter_funnel via Supabase RPC (service-role), then fetches the
+ * true-total booking count from automated_quote_bookings.  Returns structured
+ * data so the page never works with raw session rows.
+ *
+ * endDate is passed explicitly (from bounds.endUTC) so today/yesterday get
+ * tight upper bounds instead of an implicit NOW().
+ */
+async function getQuoterFunnel(
+  startDate: Date,
+  endDate: Date,
+  market: MarketFilter,
+): Promise<NextResponse> {
+  const supabase = getSupabaseClient();
+
+  // --- Call the RPC ---
+  const { data: rpcRows, error: rpcError } = await supabase.rpc(
+    'fn_quoter_funnel',
+    {
+      range_start:  startDate.toISOString(),
+      range_end:    endDate.toISOString(),
+      exclude_test: true,
+      p_market:     market,
+    },
+  );
+
+  if (rpcError) {
+    console.error('fn_quoter_funnel RPC error:', rpcError);
+    return NextResponse.json(
+      { ok: false, error: 'Funnel query failed', detail: rpcError.message },
+      { status: 500 },
+    );
+  }
+
+  // --- True-total bookings (not source-attributed) ---
+  // automated_quote_bookings has NO market column and NO session_id, so it
+  // cannot be market-scoped. Only count it for the 'all' view; for a specific
+  // market it stays null, because comparing an ALL-market booking total against
+  // the market-scoped attributed/funnel counts overstates "unattributed"
+  // bookings in CO/AZ views (codex pre-deploy F-market-2, 2026-05-31). The page
+  // suppresses the data-quality delta + confirmed-total card when null.
+  let trueTotalBookings: number | null = null;
+  if (market === 'all') {
+    const { count, error: bookingError } = await supabase
+      .from('automated_quote_bookings')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', startDate.toISOString())
+      .lt('created_at', endDate.toISOString())
+      .eq('is_test', false);
+    if (bookingError) {
+      console.error('automated_quote_bookings count error:', bookingError);
+      // Non-fatal: leave trueTotalBookings null
+    } else {
+      trueTotalBookings = count ?? 0;
+    }
+  }
+
+  // --- Reshape RPC rows into funnelRows[source][stage] = count ---
+  const STAGE_ORDER = [
+    'traffic_source',
+    'landed_quoter',
+    'started_quote',
+    'price_shown',
+    'booked',
+  ] as const;
+
+  const rows: FunnelRpcRow[] = (rpcRows as FunnelRpcRow[]) || [];
+  const sourceSet = new Set<string>();
+  const funnelRows: Record<string, Record<string, number>> = {};
+
+  for (const row of rows) {
+    sourceSet.add(row.source);
+    if (!funnelRows[row.source]) funnelRows[row.source] = {};
+    // fn_quoter_funnel returns cnt as bigint which Supabase deserialises to
+    // number in JS; no cast needed.
+    funnelRows[row.source][row.stage] = Number(row.cnt);
+  }
+
+  const sources = Array.from(sourceSet).sort();
+
+  const payload: QuoterFunnelPayload = {
+    funnelRows,
+    sources,
+    stages: [...STAGE_ORDER],
+    trueTotalBookings,
+  };
+
+  return NextResponse.json({ ok: true, data: payload });
 }

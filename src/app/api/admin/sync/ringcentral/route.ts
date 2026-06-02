@@ -205,11 +205,11 @@ export async function POST(req: NextRequest) {
     // Step 5a: Persist qualifying accepted inbound calls as lead rows
     // This ensures call leads appear in the leads table, not just in the unified view at query time
     const qualifyingAccepted = callDataBatch.filter(
-      (c) => isQualifyingInbound(c) && c.result === 'Accepted'
+      (c: any) => isQualifyingInbound(c) && c.result === 'Accepted'
     );
 
     if (qualifyingAccepted.length > 0) {
-      const phones = [...new Set(qualifyingAccepted.map((c) => c.from_number))];
+      const phones = [...new Set(qualifyingAccepted.map((c: any) => c.from_number))];
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
 
       const { data: existingLeads } = await supabase
@@ -235,7 +235,6 @@ export async function POST(req: NextRequest) {
         const nameParts = (call.from_name || '').trim().split(' ');
         return {
           phone_e164: call.from_number,
-          phone: call.from_number,
           first_name: nameParts[0] || 'Caller',
           last_name: nameParts.slice(1).join(' ') || '',
           utm_source: 'ringcentral_call',

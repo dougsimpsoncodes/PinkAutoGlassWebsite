@@ -201,7 +201,7 @@ export default function PricingPage() {
                 All prices include mobile service, installation, and lifetime warranty. ADAS calibration included when required.
               </p>
               <Link
-                href="/quote"
+                href="/"
                 className="inline-block bg-pink-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-pink-700 transition-colors"
               >
                 Get Your Exact Quote

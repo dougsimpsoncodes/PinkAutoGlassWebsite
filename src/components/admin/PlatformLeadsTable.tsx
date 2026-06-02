@@ -16,7 +16,10 @@ import {
   PhoneOutgoing,
   PhoneMissed,
   Play,
-  Filter
+  Filter,
+  Calendar,
+  Clock,
+  MapPin,
 } from 'lucide-react';
 import { type UnifiedLeadRow } from '@/lib/unifiedLeadsBuilder';
 
@@ -87,12 +90,29 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
   const [selectedLead, setSelectedLead] = useState<UnifiedLeadRow | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<UnifiedLeadRow>>({});
+  const [bookingInfo, setBookingInfo] = useState<Record<string, string | number | null> | null>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   // Close lead modal when market changes to avoid showing stale cross-market details
   useEffect(() => {
     setSelectedLead(null);
     setEditMode(false);
+    setBookingInfo(null);
   }, [market]);
+
+  // Fetch booking details when a scheduled form lead is selected
+  useEffect(() => {
+    if (!selectedLead || selectedLead.type !== 'form' || selectedLead.status !== 'scheduled') {
+      setBookingInfo(null);
+      return;
+    }
+    setBookingLoading(true);
+    fetch(`/api/admin/lead-booking?lead_id=${selectedLead.id}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.ok) setBookingInfo(data.booking); })
+      .catch(() => {})
+      .finally(() => setBookingLoading(false));
+  }, [selectedLead]);
 
   const hasExternalLeads = externalLeads !== undefined;
 
@@ -622,6 +642,49 @@ export default function PlatformLeadsTable({ platform, dateFilter, accentColor =
                       )}
                     </div>
                   </div>
+
+                  {/* Booking Details */}
+                  {selectedLead.status === 'scheduled' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-green-600" />
+                        Booking Details
+                      </h3>
+                      {bookingLoading ? (
+                        <div className="text-sm text-gray-500">Loading...</div>
+                      ) : bookingInfo ? (
+                        <div className="space-y-2 text-sm">
+                          {bookingInfo.install_date && (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="font-medium text-gray-900">
+                                {new Date(bookingInfo.install_date as string).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </div>
+                          )}
+                          {bookingInfo.install_window && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-700">{bookingInfo.install_window as string}</span>
+                            </div>
+                          )}
+                          {bookingInfo.install_street && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-700">{bookingInfo.install_street as string}</span>
+                            </div>
+                          )}
+                          {bookingInfo.booking_token && (
+                            <div className="mt-2 pt-2 border-t border-green-200 font-mono text-xs text-gray-500">
+                              Ref: {(bookingInfo.booking_token as string).slice(0, 8).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-500">No booking found.</div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Vehicle Info */}
                   {selectedLead.vehicle_make && (
