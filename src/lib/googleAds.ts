@@ -385,6 +385,7 @@ export async function fetchCallConversions(
       segments.date,
       segments.conversion_action,
       segments.conversion_action_name,
+      segments.conversion_action_category,
       metrics.conversions,
       metrics.conversions_value
     FROM campaign
@@ -415,7 +416,9 @@ export async function fetchCallConversions(
     });
   } catch (error: any) {
     console.error('Error fetching call conversions:', error);
-    throw new Error(`Failed to fetch call conversions: ${error.message}`);
+    // gRPC errors from google-ads-api use error.errors[0].message, not error.message
+    const msg = error?.errors?.[0]?.message || error?.message || String(error);
+    throw new Error(`Failed to fetch call conversions: ${msg}`);
   }
 }
 
