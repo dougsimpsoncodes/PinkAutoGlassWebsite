@@ -64,6 +64,7 @@ interface AutomatedQuoteRow {
   booking_window: string | null;
 }
 
+type DisplayQuoteRow = AutomatedQuoteRow & { attemptCount: number };
 type StatusFilter = 'all' | 'scheduled' | 'lead' | 'quote_only';
 type SortColumn = 'date' | 'customer' | 'vehicle' | 'lead_status';
 type SortDirection = 'asc' | 'desc';
@@ -113,56 +114,49 @@ export default function AutomatedQuotesDashboard() {
   }, [fetchQuotes]);
 
   // Collapse duplicate rows to the "best" one: scheduled > lead > quote_only, then most recent.
-  // Groups: (1) same VIN, (2) no VIN but same session + Y/M/M, (3) no VIN + no session but
-  // same Y/M/M within a 10-minute window (catches rage-click retries where session wasn't captured).
-  const deduplicatedQuotes = useMemo(() => {
+  // Two tiers: (1) same VIN — exact identity match. (2) no VIN — same Y/M/M on the same
+  // calendar day (UTC). session_id is intentionally ignored for no-VIN grouping: it's unreliable
+  // (JS timing, cookie blocking) and using it caused retries with mismatched session_ids to
+  // survive as separate rows (council C, 2026-06-03). Attempt count is preserved on the row.
+  const deduplicatedQuotes = useMemo((): DisplayQuoteRow[] => {
     const STATUS_RANK: Record<string, number> = { scheduled: 0, lead: 1, quote_only: 2 };
 
-    function pickBest(group: AutomatedQuoteRow[]): AutomatedQuoteRow {
-      return group.slice().sort((a, b) => {
+    function pickBest(group: AutomatedQuoteRow[]): DisplayQuoteRow {
+      const best = group.slice().sort((a, b) => {
         const rankA = STATUS_RANK[normalizeLeadStatus(a)] ?? 3;
         const rankB = STATUS_RANK[normalizeLeadStatus(b)] ?? 3;
         if (rankA !== rankB) return rankA - rankB;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       })[0];
+      return { ...best, attemptCount: group.length };
     }
 
     const vinGroups = new Map<string, AutomatedQuoteRow[]>();
-    const sessionGroups = new Map<string, AutomatedQuoteRow[]>();
-    const windowGroups = new Map<string, AutomatedQuoteRow[]>();
+    const ymmGroups = new Map<string, AutomatedQuoteRow[]>();
 
     for (const quote of quotes) {
       if (quote.vin) {
         const group = vinGroups.get(quote.vin) ?? [];
         group.push(quote);
         vinGroups.set(quote.vin, group);
-      } else if (quote.session_id && quote.vehicle_year && quote.vehicle_make && quote.vehicle_model) {
-        const key = `${quote.session_id}|${quote.vehicle_year}|${quote.vehicle_make}|${quote.vehicle_model}`;
-        const group = sessionGroups.get(key) ?? [];
-        group.push(quote);
-        sessionGroups.set(key, group);
       } else if (quote.vehicle_year && quote.vehicle_make && quote.vehicle_model) {
-        // Bucket by calendar date (UTC) — all same-vehicle retries on the same day collapse to one.
-        // Lowercase make/model so casing differences don't split the group.
         const day = quote.created_at.slice(0, 10);
         const key = `${quote.vehicle_year}|${quote.vehicle_make.toLowerCase()}|${quote.vehicle_model.toLowerCase()}|${day}`;
-        const group = windowGroups.get(key) ?? [];
+        const group = ymmGroups.get(key) ?? [];
         group.push(quote);
-        windowGroups.set(key, group);
+        ymmGroups.set(key, group);
       } else {
-        // Ungroupable — show as-is
         vinGroups.set(quote.id, [quote]);
       }
     }
 
-    const result: AutomatedQuoteRow[] = [];
+    const result: DisplayQuoteRow[] = [];
     for (const group of vinGroups.values()) result.push(pickBest(group));
-    for (const group of sessionGroups.values()) result.push(pickBest(group));
-    for (const group of windowGroups.values()) result.push(pickBest(group));
+    for (const group of ymmGroups.values()) result.push(pickBest(group));
     return result;
   }, [quotes]);
 
-  const filteredQuotes = useMemo(() => {
+  const filteredQuotes = useMemo((): DisplayQuoteRow[] => {
     return deduplicatedQuotes
       .filter((quote) => {
         if (statusFilter !== 'all' && normalizeLeadStatus(quote) !== statusFilter) return false;
@@ -338,7 +332,7 @@ export default function AutomatedQuotesDashboard() {
                     </td>
                   </tr>
                 ) : (
-                  filteredQuotes.map((quote) => {
+                  filteredQuotes.map((quote: DisplayQuoteRow) => {
                     const leadStatus = normalizeLeadStatus(quote);
                     const isLead = leadStatus === 'lead';
 
@@ -387,6 +381,18 @@ export default function AutomatedQuotesDashboard() {
                                   {chip}
                                 </span>
                               ))}
+                              {quote.attemptCount > 1 && (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                                  {quote.attemptCount} attempts
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {quote.attemptCount > 1 && reasonChips(quote).length === 0 && (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                                {quote.attemptCount} attempts
+                              </span>
                             </div>
                           )}
                         </td>
