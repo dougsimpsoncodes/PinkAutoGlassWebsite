@@ -11,15 +11,15 @@ import RelatedServices from '@/components/RelatedServices';
 import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
-  title: 'ADAS Calibration | After Windshield Replacement',
-  description: 'ADAS camera calibration required after windshield replacement. Lane assist, collision warning, auto-braking recalibrated. Mobile service. (720) 918-7465.',
+  title: 'ADAS Calibration Denver CO | Windshield Camera Recalibration | Mobile',
+  description: 'ADAS calibration in Denver CO after windshield replacement. Lane assist, collision warning, auto-braking recalibrated on-site. Same-day mobile service. (720) 918-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/adas-calibration',
   },
   openGraph: {
-    title: 'ADAS Calibration | After Windshield Replacement',
-    description: 'ADAS camera calibration required after windshield replacement. Lane assist, collision warning recalibrated. Mobile service.',
+    title: 'ADAS Calibration Denver CO | Windshield Camera Recalibration | Mobile',
+    description: 'ADAS calibration in Denver CO after windshield replacement. Same-day mobile service across the Front Range. (720) 918-7465.',
     url: 'https://pinkautoglass.com/services/adas-calibration',
     type: 'website',
   },
@@ -37,7 +37,7 @@ export default function AdasCalibrationPage() {
     serviceName: 'ADAS Calibration',
     description: 'Professional ADAS camera calibration service across the Front Range. Certified technicians use OEM quality equipment.',
     serviceType: 'ADAS Calibration Service',
-    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Greeley', 'Loveland']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -66,7 +66,7 @@ export default function AdasCalibrationPage() {
                 <span className="text-xl">Safety System Calibration</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                ADAS Calibration After Windshield Replacement
+                ADAS Calibration in Denver, CO
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-purple-100">
                 Certified Technicians • OEM Quality Equipment • Required for 2018+ Vehicles

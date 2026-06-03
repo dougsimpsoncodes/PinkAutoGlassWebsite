@@ -209,6 +209,12 @@ const nextConfig = {
         destination: '/about',
         permanent: true,
       },
+      // Consolidate duplicate ADAS page → canonical /services/adas-calibration
+      {
+        source: '/colorado/services/adas-calibration',
+        destination: '/services/adas-calibration',
+        permanent: true,
+      },
       // Consolidate duplicate Aurora pages → canonical /locations/aurora-co
       {
         source: '/colorado/aurora',
