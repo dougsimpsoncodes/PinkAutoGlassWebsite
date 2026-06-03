@@ -359,20 +359,30 @@ function VehicleStage({
   const vinReady = vinInput.trim().length === 17;
 
   const tabClass = (active: boolean) =>
-    `flex-1 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
+    `flex-1 rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${
       active
-        ? 'bg-pink-600 text-white shadow-sm'
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        ? 'shadow-sm'
+        : 'border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200'
     }`;
+  const tabStyle = (active: boolean) => (
+    active
+      ? {
+          backgroundColor: '#be185d',
+          borderColor: '#831843',
+          color: '#ffffff',
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',
+        }
+      : undefined
+  );
 
   return (
     <div>
       {/* 2-tab vehicle-lookup selector */}
       <div className="mb-4 flex gap-2">
-        <button type="button" className={tabClass(mode === 'plate')} onClick={() => setMode('plate')}>
+        <button type="button" className={tabClass(mode === 'plate')} style={tabStyle(mode === 'plate')} onClick={() => setMode('plate')}>
           License plate
         </button>
-        <button type="button" className={tabClass(mode === 'vin')} onClick={() => setMode('vin')}>
+        <button type="button" className={tabClass(mode === 'vin')} style={tabStyle(mode === 'vin')} onClick={() => setMode('vin')}>
           VIN
         </button>
       </div>
