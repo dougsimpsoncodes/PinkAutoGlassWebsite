@@ -172,6 +172,31 @@ export const trackLocationEntered = (zipCode: string, city?: string) => {
   }
 };
 
+/**
+ * Fire GA4 standard purchase event at booking confirmation.
+ * Enables ROAS bidding in Google Ads — tells Smart Bidding the revenue
+ * value of each booking, not just that a conversion happened.
+ * transaction_id deduplicates if the component re-renders after success.
+ */
+export const trackPurchase = (
+  transactionId: string,
+  valueDollars: number,
+  vehicleInfo: string,
+) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'purchase', {
+    transaction_id: transactionId,
+    value: valueDollars,
+    currency: 'USD',
+    items: [{
+      item_id: 'windshield_service',
+      item_name: `Windshield Service — ${vehicleInfo}`,
+      price: valueDollars,
+      quantity: 1,
+    }],
+  });
+};
+
 export const trackQuoteGenerated = (serviceType: string, vehicleInfo: string, estimatedPrice?: number) => {
   event({
     action: 'quote_generated',
