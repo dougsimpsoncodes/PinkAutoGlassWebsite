@@ -47,9 +47,14 @@ function getAnalyticsClient(): BetaAnalyticsDataClient {
   });
 }
 
+// Cities confirmed as bot/crawler traffic (near-zero engagement, known data center locations).
+// Excluded from all GA4 queries so our reports reflect real customer traffic only.
+const BOT_CITIES = ['Boardman', 'Ashburn', 'Singapore', 'Burnaby'];
+
 /**
  * Fetch sessions, pageViews, and conversions from GA4 for a list of hostnames.
  * Returns one row per hostname that had activity in the given date range.
+ * Bot cities (Boardman/Ashburn AWS data centers, Singapore, Burnaby) are always excluded.
  */
 export async function fetchGa4HostnameMetrics(
   startDate: string,
@@ -71,9 +76,23 @@ export async function fetchGa4HostnameMetrics(
       { name: 'conversions' },
     ],
     dimensionFilter: {
-      filter: {
-        fieldName: 'hostName',
-        inListFilter: { values: hostNames },
+      andGroup: {
+        expressions: [
+          {
+            filter: {
+              fieldName: 'hostName',
+              inListFilter: { values: hostNames },
+            },
+          },
+          {
+            notExpression: {
+              filter: {
+                fieldName: 'city',
+                inListFilter: { values: BOT_CITIES },
+              },
+            },
+          },
+        ],
       },
     },
   });
