@@ -26,6 +26,7 @@ export default function Header() {
 
   if (pathname?.startsWith('/admin')) return null
 
+  const isQuoterLandingPage = pathname === '/colorado/services/windshield-replacement'
   const market = resolveMarket(pathname)
   const { displayPhone, phoneE164 } = getPhoneForMarket(market)
   const tel = `tel:${phoneE164}`
@@ -65,12 +66,14 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center space-x-2">
-            <Link
-              href="/quote"
-              className="rounded-full bg-pink-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 min-h-[44px] flex items-center"
-            >
-              Get a quote
-            </Link>
+            {!isQuoterLandingPage && (
+              <Link
+                href="/quote"
+                className="rounded-full bg-pink-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 min-h-[44px] flex items-center"
+              >
+                Get a quote
+              </Link>
+            )}
             <a
               href={tel}
               className="flex items-center space-x-1.5 text-gray-700 hover:text-pink-600 transition-colors text-base font-medium min-h-[44px] px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
@@ -108,12 +111,14 @@ export default function Header() {
 
           {/* CTA Section (Right) */}
           <div className="flex items-center space-x-4">
-            <Link
-              href="/quote"
-              className="rounded-full bg-pink-600 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
-            >
-              See your price
-            </Link>
+            {!isQuoterLandingPage && (
+              <Link
+                href="/quote"
+                className="rounded-full bg-pink-600 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
+              >
+                See your price
+              </Link>
+            )}
             <a
               href={tel}
               className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 transition-colors"

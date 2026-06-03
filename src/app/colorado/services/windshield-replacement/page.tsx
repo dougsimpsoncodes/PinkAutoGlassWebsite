@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Phone, MessageSquare, Calendar, Shield, Clock, Star, CheckCircle, Wrench, Car } from 'lucide-react';
+import { Phone, MessageSquare, Calendar, Shield, Clock, Star, CheckCircle, Car } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -8,6 +8,7 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
+import AutomatedQuoteForm from '@/components/AutomatedQuoteForm';
 
 export const metadata: Metadata = {
   robots: { index: false },
@@ -28,20 +29,12 @@ export const metadata: Metadata = {
 export default function WindshieldReplacementPage() {
   const faqs = [
     {
-      question: 'Does insurance cover windshield replacement in Denver?',
-      answer: 'Most insurance companies cover windshield replacement under comprehensive coverage. The exact coverage depends on your vehicle make, model, and features. Luxury vehicles, larger SUVs, and vehicles with ADAS (Advanced Driver Assistance Systems) may have different coverage due to specialized glass and calibration requirements. We provide free quotes and handle all insurance paperwork.'
-    },
-    {
       question: 'How long does windshield replacement take?',
       answer: 'A standard windshield replacement takes 60-90 minutes from start to finish. This includes removing the old windshield, preparing the frame, installing new OEM-quality glass, and allowing proper cure time. If your vehicle requires ADAS calibration (2018+ models with cameras or sensors), add an additional 30-60 minutes. We recommend waiting at least 1 hour before driving to ensure the adhesive has properly set.'
     },
     {
       question: 'Do you use OEM or aftermarket windshields?',
       answer: 'We primarily use OEM quality (Original Equipment Manufacturer) glass that meets or exceeds factory specifications. OEM quality glass ensures proper fit, optical clarity, and compatibility with modern safety systems like ADAS. For vehicles without advanced safety features, we also offer high-quality aftermarket options that can reduce costs while maintaining safety standards. We\'ll recommend the best option for your specific vehicle and budget.'
-    },
-    {
-      question: 'How does insurance coverage work in Colorado?',
-      answer: 'In Colorado, most comprehensive insurance policies cover windshield replacement. We work with all major insurance companies including State Farm, Geico, Progressive, Allstate, USAA, and more. We handle all the paperwork and bill your insurance directly. We\'ll verify your exact coverage before we start.'
     },
     {
       question: 'What is ADAS calibration and do I need it?',
@@ -65,7 +58,7 @@ export default function WindshieldReplacementPage() {
     serviceName: 'Windshield Replacement',
     description: 'Professional windshield replacement service in Denver metro area. OEM quality glass, mobile service, same-day appointments, lifetime warranty, and ADAS calibration included.',
     serviceType: 'Auto Glass Replacement',
-    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Colorado Springs']
+    areaServed: ['Denver', 'Aurora', 'Lakewood', 'Boulder', 'Highlands Ranch', 'Thornton', 'Arvada', 'Westminster', 'Parker', 'Centennial', 'Fort Collins', 'Greeley', 'Loveland']
   });
 
   const faqSchema = generateFAQSchema(faqs);
@@ -98,16 +91,14 @@ export default function WindshieldReplacementPage() {
 
       <article className="min-h-screen bg-gradient-to-b from-white to-pink-50 page-top-padding">
         {/* Hero Section */}
-<section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Professional Windshield Replacement in Denver
-              </h1>
-              <p className="answer-first text-lg text-gray-100 leading-relaxed mb-6 max-w-3xl mx-auto">
-                Windshield replacement in Denver typically costs between $250 and $900 depending on your vehicle make, model, and whether ADAS calibration is needed. However, most Colorado drivers pay nothing out of pocket because Colorado law requires all auto insurers to offer zero-deductible comprehensive glass coverage. At Pink Auto Glass, we handle 100% of the insurance paperwork and bill your insurer directly. Our certified technicians use OEM-quality glass that meets or exceeds factory specifications, and every installation includes a lifetime warranty on workmanship and leaks. We offer same-day mobile service across the entire Denver Front Range, meaning we come to your home, office, or wherever is most convenient. If your vehicle is 2018 or newer, we also perform ADAS camera calibration on-site at no extra charge. From the moment you call to the final quality check, the entire process takes about 60 to 90 minutes.
-              </p>
-              <CTAButtons source="windshield-replacement" />
+        <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white py-10">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+            <h1 className="font-bold leading-tight mb-6 text-white text-3xl md:text-5xl">
+              <span className="block">Get an INSTANT QUOTE</span>
+              <span className="block text-2xl md:text-4xl font-semibold mt-1 text-pink-200">and book your install</span>
+            </h1>
+            <div className="text-left">
+              <AutomatedQuoteForm />
             </div>
           </div>
         </section>
@@ -185,10 +176,6 @@ export default function WindshieldReplacementPage() {
                   <div>
                     <h3 className="font-semibold">Do you calibrate ADAS?</h3>
                     <p>Yes—when required by your vehicle, we include calibration and provide results.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Does insurance cover replacement?</h3>
-                    <p>With comprehensive coverage, many Colorado drivers pay $0. We verify coverage and bill your insurer directly.</p>
                   </div>
                   <div>
                     <h3 className="font-semibold">Will it leak?</h3>
@@ -365,26 +352,6 @@ export default function WindshieldReplacementPage() {
                 </div>
               </section>
 
-              {/* Insurance */}
-              <section className="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Insurance Claims - We Handle Everything
-                </h2>
-                <p className="text-lg text-gray-700 mb-4">
-                  Most windshield replacements are covered by your comprehensive insurance policy. We work with all major insurance companies:
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  {['State Farm', 'Geico', 'Progressive', 'Allstate', 'USAA', 'Farmers', 'Liberty Mutual', 'Nationwide'].map(insurer => (
-                    <div key={insurer} className="bg-white p-2 rounded text-center text-sm font-medium text-gray-700">
-                      {insurer}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-lg text-gray-700">
-                  <strong>We handle all the paperwork and bill your insurance directly.</strong> You'll know your exact out-of-pocket cost before we start. No surprises.
-                </p>
-              </section>
-
               {/* FAQs */}
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -517,7 +484,7 @@ export default function WindshieldReplacementPage() {
                     <Link href="/locations/highlands-ranch-co" className="text-blue-600 hover:underline">Highlands Ranch</Link>
                     <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
                     <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
+                    <Link href="/locations/greeley-co" className="text-blue-600 hover:underline">Greeley</Link>
                   </div>
                 </div>
 
