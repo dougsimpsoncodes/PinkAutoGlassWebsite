@@ -130,7 +130,7 @@ export default function RootLayout({
                   },
                   i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)
                 })
-                (window,document,"script","//bat.bing.com/bat.js","uetq");
+                (window,document,"script","https://bat.bing.com/bat.js","uetq");
               `,
             }}
           />
