@@ -38,7 +38,7 @@ export default function StickyCallbackBar({ source = 'sticky-callback' }: Sticky
   // clickable phone number" was eating conversion-critical real estate).
   // After 2026-05-28 the quoter lives on `/`; `/quote` is 301'd but
   // suppressed here too in case the redirect ever lapses.
-  if (pathname === '/' || pathname === '/quote' || pathname?.startsWith('/quote/')) return null;
+  if (pathname === '/' || pathname === '/quote' || pathname?.startsWith('/quote/') || pathname === '/colorado/services/windshield-replacement') return null;
 
   const market = resolveMarket(pathname);
   const { phoneE164, displayPhone } = getPhoneForMarket(market);
