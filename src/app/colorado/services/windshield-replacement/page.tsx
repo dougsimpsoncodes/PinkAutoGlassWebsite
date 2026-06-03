@@ -12,15 +12,15 @@ import AutomatedQuoteForm from '@/components/AutomatedQuoteForm';
 
 export const metadata: Metadata = {
   robots: { index: false },
-  title: 'Windshield Replacement | Mobile Service CO & AZ',
-  description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you. Call (720) 918-7465.',
+  title: 'Denver Windshield Replacement | Get an Instant Quote | Pink Auto Glass',
+  description: 'Get an instant quote for windshield replacement in Denver. Mobile service, OEM glass, lifetime warranty. We come to you. Call (720) 918-7465.',
   keywords: 'windshield replacement denver, windshield replacement cost, mobile windshield replacement, same day windshield replacement, auto glass replacement denver, windshield replacement near me',
   alternates: {
     canonical: 'https://pinkautoglass.com/colorado/services/windshield-replacement',
   },
   openGraph: {
-    title: 'Windshield Replacement | Mobile Service CO & AZ',
-    description: 'Same-day mobile windshield replacement. OEM glass, lifetime warranty, $0 deductible with insurance. We come to you.',
+    title: 'Denver Windshield Replacement | Get an Instant Quote | Pink Auto Glass',
+    description: 'Get an instant quote for windshield replacement in Denver. Mobile service, OEM glass, lifetime warranty. We come to you.',
     url: 'https://pinkautoglass.com/colorado/services/windshield-replacement',
     type: 'website',
   },
