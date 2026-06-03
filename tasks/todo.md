@@ -388,3 +388,21 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 **Second-opinion review updates:**
 - Gemini and Claude reviewed the foundation. Applied follow-up fixes for plate validation status codes, PlateToVIN response shape checks, HTTP timeouts, Mygrant XML logging warning, stronger User-Agent guard, explicit RLS deny policies, no full plate column in the quote table, and pricing input/floor signals.
 - Deferred larger Mygrant XML parser refactor until dependency/test decision.
+
+## 2026-05-31 — Team booking-alert SMS reliability fix (serverless freeze)
+**Trigger:** Doug asked to verify new auto-quoter bookings reach colleagues via RingCentral. They didn't, reliably.
+- **Root cause:** `book/route.ts` fired the team alert as a bare `void sendTeamAlert(...)` (fire-and-forget). Vercel freezes the lambda after the handler returns; inside `sendTeamAlert` email is awaited first (fast Resend → lands), SMS second (gated behind a ~1.5s RingCentral JWT cold-login). On COLD lambdas the freeze cut the SMS leg after the email already went out → bookings got a team EMAIL but no team SMS, intermittently (warm lambdas reuse the module-cached RC client and finish in time).
+- **Not a regression:** `booking-notifications.ts` byte-identical between last-working SHA (068eea8/PR#37) and failing prod (9679da5). Decisive in-codebase proof: every other admin-alert site `await`s its sends; `lead/route.ts` + `booking/submit/route.ts` literally comment `// MUST await to prevent Vercel from killing the async operation`. The quoter route was the only one that didn't.
+- **Fix (prod SHA 52ddb64, on main):** `after(() => sendTeamAlert(...).catch(...))` from `next/server` (waitUntil-backed, keeps the function alive, still non-blocking for the customer) + `export const maxDuration = 30`. Single file: `src/app/api/quote/book/route.ts`.
+- **Gates:** council 3/3 (after() correct, verify in prod); 7-agent adversarial workflow (fix correct on all 5 after() dims, no blocker); codex pre-deploy review (clean, no regression); tsc clean; build green.
+- **Live-verified on prod (cold lambda):** test booking PAG-CDB4 (is_test) → Vercel logs `✅ RingCentral authenticated successfully` then `✅ SMS sent` to both team numbers in the `ƒ /api/quote/book` context post-response; RC message-store = **Delivered** to both Kody/Dan with the real buildTeamSmsText format. Test quote/booking/lead deleted after.
+- **Deliberately NOT done (flagged to Doug):** same fire-and-forget bug exists at `src/app/api/webhook/ringcentral/sms/route.ts:322` (RC inbound auto-reply) — lower impact, separate route, recommended as a fast-follow rather than bundled.
+
+## 2026-05-31 — Webhook auto-reply: same serverless-freeze fix (fast-follow)
+- **Bug:** `webhook/ringcentral/sms/route.ts:322` fired the inbound auto-reply as un-awaited `sendCustomerSMS(...).then(...).catch(...)`, and the nested `ringcentral_sms` status update was never returned by the `.then` — both could be cut by the post-response lambda freeze. (BeeTexting, not RC; same defect class as the team alert.)
+- **Fix (prod SHA b075046, on main):** wrapped in `after()` with async/await (now genuinely awaits the 'Sent' status update) + `maxDuration=30`. One file.
+- **Gates:** tsc clean (blast radius); codex pre-deploy review clean ("no actionable regressions"); build green; prod deploy 68wjzrcpd Ready/200.
+- **Verification:** synthetic-webhook live test was correctly BLOCKED by the safety classifier (would need RINGCENTRAL_WEBHOOK_TOKEN written to a file + a forged webhook — beyond a general "go"). Did NOT work around it. Verified-by-equivalence (identical after() pattern already proven live on the booking fix) + clean review. Optional live confirm: text +17209187465 from a non-team phone → auto-reply `ringcentral_sms` row flips Queued→Sent inside the after() callback.
+
+## ✅ RESOLVED (2026-06-02) — PAG-9983 test pollution
+Booking (7134b854), quote (e0b55647, 2012 Jeep Wrangler), and lead (1f9f717c "TEST alert verify") all confirmed is_test=true in prod. No further action needed.
