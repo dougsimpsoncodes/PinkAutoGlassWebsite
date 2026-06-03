@@ -12,7 +12,9 @@ import {
 import { isStateInServiceArea, OUT_OF_AREA_STATE_MESSAGE } from '@/lib/quote/service-area';
 import QuoteBookingForm from '@/components/QuoteBookingForm';
 import { trackFormSubmission, trackEvent } from '@/lib/tracking';
+import { trackQuoteGenerated } from '@/lib/analytics';
 import { getMarketFromPath, type Market } from '@/lib/market';
+import type { SatelliteQuoterTrackingContext } from '@/lib/satellite-quoter/tracking';
 
 /**
  * Best-effort surface + market tags for quote analytics. Surface is the route
@@ -20,14 +22,21 @@ import { getMarketFromPath, type Market } from '@/lib/market';
  * picked, falling back to the page path. Both are diagnostic metadata only —
  * they never change which ad-conversion fires.
  */
-function quoteSurface(): string {
+function quoteSurface(trackingContext?: SatelliteQuoterTrackingContext): string {
+  if (trackingContext?.surface) return trackingContext.surface;
   if (typeof window === 'undefined') return 'unknown';
   return window.location.pathname || 'unknown';
 }
 
-function resolveQuoteMarket(plateState: string): Market | undefined {
+function resolveQuoteMarket(
+  plateState: string,
+  trackingContext?: SatelliteQuoterTrackingContext
+): Market | undefined {
   if (plateState === 'CO') return 'colorado';
   if (plateState === 'AZ') return 'arizona';
+  if (trackingContext?.marketHint === 'colorado' || trackingContext?.marketHint === 'arizona') {
+    return trackingContext.marketHint;
+  }
   if (typeof window !== 'undefined') return getMarketFromPath(window.location.pathname) ?? undefined;
   return undefined;
 }
@@ -47,6 +56,11 @@ function resolveQuoteMarket(plateState: string): Market | undefined {
 
 type Stage = 'vehicle' | 'priced';
 type VehicleMode = 'plate' | 'vin';
+
+interface AutomatedQuoteFormProps {
+  flowMode?: 'standard' | 'zip-first-unlocked';
+  trackingContext?: SatelliteQuoterTrackingContext;
+}
 
 interface VehicleState {
   vin: string;
@@ -93,7 +107,10 @@ const STATE_OPTIONS = [
   'WV', 'WI', 'WY',
 ];
 
-export default function AutomatedQuoteForm() {
+export default function AutomatedQuoteForm({
+  flowMode = 'standard',
+  trackingContext,
+}: AutomatedQuoteFormProps) {
   const [stage, setStage] = useState<Stage>('vehicle');
   const [vehicleMode, setVehicleMode] = useState<VehicleMode>('plate');
   const [plate, setPlate] = useState('');
@@ -104,14 +121,19 @@ export default function AutomatedQuoteForm() {
   const [quote, setQuote] = useState<QuoteResult | null>(null);
 
   // Diagnostic-only funnel telemetry. Routes through trackEvent (GA4 + DB),
-  // NEVER trackFormSubmission/trackConversion, so YMM-miss volume can never
-  // inflate Google/Microsoft Ads conversions. This isolation is enforced by
-  // scripts/verify-quote-telemetry-isolation.ts (wired into ci:guards).
+  // NEVER trackFormSubmission/trackConversion, so diagnostic funnel events can
+  // never inflate Google/Microsoft Ads conversions.
   function fireQuoteDiagnostic(eventName: string, extra?: Record<string, unknown>) {
     trackEvent({
       eventName,
       eventCategory: 'quote_funnel_diagnostic',
-      metadata: { surface: quoteSurface(), market: resolveQuoteMarket(plateState), ...extra },
+      metadata: {
+        surface: quoteSurface(trackingContext),
+        market: resolveQuoteMarket(plateState, trackingContext),
+        flow_mode: flowMode,
+        ...trackingContext,
+        ...extra,
+      },
     }).catch(() => { /* diagnostics never block UX */ });
   }
 
@@ -216,13 +238,22 @@ export default function AutomatedQuoteForm() {
       setStage('priced');
 
       if (data.status !== 'manual_review' && data.pricing) {
+        // Fire GA4 quote_generated so the funnel has a visible middle step:
+        // page_view → quote_generated → form_submit (booked).
+        // NOT marked as a Key Event — keeps Smart Bidding signal clean.
+        trackQuoteGenerated(
+          'windshield',
+          `${v.year} ${v.make} ${v.model}`.trim(),
+          data.totalCents ? data.totalCents / 100 : undefined,
+        );
+
         // A real price was shown — log this as a funnel 'priced' event so the
         // Quoter Funnel report can count it, but do NOT fire the Ads bidding
         // conversion. Price-shown is a non-contact, window-shopping step; firing
         // it here trained Google/Microsoft toward price curiosity instead of
-        // bookable leads. The bidding conversion fires at booking (QuoteBookingForm)
-        // or lead-capture (YMM-miss "text me my price") — the first real contact.
-        // (council 2026-06-01, unanimous option A)
+        // bookable leads. The bidding conversion fires at booking — the first
+        // real contact in this price-first quote flow. (council 2026-06-01,
+        // unanimous option A)
         trackFormSubmission('quote_form', {
           stage: 'priced',
           quote_total_cents: data?.totalCents,
@@ -230,8 +261,10 @@ export default function AutomatedQuoteForm() {
           vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
           vehicle_make: v.make,
           vehicle_model: v.model,
-          surface: quoteSurface(),
-          market: resolveQuoteMarket(plateState),
+          surface: quoteSurface(trackingContext),
+          market: resolveQuoteMarket(plateState, trackingContext),
+          flow_mode: flowMode,
+          ...trackingContext,
         }, { fireAds: false }).catch(() => { /* analytics never blocks UX */ });
       } else {
         fireQuoteDiagnostic('diagnostic_manual_review', {
@@ -259,6 +292,7 @@ export default function AutomatedQuoteForm() {
         vehicle={vehicle}
         onNewQuote={newQuote}
         onDiagnostic={fireQuoteDiagnostic}
+        trackingContext={trackingContext}
       />
     );
   }
@@ -440,11 +474,13 @@ function PricedHero({
   vehicle,
   onNewQuote,
   onDiagnostic,
+  trackingContext,
 }: {
   quote: QuoteResult;
   vehicle: VehicleState;
   onNewQuote: () => void;
   onDiagnostic: (eventName: string, extra?: Record<string, unknown>) => void;
+  trackingContext?: SatelliteQuoterTrackingContext;
 }) {
   const [breakdownOpen, setBreakdownOpen] = useState(false);
 
@@ -508,7 +544,11 @@ function PricedHero({
       {/* Inline schedule form — no Schedule button gate */}
       {quote.quoteToken && (
         <div className="mt-5">
-          <QuoteBookingForm quoteToken={quote.quoteToken} totalDollars={totalDollars} />
+          <QuoteBookingForm
+            quoteToken={quote.quoteToken}
+            totalDollars={totalDollars}
+            trackingContext={trackingContext}
+          />
         </div>
       )}
 
