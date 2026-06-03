@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
-  MessageSquare,
   Phone,
   Search,
   ShieldCheck,
@@ -47,7 +46,7 @@ function resolveQuoteMarket(plateState: string): Market | undefined {
  */
 
 type Stage = 'vehicle' | 'priced';
-type VehicleMode = 'plate' | 'vin' | 'ymm';
+type VehicleMode = 'plate' | 'vin';
 
 interface VehicleState {
   vin: string;
@@ -94,10 +93,6 @@ const STATE_OPTIONS = [
   'WV', 'WI', 'WY',
 ];
 
-// Vehicle year range — current year + 1 down 25 years.
-const CURRENT_YEAR = new Date().getFullYear();
-const YMM_YEAR_OPTIONS = Array.from({ length: 26 }, (_, i) => CURRENT_YEAR + 1 - i);
-
 export default function AutomatedQuoteForm() {
   const [stage, setStage] = useState<Stage>('vehicle');
   const [vehicleMode, setVehicleMode] = useState<VehicleMode>('plate');
@@ -107,45 +102,6 @@ export default function AutomatedQuoteForm() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [quote, setQuote] = useState<QuoteResult | null>(null);
-  // Which input tab produced the CURRENT quote. Drives the mode-aware
-  // manual_review screen: YMM (which cannot price today) gets the
-  // "enter plate/VIN for an instant price" nudge; plate/VIN failures keep
-  // the plain "please call" screen because re-entering won't help them.
-  const [quotedVia, setQuotedVia] = useState<VehicleMode>('plate');
-
-  // YMM (Year/Make/Model) mode state. Makes load on first YMM-mode mount;
-  // models load when a make is selected. Mirrors the legacy QuoteForm cascade.
-  const [availableMakes, setAvailableMakes] = useState<string[]>([]);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [loadingMakes, setLoadingMakes] = useState(false);
-  const [loadingModels, setLoadingModels] = useState(false);
-  const [ymmYear, setYmmYear] = useState('');
-  const [ymmMake, setYmmMake] = useState('');
-  const [ymmModel, setYmmModel] = useState('');
-
-  useEffect(() => {
-    if (vehicleMode !== 'ymm' || availableMakes.length > 0 || loadingMakes) return;
-    setLoadingMakes(true);
-    fetch('/api/vehicles/makes')
-      .then((r) => r.json())
-      .then((data) => setAvailableMakes(Array.isArray(data?.makes) ? data.makes : []))
-      .catch(() => setNotice('Vehicle list is temporarily unavailable. Try a VIN or plate, or call (720) 918-7465.'))
-      .finally(() => setLoadingMakes(false));
-  }, [vehicleMode, availableMakes.length, loadingMakes]);
-
-  useEffect(() => {
-    if (!ymmMake) {
-      setAvailableModels([]);
-      setYmmModel('');
-      return;
-    }
-    setLoadingModels(true);
-    fetch(`/api/vehicles/models?make=${encodeURIComponent(ymmMake)}`)
-      .then((r) => r.json())
-      .then((data) => setAvailableModels(Array.isArray(data?.models) ? data.models : []))
-      .catch(() => setAvailableModels([]))
-      .finally(() => setLoadingModels(false));
-  }, [ymmMake]);
 
   // Diagnostic-only funnel telemetry. Routes through trackEvent (GA4 + DB),
   // NEVER trackFormSubmission/trackConversion, so YMM-miss volume can never
@@ -157,31 +113,6 @@ export default function AutomatedQuoteForm() {
       eventCategory: 'quote_funnel_diagnostic',
       metadata: { surface: quoteSurface(), market: resolveQuoteMarket(plateState), ...extra },
     }).catch(() => { /* diagnostics never block UX */ });
-  }
-
-  // Re-enter path: a YMM-miss visitor chooses to try plate or VIN instead.
-  // Preserves all entered field state; only switches the active tab and clears
-  // the dead-end quote so the form is interactive again.
-  function reenterWith(mode: 'plate' | 'vin') {
-    fireQuoteDiagnostic('diagnostic_nudge_replate', { from: 'ymm', to: mode });
-    setQuote(null);
-    setStage('vehicle');
-    setVehicleMode(mode);
-    setNotice('');
-  }
-
-  async function lookupYmm() {
-    if (!ymmYear || !ymmMake || !ymmModel) return;
-    setNotice('');
-    fireQuoteDiagnostic('quote_attempt_ymm');
-    setBusy(true);
-    try {
-      const v: VehicleState = { vin: '', year: ymmYear, make: ymmMake, model: ymmModel, trim: '' };
-      setVehicle(v);
-      await requestPrice(v, 'ymm');
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function lookupPlate() {
@@ -251,7 +182,6 @@ export default function AutomatedQuoteForm() {
   }
 
   async function requestPrice(v: VehicleState, mode: VehicleMode) {
-    setQuotedVia(mode);
     try {
       const response = await fetch('/api/quote/price', {
         method: 'POST',
@@ -304,12 +234,7 @@ export default function AutomatedQuoteForm() {
           market: resolveQuoteMarket(plateState),
         }, { fireAds: false }).catch(() => { /* analytics never blocks UX */ });
       } else {
-        // No price (today YMM always lands here — no YMM->NAGS decoder).
-        // Do NOT fire a lead conversion: nothing was captured, so counting it
-        // would be a phantom conversion. Diagnostics only; the YMM-miss nudge's
-        // "text me my price" capture fires the real lead conversion if the
-        // visitor leaves their number.
-        fireQuoteDiagnostic(mode === 'ymm' ? 'diagnostic_ymm_miss' : 'diagnostic_manual_review', {
+        fireQuoteDiagnostic('diagnostic_manual_review', {
           via: mode,
           quote_token: data?.quoteToken,
         });
@@ -332,9 +257,7 @@ export default function AutomatedQuoteForm() {
       <PricedHero
         quote={quote}
         vehicle={vehicle}
-        quotedVia={quotedVia}
         onNewQuote={newQuote}
-        onReenter={reenterWith}
         onDiagnostic={fireQuoteDiagnostic}
       />
     );
@@ -350,17 +273,6 @@ export default function AutomatedQuoteForm() {
           setPlate={setPlate}
           plateState={plateState}
           setPlateState={setPlateState}
-          ymmYear={ymmYear}
-          setYmmYear={setYmmYear}
-          ymmMake={ymmMake}
-          setYmmMake={setYmmMake}
-          ymmModel={ymmModel}
-          setYmmModel={setYmmModel}
-          availableMakes={availableMakes}
-          availableModels={availableModels}
-          loadingMakes={loadingMakes}
-          loadingModels={loadingModels}
-          onLookupYmm={lookupYmm}
           vinInput={vehicle.vin}
           setVinInput={(vin) => setVehicle((prev) => ({ ...prev, vin }))}
           onLookupPlate={lookupPlate}
@@ -389,17 +301,6 @@ function VehicleStage({
   setPlate,
   plateState,
   setPlateState,
-  ymmYear,
-  setYmmYear,
-  ymmMake,
-  setYmmMake,
-  ymmModel,
-  setYmmModel,
-  availableMakes,
-  availableModels,
-  loadingMakes,
-  loadingModels,
-  onLookupYmm,
   vinInput,
   setVinInput,
   onLookupPlate,
@@ -413,17 +314,6 @@ function VehicleStage({
   setPlate: (v: string) => void;
   plateState: string;
   setPlateState: (v: string) => void;
-  ymmYear: string;
-  setYmmYear: (v: string) => void;
-  ymmMake: string;
-  setYmmMake: (v: string) => void;
-  ymmModel: string;
-  setYmmModel: (v: string) => void;
-  availableMakes: string[];
-  availableModels: string[];
-  loadingMakes: boolean;
-  loadingModels: boolean;
-  onLookupYmm: () => void;
   vinInput: string;
   setVinInput: (v: string) => void;
   onLookupPlate: () => void;
@@ -433,7 +323,6 @@ function VehicleStage({
 }) {
   const plateReady = plate.trim().length >= 2 && plateState.length === 2;
   const vinReady = vinInput.trim().length === 17;
-  const ymmReady = Boolean(ymmYear && ymmMake && ymmModel);
 
   const tabClass = (active: boolean) =>
     `flex-1 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
@@ -444,16 +333,13 @@ function VehicleStage({
 
   return (
     <div>
-      {/* 3-tab vehicle-lookup selector */}
+      {/* 2-tab vehicle-lookup selector */}
       <div className="mb-4 flex gap-2">
         <button type="button" className={tabClass(mode === 'plate')} onClick={() => setMode('plate')}>
           License plate
         </button>
         <button type="button" className={tabClass(mode === 'vin')} onClick={() => setMode('vin')}>
           VIN
-        </button>
-        <button type="button" className={tabClass(mode === 'ymm')} onClick={() => setMode('ymm')}>
-          Year/Make/Model
         </button>
       </div>
 
@@ -532,67 +418,6 @@ function VehicleStage({
         </div>
       )}
 
-      {mode === 'ymm' && (
-        <div className="grid gap-3">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-gray-700">Year</span>
-              <select
-                value={ymmYear}
-                onChange={(e) => setYmmYear(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none"
-              >
-                <option value="">Year…</option>
-                {YMM_YEAR_OPTIONS.map((y) => <option key={y} value={String(y)}>{y}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-gray-700">Make</span>
-              <select
-                value={ymmMake}
-                onChange={(e) => setYmmMake(e.target.value)}
-                disabled={loadingMakes || availableMakes.length === 0}
-                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none disabled:bg-gray-50"
-              >
-                <option value="">{loadingMakes ? 'Loading…' : 'Make…'}</option>
-                {availableMakes.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </label>
-          </div>
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-gray-700">Model</span>
-            <select
-              value={ymmModel}
-              onChange={(e) => setYmmModel(e.target.value)}
-              disabled={!ymmMake || loadingModels}
-              className="w-full rounded-md border border-gray-300 px-3 py-3 text-base font-semibold focus:border-pink-500 focus:outline-none disabled:bg-gray-50"
-            >
-              <option value="">
-                {!ymmMake ? 'Pick a make first' : loadingModels ? 'Loading…' : 'Model…'}
-              </option>
-              {availableModels.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={onLookupYmm}
-            disabled={busy || !ymmReady}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-          >
-            {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-            {busy
-              ? 'Looking up your price…'
-              : !ymmYear
-                ? 'Pick a year'
-                : !ymmMake
-                  ? 'Pick a make'
-                  : !ymmModel
-                    ? 'Pick a model'
-                    : 'Get my price'}
-          </button>
-        </div>
-      )}
-
       {notice && (
         <div className="mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -613,37 +438,17 @@ function VehicleStage({
 function PricedHero({
   quote,
   vehicle,
-  quotedVia,
   onNewQuote,
-  onReenter,
   onDiagnostic,
 }: {
   quote: QuoteResult;
   vehicle: VehicleState;
-  quotedVia: VehicleMode;
   onNewQuote: () => void;
-  onReenter: (mode: 'plate' | 'vin') => void;
   onDiagnostic: (eventName: string, extra?: Record<string, unknown>) => void;
 }) {
   const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   if (quote.status === 'manual_review' || !quote.pricing) {
-    // YMM can't price today (no decoder). Instead of a dead-end "call us",
-    // steer the visitor to plate/VIN (an instant price) and, for those without
-    // either handy, offer a "text me my price" capture so the lead is never
-    // lost. Genuine plate/VIN failures (exotic brand, no inventory) fall
-    // through to the plain call screen — re-entering wouldn't help them.
-    if (quotedVia === 'ymm') {
-      return (
-        <YmmMissNudge
-          quote={quote}
-          vehicle={vehicle}
-          onReenter={onReenter}
-          onNewQuote={onNewQuote}
-          onDiagnostic={onDiagnostic}
-        />
-      );
-    }
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-6">
         <Phone className="mb-4 h-9 w-9 text-amber-700" />
@@ -739,181 +544,6 @@ function PricedHero({
         {vehicleLine && `Quoted for ${vehicleLine}. `}
         <button type="button" onClick={onNewQuote} className="underline hover:text-pink-600">
           Not your car?
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Shown when a Year/Make/Model lookup can't produce a price (no YMM->NAGS
- * decoder yet). Primary action: re-enter via plate or VIN for an instant price.
- * Secondary: "text me my price" capture for visitors who don't have either
- * handy — POSTs to /api/quote/contact, linking the contact to this exact quote,
- * and fires the real lead conversion so a YMM visitor is never lost (the
- * pre-quoter flow always captured the lead; this preserves that).
- */
-function YmmMissNudge({
-  quote,
-  vehicle,
-  onReenter,
-  onNewQuote,
-  onDiagnostic,
-}: {
-  quote: QuoteResult;
-  vehicle: VehicleState;
-  onReenter: (mode: 'plate' | 'vin') => void;
-  onNewQuote: () => void;
-  onDiagnostic: (eventName: string, extra?: Record<string, unknown>) => void;
-}) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [capState, setCapState] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
-  const [capError, setCapError] = useState('');
-
-  const vehicleLine = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
-  const phoneDigits = phone.replace(/\D/g, '');
-  const canSubmit = name.trim().length >= 2 && phoneDigits.length === 10 && capState !== 'submitting';
-
-  async function submitCapture() {
-    if (!canSubmit || !quote.quoteToken) return;
-    setCapState('submitting');
-    setCapError('');
-    onDiagnostic('diagnostic_ymm_text_capture_submit');
-    try {
-      const res = await fetch('/api/quote/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quoteToken: quote.quoteToken, fullName: name.trim(), phone }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setCapError(data.error || 'We could not send that. Please call (720) 918-7465.');
-        setCapState('error');
-        return;
-      }
-      setCapState('done');
-      // Real lead captured (name + phone tied to this quote). Fire the lead
-      // conversion — same single Google/Microsoft Ads lead label as quote_form
-      // and booking_form; dedup is per-session on 'form_submit', so this counts
-      // at most once. This is what keeps a no-price YMM visitor a real lead.
-      trackFormSubmission('quote_lead_capture', {
-        stage: 'ymm_text_capture',
-        quote_id: quote.quoteToken,
-        vehicle_year: vehicle.year ? Number.parseInt(vehicle.year, 10) : undefined,
-        vehicle_make: vehicle.make,
-        vehicle_model: vehicle.model,
-        surface: quoteSurface(),
-      }).catch(() => { /* analytics never blocks UX */ });
-    } catch {
-      setCapError('We could not send that. Please call (720) 918-7465.');
-      setCapState('error');
-    }
-  }
-
-  if (capState === 'done') {
-    return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-6">
-        <CheckCircle2 className="mb-4 h-9 w-9 text-green-700" />
-        <h2 className="text-2xl font-bold text-gray-900">You&apos;re all set</h2>
-        <p className="mt-2 text-sm text-gray-700">
-          We&apos;ll text your price for the{' '}
-          <span className="font-semibold text-gray-900">{vehicleLine || 'vehicle'}</span> to{' '}
-          <span className="font-semibold text-gray-900">{phone}</span> shortly.
-        </p>
-        {quote.quoteToken && (
-          <div className="mt-4 rounded-md border border-green-200 bg-white p-3 text-sm">
-            <div className="font-semibold text-gray-900">Reference</div>
-            <div className="font-mono text-base text-gray-700">{quote.quoteToken.slice(0, 8).toUpperCase()}</div>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={onNewQuote}
-          className="mt-5 inline-flex w-full items-center justify-center text-sm text-gray-500 underline hover:text-pink-600"
-        >
-          Start a new quote
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border-2 border-pink-500 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-900">Get your exact price now</h2>
-      <p className="mt-2 text-sm text-gray-700">
-        We can show your installed price instantly with your license plate or VIN
-        {vehicleLine ? <> for the <span className="font-semibold text-gray-900">{vehicleLine}</span></> : null}.
-      </p>
-
-      {/* Primary: re-enter via plate or VIN (preserves entered fields) */}
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => onReenter('plate')}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-base font-bold text-white hover:bg-pink-700"
-        >
-          <Search className="h-5 w-5" /> Use license plate
-        </button>
-        <button
-          type="button"
-          onClick={() => onReenter('vin')}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-pink-600 bg-white px-4 py-4 text-base font-bold text-pink-700 hover:bg-pink-50"
-        >
-          <Search className="h-5 w-5" /> Use VIN
-        </button>
-      </div>
-
-      {/* Secondary: text-me-my-price capture for visitors without plate/VIN handy */}
-      <div className="mt-6 rounded-md border border-gray-200 bg-gray-50 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-          <MessageSquare className="h-4 w-4 text-pink-600" /> Don&apos;t have them handy?
-        </div>
-        <p className="mt-1 text-sm text-gray-600">Leave your number and we&apos;ll text your price.</p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-base focus:border-pink-500 focus:outline-none"
-            placeholder="Your name"
-            autoComplete="name"
-          />
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^\d\s\-().+]/g, '').slice(0, 14))}
-            className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-base focus:border-pink-500 focus:outline-none"
-            placeholder="(720) 555-1234"
-            inputMode="tel"
-            autoComplete="tel"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={submitCapture}
-          disabled={!canSubmit}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-3 text-base font-bold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
-          {capState === 'submitting' ? <Loader2 className="h-5 w-5 animate-spin" /> : <MessageSquare className="h-5 w-5" />}
-          {capState === 'submitting' ? 'Sending…' : 'Text me my price'}
-        </button>
-        {capError && (
-          <div className="mt-2 flex gap-2 text-sm text-amber-900">
-            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-            <span>{capError}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Tertiary: phone, demoted */}
-      <div className="mt-5 border-t border-gray-100 pt-4 text-center text-sm text-gray-500">
-        Prefer to talk?{' '}
-        <a href="tel:+17209187465" className="font-semibold text-pink-700 hover:underline">
-          Call (720) 918-7465
-        </a>
-      </div>
-      <div className="mt-3 text-center">
-        <button type="button" onClick={onNewQuote} className="text-xs text-gray-500 underline hover:text-pink-600">
-          Start a new quote
         </button>
       </div>
     </div>

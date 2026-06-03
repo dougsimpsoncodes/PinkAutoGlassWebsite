@@ -741,19 +741,12 @@ export async function trackFormSubmission(
   const transactionId = metadata?.leadId || metadata?.lead_id || getSessionId();
   const stage = (metadata?.stage as string) || 'default';
 
-  if (stage === 'ymm_text_capture') {
-    // Callback stage: name+phone captured via YMM miss nudge, no booking.
-    // Fires a secondary $75 Callback conversion action (separate from $150 Booking).
-    analytics.trackCallbackConversion(transactionId);
-    analytics.trackMicrosoftAdsLeadForm(formName, analytics.CALLBACK_CONVERSION_VALUE_USD, transactionId ? `form_${transactionId}` : undefined);
-  } else {
-    // Booking stage ($150) or legacy lead form ($91 default).
-    const conversionValue = stage === 'booked' ? analytics.BOOKING_CONVERSION_VALUE_USD : undefined;
-    const email = metadata?.email;
-    const phone = metadata?.phone;
-    analytics.trackLeadFormConversion(transactionId, { email, phone }, conversionValue);
-    analytics.trackMicrosoftAdsLeadForm(formName, conversionValue, transactionId ? `form_${transactionId}` : undefined);
-  }
+  // Booking stage ($150) or legacy lead form ($91 default).
+  const conversionValue = stage === 'booked' ? analytics.BOOKING_CONVERSION_VALUE_USD : undefined;
+  const email = metadata?.email;
+  const phone = metadata?.phone;
+  analytics.trackLeadFormConversion(transactionId, { email, phone }, conversionValue);
+  analytics.trackMicrosoftAdsLeadForm(formName, conversionValue, transactionId ? `form_${transactionId}` : undefined);
 }
 
 /**

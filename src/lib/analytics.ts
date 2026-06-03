@@ -8,7 +8,8 @@ export const GOOGLE_ADS_CONVERSION_ID = 'AW-17667607828';
 export const GOOGLE_ADS_LEAD_FORM_LABEL = '3CXNCJaG9cEbEJSayehB';
 export const GOOGLE_ADS_TEXT_LABEL = 'zs3xCJyG9cEbEJSayehB';
 export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
-// "Callback (text-me-price)" — secondary action for YMM name+phone captures. ID 7633459171.
+// "Callback (text-me-price)" — secondary action, ID 7633459171. Paused: YMM tab removed.
+// Keep constant + action alive for future re-use if a callback path is re-introduced.
 export const GOOGLE_ADS_CALLBACK_LABEL = 'snihCOOv9bccEJSayehB';
 
 // Tiered conversion values (USD) — each stage signals a different intent level.
@@ -260,9 +261,8 @@ export const trackLeadFormConversion = (leadId: string, userData?: { email?: str
   trackGoogleAdsConversion(leadId, GOOGLE_ADS_LEAD_FORM_LABEL, value);
 };
 
-// Track YMM callback (name+phone captured, no booking) — secondary action, $75.
+// Track callback conversion — secondary action, $75. Available for future re-use.
 export const trackCallbackConversion = (transactionId: string) => {
-  if (GOOGLE_ADS_CALLBACK_LABEL === 'PENDING_GOOGLE_ADS_DASHBOARD') return; // label not yet wired
   trackGoogleAdsConversion(transactionId, GOOGLE_ADS_CALLBACK_LABEL, CALLBACK_CONVERSION_VALUE_USD);
 };
 
