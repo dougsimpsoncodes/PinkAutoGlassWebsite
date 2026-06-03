@@ -13,6 +13,8 @@
     "generate-brand": "node assets/scripts/generate-brand-images.mjs",
     "oauth:gsc": "node scripts/exchange-google-oauth-code.mjs gsc",
     "oauth:ga4": "node scripts/exchange-google-oauth-code.mjs ga4",
+    "oauth:ga4edit": "node scripts/exchange-google-oauth-code.mjs ga4edit",
+    "filter:ga4-bots": "node scripts/filter-ga4-bot-cities.mjs",
     "oauth:ads": "node scripts/exchange-google-oauth-code.mjs ads",
     "oauth:gbp": "node scripts/exchange-google-oauth-code.mjs gbp",
     "oauth:gsc:verify": "node scripts/verify-google-search-console-auth.mjs",

@@ -26,6 +26,12 @@ const SERVICES = {
     envVar: 'GOOGLE_ANALYTICS_REFRESH_TOKEN',
     redirectUri: 'https://developers.google.com/oauthplayground',
   },
+  ga4edit: {
+    label: 'Google Analytics 4 (edit — required for creating data filters)',
+    scope: ['https://www.googleapis.com/auth/analytics.edit'],
+    envVar: 'GOOGLE_ANALYTICS_EDIT_REFRESH_TOKEN',
+    redirectUri: 'https://developers.google.com/oauthplayground',
+  },
   ads: {
     label: 'Google Ads',
     scope: ['https://www.googleapis.com/auth/adwords'],
@@ -41,7 +47,7 @@ const SERVICES = {
 };
 
 function usage() {
-  console.log('Usage: node scripts/exchange-google-oauth-code.mjs <gsc|ga4|ads|gbp>');
+  console.log('Usage: node scripts/exchange-google-oauth-code.mjs <gsc|ga4|ga4edit|ads|gbp>');
 }
 
 function getEnv(name, fallbacks = []) {
