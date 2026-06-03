@@ -142,9 +142,10 @@ export default function AutomatedQuotesDashboard() {
         group.push(quote);
         sessionGroups.set(key, group);
       } else if (quote.vehicle_year && quote.vehicle_make && quote.vehicle_model) {
-        // Bucket by 10-minute window so retries within the same window collapse
-        const bucket = Math.floor(new Date(quote.created_at).getTime() / (10 * 60 * 1000));
-        const key = `${quote.vehicle_year}|${quote.vehicle_make}|${quote.vehicle_model}|${bucket}`;
+        // Bucket by calendar date (UTC) — all same-vehicle retries on the same day collapse to one.
+        // Lowercase make/model so casing differences don't split the group.
+        const day = quote.created_at.slice(0, 10);
+        const key = `${quote.vehicle_year}|${quote.vehicle_make.toLowerCase()}|${quote.vehicle_model.toLowerCase()}|${day}`;
         const group = windowGroups.get(key) ?? [];
         group.push(quote);
         windowGroups.set(key, group);
