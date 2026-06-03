@@ -28,12 +28,12 @@ function createRingCentralSDK() {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Defense-in-depth: API key validation (in addition to Basic Auth in middleware)
 
   try {
-    const recordingId = params.id;
+    const { id: recordingId } = await params;
     console.log('Fetching recording:', recordingId);
 
     // Initialize and authenticate with SDK

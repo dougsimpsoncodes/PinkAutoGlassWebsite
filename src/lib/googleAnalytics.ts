@@ -49,7 +49,14 @@ function getAnalyticsClient(): BetaAnalyticsDataClient {
 
 // Cities confirmed as bot/crawler traffic (near-zero engagement, known data center locations).
 // Excluded from all GA4 queries so our reports reflect real customer traffic only.
-const BOT_CITIES = ['Boardman', 'Ashburn', 'Singapore', 'Burnaby'];
+// Boardman OR = AWS us-west-2; Ashburn VA = AWS us-east-1; Singapore/Burnaby = cloud crawlers.
+// Council Bluffs IA = Lumen/CDN data center (52 sessions, 13% engagement).
+// Aspen CO = anomalous (34 sessions, 3% engagement, 0.57s avg — not a real customer market).
+// Virginia (not set) = AWS/cloud unresolved region (109 sessions, 0.9% engagement).
+const BOT_CITIES = [
+  'Boardman', 'Ashburn', 'Singapore', 'Burnaby',
+  'Council Bluffs', 'Aspen', 'Virginia',
+];
 
 /**
  * Fetch sessions, pageViews, and conversions from GA4 for a list of hostnames.

@@ -11,9 +11,9 @@ const GOOGLE_REVIEW_URL = 'https://g.page/r/CZ2YTY_EELLQEAI/review';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }: { params: Promise<{ leadId: string }> }
 ) {
-  const { leadId } = params;
+  const { leadId } = await params;
 
   if (leadId) {
     try {
