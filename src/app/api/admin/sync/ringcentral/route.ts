@@ -231,18 +231,15 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const callLeadInserts = [...dedupedCalls.values()].map((call) => {
-        const nameParts = (call.from_name || '').trim().split(' ');
-        return {
-          phone_e164: call.from_number,
-          first_name: nameParts[0] || 'Caller',
-          last_name: nameParts.slice(1).join(' ') || '',
-          utm_source: 'ringcentral_call',
-          status: 'new',
-          is_test: false,
-          created_at: call.start_time,
-        };
-      });
+      const callLeadInserts = [...dedupedCalls.values()].map((call) => ({
+        phone_e164: call.from_number,
+        first_name: '',
+        last_name: '',
+        first_contact_method: 'call',
+        status: 'new',
+        is_test: false,
+        created_at: call.start_time,
+      }));
 
       if (callLeadInserts.length > 0) {
         const { error: callLeadError } = await supabase
