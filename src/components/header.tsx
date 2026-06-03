@@ -68,7 +68,7 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             {!isQuoterLandingPage && (
               <Link
-                href="/quote"
+                href="/#quote-tool"
                 className="rounded-full bg-pink-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 min-h-[44px] flex items-center"
               >
                 Get a quote
@@ -113,7 +113,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {!isQuoterLandingPage && (
               <Link
-                href="/quote"
+                href="/#quote-tool"
                 className="rounded-full bg-pink-600 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
               >
                 See your price
