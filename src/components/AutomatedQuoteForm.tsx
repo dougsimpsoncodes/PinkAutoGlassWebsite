@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { isStateInServiceArea, OUT_OF_AREA_STATE_MESSAGE } from '@/lib/quote/service-area';
 import QuoteBookingForm from '@/components/QuoteBookingForm';
-import { trackFormSubmission, trackEvent } from '@/lib/tracking';
+import { getSessionId, trackFormSubmission, trackEvent } from '@/lib/tracking';
 import { trackQuoteGenerated } from '@/lib/analytics';
 import { getMarketFromPath, type Market } from '@/lib/market';
 import type { SatelliteQuoterTrackingContext } from '@/lib/satellite-quoter/tracking';
@@ -106,6 +106,11 @@ const STATE_OPTIONS = [
   'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA',
   'WV', 'WI', 'WY',
 ];
+
+function currentSessionId(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return getSessionId();
+}
 
 export default function AutomatedQuoteForm({
   flowMode = 'standard',
@@ -209,6 +214,7 @@ export default function AutomatedQuoteForm({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          sessionId: currentSessionId(),
           vehicle: {
             vin: v.vin || undefined,
             year: Number.parseInt(v.year, 10),
