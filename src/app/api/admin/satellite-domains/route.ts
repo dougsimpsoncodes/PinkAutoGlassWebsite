@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
+import {
+  fetchGa4HostnameMetrics,
+  validateGoogleAnalyticsConfig,
+} from '@/lib/googleAnalytics';
 import { isMarketFilter, type MarketFilter, type Market } from '@/lib/market';
 
 export const dynamic = 'force-dynamic';
@@ -75,8 +79,12 @@ interface DomainResult {
   ctr: number;
   position: number;
   leads: number;
+  ga4Sessions: number;
+  ga4PageViews: number;
+  ga4Conversions: number;
   daily: DailyRow[];
   gscError?: string;
+  ga4Error?: string;
 }
 
 // ─── GSC Client Factory ───────────────────────────────────────────────────────
@@ -217,6 +225,37 @@ export async function GET(req: NextRequest) {
       inScope.map((sat) => fetchDomainGsc(sat.domain, startDate, endDate))
     );
 
+    // ── Fetch GA4 hostname metrics when configured ─────────────────────────
+    const ga4MetricsByHost = new Map<string, {
+      sessions: number;
+      pageViews: number;
+      conversions: number;
+    }>();
+    let ga4Error: string | undefined;
+
+    const ga4Config = validateGoogleAnalyticsConfig();
+    if (ga4Config.isValid && process.env.GOOGLE_ANALYTICS_PROPERTY_ID) {
+      try {
+        const ga4Rows = await fetchGa4HostnameMetrics(
+          startDate,
+          endDate,
+          inScope.map((sat) => sat.domain)
+        );
+        for (const row of ga4Rows) {
+          ga4MetricsByHost.set(row.hostName, {
+            sessions: row.sessions,
+            pageViews: row.pageViews,
+            conversions: row.conversions,
+          });
+        }
+      } catch (err: any) {
+        ga4Error = err?.message || 'GA4 fetch failed';
+        console.error('GA4 fetch error for satellite-domains route:', ga4Error);
+      }
+    } else if (process.env.GOOGLE_ANALYTICS_PROPERTY_ID && !ga4Config.isValid) {
+      ga4Error = `GA4 not configured: ${ga4Config.missingVars.join(', ')}`;
+    }
+
     // ── Query Supabase for lead counts per utm_source ──────────────────────
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -274,8 +313,12 @@ export async function GET(req: NextRequest) {
         ctr: summary.ctr,
         position: summary.position,
         leads: leadCounts[sat.utmSource] ?? 0,
+        ga4Sessions: ga4MetricsByHost.get(sat.domain)?.sessions ?? 0,
+        ga4PageViews: ga4MetricsByHost.get(sat.domain)?.pageViews ?? 0,
+        ga4Conversions: ga4MetricsByHost.get(sat.domain)?.conversions ?? 0,
         daily,
         ...(gscError ? { gscError } : {}),
+        ...(ga4Error ? { ga4Error } : {}),
       };
     });
 

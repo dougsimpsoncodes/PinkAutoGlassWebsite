@@ -46,8 +46,12 @@ interface DomainData {
   ctr: number;
   position: number;
   leads: number;
+  ga4Sessions: number;
+  ga4PageViews: number;
+  ga4Conversions: number;
   daily: DailyRow[];
   gscError?: string;
+  ga4Error?: string;
 }
 
 interface SatelliteApiResponse {
@@ -59,6 +63,7 @@ type ChartMetric = 'clicks' | 'impressions' | 'ctr' | 'position';
 type SatelliteDomainMarket = 'colorado' | 'arizona' | 'national';
 type InsightDomain = DomainData & {
   conversionRate: number;
+  sessionConversionRate: number;
   leadShare: number;
   market: SatelliteDomainMarket;
 };
@@ -309,6 +314,7 @@ export default function SatelliteDomainsPage() {
     const withRates = filteredDomains.map((d) => ({
       ...d,
       conversionRate: d.clicks > 0 ? d.leads / d.clicks : 0,
+      sessionConversionRate: d.ga4Sessions > 0 ? d.leads / d.ga4Sessions : 0,
       leadShare: totalLeads > 0 ? d.leads / totalLeads : 0,
       market: SATELLITE_DOMAIN_MARKET_MAP.get(d.utmSource) ?? 'national',
     }));
@@ -322,6 +328,9 @@ export default function SatelliteDomainsPage() {
     const totalClicks = domains.reduce((s, d) => s + d.clicks, 0);
     const totalImpressions = domains.reduce((s, d) => s + d.impressions, 0);
     const totalLeads = domains.reduce((s, d) => s + d.leads, 0);
+    const totalSessions = domains.reduce((s, d) => s + d.ga4Sessions, 0);
+    const totalPageViews = domains.reduce((s, d) => s + d.ga4PageViews, 0);
+    const totalGa4Conversions = domains.reduce((s, d) => s + d.ga4Conversions, 0);
 
     // Weighted average CTR
     const weightedCtr =
@@ -344,10 +353,14 @@ export default function SatelliteDomainsPage() {
       ctr: weightedCtr,
       position: weightedPosition,
       leads: totalLeads,
+      sessions: totalSessions,
+      pageViews: totalPageViews,
+      ga4Conversions: totalGa4Conversions,
     };
   }, [filteredDomains]);
 
   const totalConversionRate = totals.clicks > 0 ? totals.leads / totals.clicks : 0;
+  const totalSessionConversionRate = totals.sessions > 0 ? totals.leads / totals.sessions : 0;
 
   // ── Insights ────────────────────────────────────────────────────────────────
 
@@ -557,7 +570,7 @@ export default function SatelliteDomainsPage() {
         )}
 
         {/* Summary Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-8 gap-4">
           <StatCard
             label="Total Clicks"
             value={totals.clicks.toLocaleString()}
@@ -577,10 +590,28 @@ export default function SatelliteDomainsPage() {
             color="bg-green-500"
           />
           <StatCard
+            label="GA4 Sessions"
+            value={totals.sessions.toLocaleString()}
+            icon={Globe}
+            color="bg-cyan-500"
+          />
+          <StatCard
+            label="Page Views"
+            value={totals.pageViews.toLocaleString()}
+            icon={Eye}
+            color="bg-sky-500"
+          />
+          <StatCard
             label="Lead CVR"
             value={formatPercent(totalConversionRate)}
             icon={Target}
             color="bg-teal-500"
+          />
+          <StatCard
+            label="Lead / Session"
+            value={formatPercent(totalSessionConversionRate)}
+            icon={Users}
+            color="bg-emerald-500"
           />
           <StatCard
             label="Avg Position"
@@ -692,7 +723,10 @@ export default function SatelliteDomainsPage() {
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Clicks</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Impressions</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Avg CTR</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Sessions</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Page Views</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Lead CVR</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Lead / Session</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Avg Position</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Leads</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-700">Lead Share</th>
@@ -701,7 +735,11 @@ export default function SatelliteDomainsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {sortedDomains.map((domain) => {
-                  const hasData = domain.clicks > 0 || domain.impressions > 0;
+                  const hasData =
+                    domain.clicks > 0 ||
+                    domain.impressions > 0 ||
+                    domain.ga4Sessions > 0 ||
+                    domain.ga4PageViews > 0;
                   const positionColor =
                     domain.position === 0
                       ? 'text-gray-400'
@@ -734,6 +772,11 @@ export default function SatelliteDomainsPage() {
                               <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                             </span>
                           )}
+                          {domain.ga4Error && (
+                            <span title={domain.ga4Error}>
+                              <AlertTriangle className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-gray-400 pl-5 mt-0.5">{domain.label}</div>
                       </td>
@@ -747,7 +790,18 @@ export default function SatelliteDomainsPage() {
                         {domain.ctr > 0 ? formatCtr(domain.ctr) : '—'}
                       </td>
                       <td className="px-4 py-3 text-right text-gray-900">
+                        {domain.ga4Sessions.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-900">
+                        {domain.ga4PageViews.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-900">
                         {domain.conversionRate > 0 ? formatPercent(domain.conversionRate) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-900">
+                        {domain.sessionConversionRate > 0
+                          ? formatPercent(domain.sessionConversionRate)
+                          : '—'}
                       </td>
                       <td className={`px-4 py-3 text-right ${positionColor}`}>
                         {domain.position > 0 ? formatPosition(domain.position) : '—'}
