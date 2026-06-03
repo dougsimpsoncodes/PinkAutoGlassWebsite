@@ -113,7 +113,7 @@ export default function AutomatedQuotesDashboard() {
   }, [fetchQuotes]);
 
   // Collapse same-VIN rows to the "best" one: scheduled > lead > quote_only, then most recent.
-  // YMM quotes (no VIN) are never merged since we can't reliably identify the same vehicle.
+  // Quotes without a VIN (legacy YMM rows in DB) are never merged.
   const deduplicatedQuotes = useMemo(() => {
     const vinGroups = new Map<string, AutomatedQuoteRow[]>();
     const noVinRows: AutomatedQuoteRow[] = [];
@@ -648,8 +648,8 @@ function LookupMethodBadge({ quote }: { quote: AutomatedQuoteRow }) {
     label = 'VIN';
     style = 'bg-blue-50 text-blue-700';
   } else {
-    label = 'YMM';
-    style = 'bg-gray-100 text-gray-600';
+    label = 'Legacy';
+    style = 'bg-gray-100 text-gray-400';
   }
 
   return (
