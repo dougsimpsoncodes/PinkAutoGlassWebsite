@@ -112,35 +112,53 @@ export default function AutomatedQuotesDashboard() {
     fetchQuotes();
   }, [fetchQuotes]);
 
-  // Collapse same-VIN rows to the "best" one: scheduled > lead > quote_only, then most recent.
-  // Quotes without a VIN (legacy YMM rows in DB) are never merged.
+  // Collapse duplicate rows to the "best" one: scheduled > lead > quote_only, then most recent.
+  // Groups: (1) same VIN, (2) no VIN but same session + Y/M/M, (3) no VIN + no session but
+  // same Y/M/M within a 10-minute window (catches rage-click retries where session wasn't captured).
   const deduplicatedQuotes = useMemo(() => {
+    const STATUS_RANK: Record<string, number> = { scheduled: 0, lead: 1, quote_only: 2 };
+
+    function pickBest(group: AutomatedQuoteRow[]): AutomatedQuoteRow {
+      return group.slice().sort((a, b) => {
+        const rankA = STATUS_RANK[normalizeLeadStatus(a)] ?? 3;
+        const rankB = STATUS_RANK[normalizeLeadStatus(b)] ?? 3;
+        if (rankA !== rankB) return rankA - rankB;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      })[0];
+    }
+
     const vinGroups = new Map<string, AutomatedQuoteRow[]>();
-    const noVinRows: AutomatedQuoteRow[] = [];
+    const sessionGroups = new Map<string, AutomatedQuoteRow[]>();
+    const windowGroups = new Map<string, AutomatedQuoteRow[]>();
 
     for (const quote of quotes) {
       if (quote.vin) {
         const group = vinGroups.get(quote.vin) ?? [];
         group.push(quote);
         vinGroups.set(quote.vin, group);
+      } else if (quote.session_id && quote.vehicle_year && quote.vehicle_make && quote.vehicle_model) {
+        const key = `${quote.session_id}|${quote.vehicle_year}|${quote.vehicle_make}|${quote.vehicle_model}`;
+        const group = sessionGroups.get(key) ?? [];
+        group.push(quote);
+        sessionGroups.set(key, group);
+      } else if (quote.vehicle_year && quote.vehicle_make && quote.vehicle_model) {
+        // Bucket by 10-minute window so retries within the same window collapse
+        const bucket = Math.floor(new Date(quote.created_at).getTime() / (10 * 60 * 1000));
+        const key = `${quote.vehicle_year}|${quote.vehicle_make}|${quote.vehicle_model}|${bucket}`;
+        const group = windowGroups.get(key) ?? [];
+        group.push(quote);
+        windowGroups.set(key, group);
       } else {
-        noVinRows.push(quote);
+        // Ungroupable — show as-is
+        vinGroups.set(quote.id, [quote]);
       }
     }
 
-    const STATUS_RANK: Record<string, number> = { scheduled: 0, lead: 1, quote_only: 2 };
-    const dedupedVin: AutomatedQuoteRow[] = [];
-    for (const group of vinGroups.values()) {
-      const best = group.slice().sort((a, b) => {
-        const rankA = STATUS_RANK[normalizeLeadStatus(a)] ?? 3;
-        const rankB = STATUS_RANK[normalizeLeadStatus(b)] ?? 3;
-        if (rankA !== rankB) return rankA - rankB;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      })[0];
-      dedupedVin.push(best);
-    }
-
-    return [...dedupedVin, ...noVinRows];
+    const result: AutomatedQuoteRow[] = [];
+    for (const group of vinGroups.values()) result.push(pickBest(group));
+    for (const group of sessionGroups.values()) result.push(pickBest(group));
+    for (const group of windowGroups.values()) result.push(pickBest(group));
+    return result;
   }, [quotes]);
 
   const filteredQuotes = useMemo(() => {
