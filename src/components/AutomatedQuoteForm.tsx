@@ -124,6 +124,20 @@ export default function AutomatedQuoteForm({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [quote, setQuote] = useState<QuoteResult | null>(null);
+  const [retryAfter, setRetryAfter] = useState<number | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!retryAfter) return;
+    const tick = () => {
+      const remaining = Math.ceil((retryAfter - Date.now()) / 1000);
+      if (remaining <= 0) { setCooldownSeconds(0); setRetryAfter(null); }
+      else setCooldownSeconds(remaining);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [retryAfter]);
 
   // Diagnostic-only funnel telemetry. Routes through trackEvent (GA4 + DB),
   // NEVER trackFormSubmission/trackConversion, so diagnostic funnel events can
@@ -159,6 +173,7 @@ export default function AutomatedQuoteForm({
       const data = await response.json();
       if (!response.ok || !data.success) {
         setNotice(data.message || data.error || "We couldn't find that plate. Try a VIN below, or call (720) 918-7465.");
+        setRetryAfter(Date.now() + 60_000);
         return;
       }
       const v: VehicleState = {
@@ -319,6 +334,7 @@ export default function AutomatedQuoteForm({
           onLookupVin={lookupVin}
           busy={busy}
           notice={notice}
+          cooldownSeconds={cooldownSeconds}
         />
       </div>
 
@@ -347,6 +363,7 @@ function VehicleStage({
   onLookupVin,
   busy,
   notice,
+  cooldownSeconds,
 }: {
   mode: VehicleMode;
   setMode: (m: VehicleMode) => void;
@@ -360,6 +377,7 @@ function VehicleStage({
   onLookupVin: () => void;
   busy: boolean;
   notice: string;
+  cooldownSeconds: number;
 }) {
   const plateReady = plate.trim().length >= 2 && plateState.length === 2;
   const vinReady = vinInput.trim().length === 17;
@@ -421,17 +439,19 @@ function VehicleStage({
           <button
             type="button"
             onClick={onLookupPlate}
-            disabled={busy || !plateReady}
+            disabled={busy || !plateReady || cooldownSeconds > 0}
             className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
           >
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
             {busy
               ? 'Looking up your price…'
-              : plate.trim().length < 2
-                ? 'Enter plate to continue'
-                : !plateState
-                  ? 'Select state to continue'
-                  : 'Get my price'}
+              : cooldownSeconds > 0
+                ? `Try again in ${cooldownSeconds}s`
+                : plate.trim().length < 2
+                  ? 'Enter plate to continue'
+                  : !plateState
+                    ? 'Select state to continue'
+                    : 'Get my price'}
           </button>
         </div>
       )}
@@ -469,9 +489,20 @@ function VehicleStage({
       )}
 
       {notice && (
-        <div className="mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-          <span>{notice}</span>
+        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <div className="flex gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{notice}</span>
+          </div>
+          {mode === 'plate' && (
+            <button
+              type="button"
+              onClick={() => setMode('vin')}
+              className="mt-2 ml-6 font-semibold text-pink-700 hover:underline"
+            >
+              Enter VIN instead →
+            </button>
+          )}
         </div>
       )}
 

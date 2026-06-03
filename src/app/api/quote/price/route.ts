@@ -87,6 +87,33 @@ export async function POST(request: NextRequest) {
     }
 
     const cacheClient = buildCacheClient();
+
+    // Dedup: if the same session already priced this vehicle in the last 5 min,
+    // return the cached result without hitting AutoBolt or Mygrant again.
+    // Targets the "retry rage-click" pattern (same plate lookup failing, user
+    // resubmits 2-3× in quick succession).
+    if (input.sessionId && cacheClient) {
+      const cached = await findRecentQuote(cacheClient, input);
+      if (cached) {
+        return NextResponse.json({
+          success: true,
+          status: cached.status,
+          quoteToken: cached.quote_token,
+          vehicle: {
+            vin: cached.vin || input.vehicle.vin,
+            year: cached.vehicle_year,
+            make: cached.vehicle_make,
+            model: cached.vehicle_model,
+            trim: cached.vehicle_trim ?? undefined,
+          },
+          message: cached.status === 'manual_review'
+            ? 'We found your vehicle, but this glass needs a manual price confirmation.'
+            : undefined,
+          confidenceReasons: cached.confidence_reasons ?? [],
+        });
+      }
+    }
+
     const mygrantResult = await getMygrantQuoteCandidates(input, cacheClient);
     // Prefer the AutoBolt-resolved vehicle identity over what the form submitted,
     // since the resolved values reflect the VIN the part was priced for. If the
@@ -601,6 +628,25 @@ async function tryMygrantInquireByVehicle(
     reasons.push('mygrant_vehicle_lookup_failed');
     return { items: [], snapshot: { path: 'inquireByVehicle', error: message.slice(0, 300) } };
   }
+}
+
+async function findRecentQuote(
+  supabase: SupabaseClient,
+  input: QuotePriceInput
+): Promise<{ quote_token: string; status: string; vehicle_year: number; vehicle_make: string; vehicle_model: string; vehicle_trim: string | null; vin: string | null; confidence_reasons: string[] | null } | null> {
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from('automated_quotes')
+    .select('quote_token, status, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, confidence_reasons')
+    .eq('session_id', input.sessionId!)
+    .eq('vehicle_year', input.vehicle.year)
+    .ilike('vehicle_make', input.vehicle.make)
+    .ilike('vehicle_model', input.vehicle.model)
+    .gte('created_at', fiveMinutesAgo)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
 }
 
 function buildCacheClient(): SupabaseClient | undefined {
