@@ -20,6 +20,12 @@ const SERVICES = {
     envVar: 'GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN',
     redirectUri: 'https://developers.google.com/oauthplayground',
   },
+  ga4: {
+    label: 'Google Analytics 4 (read-only)',
+    scope: ['https://www.googleapis.com/auth/analytics.readonly'],
+    envVar: 'GOOGLE_ANALYTICS_REFRESH_TOKEN',
+    redirectUri: 'https://developers.google.com/oauthplayground',
+  },
   ads: {
     label: 'Google Ads',
     scope: ['https://www.googleapis.com/auth/adwords'],
@@ -35,7 +41,7 @@ const SERVICES = {
 };
 
 function usage() {
-  console.log('Usage: node scripts/exchange-google-oauth-code.mjs <gsc|ads|gbp>');
+  console.log('Usage: node scripts/exchange-google-oauth-code.mjs <gsc|ga4|ads|gbp>');
 }
 
 function getEnv(name, fallbacks = []) {
