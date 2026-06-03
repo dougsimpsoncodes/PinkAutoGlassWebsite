@@ -209,6 +209,17 @@ const nextConfig = {
         destination: '/about',
         permanent: true,
       },
+      // Consolidate duplicate Aurora pages → canonical /locations/aurora-co
+      {
+        source: '/colorado/aurora',
+        destination: '/locations/aurora-co',
+        permanent: true,
+      },
+      {
+        source: '/colorado/aurora/:neighborhood',
+        destination: '/locations/aurora-co',
+        permanent: true,
+      },
       // Location shorthand → proper slugs
       {
         source: '/locations/denver',

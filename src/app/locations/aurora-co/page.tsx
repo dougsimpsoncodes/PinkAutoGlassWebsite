@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Aurora CO | Mobile, $0 Deductible',
-  description: 'Mobile windshield replacement & repair in Aurora CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+  title: 'Auto Glass Repair & Windshield Replacement Aurora CO | Mobile',
+  description: 'Mobile auto glass repair & windshield replacement in Aurora CO. Same-day service, lifetime warranty. We come to you anywhere in Aurora! (720) 918-7465.',
   keywords: 'windshield replacement aurora co, windshield repair aurora, windshield replacement aurora, auto glass aurora co, auto glass repair aurora co, mobile windshield service aurora, stapleton windshield repair, green valley ranch auto glass',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/aurora-co',
   },
   openGraph: {
-    title: 'Windshield Replacement Aurora CO | Mobile, $0 Deductible',
-    description: 'Mobile windshield replacement & repair in Aurora CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+    title: 'Auto Glass Repair & Windshield Replacement Aurora CO | Mobile',
+    description: 'Mobile auto glass repair & windshield replacement in Aurora CO. Same-day service, lifetime warranty. We come to you anywhere in Aurora! (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/aurora-co',
     type: 'website',
   },
@@ -76,7 +76,7 @@ export default function AuroraLocationPage() {
                 <span className="text-xl">Aurora, Colorado</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Aurora's Trusted Windshield Repair & Replacement
+                Auto Glass Repair & Windshield Replacement in Aurora, CO
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
                 From the sprawling neighborhoods near Southlands to the busy stretches of E-470 and I-225, Aurora drivers cover a lot of ground. With significant daily commutes and the proximity to Buckley Space Force Base, your windshield is constantly exposed to typical Colorado road hazards and the occasional debris from expansive construction.
