@@ -12,7 +12,7 @@
  * | Ad Spend (Google)   | google_ads_daily          | date           | Ad reporting day (calendar date)    | One row per campaign per day                  |
  * | Ad Spend (Microsoft)| microsoft_ads_daily       | date           | Ad reporting day (calendar date)    | One row per campaign per day                  |
  * | Leads (form/SMS)    | leads                     | created_at     | UTC timestamp, MT day boundaries    | One per DB row (already unique)               |
- * | Leads (call)        | ringcentral_calls         | start_time     | UTC timestamp, MT day boundaries    | Per phone number (global, matches Leads page) |
+ * | Leads (call)        | ringcentral_calls         | start_time     | UTC timestamp, MT day boundaries    | Per phone; suppressed if any lead row exists for that phone in the period |
  * | Revenue (gross)     | omega_installs            | install_date   | Calendar date (date-only column)    | One per invoice                               |
  * | Revenue (attributed)| leads                     | close_date     | Calendar date (when status=completed)| One per lead                                 |
  * | Click Events        | conversion_events         | created_at     | UTC timestamp, MT day boundaries    | No dedup (every click counts)                 |
@@ -32,10 +32,11 @@
  * - Same phone calling multiple times in any period = 1 lead
  * - This matches fetchUnifiedLeads() which groups by phone globally
  * - Calls from business number, toll-free, or < 30s duration are excluded
- * - A call is suppressed ONLY when its phone is a call-type lead created in the
- *   SAME period (prevents same-period double-count). A call-lead from a PRIOR
- *   period does NOT suppress a new call — repeat customers across periods are
- *   counted (period-scoped; council 2026-06-01).
+ * - A call is suppressed when its phone matches ANY lead (form, call, or SMS)
+ *   created in the SAME period. This eliminates form+call duplicate pairs where
+ *   a customer submits a form and also calls the same day (2026-06-03).
+ * - A lead from a PRIOR period does NOT suppress a new call — repeat customers
+ *   across periods are counted (period-scoped; council 2026-06-01).
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -418,20 +419,16 @@ function deduplicateCalls(
 }
 
 /**
- * Phone numbers that are call-type leads in the leads table FOR THE CURRENT
- * PERIOD. RingCentral calls from these phones are suppressed in deduplicateCalls
- * to avoid double-counting a call already represented as a same-period call-lead.
+ * Phone numbers with ANY lead row in the current period. RC calls from these
+ * phones are suppressed in deduplicateCalls to avoid a duplicate pair when a
+ * customer submits a form AND calls on the same day (2026-06-03 fix: expanded
+ * from call-type-only to all lead types).
  *
- * Period-scoped (council 2026-06-01, option A): a call-lead from a PRIOR period
- * must NOT suppress a brand-new qualifying call from a repeat caller. Previously
- * this query had no date bound, so a stale lead silenced today's calls on both
- * sides and undercounted "Qualifying Leads". This mirrors fetchFormLeads, which
- * only counts leads created within the period.
+ * Period-scoped (council 2026-06-01, option A): a lead from a PRIOR period must
+ * NOT suppress a new call from a repeat caller. Previously this query had no date
+ * bound, so stale leads silenced today's calls. This mirrors fetchFormLeads.
  *
- * Market-agnostic on purpose: a person is a person regardless of which market
- * their lead classifies into. Filtering this set per-market caused
- * Sum(markets) > All (the same call would survive dedup in one market but be
- * suppressed in 'all' mode).
+ * Market-agnostic: filtering per-market caused Sum(markets) > All.
  */
 async function fetchCallLeadPhones(
   supabase: SupabaseClient,
@@ -441,7 +438,6 @@ async function fetchCallLeadPhones(
     .from('leads')
     .select('phone_e164')
     .eq('is_test', false)
-    .eq('first_contact_method', 'call')
     .gte('created_at', bounds.startUTC)
     .lte('created_at', bounds.endUTC);
 
