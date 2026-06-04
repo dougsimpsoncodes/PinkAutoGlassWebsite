@@ -105,6 +105,18 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Satellite quoter embed bundle — must always revalidate so satellite
+        // sites pick up bundle updates without waiting for browser cache expiry.
+        // Vercel edge cache is purged on each deploy; this closes the browser-side
+        // gap. Access-Control-Allow-Origin allows satellite domains to load the
+        // bundle cross-origin without CORS errors.
+        source: '/embed/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },

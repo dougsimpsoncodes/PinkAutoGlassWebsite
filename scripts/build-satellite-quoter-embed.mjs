@@ -1,4 +1,5 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,5 +66,21 @@ var process = globalThis.process || { env: ${JSON.stringify(publicEnv)} };`,
   },
 });
 
+// Compute content hash and write manifest for version visibility.
+// Satellite sites and ops can check /embed/satellite-quoter.manifest.json
+// to confirm which bundle version is live and detect stale deploys.
+const jsContent = await readFile(outfile);
+const hash = createHash('sha256').update(jsContent).digest('hex').slice(0, 12);
+const manifest = {
+  version: 'v1',
+  hash,
+  builtAt: new Date().toISOString(),
+  js: '/embed/satellite-quoter.v1.js',
+  css: '/embed/satellite-quoter.v1.css',
+};
+const manifestPath = path.join(outputDir, 'satellite-quoter.manifest.json');
+await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+
 console.log(`Built satellite quoter embed: ${path.relative(projectRoot, outfile)}`);
 console.log(`Built satellite quoter styles: ${path.relative(projectRoot, cssOutfile)}`);
+console.log(`Manifest: hash=${hash} builtAt=${manifest.builtAt}`);

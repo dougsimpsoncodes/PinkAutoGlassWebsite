@@ -15347,14 +15347,6 @@ Option 2: Install and provide the "ws" package:
       }]
     });
   };
-  var trackQuoteGenerated = (serviceType, vehicleInfo, estimatedPrice) => {
-    event({
-      action: "quote_generated",
-      category: "conversion",
-      label: `${serviceType}:${vehicleInfo}`,
-      value: estimatedPrice
-    });
-  };
   var trackGoogleAdsConversion = (transactionId, conversionLabel, value) => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", "conversion", {
@@ -15561,6 +15553,21 @@ Option 2: Install and provide the "ws" package:
     const key = `conversion_fired_${sessionId}_${eventType}`;
     sessionStorage.setItem(key, "true");
   }
+  function hasBookingFired(bookingToken) {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem(`booking_event_fired_${bookingToken}`) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+  function markBookingFired(bookingToken) {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(`booking_event_fired_${bookingToken}`, "true");
+    } catch (e) {
+    }
+  }
   function getSessionId() {
     if (typeof window === "undefined") return "";
     let sessionId = sessionStorage.getItem("analytics_session_id");
@@ -15730,16 +15737,24 @@ Option 2: Install and provide the "ws" package:
     return sessionData;
   }
   async function trackConversion(event2) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     if (typeof window === "undefined") return false;
     const sessionId = getSessionId();
     const visitorId = getVisitorId();
     const utmParams = getUTMParams();
     const deviceInfo = getDeviceInfo();
     const formSubmitStage = ((_a = event2.metadata) == null ? void 0 : _a.stage) || "default";
-    if (event2.eventType === "form_submit" && hasConversionFired("form_submit_" + formSubmitStage)) {
-      console.log("\u26A0\uFE0F Duplicate form_submit blocked for session/stage:", sessionId, formSubmitStage);
-      return false;
+    if (event2.eventType === "form_submit") {
+      if (formSubmitStage === "booked") {
+        const bookingToken = ((_b = event2.metadata) == null ? void 0 : _b.booking_token) || null;
+        if (bookingToken && hasBookingFired(bookingToken)) {
+          console.log("\u26A0\uFE0F Duplicate booking form_submit blocked for token:", bookingToken);
+          return false;
+        }
+      } else if (hasConversionFired("form_submit_" + formSubmitStage)) {
+        console.log("\u26A0\uFE0F Duplicate form_submit blocked for session/stage:", sessionId, formSubmitStage);
+        return false;
+      }
     }
     const dbEventType = event2.eventType === "form_submit" && formSubmitStage === "priced" ? "quote_priced" : event2.eventType;
     const { data, error } = await supabase.from("conversion_events").insert({
@@ -15768,7 +15783,17 @@ Option 2: Install and provide the "ws" package:
       console.error("\u274C Failed to track conversion in DB (ad conversions will still fire):", error);
     }
     if (event2.eventType === "form_submit") {
-      markConversionFired("form_submit_" + formSubmitStage);
+      if (formSubmitStage === "booked") {
+        const bookingToken = ((_c = event2.metadata) == null ? void 0 : _c.booking_token) || null;
+        if (bookingToken) {
+          markBookingFired(bookingToken);
+        } else {
+          console.warn("\u26A0\uFE0F form_submit booked has no booking_token \u2014 falling back to session dedup");
+          markConversionFired("form_submit_booked");
+        }
+      } else {
+        markConversionFired("form_submit_" + formSubmitStage);
+      }
     }
     console.log("\u2705 Conversion tracked:", event2.eventType, event2.buttonLocation);
     const gaEventMap = {
@@ -15777,15 +15802,30 @@ Option 2: Install and provide the "ws" package:
       form_submit: "form_submit",
       quote_generated: "quote_generated"
     };
-    if (event2.eventType === "form_submit" && ((_b = event2.metadata) == null ? void 0 : _b.stage) === "priced") {
+    if (event2.eventType === "form_submit" && (((_d = event2.metadata) == null ? void 0 : _d.stage) === "priced" || ((_e = event2.metadata) == null ? void 0 : _e.stage) === "booked")) {
       return true;
     }
-    event({
-      action: gaEventMap[event2.eventType],
-      category: "conversion",
-      label: event2.buttonLocation || window.location.pathname,
-      value: event2.eventValue
-    });
+    if (typeof window !== "undefined" && window.gtag) {
+      const gaParams = {
+        event_category: "conversion",
+        event_label: event2.buttonLocation || window.location.pathname,
+        value: event2.eventValue
+      };
+      const CUSTOM_DIMS = [
+        "stage",
+        "flow_mode",
+        "market",
+        "surface",
+        "vehicle_make",
+        "vehicle_model",
+        "vehicle_year"
+      ];
+      for (const dim of CUSTOM_DIMS) {
+        const val = (_f = event2.metadata) == null ? void 0 : _f[dim];
+        if (val != null) gaParams[dim] = val;
+      }
+      window.gtag("event", gaEventMap[event2.eventType], gaParams);
+    }
     return true;
   }
   async function trackEvent(event2) {
@@ -15819,13 +15859,22 @@ Option 2: Install and provide the "ws" package:
     });
     if (!tracked) return;
     if ((opts == null ? void 0 : opts.fireAds) === false) return;
-    const transactionId = (metadata == null ? void 0 : metadata.leadId) || (metadata == null ? void 0 : metadata.lead_id) || getSessionId();
+    const transactionId = (metadata == null ? void 0 : metadata.booking_token) || (metadata == null ? void 0 : metadata.leadId) || (metadata == null ? void 0 : metadata.lead_id) || getSessionId();
     const stage = (metadata == null ? void 0 : metadata.stage) || "default";
     const conversionValue = stage === "booked" ? BOOKING_CONVERSION_VALUE_USD : void 0;
     const email = metadata == null ? void 0 : metadata.email;
     const phone = metadata == null ? void 0 : metadata.phone;
     trackLeadFormConversion(transactionId, { email, phone }, conversionValue);
     trackMicrosoftAdsLeadForm(formName, conversionValue, transactionId ? `form_${transactionId}` : void 0);
+  }
+  async function trackQuoteGeneratedConversion(serviceType, vehicleInfo, metadata) {
+    await trackConversion({
+      eventType: "quote_generated",
+      // Preserve the label format analytics.trackQuoteGenerated() used for GA4.
+      buttonLocation: vehicleInfo ? `${serviceType}:${vehicleInfo}` : serviceType,
+      eventValue: (metadata == null ? void 0 : metadata.quote_total_cents) != null ? metadata.quote_total_cents / 100 : void 0,
+      metadata
+    });
   }
 
   // src/components/QuoteBookingForm.tsx
@@ -16233,6 +16282,21 @@ Option 2: Install and provide the "ws" package:
     const [busy, setBusy] = (0, import_react3.useState)(false);
     const [notice, setNotice] = (0, import_react3.useState)("");
     const [quote, setQuote] = (0, import_react3.useState)(null);
+    const [retryAfter, setRetryAfter] = (0, import_react3.useState)(null);
+    const [cooldownSeconds, setCooldownSeconds] = (0, import_react3.useState)(0);
+    (0, import_react3.useEffect)(() => {
+      if (!retryAfter) return;
+      const tick = () => {
+        const remaining = Math.ceil((retryAfter - Date.now()) / 1e3);
+        if (remaining <= 0) {
+          setCooldownSeconds(0);
+          setRetryAfter(null);
+        } else setCooldownSeconds(remaining);
+      };
+      tick();
+      const id = setInterval(tick, 1e3);
+      return () => clearInterval(id);
+    }, [retryAfter]);
     function fireQuoteDiagnostic(eventName, extra) {
       trackEvent({
         eventName,
@@ -16265,6 +16329,7 @@ Option 2: Install and provide the "ws" package:
         const data = await response.json();
         if (!response.ok || !data.success) {
           setNotice(data.message || data.error || "We couldn't find that plate. Try a VIN below, or call (720) 918-7465.");
+          setRetryAfter(Date.now() + 6e4);
           return;
         }
         const v = {
@@ -16349,11 +16414,22 @@ Option 2: Install and provide the "ws" package:
         setQuote(data);
         setStage("priced");
         if (data.status !== "manual_review" && data.pricing) {
-          trackQuoteGenerated(
+          trackQuoteGeneratedConversion(
             "windshield",
             `${v.year} ${v.make} ${v.model}`.trim(),
-            data.totalCents ? data.totalCents / 100 : void 0
-          );
+            {
+              quote_id: data == null ? void 0 : data.id,
+              quote_total_cents: data == null ? void 0 : data.totalCents,
+              vehicle_year: v.year ? Number.parseInt(v.year, 10) : void 0,
+              vehicle_make: v.make,
+              vehicle_model: v.model,
+              surface: quoteSurface(trackingContext),
+              market: resolveQuoteMarket(plateState, trackingContext),
+              flow_mode: flowMode,
+              ...trackingContext
+            }
+          ).catch(() => {
+          });
           trackFormSubmission("quote_form", {
             stage: "priced",
             quote_total_cents: data == null ? void 0 : data.totalCents,
@@ -16411,7 +16487,8 @@ Option 2: Install and provide the "ws" package:
           onLookupPlate: lookupPlate,
           onLookupVin: lookupVin,
           busy,
-          notice
+          notice,
+          cooldownSeconds
         }
       ) }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("aside", { className: "rounded-lg border border-gray-200 bg-gray-50 p-5", children: [
@@ -16445,7 +16522,8 @@ Option 2: Install and provide the "ws" package:
     onLookupPlate,
     onLookupVin,
     busy,
-    notice
+    notice,
+    cooldownSeconds
   }) {
     const plateReady = plate.trim().length >= 2 && plateState.length === 2;
     const vinReady = vinInput.trim().length === 17;
@@ -16497,11 +16575,11 @@ Option 2: Install and provide the "ws" package:
           {
             type: "button",
             onClick: onLookupPlate,
-            disabled: busy || !plateReady,
+            disabled: busy || !plateReady || cooldownSeconds > 0,
             className: "inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300",
             children: [
               busy ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Search, { className: "h-5 w-5" }),
-              busy ? "Looking up your price\u2026" : plate.trim().length < 2 ? "Enter plate to continue" : !plateState ? "Select state to continue" : "Get my price"
+              busy ? "Looking up your price\u2026" : cooldownSeconds > 0 ? `Try again in ${cooldownSeconds}s` : plate.trim().length < 2 ? "Enter plate to continue" : !plateState ? "Select state to continue" : "Get my price"
             ]
           }
         )
@@ -16536,9 +16614,20 @@ Option 2: Install and provide the "ws" package:
           }
         )
       ] }),
-      notice && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AlertTriangle, { className: "mt-0.5 h-4 w-4 flex-shrink-0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: notice })
+      notice && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AlertTriangle, { className: "mt-0.5 h-4 w-4 flex-shrink-0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: notice })
+        ] }),
+        mode === "plate" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+          "button",
+          {
+            type: "button",
+            onClick: () => setMode("vin"),
+            className: "mt-2 ml-6 font-semibold text-pink-700 hover:underline",
+            children: "Enter VIN instead \u2192"
+          }
+        )
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-6 border-t border-gray-100 pt-4 text-center text-sm text-gray-500", children: [
         "Can't find your plate or VIN?",
