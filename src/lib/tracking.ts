@@ -626,12 +626,27 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     return true;
   }
 
-  analytics.event({
-    action: gaEventMap[event.eventType],
-    category: 'conversion',
-    label: event.buttonLocation || window.location.pathname,
-    value: event.eventValue,
-  });
+  // Fire GA4 event with all available custom dimensions from metadata.
+  // These parameterNames match the 7 registered custom dimensions on GA4
+  // property 507414450 (confirmed by verify-ga4-setup.mjs). Values are only
+  // attached when present in metadata so existing events without rich metadata
+  // (phone_click, legacy form_submit) are unaffected in GA4 reports.
+  if (typeof window !== 'undefined' && window.gtag) {
+    const gaParams: Record<string, unknown> = {
+      event_category: 'conversion',
+      event_label: event.buttonLocation || window.location.pathname,
+      value: event.eventValue,
+    };
+    const CUSTOM_DIMS = [
+      'stage', 'flow_mode', 'market', 'surface',
+      'vehicle_make', 'vehicle_model', 'vehicle_year',
+    ] as const;
+    for (const dim of CUSTOM_DIMS) {
+      const val = (event.metadata as Record<string, unknown> | undefined)?.[dim];
+      if (val != null) gaParams[dim] = val;
+    }
+    window.gtag('event', gaEventMap[event.eventType], gaParams);
+  }
 
   return true;
 }
