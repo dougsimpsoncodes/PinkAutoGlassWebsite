@@ -107,3 +107,47 @@ export function parseAmNumberToNags(amNumber: string | undefined | null): { pref
   if (!match) return null;
   return { prefix: match[1], number: match[2] };
 }
+
+/**
+ * Splits an AutoBolt amNumber into the separate fields that Mygrant's
+ * inquireByNags SOAP endpoint expects.
+ *
+ * AutoBolt encodes glass variant details (color, hardware, premium) as a
+ * trailing suffix on amNumber (e.g. "DW02544GTYN" → nagsColor="GT",
+ * hardwareIndicator="Y", premiumIndicator="N"). Mygrant requires these as
+ * distinct XML fields — sending the full suffix in nagsNumber causes hangs
+ * on parts Mygrant carries but can only match via the split fields.
+ *
+ * Format: PREFIX(1-4 alpha) + NUMBER(4-6 digits) + COLOR(2 alpha) + HW(1) + PREM(1)
+ * Example: "DW02544GTYN" → { nagsPrefix:"DW", nagsNumber:"02544", nagsColor:"GT",
+ *                             hardwareIndicator:"Y", premiumIndicator:"N" }
+ *
+ * Returns null when the amNumber is absent or unparseable.
+ */
+export function parseAmNumberToMygrantItem(amNumber: string | undefined | null): {
+  nagsPrefix: string;
+  nagsNumber: string;
+  nagsColor?: string;
+  hardwareIndicator?: 'Y' | 'N';
+  premiumIndicator?: 'P' | 'N';
+} | null {
+  if (!amNumber) return null;
+  const cleaned = amNumber.trim().toUpperCase().replace(/[\s\-_]+/g, '');
+  // Full format with suffix: PREFIX + DIGITS + 2-char-color + hw-indicator + prem-indicator
+  const full = /^([A-Z]{1,4})(\d{4,6})([A-Z]{2})([A-Z])([A-Z])$/.exec(cleaned);
+  if (full) {
+    const hw = full[4] === 'Y' ? 'Y' : 'N';
+    const prem = full[5] === 'P' ? 'P' : 'N';
+    return {
+      nagsPrefix: full[1],
+      nagsNumber: full[2],
+      nagsColor: full[3],
+      hardwareIndicator: hw,
+      premiumIndicator: prem,
+    };
+  }
+  // Fallback: no recognizable suffix — send prefix + digits only
+  const simple = /^([A-Z]{1,4})(\d{4,6})/.exec(cleaned);
+  if (!simple) return null;
+  return { nagsPrefix: simple[1], nagsNumber: simple[2] };
+}

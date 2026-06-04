@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { getMygrantClient, type MygrantResponseItem } from '@/lib/mygrant/client';
+import { getMygrantClient, type MygrantNagsInquiryItem, type MygrantResponseItem } from '@/lib/mygrant/client';
 import { evaluateMygrantWindshieldCandidates, publicScoredMygrantCandidate } from '@/lib/quote/mygrant-scoring';
 import { buildCashWindshieldQuote, dollarsToCents, type CashWindshieldQuote } from '@/lib/quote/pricing';
 import { calculateMarkup, detectHudFromFeatures } from '@/lib/quote/markup';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { AutoBoltError, getAutoBoltClient } from '@/lib/autobolt/client';
 import { plateLookupKey, readCachedNagsLookup, vinLookupKey, writeCachedNagsLookup, extractInterchangeablesFromSummary, extractPrimaryFeaturesFromSummary, type CachedNagsLookup, type InterchangeableNagsPart } from '@/lib/autobolt/cache';
-import { checkCompatibility } from '@/lib/quote/nags-compatibility';
+import { checkCompatibility, parseAmNumberToMygrantItem } from '@/lib/quote/nags-compatibility';
 import { assertEnvCoherent } from '@/lib/env';
 import { classifyAdasTier, type AdasTier } from '@/lib/quote/adas-tier';
 import { classifyLeadMarket } from '@/lib/market';
@@ -370,8 +370,14 @@ async function getMygrantQuoteCandidates(
     // cosmetic-equivalent variants — anything missing a functional feature the
     // primary needed (ADAS, acoustic, heated wiper, HUD, etc.) is rejected so
     // we never substitute down a customer's actual driving experience.
-    const nagsQuery: Array<{ nagsPrefix: string; nagsNumber: string }> = [
-      { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number },
+    //
+    // AutoBolt's amNumber encodes color, hardware, and premium indicator as a
+    // trailing suffix (e.g. "DW02544GTYN" → color=GT, hw=Y, prem=N). Mygrant
+    // requires these as separate XML fields; passing them inside nagsNumber
+    // causes Mygrant to hang on parts it carries but can only find via the
+    // split fields. parseAmNumberToMygrantItem handles the split.
+    const nagsQuery: MygrantNagsInquiryItem[] = [
+      parseAmNumberToMygrantItem(nagsLookup.amNumber) ?? { nagsPrefix: nagsLookup.nags.prefix, nagsNumber: nagsLookup.nags.number },
     ];
     const interchangeableCandidates: InterchangeableNagsPart[] = nagsLookup.interchangeableParts ?? [];
     const compatibilityLog: Array<{ amNumber: string; compatible: boolean; missingFunctional: string[] }> = [];
@@ -383,7 +389,9 @@ async function getMygrantQuoteCandidates(
         missingFunctional: check.missingFunctionalFeatures,
       });
       if (check.compatible) {
-        nagsQuery.push({ nagsPrefix: part.nags.prefix, nagsNumber: part.nags.number });
+        nagsQuery.push(
+          parseAmNumberToMygrantItem(part.amNumber) ?? { nagsPrefix: part.nags.prefix, nagsNumber: part.nags.number }
+        );
       }
     }
     if (nagsQuery.length > 1) {
