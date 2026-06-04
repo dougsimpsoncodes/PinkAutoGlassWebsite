@@ -11,8 +11,7 @@ import {
 } from 'lucide-react';
 import { isStateInServiceArea, OUT_OF_AREA_STATE_MESSAGE } from '@/lib/quote/service-area';
 import QuoteBookingForm from '@/components/QuoteBookingForm';
-import { getSessionId, trackFormSubmission, trackEvent } from '@/lib/tracking';
-import { trackQuoteGenerated } from '@/lib/analytics';
+import { getSessionId, trackFormSubmission, trackEvent, trackQuoteGeneratedConversion } from '@/lib/tracking';
 import { getMarketFromPath, type Market } from '@/lib/market';
 import type { SatelliteQuoterTrackingContext } from '@/lib/satellite-quoter/tracking';
 
@@ -259,14 +258,24 @@ export default function AutomatedQuoteForm({
       setStage('priced');
 
       if (data.status !== 'manual_review' && data.pricing) {
-        // Fire GA4 quote_generated so the funnel has a visible middle step:
-        // page_view → quote_generated → form_submit (booked).
-        // NOT marked as a Key Event — keeps Smart Bidding signal clean.
-        trackQuoteGenerated(
+        // Fire quote_generated to GA4 AND write a DB row so the server-side
+        // funnel has visibility into the middle step (page_view → quote_generated
+        // → purchase). NOT a Key Event — keeps Smart Bidding signal clean.
+        trackQuoteGeneratedConversion(
           'windshield',
           `${v.year} ${v.make} ${v.model}`.trim(),
-          data.totalCents ? data.totalCents / 100 : undefined,
-        );
+          {
+            quote_id: data?.id,
+            quote_total_cents: data?.totalCents,
+            vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
+            vehicle_make: v.make,
+            vehicle_model: v.model,
+            surface: quoteSurface(trackingContext),
+            market: resolveQuoteMarket(plateState, trackingContext),
+            flow_mode: flowMode,
+            ...trackingContext,
+          },
+        ).catch(() => { /* analytics never blocks UX */ });
 
         // A real price was shown — log this as a funnel 'priced' event so the
         // Quoter Funnel report can count it, but do NOT fire the Ads bidding

@@ -110,8 +110,9 @@ function getStoredClickId(key: string, expiryDays: number = CLICK_ID_EXPIRY_DAYS
 // ============================================================================
 
 /**
- * Track which conversion types have been fired in this session
+ * Track which conversion types have been fired in this session.
  * Prevents duplicate conversions from double-clicks, page refreshes, etc.
+ * Uses sessionStorage — scoped to the current tab/session.
  */
 function hasConversionFired(eventType: string): boolean {
   if (typeof window === 'undefined') return false;
@@ -127,6 +128,33 @@ function markConversionFired(eventType: string): void {
   const sessionId = getSessionId();
   const key = `conversion_fired_${sessionId}_${eventType}`;
   sessionStorage.setItem(key, 'true');
+}
+
+/**
+ * Durable booking-level dedup keyed by bookingToken (localStorage).
+ *
+ * sessionStorage dedup clears on tab close, so a user who gets a price,
+ * closes the browser, and returns to book in a new session would re-fire
+ * all conversion events — corrupting ad platform bidding signals.
+ * Using localStorage + bookingToken as the key means each unique booking
+ * fires exactly once regardless of how many sessions or tab reloads occur.
+ */
+function hasBookingFired(bookingToken: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(`booking_event_fired_${bookingToken}`) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markBookingFired(bookingToken: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`booking_event_fired_${bookingToken}`, 'true');
+  } catch {
+    // localStorage write may be blocked (private browsing, storage quota); fall through
+  }
 }
 
 // ============================================================================
@@ -495,17 +523,29 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
 
-  // Per-session de-dup for form_submit, keyed BY STAGE so each funnel stage
-  // (priced / booked / ymm_text_capture / default) records its OWN conversion_events
-  // row. A single global 'form_submit' key previously let the first fire
-  // (price-shown) suppress 'booked' — which both undercounted the quoter funnel's
-  // booked stage AND pinned the Ads bidding conversion to price-shown. The Ads
-  // fire is de-duped separately in trackFormSubmission. (council 2026-06-01)
-  // Phone/text clicks allow multiple per session since user might call multiple times.
+  // Per-stage de-dup for form_submit. Each funnel stage (priced / booked /
+  // ymm_text_capture / default) records its OWN conversion_events row.
+  // Phone/text clicks allow multiple per session (user might call more than once).
+  //
+  // The 'booked' stage uses localStorage + bookingToken as the dedup key so that
+  // a user who gets a price, closes the browser, and books in a new session still
+  // fires exactly once. sessionStorage-based dedup (used for other stages) clears
+  // on tab close and was previously causing split-brain attribution: trackPurchase()
+  // (which bypasses sessionStorage) would fire while form_submit was blocked.
+  // (council 2026-06-04, unanimously agreed server-side/token-keyed dedup needed)
   const formSubmitStage = (event.metadata?.stage as string) || 'default';
-  if (event.eventType === 'form_submit' && hasConversionFired('form_submit_' + formSubmitStage)) {
-    console.log('⚠️ Duplicate form_submit blocked for session/stage:', sessionId, formSubmitStage);
-    return false;
+
+  if (event.eventType === 'form_submit') {
+    if (formSubmitStage === 'booked') {
+      const bookingToken = (event.metadata?.booking_token as string) || null;
+      if (bookingToken && hasBookingFired(bookingToken)) {
+        console.log('⚠️ Duplicate booking form_submit blocked for token:', bookingToken);
+        return false;
+      }
+    } else if (hasConversionFired('form_submit_' + formSubmitStage)) {
+      console.log('⚠️ Duplicate form_submit blocked for session/stage:', sessionId, formSubmitStage);
+      return false;
+    }
   }
 
   // Use a distinct event_type for the quoter 'priced' diagnostic so every
@@ -547,7 +587,19 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
 
   // Mark THIS form_submit stage as fired (stage-aware de-dup, see above).
   if (event.eventType === 'form_submit') {
-    markConversionFired('form_submit_' + formSubmitStage);
+    if (formSubmitStage === 'booked') {
+      const bookingToken = (event.metadata?.booking_token as string) || null;
+      if (bookingToken) {
+        markBookingFired(bookingToken);
+      } else {
+        // No bookingToken available — fall back to sessionStorage so we don't
+        // skip dedup entirely. Logged so the gap is detectable.
+        console.warn('⚠️ form_submit booked has no booking_token — falling back to session dedup');
+        markConversionFired('form_submit_booked');
+      }
+    } else {
+      markConversionFired('form_submit_' + formSubmitStage);
+    }
   }
 
   console.log('✅ Conversion tracked:', event.eventType, event.buttonLocation);
@@ -560,20 +612,41 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     quote_generated: 'quote_generated',
   };
 
-  // Skip GA4 form_submit for the 'priced' stage — price-shown is a diagnostic
-  // event; firing GA4's form_submit here would double-count priced→booked sessions
-  // in GA4 audiences/conversions even though server-side dashboards filter it.
-  // The DB conversion_events row is still written above for the Quoter Funnel.
-  if (event.eventType === 'form_submit' && (event.metadata as any)?.stage === 'priced') {
+  // Skip GA4 form_submit for quoter-path stages — 'purchase' is the canonical
+  // GA4 booking signal (fired via trackPurchase in QuoteBookingForm). Firing
+  // form_submit here too would create double-counting in GA4 audiences and
+  // conversion reports. DB rows and Ads bidding conversions still fire above/below.
+  //
+  //   priced  → diagnostic only; GA4 form_submit here trains bidding on curiosity
+  //   booked  → purchase event already covers this in GA4 (council 2026-06-04)
+  if (event.eventType === 'form_submit' && (
+    (event.metadata as any)?.stage === 'priced' ||
+    (event.metadata as any)?.stage === 'booked'
+  )) {
     return true;
   }
 
-  analytics.event({
-    action: gaEventMap[event.eventType],
-    category: 'conversion',
-    label: event.buttonLocation || window.location.pathname,
-    value: event.eventValue,
-  });
+  // Fire GA4 event with all available custom dimensions from metadata.
+  // These parameterNames match the 7 registered custom dimensions on GA4
+  // property 507414450 (confirmed by verify-ga4-setup.mjs). Values are only
+  // attached when present in metadata so existing events without rich metadata
+  // (phone_click, legacy form_submit) are unaffected in GA4 reports.
+  if (typeof window !== 'undefined' && window.gtag) {
+    const gaParams: Record<string, unknown> = {
+      event_category: 'conversion',
+      event_label: event.buttonLocation || window.location.pathname,
+      value: event.eventValue,
+    };
+    const CUSTOM_DIMS = [
+      'stage', 'flow_mode', 'market', 'surface',
+      'vehicle_make', 'vehicle_model', 'vehicle_year',
+    ] as const;
+    for (const dim of CUSTOM_DIMS) {
+      const val = (event.metadata as Record<string, unknown> | undefined)?.[dim];
+      if (val != null) gaParams[dim] = val;
+    }
+    window.gtag('event', gaEventMap[event.eventType], gaParams);
+  }
 
   return true;
 }
@@ -736,9 +809,12 @@ export async function trackFormSubmission(
   // stays a diagnostic-only funnel event. (council 2026-06-01, unanimous)
   if (opts?.fireAds === false) return;
 
-  // Resolve transaction id — accept both camelCase (leadId) and snake_case (lead_id)
-  // from callers. Falls back to sessionId so Google/Microsoft can still dedup.
-  const transactionId = metadata?.leadId || metadata?.lead_id || getSessionId();
+  // Resolve transaction id for Ads dedup.
+  // Preference order: booking_token (stable across sessions, set by QuoteBookingForm)
+  // → leadId / lead_id (legacy lead forms) → sessionId (last-resort fallback).
+  // booking_token is critical: without it, a returning user who books in a new
+  // session would re-fire the Ads conversion because sessionId changes per tab.
+  const transactionId = metadata?.booking_token || metadata?.leadId || metadata?.lead_id || getSessionId();
   const stage = (metadata?.stage as string) || 'default';
 
   // Booking stage ($150) or legacy lead form ($91 default).
@@ -747,6 +823,38 @@ export async function trackFormSubmission(
   const phone = metadata?.phone;
   analytics.trackLeadFormConversion(transactionId, { email, phone }, conversionValue);
   analytics.trackMicrosoftAdsLeadForm(formName, conversionValue, transactionId ? `form_${transactionId}` : undefined);
+}
+
+/**
+ * Track quote_generated — writes to DB AND fires GA4.
+ *
+ * Previously only analytics.trackQuoteGenerated() was called at price-shown,
+ * which sent to GA4 only (no DB row). This meant the server-side funnel
+ * (fn_quoter_funnel, Supabase queries) had no visibility into the middle step.
+ *
+ * Use this in place of analytics.trackQuoteGenerated(). The existing
+ * trackFormSubmission(stage='priced') call stays in place — it writes a
+ * 'quote_priced' DB row that fn_quoter_funnel.sql depends on for its own
+ * stage detection. Once the funnel SQL is updated to use 'quote_generated',
+ * the quote_priced row can be retired.
+ *
+ * No Ads conversion fires here — quote_generated is a diagnostic mid-funnel
+ * signal, not a contact-captured event.
+ */
+export async function trackQuoteGeneratedConversion(
+  serviceType: string,
+  vehicleInfo: string,
+  metadata?: Record<string, any>,
+): Promise<void> {
+  await trackConversion({
+    eventType: 'quote_generated',
+    // Preserve the label format analytics.trackQuoteGenerated() used for GA4.
+    buttonLocation: vehicleInfo ? `${serviceType}:${vehicleInfo}` : serviceType,
+    eventValue: metadata?.quote_total_cents != null
+      ? (metadata.quote_total_cents as number) / 100
+      : undefined,
+    metadata,
+  });
 }
 
 /**
