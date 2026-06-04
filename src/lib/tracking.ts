@@ -811,6 +811,38 @@ export async function trackFormSubmission(
 }
 
 /**
+ * Track quote_generated — writes to DB AND fires GA4.
+ *
+ * Previously only analytics.trackQuoteGenerated() was called at price-shown,
+ * which sent to GA4 only (no DB row). This meant the server-side funnel
+ * (fn_quoter_funnel, Supabase queries) had no visibility into the middle step.
+ *
+ * Use this in place of analytics.trackQuoteGenerated(). The existing
+ * trackFormSubmission(stage='priced') call stays in place — it writes a
+ * 'quote_priced' DB row that fn_quoter_funnel.sql depends on for its own
+ * stage detection. Once the funnel SQL is updated to use 'quote_generated',
+ * the quote_priced row can be retired.
+ *
+ * No Ads conversion fires here — quote_generated is a diagnostic mid-funnel
+ * signal, not a contact-captured event.
+ */
+export async function trackQuoteGeneratedConversion(
+  serviceType: string,
+  vehicleInfo: string,
+  metadata?: Record<string, any>,
+): Promise<void> {
+  await trackConversion({
+    eventType: 'quote_generated',
+    // Preserve the label format analytics.trackQuoteGenerated() used for GA4.
+    buttonLocation: vehicleInfo ? `${serviceType}:${vehicleInfo}` : serviceType,
+    eventValue: metadata?.quote_total_cents != null
+      ? (metadata.quote_total_cents as number) / 100
+      : undefined,
+    metadata,
+  });
+}
+
+/**
  * Track form start
  */
 export function trackFormStart(formName: string) {
