@@ -612,11 +612,17 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
     quote_generated: 'quote_generated',
   };
 
-  // Skip GA4 form_submit for the 'priced' stage — price-shown is a diagnostic
-  // event; firing GA4's form_submit here would double-count priced→booked sessions
-  // in GA4 audiences/conversions even though server-side dashboards filter it.
-  // The DB conversion_events row is still written above for the Quoter Funnel.
-  if (event.eventType === 'form_submit' && (event.metadata as any)?.stage === 'priced') {
+  // Skip GA4 form_submit for quoter-path stages — 'purchase' is the canonical
+  // GA4 booking signal (fired via trackPurchase in QuoteBookingForm). Firing
+  // form_submit here too would create double-counting in GA4 audiences and
+  // conversion reports. DB rows and Ads bidding conversions still fire above/below.
+  //
+  //   priced  → diagnostic only; GA4 form_submit here trains bidding on curiosity
+  //   booked  → purchase event already covers this in GA4 (council 2026-06-04)
+  if (event.eventType === 'form_submit' && (
+    (event.metadata as any)?.stage === 'priced' ||
+    (event.metadata as any)?.stage === 'booked'
+  )) {
     return true;
   }
 
@@ -788,9 +794,12 @@ export async function trackFormSubmission(
   // stays a diagnostic-only funnel event. (council 2026-06-01, unanimous)
   if (opts?.fireAds === false) return;
 
-  // Resolve transaction id — accept both camelCase (leadId) and snake_case (lead_id)
-  // from callers. Falls back to sessionId so Google/Microsoft can still dedup.
-  const transactionId = metadata?.leadId || metadata?.lead_id || getSessionId();
+  // Resolve transaction id for Ads dedup.
+  // Preference order: booking_token (stable across sessions, set by QuoteBookingForm)
+  // → leadId / lead_id (legacy lead forms) → sessionId (last-resort fallback).
+  // booking_token is critical: without it, a returning user who books in a new
+  // session would re-fire the Ads conversion because sessionId changes per tab.
+  const transactionId = metadata?.booking_token || metadata?.leadId || metadata?.lead_id || getSessionId();
   const stage = (metadata?.stage as string) || 'default';
 
   // Booking stage ($150) or legacy lead form ($91 default).
