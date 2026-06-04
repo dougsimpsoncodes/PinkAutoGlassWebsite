@@ -110,8 +110,9 @@ function getStoredClickId(key: string, expiryDays: number = CLICK_ID_EXPIRY_DAYS
 // ============================================================================
 
 /**
- * Track which conversion types have been fired in this session
+ * Track which conversion types have been fired in this session.
  * Prevents duplicate conversions from double-clicks, page refreshes, etc.
+ * Uses sessionStorage — scoped to the current tab/session.
  */
 function hasConversionFired(eventType: string): boolean {
   if (typeof window === 'undefined') return false;
@@ -127,6 +128,33 @@ function markConversionFired(eventType: string): void {
   const sessionId = getSessionId();
   const key = `conversion_fired_${sessionId}_${eventType}`;
   sessionStorage.setItem(key, 'true');
+}
+
+/**
+ * Durable booking-level dedup keyed by bookingToken (localStorage).
+ *
+ * sessionStorage dedup clears on tab close, so a user who gets a price,
+ * closes the browser, and returns to book in a new session would re-fire
+ * all conversion events — corrupting ad platform bidding signals.
+ * Using localStorage + bookingToken as the key means each unique booking
+ * fires exactly once regardless of how many sessions or tab reloads occur.
+ */
+function hasBookingFired(bookingToken: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(`booking_event_fired_${bookingToken}`) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markBookingFired(bookingToken: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`booking_event_fired_${bookingToken}`, 'true');
+  } catch {
+    // localStorage write may be blocked (private browsing, storage quota); fall through
+  }
 }
 
 // ============================================================================
@@ -495,17 +523,29 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
 
-  // Per-session de-dup for form_submit, keyed BY STAGE so each funnel stage
-  // (priced / booked / ymm_text_capture / default) records its OWN conversion_events
-  // row. A single global 'form_submit' key previously let the first fire
-  // (price-shown) suppress 'booked' — which both undercounted the quoter funnel's
-  // booked stage AND pinned the Ads bidding conversion to price-shown. The Ads
-  // fire is de-duped separately in trackFormSubmission. (council 2026-06-01)
-  // Phone/text clicks allow multiple per session since user might call multiple times.
+  // Per-stage de-dup for form_submit. Each funnel stage (priced / booked /
+  // ymm_text_capture / default) records its OWN conversion_events row.
+  // Phone/text clicks allow multiple per session (user might call more than once).
+  //
+  // The 'booked' stage uses localStorage + bookingToken as the dedup key so that
+  // a user who gets a price, closes the browser, and books in a new session still
+  // fires exactly once. sessionStorage-based dedup (used for other stages) clears
+  // on tab close and was previously causing split-brain attribution: trackPurchase()
+  // (which bypasses sessionStorage) would fire while form_submit was blocked.
+  // (council 2026-06-04, unanimously agreed server-side/token-keyed dedup needed)
   const formSubmitStage = (event.metadata?.stage as string) || 'default';
-  if (event.eventType === 'form_submit' && hasConversionFired('form_submit_' + formSubmitStage)) {
-    console.log('⚠️ Duplicate form_submit blocked for session/stage:', sessionId, formSubmitStage);
-    return false;
+
+  if (event.eventType === 'form_submit') {
+    if (formSubmitStage === 'booked') {
+      const bookingToken = (event.metadata?.booking_token as string) || null;
+      if (bookingToken && hasBookingFired(bookingToken)) {
+        console.log('⚠️ Duplicate booking form_submit blocked for token:', bookingToken);
+        return false;
+      }
+    } else if (hasConversionFired('form_submit_' + formSubmitStage)) {
+      console.log('⚠️ Duplicate form_submit blocked for session/stage:', sessionId, formSubmitStage);
+      return false;
+    }
   }
 
   // Use a distinct event_type for the quoter 'priced' diagnostic so every
@@ -547,7 +587,19 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
 
   // Mark THIS form_submit stage as fired (stage-aware de-dup, see above).
   if (event.eventType === 'form_submit') {
-    markConversionFired('form_submit_' + formSubmitStage);
+    if (formSubmitStage === 'booked') {
+      const bookingToken = (event.metadata?.booking_token as string) || null;
+      if (bookingToken) {
+        markBookingFired(bookingToken);
+      } else {
+        // No bookingToken available — fall back to sessionStorage so we don't
+        // skip dedup entirely. Logged so the gap is detectable.
+        console.warn('⚠️ form_submit booked has no booking_token — falling back to session dedup');
+        markConversionFired('form_submit_booked');
+      }
+    } else {
+      markConversionFired('form_submit_' + formSubmitStage);
+    }
   }
 
   console.log('✅ Conversion tracked:', event.eventType, event.buttonLocation);
