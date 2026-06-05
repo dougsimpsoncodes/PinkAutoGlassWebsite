@@ -65,6 +65,14 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center space-x-2">
+            {!pathname?.startsWith('/quote') && (
+              <Link
+                href="/quote"
+                className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-3 py-2 rounded-md min-h-[44px] flex items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
+              >
+                Get a price
+              </Link>
+            )}
             <a
               href={tel}
               className="flex items-center space-x-1.5 text-gray-700 hover:text-pink-600 transition-colors text-base font-medium min-h-[44px] px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 rounded"
@@ -110,6 +118,14 @@ export default function Header() {
               <Phone className="w-4 h-4" />
               <span className="font-medium">{displayPhone}</span>
             </a>
+            {!pathname?.startsWith('/quote') && (
+              <Link
+                href="/quote"
+                className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-5 py-2.5 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2"
+              >
+                Get a price
+              </Link>
+            )}
           </div>
         </nav>
       </div>
