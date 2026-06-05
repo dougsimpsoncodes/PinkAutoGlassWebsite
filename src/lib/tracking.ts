@@ -838,8 +838,12 @@ export async function trackFormSubmission(
  * stage detection. Once the funnel SQL is updated to use 'quote_generated',
  * the quote_priced row can be retired.
  *
- * No Ads conversion fires here — quote_generated is a diagnostic mid-funnel
- * signal, not a contact-captured event.
+ * Ad fire: an OBSERVATION-ONLY "Quote priced" conversion fires here — Google Ads
+ * REQUEST_QUOTE (secondary, not biddable) + Microsoft UET. It powers funnel
+ * reporting and RLSA "quoted, didn't book" audiences but does NOT feed Smart
+ * Bidding today (booking stays the only biddable lead signal). Gated to the main
+ * site: satellite embeds (which carry metadata.siteKey) don't host Pink's gtag/
+ * UET, so the ad fire is skipped there while the GA4 + DB funnel rows still write.
  */
 export async function trackQuoteGeneratedConversion(
   serviceType: string,
@@ -855,6 +859,19 @@ export async function trackQuoteGeneratedConversion(
       : undefined,
     metadata,
   });
+
+  // Observation-only ad conversions — main site only. Satellite embeds carry a
+  // siteKey and run on third-party domains without Pink's gtag/UET, so firing
+  // there would be a cross-origin no-op at best; skip it. Session-keyed dedup
+  // (quote_{sessionId}) keeps it to one quote conversion per session.
+  if (!metadata?.siteKey) {
+    const sessionId = getSessionId();
+    if (sessionId) {
+      analytics.trackQuoteConversion(sessionId);
+      const surface = (metadata?.surface as string) || 'quote';
+      analytics.trackMicrosoftAdsQuoteGenerated(surface, `quote_${sessionId}`);
+    }
+  }
 }
 
 /**

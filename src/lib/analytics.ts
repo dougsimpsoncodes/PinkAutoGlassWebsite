@@ -11,6 +11,14 @@ export const GOOGLE_ADS_CALL_LABEL = 'NRHDCJmG9cEbEJSayehB';
 // "Callback (text-me-price)" — secondary action, ID 7633459171. Paused: YMM tab removed.
 // Keep constant + action alive for future re-use if a callback path is re-introduced.
 export const GOOGLE_ADS_CALLBACK_LABEL = 'snihCOOv9bccEJSayehB';
+// "Quote priced (web)" — REQUEST_QUOTE secondary action, ID 7636293598.
+// Observation-only: primary_for_goal=false and NOT biddable at campaign level,
+// so it never feeds Smart Bidding today. Fires at price-shown to power funnel
+// reporting + RLSA "quoted, didn't book" audiences. Promoting it to biddable is
+// a deliberate future decision that also requires moving the campaigns to
+// value-based bidding (under MaxConversions a quote would count == a booking).
+// See tasks/2026-06-04-ads-tracking-review.md.
+export const GOOGLE_ADS_QUOTE_LABEL = 'RRJECN6vorkcEJSayehB';
 
 // Tiered conversion values (USD) — each stage signals a different intent level.
 // Booking: confirmed appointment. Callback: gave name+phone, no booking. Lead: form/call/text.
@@ -20,6 +28,11 @@ export const CALLBACK_CONVERSION_VALUE_USD = 75;
 export const FORM_CONVERSION_VALUE_USD = 91;  // legacy lead forms (non-quoter paths)
 export const CALL_CONVERSION_VALUE_USD = 55;
 export const TEXT_CONVERSION_VALUE_USD = 55;
+// Quote priced (mid-funnel). ~15% quote→book rate × $150 booking ≈ $20 expected
+// value. The Google action forces this value (always_use_default_value), so it's
+// a fixed per-quote signal, not the (misleading) actual quoted price. Only
+// matters if/when bidding moves value-based; ignored under MaxConversions.
+export const QUOTE_CONVERSION_VALUE_USD = 20;
 
 declare global {
   interface Window {
@@ -303,6 +316,13 @@ export const trackCallClickConversion = (sessionId: string) => {
   trackGoogleAdsConversion(`call_${sessionId}`, GOOGLE_ADS_CALL_LABEL, CALL_CONVERSION_VALUE_USD);
 };
 
+// Track quote-priced (mid-funnel) conversion — REQUEST_QUOTE, observation-only.
+// Session-keyed transaction_id so each session counts at most one quote, matching
+// the call/text pattern (Google dedups server-side by transaction_id).
+export const trackQuoteConversion = (sessionId: string) => {
+  trackGoogleAdsConversion(`quote_${sessionId}`, GOOGLE_ADS_QUOTE_LABEL, QUOTE_CONVERSION_VALUE_USD);
+};
+
 // ============================================================================
 // MICROSOFT ADS UET CONVERSION TRACKING
 // ============================================================================
@@ -369,4 +389,18 @@ export const trackMicrosoftAdsLeadForm = (formName: string, value: number = FORM
   // Default to the shared form value so callers passing undefined (e.g. tracking.ts)
   // still send a real value — Microsoft was training on $0 while Google got $91.
   trackMicrosoftAdsEvent('form_submit', 'conversion', formName, value, transactionId);
+};
+
+/**
+ * Track quote-priced (mid-funnel) for Microsoft Ads.
+ * Intended to map to a "Quote priced" Event goal (ActionExpression: quote_generated).
+ *
+ * NOTE: that MS goal is intentionally NOT created yet — the active MS Search
+ * campaign runs MaxConversions, so a new biddable goal would distort count-based
+ * bidding (a quote would count == a booking). Until the goal exists this push is
+ * a harmless no-op. Create the goal only alongside the value-based bidding switch.
+ * IMPORTANT: action name must match the goal's ActionExpression exactly.
+ */
+export const trackMicrosoftAdsQuoteGenerated = (source: string, transactionId?: string) => {
+  trackMicrosoftAdsEvent('quote_generated', 'conversion', source, QUOTE_CONVERSION_VALUE_USD, transactionId);
 };
