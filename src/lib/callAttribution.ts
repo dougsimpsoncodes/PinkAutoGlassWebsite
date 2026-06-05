@@ -17,6 +17,15 @@ const METHOD_PRIORITY: Record<string, number> = {
   unknown: 0,
 };
 
+// Shared constant: attribution methods backed by deterministic platform evidence.
+// Import this in any builder that needs a canonical-method check so they can
+// never silently diverge (metricsBuilder, unifiedLeadsBuilder, etc.).
+export const CANONICAL_ATTRIBUTION_METHODS: ReadonlySet<string> = new Set([
+  'google_call_view',
+  'microsoft_uploaded_call',
+  'direct_match',
+]);
+
 export interface AttributionResult {
   callId: string;
   fromNumber: string;
@@ -34,6 +43,7 @@ export interface AttributionResult {
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  utmTerm?: string | null;
   gclid?: string | null;
   msclkid?: string | null;
   sessionId?: string | null;
@@ -46,6 +56,7 @@ interface ConversionEvent {
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
+  utm_term?: string | null;
   gclid?: string | null;
   msclkid?: string | null;
 }
@@ -139,7 +150,7 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
 
   const { data: events, error } = await client
     .from('conversion_events')
-    .select('created_at, session_id, utm_source, utm_medium, utm_campaign, gclid, msclkid')
+    .select('created_at, session_id, utm_source, utm_medium, utm_campaign, utm_term, gclid, msclkid')
     .eq('event_type', 'phone_click')
     .gte('created_at', windowStart.toISOString())
     .lte('created_at', windowEnd.toISOString())
@@ -224,6 +235,7 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
       utmSource: matchingEvent.utm_source || null,
       utmMedium: matchingEvent.utm_medium || null,
       utmCampaign: matchingEvent.utm_campaign || null,
+      utmTerm: matchingEvent.utm_term || null,
       gclid: matchingEvent.gclid || null,
       msclkid: matchingEvent.msclkid || null,
       sessionId: matchingEvent.session_id || null,
@@ -368,6 +380,12 @@ export async function saveAttributionResults(
     if (result.sessionId) {
       updateData.website_session_id = result.sessionId;
     }
+    // Only write click IDs and utm_term when present in the result — canonical
+    // evidence matches (google_call_view, microsoft_uploaded_call) don't carry
+    // these fields and should not overwrite whatever is already on the row.
+    if (result.gclid !== undefined) updateData.gclid = result.gclid;
+    if (result.msclkid !== undefined) updateData.msclkid = result.msclkid;
+    if (result.utmTerm !== undefined) updateData.utm_term = result.utmTerm;
 
     const { error } = await client
       .from('ringcentral_calls')

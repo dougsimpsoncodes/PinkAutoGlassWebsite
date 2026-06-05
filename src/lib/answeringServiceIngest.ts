@@ -46,6 +46,19 @@ export interface IngestResult {
   manualReview: number;
 }
 
+interface CallAnchor {
+  start_time: string;
+  ad_platform: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  gclid: string | null;
+  msclkid: string | null;
+  website_session_id: string | null;
+  to_number: string | null;
+}
+
 /** Build an enrich patch that ONLY fills currently-blank columns. Never overwrites. */
 function buildEnrichPatch(
   existing: Record<string, unknown>,
@@ -104,7 +117,7 @@ export async function ingestAnsweringServiceMessage(
     // 1) Existing lead row for this customer → enrich blanks only.
     const { data: existing } = await supabase
       .from('leads')
-      .select('id, first_name, last_name, vehicle_year, vehicle_make, vehicle_model, notes')
+      .select('id, first_name, last_name, vehicle_year, vehicle_make, vehicle_model, notes, gclid, msclkid, utm_term, session_id')
       .eq('phone_e164', phone)
       .eq('is_test', isTest)
       .order('created_at', { ascending: false })
@@ -113,6 +126,36 @@ export async function ingestAnsweringServiceMessage(
 
     if (existing) {
       const { patch, fills } = buildEnrichPatch(existing as Record<string, unknown>, c);
+
+      // Also enrich attribution fields if blank — leads need click IDs to be
+      // eligible for offline conversion upload. Only look up the call if at
+      // least one click-ID field is missing.
+      const existingRec = existing as Record<string, unknown>;
+      const blank = (v: unknown) => v === null || v === undefined || (typeof v === 'string' && v.trim() === '');
+      if (blank(existingRec.gclid) || blank(existingRec.msclkid)) {
+        const attrCallNumbers = [phone, c.callerIdE164].filter((n): n is string => !!n);
+        let attrQ = supabase
+          .from('ringcentral_calls')
+          .select('gclid, msclkid, utm_term, website_session_id')
+          .in('from_number', attrCallNumbers)
+          .eq('direction', 'Inbound')
+          .order('start_time', { ascending: false })
+          .limit(1);
+        if (message.messageTime) {
+          const upper = message.messageTime;
+          const lower = new Date(new Date(upper).getTime() - 24 * 60 * 60 * 1000).toISOString();
+          attrQ = attrQ.lte('start_time', upper).gte('start_time', lower);
+        }
+        const { data: attrCall } = await attrQ.maybeSingle();
+        if (attrCall) {
+          const a = attrCall as Pick<CallAnchor, 'gclid' | 'msclkid' | 'utm_term' | 'website_session_id'>;
+          if (blank(existingRec.gclid) && a.gclid) { patch.gclid = a.gclid; fills.push('gclid'); }
+          if (blank(existingRec.msclkid) && a.msclkid) { patch.msclkid = a.msclkid; fills.push('msclkid'); }
+          if (blank(existingRec.utm_term) && a.utm_term) { patch.utm_term = a.utm_term; fills.push('utm_term'); }
+          if (blank(existingRec.session_id) && a.website_session_id) { patch.session_id = a.website_session_id; fills.push('session_id'); }
+        }
+      }
+
       if (fills.length === 0) {
         result.outcomes.push({ phone, action: 'noop_complete' });
         continue;
@@ -139,7 +182,7 @@ export async function ingestAnsweringServiceMessage(
       .from('ringcentral_calls')
       // to_number is needed to derive the lead's market (codex pre-deploy
       // F-market-5, 2026-05-31) — same signal callLeadSync uses.
-      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign, to_number')
+      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign, utm_term, gclid, msclkid, website_session_id, to_number')
       .in('from_number', callNumbers)
       .eq('direction', 'Inbound')
       .order('start_time', { ascending: false })
@@ -166,14 +209,20 @@ export async function ingestAnsweringServiceMessage(
 
     if (call) {
       // Anchor attribution + time to the real call (the actual customer action).
-      insert.created_at = (call as { start_time: string }).start_time;
-      insert.ad_platform = (call as { ad_platform: string | null }).ad_platform ?? 'direct';
-      insert.utm_source = (call as { utm_source: string | null }).utm_source ?? null;
-      insert.utm_medium = (call as { utm_medium: string | null }).utm_medium ?? null;
-      insert.utm_campaign = (call as { utm_campaign: string | null }).utm_campaign ?? null;
+      insert.created_at = (call as CallAnchor).start_time;
+      insert.ad_platform = (call as CallAnchor).ad_platform ?? 'direct';
+      insert.utm_source = (call as CallAnchor).utm_source ?? null;
+      insert.utm_medium = (call as CallAnchor).utm_medium ?? null;
+      insert.utm_campaign = (call as CallAnchor).utm_campaign ?? null;
+      // Pass click IDs so this lead is eligible for offline conversion upload.
+      // utm_term required for keyword-level call reporting.
+      if ((call as CallAnchor).gclid) insert.gclid = (call as CallAnchor).gclid;
+      if ((call as CallAnchor).msclkid) insert.msclkid = (call as CallAnchor).msclkid;
+      if ((call as CallAnchor).utm_term) insert.utm_term = (call as CallAnchor).utm_term;
+      if ((call as CallAnchor).website_session_id) insert.session_id = (call as CallAnchor).website_session_id;
       // Derive market from the inbound call's to_number, like callLeadSync —
       // otherwise CO/AZ lead+revenue filters drop these calls (F-market-5).
-      const callMarket = classifyCallMarket((call as { to_number: string | null }).to_number);
+      const callMarket = classifyCallMarket((call as CallAnchor).to_number);
       if (callMarket) insert.market = callMarket;
     } else {
       // Net-new (service-only). Never fabricate a paid source — default to direct.
@@ -188,7 +237,7 @@ export async function ingestAnsweringServiceMessage(
         if ((error as { code?: string }).code === '23505') {
           const { data: nowExisting } = await supabase
             .from('leads')
-            .select('id, first_name, last_name, vehicle_year, vehicle_make, vehicle_model, notes')
+            .select('id, first_name, last_name, vehicle_year, vehicle_make, vehicle_model, notes, gclid, msclkid, utm_term, session_id')
             .eq('phone_e164', phone)
             .eq('is_test', isTest)
             .order('created_at', { ascending: false })
@@ -196,6 +245,16 @@ export async function ingestAnsweringServiceMessage(
             .maybeSingle();
           if (nowExisting) {
             const { patch, fills } = buildEnrichPatch(nowExisting as Record<string, unknown>, c);
+            // Enrich attribution from the call that's already in scope.
+            if (call) {
+              const ne = nowExisting as Record<string, unknown>;
+              const blankV = (v: unknown) => v === null || v === undefined || (typeof v === 'string' && v.trim() === '');
+              const a = call as CallAnchor;
+              if (blankV(ne.gclid) && a.gclid) { patch.gclid = a.gclid; fills.push('gclid'); }
+              if (blankV(ne.msclkid) && a.msclkid) { patch.msclkid = a.msclkid; fills.push('msclkid'); }
+              if (blankV(ne.utm_term) && a.utm_term) { patch.utm_term = a.utm_term; fills.push('utm_term'); }
+              if (blankV(ne.session_id) && a.website_session_id) { patch.session_id = a.website_session_id; fills.push('session_id'); }
+            }
             if (fills.length) {
               const { error: upErr } = await supabase.from('leads').update(patch).eq('id', (nowExisting as { id: string }).id);
               if (upErr) {

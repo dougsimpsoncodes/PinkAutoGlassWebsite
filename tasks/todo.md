@@ -404,5 +404,38 @@ Verifies AI crawlers can actually parse our content (beyond robots.txt).
 - **Gates:** tsc clean (blast radius); codex pre-deploy review clean ("no actionable regressions"); build green; prod deploy 68wjzrcpd Ready/200.
 - **Verification:** synthetic-webhook live test was correctly BLOCKED by the safety classifier (would need RINGCENTRAL_WEBHOOK_TOKEN written to a file + a forged webhook — beyond a general "go"). Did NOT work around it. Verified-by-equivalence (identical after() pattern already proven live on the booking fix) + clean review. Optional live confirm: text +17209187465 from a non-team phone → auto-reply `ringcentral_sms` row flips Queued→Sent inside the after() callback.
 
+## 2026-06-05 — Lead Attribution Architecture: PR 1 (reporting parity + field normalization)
+
+**Branch:** `feat/attribution-parity-pr1` (pushed, SHA 3c70b2e)
+
+**What changed:**
+- `callAttribution.ts`: Exported `CANONICAL_ATTRIBUTION_METHODS` constant (shared source of truth). Added `utmTerm` to `AttributionResult`. Select `utm_term` from `conversion_events` in `matchDirectConversions()`. Write `gclid`, `msclkid`, `utm_term` to `ringcentral_calls` in `saveAttributionResults()` — only for direct_match results.
+- `metricsBuilder.ts`: Replaced inline `hasCanonicalMethod` with `CANONICAL_ATTRIBUTION_METHODS.has()` import. Now includes `microsoft_uploaded_call`.
+- `unifiedLeadsBuilder.ts`: Same — uses shared constant instead of inline check. Dashboard and Leads page now definitionally agree.
+- `answeringServiceIngest.ts`: `CallAnchor` interface added. `gclid`, `msclkid`, `utm_term`, `website_session_id` selected from RC call and passed through to lead insert. Answering service leads now eligible for offline conversion upload.
+- Migration: `20260605_add_attribution_fields_to_ringcentral_calls.sql` adds `gclid`, `msclkid`, `utm_term` to `ringcentral_calls`.
+
+**Not done (deliberate — per plan must-have vs defer split):**
+- Direct attribution columns on automated_quotes/bookings (indirect chain via lead_id is sufficient)
+- Direct columns on ringcentral_sms (fix was ingest path, not table schema)
+- landing_page propagation (needs verification first)
+
+**Still pending:**
+- **Migration not applied yet** — run `node scripts/run-migration.js supabase/migrations/20260605_add_attribution_fields_to_ringcentral_calls.sql` before next attribution cron (06:00 or 13:00 UTC)
+- PR 2: Architectural unification (export eligibility consumes canonical attribution) — requires Option A vs Option B decision first
+- PR 3: Google Ads bidding model — HOLD until PR 2 verified + per-action conversion query run
+
+**Verification queries (run after migration + next attribution cron):**
+```sql
+-- gclid/msclkid/utm_term populated on calls with direct_match
+SELECT gclid, msclkid, utm_term, COUNT(*) FROM ringcentral_calls
+WHERE start_time > NOW()-INTERVAL '7 days' AND gclid IS NOT NULL GROUP BY 1,2,3;
+
+-- Answering service leads now have click IDs (created with first_contact_method='call')
+SELECT gclid, notes FROM leads
+WHERE notes LIKE '%[answering service]%'
+AND created_at > NOW()-INTERVAL '7 days';
+```
+
 ## ✅ RESOLVED (2026-06-02) — PAG-9983 test pollution
 Booking (7134b854), quote (e0b55647, 2012 Jeep Wrangler), and lead (1f9f717c "TEST alert verify") all confirmed is_test=true in prod. No further action needed.

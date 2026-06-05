@@ -13,6 +13,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { type DateFilter, getMountainDayBounds, type MountainDayBounds } from './dateUtils';
 import { ATTRIBUTION_WINDOW_MINUTES } from './constants';
 import { isQualifyingCall } from './callQualifying';
+import { CANONICAL_ATTRIBUTION_METHODS } from './callAttribution';
 import {
   type Market,
   type MarketFilter,
@@ -318,10 +319,7 @@ function deduplicateCallRows(
     //   2. Legacy ad_platform column (still written by callAttributionSync.ts)
     //   3. Session-based fallback within the existing 60-min window
     let platform: string | null = null;
-    const hasCanonicalMethod =
-      call.attribution_method === 'google_call_view' ||
-      call.attribution_method === 'direct_match' ||
-      call.attribution_method === 'microsoft_uploaded_call';
+    const hasCanonicalMethod = CANONICAL_ATTRIBUTION_METHODS.has(call.attribution_method);
     if (hasCanonicalMethod && call.ad_platform) {
       platform = call.ad_platform;
     } else {

@@ -57,6 +57,7 @@ import {
 import { getGrossRevenue } from './grossRevenue';
 import { getAttributedRevenue } from './attributedRevenue';
 import { isQualifyingCall } from './callQualifying';
+import { CANONICAL_ATTRIBUTION_METHODS } from './callAttribution';
 
 const TOLL_FREE_PREFIXES = ['+1800', '+1833', '+1844', '+1855', '+1866', '+1877', '+1888'];
 
@@ -393,9 +394,7 @@ function deduplicateCalls(
     //   2. Legacy ad_platform column (still written by callAttributionSync.ts)
     //   3. Session-based fallback within the existing 60-min window
     let platform: string | null = null;
-    const hasCanonicalMethod =
-      call.attribution_method === 'google_call_view' ||
-      call.attribution_method === 'direct_match';
+    const hasCanonicalMethod = CANONICAL_ATTRIBUTION_METHODS.has(call.attribution_method);
     if (hasCanonicalMethod && call.ad_platform) {
       platform = call.ad_platform;
     } else {
