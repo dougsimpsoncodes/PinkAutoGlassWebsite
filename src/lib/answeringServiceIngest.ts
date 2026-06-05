@@ -46,6 +46,19 @@ export interface IngestResult {
   manualReview: number;
 }
 
+interface CallAnchor {
+  start_time: string;
+  ad_platform: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  gclid: string | null;
+  msclkid: string | null;
+  website_session_id: string | null;
+  to_number: string | null;
+}
+
 /** Build an enrich patch that ONLY fills currently-blank columns. Never overwrites. */
 function buildEnrichPatch(
   existing: Record<string, unknown>,
@@ -139,7 +152,7 @@ export async function ingestAnsweringServiceMessage(
       .from('ringcentral_calls')
       // to_number is needed to derive the lead's market (codex pre-deploy
       // F-market-5, 2026-05-31) — same signal callLeadSync uses.
-      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign, to_number')
+      .select('start_time, ad_platform, utm_source, utm_medium, utm_campaign, utm_term, gclid, msclkid, website_session_id, to_number')
       .in('from_number', callNumbers)
       .eq('direction', 'Inbound')
       .order('start_time', { ascending: false })
@@ -166,14 +179,20 @@ export async function ingestAnsweringServiceMessage(
 
     if (call) {
       // Anchor attribution + time to the real call (the actual customer action).
-      insert.created_at = (call as { start_time: string }).start_time;
-      insert.ad_platform = (call as { ad_platform: string | null }).ad_platform ?? 'direct';
-      insert.utm_source = (call as { utm_source: string | null }).utm_source ?? null;
-      insert.utm_medium = (call as { utm_medium: string | null }).utm_medium ?? null;
-      insert.utm_campaign = (call as { utm_campaign: string | null }).utm_campaign ?? null;
+      insert.created_at = (call as CallAnchor).start_time;
+      insert.ad_platform = (call as CallAnchor).ad_platform ?? 'direct';
+      insert.utm_source = (call as CallAnchor).utm_source ?? null;
+      insert.utm_medium = (call as CallAnchor).utm_medium ?? null;
+      insert.utm_campaign = (call as CallAnchor).utm_campaign ?? null;
+      // Pass click IDs so this lead is eligible for offline conversion upload.
+      // utm_term required for keyword-level call reporting.
+      if ((call as CallAnchor).gclid) insert.gclid = (call as CallAnchor).gclid;
+      if ((call as CallAnchor).msclkid) insert.msclkid = (call as CallAnchor).msclkid;
+      if ((call as CallAnchor).utm_term) insert.utm_term = (call as CallAnchor).utm_term;
+      if ((call as CallAnchor).website_session_id) insert.website_session_id = (call as CallAnchor).website_session_id;
       // Derive market from the inbound call's to_number, like callLeadSync —
       // otherwise CO/AZ lead+revenue filters drop these calls (F-market-5).
-      const callMarket = classifyCallMarket((call as { to_number: string | null }).to_number);
+      const callMarket = classifyCallMarket((call as CallAnchor).to_number);
       if (callMarket) insert.market = callMarket;
     } else {
       // Net-new (service-only). Never fabricate a paid source — default to direct.
