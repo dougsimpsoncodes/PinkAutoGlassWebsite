@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:watch": "nodemon --watch .env.local --watch .env --exec 'rm -rf .next && next dev'",
-    "build": "npm run build:embed:satellite-quoter && next build",
+    "build": "next build",
+    "build:with-embed": "npm run build:embed:satellite-quoter && npm run build",
     "build:embed:satellite-quoter": "node scripts/build-satellite-quoter-embed.mjs",
     "start": "next start",
     "lint": "next lint",
