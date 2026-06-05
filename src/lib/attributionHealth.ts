@@ -25,6 +25,9 @@ export interface AttributionHealthSnapshot {
   latest_qualifying_call_at: string | null;
   job_runtime_seconds: number | null;
   source: string;
+  // Export-contract coverage (added PR 2 — null until export_candidates table populated)
+  upload_coverage_rate: number | null;
+  session_proximity_eligible_count: number | null;
 }
 
 interface CallRow {
@@ -89,7 +92,11 @@ export async function buildAttributionHealthSnapshot(
   const startIso = `${snapshotDate}T00:00:00.000Z`;
   const endIso = `${snapshotDate}T23:59:59.999Z`;
 
-  const [{ data: calls, error: callsError }, { data: latestSyncRow, error: syncError }] = await Promise.all([
+  const [
+    { data: calls, error: callsError },
+    { data: latestSyncRow, error: syncError },
+    { data: exportCandidates, error: ecError },
+  ] = await Promise.all([
     supabase
       .from('ringcentral_calls')
       .select('call_id, from_number, start_time, direction, duration, attribution_method, attribution_confidence, sync_timestamp')
@@ -103,6 +110,12 @@ export async function buildAttributionHealthSnapshot(
       .order('sync_timestamp', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('export_candidates')
+      .select('eligible, reason, uploaded_at')
+      .eq('source_type', 'call')
+      .gte('conversion_time', startIso)
+      .lte('conversion_time', endIso),
   ]);
 
   if (callsError) {
@@ -110,6 +123,10 @@ export async function buildAttributionHealthSnapshot(
   }
   if (syncError) {
     throw new Error(`Failed to fetch latest RingCentral sync timestamp: ${syncError.message}`);
+  }
+  // ecError is non-fatal — table may not exist yet on first deploy
+  if (ecError) {
+    console.warn(`⚠️ attribution-health: export_candidates query failed (${ecError.message}) — coverage metrics will be null`);
   }
 
   const rawCalls = (calls || []) as CallRow[];
@@ -135,6 +152,19 @@ export async function buildAttributionHealthSnapshot(
     ? round((Date.now() - new Date(latestRingcentralSyncAt).getTime()) / 36e5, 2)
     : null;
 
+  // Export-contract coverage (requires export_candidates to be populated by the builder)
+  let uploadCoverageRate: number | null = null;
+  let sessionProximityEligibleCount: number | null = null;
+
+  if (exportCandidates && !ecError) {
+    const eligible = exportCandidates.filter((c: any) => c.eligible);
+    const uploaded = eligible.filter((c: any) => c.uploaded_at != null);
+    uploadCoverageRate = eligible.length ? rate(uploaded.length, eligible.length) : 0;
+    sessionProximityEligibleCount = eligible.filter(
+      (c: any) => c.reason === 'session_fallback'
+    ).length;
+  }
+
   return {
     snapshot_date: snapshotDate,
     window_start_date: snapshotDate,
@@ -158,6 +188,8 @@ export async function buildAttributionHealthSnapshot(
     latest_qualifying_call_at: latestQualifyingCallAt,
     job_runtime_seconds: runtimeSeconds == null ? null : round(runtimeSeconds, 2),
     source,
+    upload_coverage_rate: uploadCoverageRate,
+    session_proximity_eligible_count: sessionProximityEligibleCount,
   };
 }
 
@@ -321,6 +353,8 @@ export async function sendAttributionHealthAlertEmail(
         <tr><td><strong>Microsoft share</strong></td><td>${round(snapshot.microsoft_rate * 100, 1)}%</td></tr>
         <tr><td><strong>Direct-match share</strong></td><td>${round(snapshot.direct_rate * 100, 1)}%</td></tr>
         <tr><td><strong>Freshness lag</strong></td><td>${snapshot.data_freshness_lag_hours ?? 'n/a'}h</td></tr>
+        ${snapshot.upload_coverage_rate != null ? `<tr><td><strong>Upload coverage</strong></td><td>${round(snapshot.upload_coverage_rate * 100, 1)}%</td></tr>` : ''}
+        ${snapshot.session_proximity_eligible_count != null ? `<tr><td><strong>Session-proximity eligible</strong></td><td>${snapshot.session_proximity_eligible_count}</td></tr>` : ''}
       </table>
     </div>
   `;

@@ -31,6 +31,7 @@ import {
   fetchCampaignPerformance as fetchMicrosoftCampaignPerformance,
 } from '@/lib/microsoftAds';
 import { validateGBPConfig, fetchGBPCallMetrics } from '@/lib/googleBusinessProfile';
+import { buildAllExportCandidates } from '@/lib/exportCandidateBuilder';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
       },
       callAttribution: {
         crossReference: { success: false, matched: 0, unmatched: 0, error: null as string | null },
+        exportCandidates: { success: false, built: 0, errors: 0, error: null as string | null },
       },
       microsoftAds: {
         campaigns: { success: false, records: 0, error: null as string | null },
@@ -836,6 +838,29 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.callAttribution.crossReference.error = error.message;
       console.error('❌ Cross-reference failed:', error.message);
+    }
+
+    // ========================================
+    // 10.5: Build Export Candidates (observe-only, PR 2)
+    // ========================================
+    // Populates export_candidates with one eligibility decision per
+    // (call/lead × platform) pair. Runs AFTER cross-reference so
+    // google_ads_call_match is already set. Upload behavior unchanged —
+    // this step is purely for dry-run comparison and health coverage.
+    // See scripts/compare-export-candidates.js to evaluate before PR 2b.
+    try {
+      console.log('📊 Building export candidates...');
+      const ecResult = await buildAllExportCandidates(supabase);
+      results.callAttribution.exportCandidates = {
+        success: true,
+        built: ecResult.built,
+        errors: ecResult.errors,
+        error: ecResult.errors > 0 ? `${ecResult.errors} upsert chunk error(s)` : null,
+      };
+      console.log(`✅ Export candidates: ${ecResult.built} built`);
+    } catch (error: any) {
+      results.callAttribution.exportCandidates.error = error.message;
+      console.error('❌ Export candidates build failed:', error.message);
     }
 
     // ========================================
