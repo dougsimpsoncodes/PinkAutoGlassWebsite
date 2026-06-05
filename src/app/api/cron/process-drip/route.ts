@@ -18,9 +18,14 @@ export async function GET(request: NextRequest) {
   try {
     const result = await processScheduledMessages();
 
-    // Alert on any failures
-    if (result.failed > 0 || result.errors.length > 0) {
-      const summary = `Pink Auto Glass Alert: ${result.failed} customer message(s) failed to send today (${result.sent} sent successfully). Your review request system may not be working correctly.`;
+    // Only alert on permanent failures (max retries exceeded, unknown template,
+    // or unhandled exception). result.errors is populated only for those cases.
+    // Transient send failures that are still retrying do NOT trigger an alert —
+    // they increment result.failed but do not push to result.errors.
+    // Previously this fired on every retry attempt, causing repeated alerts for
+    // a single failing message (up to 6 alerts per customer).
+    if (result.errors.length > 0) {
+      const summary = `Pink Auto Glass Alert: ${result.errors.length} review message(s) permanently failed (${result.sent} sent successfully today). Check Supabase scheduled_messages for details.`;
       await alertOwner(summary);
     }
 
