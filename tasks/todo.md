@@ -439,3 +439,41 @@ AND created_at > NOW()-INTERVAL '7 days';
 
 ## ✅ RESOLVED (2026-06-02) — PAG-9983 test pollution
 Booking (7134b854), quote (e0b55647, 2012 Jeep Wrangler), and lead (1f9f717c "TEST alert verify") all confirmed is_test=true in prod. No further action needed.
+
+## 2026-06-05 — Lead Attribution PR 2: Export Candidates Builder (observe-only)
+
+**Branch:** `feat/attribution-export-contract-pr2`  
+**Commit:** ce972bb  
+**Migration applied to prod:** `20260605_attribution_export_contract_pr2.sql`
+
+### What was built
+- `export_candidates` table: one eligibility decision row per (call/lead × platform) per cron run
+- `src/lib/exportCandidateBuilder.ts`: pure `decideCallCandidates()` function + batch IO layer
+  - 7-branch evidence hierarchy: skip_google_call_view → skip_realtime_tap → direct_attribution → direct_phone_click → session_fallback → conflict → missing_click_id
+  - Batch design: 4 pre-fetched arrays replace N+1 per-call DB queries
+- `src/lib/__tests__/exportCandidateDecision.test.ts`: 13 unit tests (all green via `npm run test:unit`)
+- `src/lib/attributionHealth.ts`: `upload_coverage_rate` and `session_proximity_eligible_count` added to health snapshot (non-fatal if export_candidates not yet populated)
+- `src/app/api/cron/sync-search-data/route.ts`: new step 10.5 runs builder after crossRef (step 10)
+- `scripts/compare-export-candidates.js`: dry-run comparison script (7/30 day breakdown)
+- vitest added as devDependency, `npm run test:unit` script
+
+### What was deliberately NOT done (PR 2 is observe-only)
+- Cron ordering NOT changed (steps 6/7 still run before step 10) — that's PR 2b
+- `syncOfflineConversions` / `syncMicrosoftOfflineConversions` NOT modified — PR 2b
+- `exported_at` on export_candidates stays NULL until PR 2b uploader writes it
+
+### How to validate
+After 7+ days of cron runs:
+```
+node scripts/compare-export-candidates.js
+```
+Look for:
+- "newly eligible" count > 0 (new coverage from session/direct_attribution paths)
+- "newly skipped" count should be low (these are calls the old uploader sent but contract says no)
+- upload_coverage_rate in health snapshot (check `/api/admin/health-status`)
+
+**Next step: PR 2b** — flip the uploaders + fix cron ordering
+- Pre-condition: compare script shows < 5% newly-skipped rate (no major regressions)
+- Then: move step 10 before steps 6/7, rewrite syncOfflineConversions to read from export_candidates
+
+**PR 3 (Google Ads bidding) still on HOLD** until PR 2b verified + per-action conversion query run.

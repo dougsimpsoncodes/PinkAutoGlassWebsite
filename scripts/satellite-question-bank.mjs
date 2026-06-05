@@ -9,7 +9,16 @@
 import { writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
+// Repo paths are resolved from satellite-inventory.json. SITES_DIR is kept as
+// a fallback for sites that don't exist in the inventory yet (legacy behaviour).
 const SITES_DIR = '/Users/dougsimpson/clients/pink-auto-glass/sites'
+const INVENTORY_PATH = new URL('../data/satellite-inventory.json', import.meta.url).pathname
+let inventoryMap = {}
+try {
+  const { readFileSync } = await import('fs')
+  const inv = JSON.parse(readFileSync(INVENTORY_PATH, 'utf-8'))
+  inventoryMap = Object.fromEntries(inv.satellites.map(s => [s.dir, s.repoPath]))
+} catch { /* inventory not found — fall back to SITES_DIR */ }
 
 // ── Site definitions ─────────────────────────────────────────────────────────
 
@@ -805,7 +814,7 @@ let generated = 0
 let skipped = 0
 
 for (const site of sites) {
-  const siteDir = join(SITES_DIR, site.dir)
+  const siteDir = inventoryMap[site.dir] ?? join(SITES_DIR, site.dir)
   const dataDir = join(siteDir, 'src', 'data')
 
   try {

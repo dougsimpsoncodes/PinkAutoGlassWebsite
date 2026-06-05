@@ -1,0 +1,223 @@
+{
+  "_comment": "Canonical inventory of all PAG satellite sites. Batch scripts must read from this file rather than iterating sites/. Add new satellites here before writing any batch tooling.",
+  "sitesDir": "/Users/dougsimpson/clients/pink-auto-glass/sites",
+  "satellites": [
+    {
+      "domain": "windshielddenver.com",
+      "dir": "windshield-denver",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-denver",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Windshield Denver"
+    },
+    {
+      "domain": "mobilewindshielddenver.com",
+      "dir": "mobile-windshield-denver",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/mobile-windshield-denver",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Mobile Windshield Denver"
+    },
+    {
+      "domain": "windshieldchiprepairdenver.com",
+      "dir": "windshield-chip-repair-denver",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-denver",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Windshield Chip Repair Denver"
+    },
+    {
+      "domain": "windshieldchiprepairboulder.com",
+      "dir": "windshield-chip-repair-boulder",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-boulder",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Windshield Chip Repair Boulder"
+    },
+    {
+      "domain": "aurorawindshield.com",
+      "dir": "aurora-windshield",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/aurora-windshield",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Aurora Windshield"
+    },
+    {
+      "domain": "coloradospringswindshield.com",
+      "dir": "colorado-springs-windshield",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/colorado-springs-windshield",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Colorado Springs Windshield"
+    },
+    {
+      "domain": "autoglasscoloradosprings.com",
+      "dir": "auto-glass-colorado-springs",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/auto-glass-colorado-springs",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Auto Glass Colorado Springs"
+    },
+    {
+      "domain": "mobilewindshieldcoloradosprings.com",
+      "dir": "mobile-windshield-colorado-springs",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/mobile-windshield-colorado-springs",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Mobile Windshield Colorado Springs"
+    },
+    {
+      "domain": "windshieldreplacementfortcollins.com",
+      "dir": "windshield-replacement-fort-collins",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-replacement-fort-collins",
+      "group": "A",
+      "mode": "standard",
+      "market": "colorado",
+      "label": "Windshield Replacement Fort Collins"
+    },
+    {
+      "domain": "windshieldchiprepairphoenix.com",
+      "dir": "windshield-chip-repair-phoenix",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-phoenix",
+      "group": "A",
+      "mode": "standard",
+      "market": "arizona",
+      "label": "Windshield Chip Repair Phoenix"
+    },
+    {
+      "domain": "mobilewindshieldphoenix.com",
+      "dir": "mobile-windshield-phoenix",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/mobile-windshield-phoenix",
+      "group": "A",
+      "mode": "standard",
+      "market": "arizona",
+      "label": "Mobile Windshield Phoenix"
+    },
+    {
+      "domain": "windshieldchiprepairmesa.com",
+      "dir": "windshield-chip-repair-mesa",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-mesa",
+      "group": "A",
+      "mode": "standard",
+      "market": "arizona",
+      "label": "Windshield Chip Repair Mesa"
+    },
+    {
+      "domain": "windshieldchiprepairtempe.com",
+      "dir": "windshield-chip-repair-tempe",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-tempe",
+      "group": "A",
+      "mode": "standard",
+      "market": "arizona",
+      "label": "Windshield Chip Repair Tempe"
+    },
+    {
+      "domain": "windshieldchiprepairscottsdale.com",
+      "dir": "windshield-chip-repair-scottsdale",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-chip-repair-scottsdale",
+      "group": "A",
+      "mode": "standard",
+      "market": "arizona",
+      "label": "Windshield Chip Repair Scottsdale"
+    },
+    {
+      "domain": "windshieldcostcalculator.com",
+      "dir": "windshield-cost-calculator",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-cost-calculator",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Windshield Cost Calculator"
+    },
+    {
+      "domain": "windshieldpricecompare.com",
+      "dir": "windshield-price-compare",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-price-compare",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Windshield Price Compare"
+    },
+    {
+      "domain": "newwindshieldcost.com",
+      "dir": "new-windshield-cost",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/new-windshield-cost",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "New Windshield Cost"
+    },
+    {
+      "domain": "windshieldcostphoenix.com",
+      "dir": "windshield-cost-phoenix",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-cost-phoenix",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "arizona",
+      "label": "Windshield Cost Phoenix"
+    },
+    {
+      "domain": "newwindshieldnearme.com",
+      "dir": "new-windshield-near-me",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/new-windshield-near-me",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "New Windshield Near Me"
+    },
+    {
+      "domain": "cheapestwindshieldnearme.com",
+      "dir": "cheapest-windshield-near-me",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/cheapest-windshield-near-me",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Cheapest Windshield Near Me"
+    },
+    {
+      "domain": "getawindshieldquote.com",
+      "dir": "get-windshield-quote",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/get-windshield-quote",
+      "group": "B",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Get A Windshield Quote",
+      "_note": "Repo lives at /get-windshield-quote/ (sibling to /sites/), not inside /sites/. This is why it was missing from all prior batch operations."
+    },
+    {
+      "domain": "carglassprices.com",
+      "dir": "car-glass-prices",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/car-glass-prices",
+      "group": "C",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Car Glass Prices"
+    },
+    {
+      "domain": "carwindshieldprices.com",
+      "dir": "car-windshield-prices",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/car-windshield-prices",
+      "group": "C",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Car Windshield Prices"
+    },
+    {
+      "domain": "windshieldrepairprices.com",
+      "dir": "windshield-repair-prices",
+      "repoPath": "/Users/dougsimpson/clients/pink-auto-glass/sites/windshield-repair-prices",
+      "group": "C",
+      "mode": "zip-first",
+      "market": "national",
+      "label": "Windshield Repair Prices"
+    }
+  ]
+}
