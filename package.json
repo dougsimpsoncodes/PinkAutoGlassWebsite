@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "dev:watch": "nodemon --watch .env.local --watch .env --exec 'rm -rf .next && next dev'",
-    "build": "npm run build:embed:satellite-quoter && next build",
+    "build": "next build",
+    "build:with-embed": "npm run build:embed:satellite-quoter && npm run build",
     "build:embed:satellite-quoter": "node scripts/build-satellite-quoter-embed.mjs",
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
+    "test:unit": "vitest run",
     "generate-brand": "node assets/scripts/generate-brand-images.mjs",
     "oauth:gsc": "node scripts/exchange-google-oauth-code.mjs gsc",
     "oauth:ga4": "node scripts/exchange-google-oauth-code.mjs ga4",
@@ -94,7 +96,8 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "14.0.4",
     "nodemon": "^3.1.10",
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "@typescript-eslint/parser": "^8.59.2",
