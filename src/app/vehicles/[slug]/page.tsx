@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Phone, CheckCircle, Shield, Clock, Wrench, DollarSign } from 'lucide-react';
+import { CheckCircle, Shield, Clock, Wrench, DollarSign } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { vehiclesData, getVehicleBySlug, getAllVehicleSlugs } from '@/data/makes-models';
 import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import AutomatedQuoteForm from '@/components/AutomatedQuoteForm';
 
 // Generate static params for all vehicles
 export async function generateStaticParams() {
@@ -248,25 +249,11 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
             {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
-                {/* Quick Quote */}
-                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-xl p-6">
-                  <h3 className="text-2xl font-bold mb-2">${vehicle.avgReplacementPrice}</h3>
-                  <p className="text-green-100 mb-4">
-                    Typical price for {vehicle.make} {vehicle.model}
-                  </p>
-                  <a
-                    href="tel:+17209187465"
-                    className="flex items-center justify-center w-full bg-white text-green-700 py-3 px-4 rounded-lg font-bold hover:bg-green-50 transition-colors"
-                  >
-                    <Phone className="w-5 h-5 mr-2" />
-                    Call for Exact Quote
-                  </a>
-                  <Link
-                    href="/book"
-                    className="flex items-center justify-center w-full bg-green-700 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-800 transition-colors mt-3"
-                  >
-                    Book Online
-                  </Link>
+                {/* Inline Quoter */}
+                <div className="bg-white rounded-lg shadow-xl p-4">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 text-center">Get Your Instant Price</h3>
+                  <p className="text-sm text-gray-500 mb-4 text-center">Enter plate or VIN — price in seconds</p>
+                  <AutomatedQuoteForm />
                 </div>
 
                 {/* Why Choose Us */}
