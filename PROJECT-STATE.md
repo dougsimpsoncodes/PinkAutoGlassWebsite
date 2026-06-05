@@ -1,27 +1,27 @@
 # PROJECT-STATE.md — Pink Auto Glass Website
 
 ## One-Line Summary
-Live client site at `pinkautoglass.com`; as of 2026-04-12 the latest investigated CI/CD alert for commit `b8b7c5e` appears self-healed because the matching GitHub Actions runs are now green.
+Live client site at `pinkautoglass.com`; as of 2026-06-05 the satellite quoter/question-page rollout is reconciled across the full 24-domain inventory, including `getawindshieldquote.com`.
 
 ## What's Built
 - [x] Production website and deployment pipeline live in this repo
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
 
 ## Current Focus
-Quoter sitewide rollout — embedding `QuoterEmbed` (AutomatedQuoteForm wrapper) across high-traffic pages so visitors can get an instant price without navigating to /quote. 9 pages live as of 2026-06-01, covering ~61% of total site traffic. Tracking tags (Google AW-17667607828, Microsoft UET 343218744) are global in layout.tsx and require no per-page changes.
+Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satellite quoter parity is now closed across the 24-domain inventory; next attribution gate is the export-candidate comparison after the 7-day observation window.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
 
 ## Known Issues
 - `scripts/auto-fix/project-map.json` points PinkAutoGlassWebsite at a stale workspace path instead of this repo, which can misroute future auto-fix attempts.
-- Working tree currently contains unrelated local changes in `tasks/todo.md` and `tasks/2026-04-12-google-ads-call-attribution-cascade-fix.md`; avoid touching them during automated fixes.
+- Working tree may contain unrelated handoff artifacts such as `tasks/2026-06-04-git-state-handoff.md`; avoid touching them unless explicitly scoped.
 - 2026-06-01 same-day lead checks can look scarier in `leads` than in RingCentral because call rows are fresher than lead rows; use `ringcentral_calls` for real-time phone-volume checks.
 - ~~2026-06-01 admin RingCentral sync was still inserting removed `leads.phone`~~ — RESOLVED, merged to main: `0a5e1bb` removed the stale phone insert, `4b0b61b` set `first_contact_method='call'`, `a0103e6` moved call-lead creation to callLeadSync. Prod code no longer has the bug.
 - Homepage quoter rollout may be reducing phone-first intent even though site traffic is not down. Morning 2026-06-01 evidence: normal/high sessions, lower-than-late-May call volume, only one priced quote and no quoter booking by midday.
 
 ## Next Steps (priority order)
-1. **QuoterEmbed rollout** — Phase 2: add global "See your price" link in Header.tsx (one edit, covers all 263 routes). Council 3/3 approved this as the next step.
+1. **Attribution PR2 observation gate** — after 7+ days of cron runs, execute `node scripts/compare-export-candidates.js`; only proceed to PR2b if newly-skipped rate is acceptably low.
 2. ~~Admin quotes dashboard redesign~~ — DONE, merged: `f653fa7` + `d404cb1`/`520a6d9`/`f5d0c6b` (dedup + attempts badge) on main.
 3. ~~RingCentral sync bug~~ — DONE, merged (see Open-Questions note above; commits `0a5e1bb`/`4b0b61b`/`a0103e6`).
 4. **Monitor quoter vs call volume** — watch call volume vs quoter engagement; decide on phone-first homepage fast-follow if calls stay soft.
@@ -32,6 +32,9 @@ Quoter sitewide rollout — embedding `QuoterEmbed` (AutomatedQuoteForm wrapper)
 ## Key Files
 - `.github/workflows/` — CI/CD and security workflows
 - `PROJECT-STATE.md` — this project log
+- `data/satellite-inventory.json` — canonical 24-domain satellite inventory; batch tooling must read this instead of iterating `/sites/`
+- `data/satellite-question-content.json` — per-site question-page copy config for generated satellite question content
+- `scripts/validate-satellite-inventory.mjs` — guard that validates repo paths, duplicates, and question-content coverage
 - `RINGCENTRAL-RECORDING-PILOT-SPEC.md` — locked pilot execution spec for Denver 20-call closed-vs-lost analysis
 - `analysis/ringcentral-pilot/README.md` — folder-level closeout summary for the recording-analysis pilot
 - `analysis/ringcentral-pilot/pilot-findings.md` — executive findings memo from the pilot
@@ -46,6 +49,7 @@ Quoter sitewide rollout — embedding `QuoterEmbed` (AutomatedQuoteForm wrapper)
 - **PlateToVIN API** — selected as MVP plate lookup provider. Client foundation lives in `src/lib/platelookup/client.ts`; smoke script: `npx tsx scripts/platetovin-smoke.ts --plate=ABC123 --state=CO`.
 
 ## Change Log
+- 2026-06-05: **Satellite parity + canonical inventory closeout.** `getawindshieldquote.com` was confirmed as part of Group B and brought to parity: ZIP-first `QuoterEmbed`, 4 quote-intent question pages, sitemap entries, Microsoft UET, and homepage copy are live on production commit `2967e23`; follow-up title cleanup landed on `get-windshield-quote` main at `c4a424f`. Merged canonical satellite inventory tooling to website main at `e272585`: `data/satellite-inventory.json` now tracks all 24 domains including the sibling `/get-windshield-quote` repo, `data/satellite-question-content.json` owns per-site generated question copy, `scripts/satellite-question-bank.mjs` iterates inventory instead of a hard-coded site list, and `scripts/validate-satellite-inventory.mjs` fails on missing paths, duplicate keys, orphan content, invalid generation modes, or missing Group A/B question coverage. Verification: `npm run validate:satellite-inventory` passed (`24 repo paths ok, 0 validation errors`); question-bank dry run reported `19` generated candidates, `2` manual skips (`windshielddenver.com`, `getawindshieldquote.com`), `3` Group C ignored, `0` failures.
 - 2026-06-04: **Satellite quoter rollout + attribution session.** (1) 4 attribution fixes merged + live (PR #43): booking dedup → localStorage+bookingToken, `purchase` canonical GA4 booking signal, `quote_generated` writes to DB, 7 GA4 custom dimensions. (2) Swapped `LeadForm`→`QuoterEmbed` across all 23 satellites (homepage + question pages), LeadForm silent fallback; added zip-first quoter to 2 national homepages that lacked one; useId() unique mount IDs (incl. 3 stragglers car-glass-prices/car-windshield-prices/windshield-repair-prices). (3) Found + fixed 9 satellites serving STALE builds — Vercel GitHub auto-deploy was silently severed (one 95d stale); manually redeployed all 9, then reconnected git via `vercel git connect` (terminal, no dashboard) — all 9 link-confirmed via Vercel API, 3 push-confirmed. See `project_pink_auto_glass_vercel_git_disconnect` memory. (4) Hybrid attribution (council C) verified already-live with zero new infra: satellites load `G-F7WMMDK4H4` so the bundle's `gtag('quote_generated')` reaches funnel property 507414450, and anon `conversion_events` insert works cross-origin. (5) Beetexting migration closed — RingCentral is permanent SMS path (PR #46). Verification: 23/23 satellites serve the quoter; 6/6 backend+attribution checks pass.
 - 2026-06-01: QuoterEmbed rollout — created `src/components/QuoterEmbed.tsx` (AutomatedQuoteForm + heading + trust pills). Added to 6 service pages (windshield-replacement, mobile-service, insurance-claims, windshield-repair, adas-calibration, arizona/windshield-replacement), 3 location pages (Denver, Colorado Springs, Parker), and the blog [slug] template (covers all blog posts). Total quoter-reachable traffic: ~61%. Tracking is automatic — surface tags from pathname, conversion labels unchanged, Google/Microsoft scripts global in layout.tsx. Commits: 3e5b51e, 9af671c, c003fd8.
 - 2026-06-01: Fixed Ads bidding conversion — moved quote_form fire from price-shown (fireAds:false) to booking/lead-capture only. Council unanimous. Commit 85a19eb.
