@@ -6,6 +6,7 @@ import { getAllMakes, getVehiclesByMake, VehicleModel } from '@/data/makes-model
 import Breadcrumbs from '@/components/Breadcrumbs';
 import CTAButtons from '@/components/CTAButtons';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
+import QuoterEmbed from '@/components/QuoterEmbed';
 import { generateServiceSchema, getBreadcrumbSchema, combineSchemas, getSchemaJSON } from '@/lib/schema';
 
 interface MakePageProps {
@@ -178,6 +179,9 @@ export default function MakePage({ params }: MakePageProps) {
             </div>
           </div>
         </section>
+
+        {/* Quoter */}
+        <QuoterEmbed />
 
         {/* Vehicle Models List */}
         <section className="container mx-auto px-4 py-12">
