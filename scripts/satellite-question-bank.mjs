@@ -1,311 +1,79 @@
 #!/usr/bin/env node
 /**
- * Generates src/data/questions.ts for all 18 remaining satellite sites
- * (windshield-denver already done manually as the pilot).
+ * Generates src/data/questions.ts for satellite sites that use generated
+ * question-page content.
+ *
+ * Domain/repo iteration comes from data/satellite-inventory.json. Per-site
+ * question copy knobs live in data/satellite-question-content.json. Sites marked
+ * generationMode=manual are validated for coverage but skipped by this script.
  *
  * Run: node scripts/satellite-question-bank.mjs
+ * Dry run: node scripts/satellite-question-bank.mjs --dry-run
  */
 
-import { writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 
-const SITES_DIR = '/Users/dougsimpson/clients/pink-auto-glass/sites'
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const DRY_RUN = process.argv.includes('--dry-run')
+const INVENTORY_PATH = resolve(__dirname, '../data/satellite-inventory.json')
+const QUESTION_CONTENT_PATH = resolve(__dirname, '../data/satellite-question-content.json')
+const ELIGIBLE_QUESTION_GROUPS = new Set(['A', 'B'])
 
-// ── Site definitions ─────────────────────────────────────────────────────────
+function readJson(filePath) {
+  return JSON.parse(readFileSync(filePath, 'utf-8'))
+}
+
+const inventory = readJson(INVENTORY_PATH)
+const questionContent = readJson(QUESTION_CONTENT_PATH)
+const contentByDir = questionContent.sites ?? {}
+
+// ── Site config assembly ─────────────────────────────────────────────────────
 
 const CO_PHONE = '(720) 918-7465'
 const AZ_PHONE = '(480) 712-7465'
 
-const sites = [
-  // CO Front Range
-  {
-    dir: 'mobile-windshield-denver',
-    url: 'https://mobilewindshielddenver.com',
-    name: 'Mobile Windshield Denver',
-    type: 'co',
-    city: 'Denver',
-    citySlug: 'denver',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Denver Mobile Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Denver drivers have about mobile windshield repair and replacement.',
-    questionsMetaTitle: 'Mobile Windshield Questions | Denver Guide',
-    questionsMetaDescription: 'Common questions about mobile windshield repair and replacement in Denver — insurance, cost, how long it takes, and how mobile service works.',
-  },
-  {
-    dir: 'windshield-chip-repair-denver',
-    url: 'https://windshieldchiprepairdenver.com',
-    name: 'Windshield Chip Repair Denver',
-    type: 'co',
-    city: 'Denver',
-    citySlug: 'denver',
-    phone: CO_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Denver Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Denver drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Denver Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Denver — can it be repaired, how long it takes, insurance coverage, and repair vs replacement.',
-  },
-  {
-    dir: 'windshield-chip-repair-boulder',
-    url: 'https://windshieldchiprepairboulder.com',
-    name: 'Windshield Chip Repair Boulder',
-    type: 'co',
-    city: 'Boulder',
-    citySlug: 'boulder',
-    phone: CO_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Boulder Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Boulder drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Boulder Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Boulder — can it be repaired, how long it takes, insurance coverage, and repair vs replacement.',
-  },
-  {
-    dir: 'aurora-windshield',
-    url: 'https://aurorawindshield.com',
-    name: 'Aurora Windshield',
-    type: 'co',
-    city: 'Aurora',
-    citySlug: 'aurora',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Aurora Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Aurora drivers have about windshield repair and replacement.',
-    questionsMetaTitle: 'Windshield Questions Answered | Aurora CO Guide',
-    questionsMetaDescription: 'Common questions about windshield repair and replacement in Aurora, CO — insurance coverage, cost, how long it takes, and more.',
-  },
-  {
-    dir: 'coloradospringswindshield',
-    url: 'https://coloradospringswindshield.com',
-    name: 'Colorado Springs Windshield',
-    type: 'co',
-    city: 'Colorado Springs',
-    citySlug: 'colorado-springs',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Colorado Springs Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Colorado Springs drivers have about windshield repair and replacement.',
-    questionsMetaTitle: 'Windshield Questions Answered | Colorado Springs Guide',
-    questionsMetaDescription: 'Common questions about windshield repair and replacement in Colorado Springs — insurance coverage, cost, how long it takes, and more.',
-  },
-  {
-    dir: 'autoglasscoloradosprings',
-    url: 'https://autoglasscoloradosprings.com',
-    name: 'Auto Glass Colorado Springs',
-    type: 'co',
-    city: 'Colorado Springs',
-    citySlug: 'colorado-springs',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Colorado Springs Auto Glass Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Colorado Springs drivers have about windshield and auto glass repair.',
-    questionsMetaTitle: 'Auto Glass Questions | Colorado Springs Guide',
-    questionsMetaDescription: 'Common questions about windshield and auto glass repair in Colorado Springs — insurance, cost, how long it takes, and more.',
-  },
-  {
-    dir: 'mobilewindshieldcoloradosprings',
-    url: 'https://mobilewindshieldcoloradosprings.com',
-    name: 'Mobile Windshield Colorado Springs',
-    type: 'co',
-    city: 'Colorado Springs',
-    citySlug: 'colorado-springs',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Colorado Springs Mobile Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Colorado Springs drivers have about mobile windshield service.',
-    questionsMetaTitle: 'Mobile Windshield Questions | Colorado Springs Guide',
-    questionsMetaDescription: 'Common questions about mobile windshield repair in Colorado Springs — insurance coverage, cost, how mobile service works, and more.',
-  },
-  {
-    dir: 'windshieldreplacementfortcollins',
-    url: 'https://windshieldreplacementfortcollins.com',
-    name: 'Windshield Replacement Fort Collins',
-    type: 'co',
-    city: 'Fort Collins',
-    citySlug: 'fort-collins',
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Fort Collins Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Fort Collins drivers have about windshield repair and replacement.',
-    questionsMetaTitle: 'Windshield Questions Answered | Fort Collins Guide',
-    questionsMetaDescription: 'Common questions about windshield repair and replacement in Fort Collins — insurance coverage, cost, how long it takes, and more.',
-  },
-  // AZ Phoenix metro
-  {
-    dir: 'windshield-chip-repair-phoenix',
-    url: 'https://windshieldchiprepairphoenix.com',
-    name: 'Windshield Chip Repair Phoenix',
-    type: 'az',
-    city: 'Phoenix',
-    citySlug: 'phoenix',
-    phone: AZ_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Phoenix Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Phoenix drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Phoenix AZ Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Phoenix — AZ insurance coverage, heat effects, how long it takes, and repair vs replacement.',
-  },
-  {
-    dir: 'mobile-windshield-phoenix',
-    url: 'https://mobilewindshieldphoenix.com',
-    name: 'Mobile Windshield Phoenix',
-    type: 'az',
-    city: 'Phoenix',
-    citySlug: 'phoenix',
-    phone: AZ_PHONE,
-    chipOnly: false,
-    mobileOnly: true,
-    questionsPageHeading: 'Phoenix Mobile Windshield Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Phoenix drivers have about mobile windshield replacement.',
-    questionsMetaTitle: 'Mobile Windshield Questions | Phoenix AZ Guide',
-    questionsMetaDescription: 'Common questions about mobile windshield service in Phoenix — insurance coverage, heat damage, cost, and how mobile service works in the Valley.',
-  },
-  {
-    dir: 'windshield-chip-repair-mesa',
-    url: 'https://windshieldchiprepairmesa.com',
-    name: 'Windshield Chip Repair Mesa',
-    type: 'az',
-    city: 'Mesa',
-    citySlug: 'mesa',
-    phone: AZ_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Mesa Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Mesa drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Mesa AZ Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Mesa — AZ insurance coverage, heat effects, how long it takes, and repair vs replacement.',
-  },
-  {
-    dir: 'windshield-chip-repair-tempe',
-    url: 'https://windshieldchiprepairtempe.com',
-    name: 'Windshield Chip Repair Tempe',
-    type: 'az',
-    city: 'Tempe',
-    citySlug: 'tempe',
-    phone: AZ_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Tempe Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Tempe drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Tempe AZ Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Tempe — AZ insurance coverage, heat effects, how long it takes, and repair vs replacement.',
-  },
-  {
-    dir: 'windshield-chip-repair-scottsdale',
-    url: 'https://windshieldchiprepairscottsdale.com',
-    name: 'Windshield Chip Repair Scottsdale',
-    type: 'az',
-    city: 'Scottsdale',
-    citySlug: 'scottsdale',
-    phone: AZ_PHONE,
-    chipOnly: true,
-    mobileOnly: true,
-    questionsPageHeading: 'Scottsdale Windshield Chip Repair Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Scottsdale drivers have about windshield chip repair.',
-    questionsMetaTitle: 'Windshield Chip Repair Questions | Scottsdale AZ Guide',
-    questionsMetaDescription: 'Common questions about windshield chip repair in Scottsdale — AZ insurance coverage, heat effects, how long it takes, and repair vs replacement.',
-  },
-  // National / price-intent
-  {
-    dir: 'windshield-cost-calculator',
-    url: 'https://windshieldcostcalculator.com',
-    name: 'Windshield Cost Calculator',
-    type: 'national',
-    city: null,
-    citySlug: null,
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Windshield Replacement Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions drivers have about windshield replacement cost and coverage.',
-    questionsMetaTitle: 'Windshield Replacement Questions | Cost & Coverage Guide',
-    questionsMetaDescription: 'Common questions about windshield replacement cost, insurance coverage, how long it takes, and whether chip repair is worth it.',
-  },
-  {
-    dir: 'windshield-price-compare',
-    url: 'https://windshieldpricecompare.com',
-    name: 'Windshield Price Compare',
-    type: 'national',
-    city: null,
-    citySlug: null,
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Windshield Replacement Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions drivers have when comparing windshield replacement options and pricing.',
-    questionsMetaTitle: 'Windshield Price Questions | Comparison Guide',
-    questionsMetaDescription: 'Common questions about windshield replacement pricing, insurance coverage, how long it takes, and whether chip repair is worth it.',
-  },
-  {
-    dir: 'new-windshield-cost',
-    url: 'https://newwindshieldcost.com',
-    name: 'New Windshield Cost',
-    type: 'national',
-    city: null,
-    citySlug: null,
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Windshield Cost Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions drivers have about the cost of a new windshield.',
-    questionsMetaTitle: 'Windshield Cost Questions | New Windshield Guide',
-    questionsMetaDescription: 'Common questions about windshield replacement cost, insurance coverage, chip repair savings, and what drives the price.',
-  },
-  {
-    dir: 'windshield-cost-phoenix',
-    url: 'https://windshieldcostphoenix.com',
-    name: 'Windshield Cost Phoenix',
-    type: 'az',
-    city: 'Phoenix',
-    citySlug: 'phoenix',
-    phone: AZ_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Phoenix Windshield Cost Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions Phoenix drivers have about windshield replacement cost.',
-    questionsMetaTitle: 'Windshield Cost Questions | Phoenix AZ Guide',
-    questionsMetaDescription: 'Common questions about windshield replacement cost in Phoenix — AZ insurance coverage, heat damage, pricing, and more.',
-  },
-  {
-    dir: 'new-windshield-near-me',
-    url: 'https://newwindshieldnearme.com',
-    name: 'New Windshield Near Me',
-    type: 'national',
-    city: null,
-    citySlug: null,
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Windshield Replacement Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions drivers have when searching for windshield replacement near them.',
-    questionsMetaTitle: 'Windshield Questions | Find Replacement Near You',
-    questionsMetaDescription: 'Common questions about finding windshield replacement near you — cost, insurance, how long it takes, and chip repair vs full replacement.',
-  },
-  {
-    dir: 'cheapest-windshield',
-    url: 'https://cheapestwindshieldnearme.com',
-    name: 'Cheapest Windshield Near Me',
-    type: 'national',
-    city: null,
-    citySlug: null,
-    phone: CO_PHONE,
-    chipOnly: false,
-    mobileOnly: false,
-    questionsPageHeading: 'Windshield Replacement Questions Answered',
-    questionsPageIntro: 'Straight answers to the most common questions drivers have about getting the best price on windshield replacement.',
-    questionsMetaTitle: 'Windshield Cost Questions | Best Price Guide',
-    questionsMetaDescription: 'Common questions about windshield replacement cost and coverage — how to pay $0 with insurance, chip repair savings, and what drives pricing.',
-  },
-]
+function defaultPhone(type) {
+  return type === 'az' ? AZ_PHONE : CO_PHONE
+}
+
+function buildGeneratedSite(inventorySite, contentConfig) {
+  return {
+    ...contentConfig,
+    dir: inventorySite.dir,
+    url: 'https://' + inventorySite.domain,
+    name: inventorySite.label,
+    phone: contentConfig.phone ?? defaultPhone(contentConfig.type),
+  }
+}
+
+function validateGeneratedConfig(inventorySite, contentConfig) {
+  const required = [
+    'type',
+    'questionsPageHeading',
+    'questionsPageIntro',
+    'questionsMetaTitle',
+    'questionsMetaDescription',
+  ]
+  for (const field of required) {
+    if (!contentConfig[field]) {
+      throw new Error(inventorySite.domain + ' content config missing ' + field)
+    }
+  }
+  if (!['co', 'az', 'national'].includes(contentConfig.type)) {
+    throw new Error(inventorySite.domain + ' has invalid question content type ' + contentConfig.type)
+  }
+  if ((contentConfig.type === 'co' || contentConfig.type === 'az') && (!contentConfig.city || !contentConfig.citySlug)) {
+    throw new Error(inventorySite.domain + ' ' + contentConfig.type + ' content requires city and citySlug')
+  }
+  if (typeof contentConfig.chipOnly !== 'boolean') {
+    throw new Error(inventorySite.domain + ' content config missing boolean chipOnly')
+  }
+  if (typeof contentConfig.mobileOnly !== 'boolean') {
+    throw new Error(inventorySite.domain + ' content config missing boolean mobileOnly')
+  }
+}
 
 // ── Content generators ────────────────────────────────────────────────────────
 
@@ -803,21 +571,60 @@ export const questions: QuestionEntry[] = ${questionsJson}
 
 let generated = 0
 let skipped = 0
+let ignored = 0
+let failed = 0
 
-for (const site of sites) {
-  const siteDir = join(SITES_DIR, site.dir)
-  const dataDir = join(siteDir, 'src', 'data')
+for (const inventorySite of inventory.satellites ?? []) {
+  if (!ELIGIBLE_QUESTION_GROUPS.has(inventorySite.group)) {
+    ignored++
+    continue
+  }
+
+  const contentConfig = contentByDir[inventorySite.dir]
+  if (!contentConfig) {
+    console.error(`❌ ${inventorySite.domain}: missing question content config for ${inventorySite.dir}`)
+    failed++
+    continue
+  }
+
+  if (contentConfig.generationMode === 'manual') {
+    console.log(`⏭  ${inventorySite.domain}: manual question content, skipping generator`)
+    skipped++
+    continue
+  }
+
+  if (contentConfig.generationMode !== 'generated') {
+    console.error(`❌ ${inventorySite.domain}: invalid generationMode ${contentConfig.generationMode}`)
+    failed++
+    continue
+  }
 
   try {
-    mkdirSync(dataDir, { recursive: true })
+    validateGeneratedConfig(inventorySite, contentConfig)
+
+    if (!inventorySite.repoPath || !existsSync(inventorySite.repoPath)) {
+      throw new Error(`repoPath missing on disk: ${inventorySite.repoPath}`)
+    }
+
+    const site = buildGeneratedSite(inventorySite, contentConfig)
+    const dataDir = resolve(inventorySite.repoPath, 'src', 'data')
     const content = generateQuestionsTs(site)
-    writeFileSync(join(dataDir, 'questions.ts'), content, 'utf-8')
-    console.log(`✅ ${site.dir}`)
+
+    if (DRY_RUN) {
+      console.log(`🧪 ${inventorySite.domain}: would write ${resolve(dataDir, 'questions.ts')}`)
+    } else {
+      mkdirSync(dataDir, { recursive: true })
+      writeFileSync(resolve(dataDir, 'questions.ts'), content, 'utf-8')
+      console.log(`✅ ${inventorySite.domain}: wrote src/data/questions.ts`)
+    }
     generated++
   } catch (err) {
-    console.error(`❌ ${site.dir}: ${err.message}`)
-    skipped++
+    console.error(`❌ ${inventorySite.domain}: ${err.message}`)
+    failed++
   }
 }
 
-console.log(`\nDone: ${generated} generated, ${skipped} failed.`)
+console.log(`\nDone: ${generated} ${DRY_RUN ? 'dry-run candidates' : 'generated'}, ${skipped} manual skips, ${ignored} ineligible ignored, ${failed} failed.`)
+if (failed > 0) {
+  process.exit(1)
+}

@@ -69,16 +69,13 @@ Ask ZIP first, then reveal the full quoter only for in-area ZIPs.
 - `newwindshieldnearme.com`
 - `cheapestwindshieldnearme.com`
 
-### Group C — Hold for later
-Do not prioritize for phase 1 quoter rollout.
+### Group C — Monitor mode (opportunistic deploy, 2026-06-04)
 
-- `carglassprices.com`
-- `carwindshieldprices.com`
-- `windshieldrepairprices.com`
+Originally "hold for later" in this spec. The 2026-06-04 batch rollout deployed ZIP-first quoter to all 23 satellites, including these three. They are now live with `mode: 'zip-first'` and returning 200. Decision (2026-06-05): do not revert — ZIP-first is the least risky quoter mode for broader domains and gates availability before exposing the full flow. Treating as accepted rollout drift. Monitor for lead quality before any further changes.
 
-Reason:
-- broader or less clearly local intent
-- weaker current evidence that the instant-booking quoter is the first improvement to make
+- `carglassprices.com` — live, zip-first, 0 question URLs in sitemap (question pages not in this network)
+- `carwindshieldprices.com` — live, zip-first, 0 question URLs in sitemap
+- `windshieldrepairprices.com` — live, zip-first, 0 question URLs in sitemap
 
 ## Copy system
 
