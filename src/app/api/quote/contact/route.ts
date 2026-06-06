@@ -1,13 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { buildAttribution } from '@/lib/attribution';
-import { isExcludedPhone, isTestPhone } from '@/lib/constants';
-import { sendAdminAlertEmail } from '@/lib/notifications/email';
-import { sendAdminSMS } from '@/lib/notifications/sms';
+import { isTeamOrTestContact } from '@/lib/constants';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { findOrCreateQuoteLead, splitName, shortQuoteToken } from '@/lib/quote/leadSync';
+import { sendQuoteContactNotifications } from '@/lib/quote/contact-notifications';
+import { buildAttributionFromSession, findOrCreateQuoteLead, splitName } from '@/lib/quote/leadSync';
 
 export const runtime = 'nodejs';
 
@@ -44,6 +42,8 @@ interface AutomatedQuoteRow {
   quote_token: string;
   lead_id: string | null;
   status: string;
+  session_id: string | null;
+  is_test: boolean | null;
   quote_total_cents: number | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
@@ -98,11 +98,16 @@ export async function POST(request: NextRequest) {
 
     const { data: quote, error: quoteError } = await admin
       .from('automated_quotes')
-      .select('id, quote_token, lead_id, status, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
+      .select('id, quote_token, lead_id, status, session_id, is_test, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .single<AutomatedQuoteRow>();
 
     if (quoteError || !quote) {
+      console.error('[quote-contact] quote lookup failed:', {
+        code: quoteError?.code,
+        message: quoteError?.message,
+        tokenSuffix: input.quoteToken.slice(-8),
+      });
       return NextResponse.json(
         { error: 'Quote reference was not found. Please request a new quote.' },
         { status: 404 }
@@ -110,7 +115,9 @@ export async function POST(request: NextRequest) {
     }
 
     const name = splitName(input.fullName);
-    const attribution = buildAttribution({
+    const requestSessionId = input.sessionId || request.cookies.get('session_id')?.value || null;
+    const quoteSessionId = quote.session_id || requestSessionId;
+    const attribution = await buildAttributionFromSession(admin, quoteSessionId, {
       bodyGclid: input.gclid?.trim() || undefined,
       bodyMsclkid: input.msclkid?.trim() || undefined,
       utmSource: input.utmSource?.trim() || undefined,
@@ -118,6 +125,11 @@ export async function POST(request: NextRequest) {
       utmCampaign: input.utmCampaign?.trim() || undefined,
       utmTerm: input.utmTerm?.trim() || undefined,
       utmContent: input.utmContent?.trim() || undefined,
+    });
+    const isTest = (quote.is_test ?? false) || isTeamOrTestContact({
+      phoneE164: input.phone,
+      fullName: input.fullName,
+      email: input.email || null,
     });
     const leadId = await findOrCreateQuoteLead(admin, anon, quote, {
       firstName: name.firstName,
@@ -128,8 +140,9 @@ export async function POST(request: NextRequest) {
       state: input.state || undefined,
       zip: input.zip || undefined,
       clientId: input.clientId || undefined,
-      sessionId: input.sessionId || request.cookies.get('session_id')?.value || null,
+      sessionId: quoteSessionId,
       attribution,
+      isTest,
       // status omitted → preserves prior /contact behavior (no status change)
     });
 
@@ -143,6 +156,7 @@ export async function POST(request: NextRequest) {
         phone_e164: input.phone,
         email: input.email || null,
         status: nextQuoteStatus,
+        ...(isTest ? { is_test: true } : {}),
       })
       .eq('id', quote.id);
 
@@ -154,7 +168,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await notifyAdmins(input, quote, name, leadId);
+    if (isTest && quoteSessionId) {
+      await admin.from('user_sessions').update({ is_test: true }).eq('session_id', quoteSessionId);
+    }
+
+    after(() =>
+      sendQuoteContactNotifications({
+        quoteToken: quote.quote_token,
+        status: quote.status,
+        leadId,
+        hadLeadBeforeContact: Boolean(quote.lead_id),
+        isTest,
+        customer: {
+          firstName: name.firstName,
+          lastName: name.lastName,
+          phoneE164: input.phone,
+          email: input.email || null,
+          smsConsent: input.smsConsent,
+        },
+        vehicle: {
+          year: quote.vehicle_year,
+          make: quote.vehicle_make,
+          model: quote.vehicle_model,
+          trim: quote.vehicle_trim,
+          vin: quote.vin,
+        },
+        quote: {
+          totalCents: quote.quote_total_cents,
+        },
+      }).catch((err) => {
+        console.error('[quote-contact] notification policy failed:', err instanceof Error ? err.message : err);
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -169,40 +214,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-async function notifyAdmins(input: QuoteContactInput, quote: AutomatedQuoteRow, name: { firstName: string; lastName: string }, leadId: string) {
-  if (isExcludedPhone(input.phone) || isTestPhone(input.phone)) return;
-
-  const ref = shortQuoteToken(quote.quote_token);
-  const vehicle = [quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ') || 'Vehicle not captured';
-  const price = quote.quote_total_cents ? `$${Math.round(quote.quote_total_cents / 100).toLocaleString()}` : 'manual confirmation needed';
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-      <h2>Automated Quote Follow-Up</h2>
-      <p><strong>Reference:</strong> ${ref}</p>
-      <p><strong>Customer:</strong> ${escapeHtml([name.firstName, name.lastName].filter(Boolean).join(' '))}</p>
-      <p><strong>Phone:</strong> ${escapeHtml(input.phone)}</p>
-      ${input.email ? `<p><strong>Email:</strong> ${escapeHtml(input.email)}</p>` : ''}
-      <p><strong>Vehicle:</strong> ${escapeHtml(vehicle)}</p>
-      <p><strong>Price:</strong> ${escapeHtml(price)}</p>
-      <p><strong>Status:</strong> ${escapeHtml(quote.status)}</p>
-      <p><strong>Lead ID:</strong> ${escapeHtml(leadId)}</p>
-    </div>
-  `;
-  const sms = `Automated quote ${ref}: ${[name.firstName, name.lastName].filter(Boolean).join(' ')} ${input.phone} | ${vehicle} | ${price}`;
-
-  await Promise.allSettled([
-    sendAdminAlertEmail(`Automated Quote ${ref}: ${name.firstName}`, html),
-    sendAdminSMS(sms),
-  ]);
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }

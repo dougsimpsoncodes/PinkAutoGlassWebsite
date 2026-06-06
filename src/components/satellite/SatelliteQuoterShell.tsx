@@ -111,6 +111,7 @@ export default function SatelliteQuoterShell({ config }: SatelliteQuoterShellPro
 
             <AutomatedQuoteForm
               flowMode={flowMode}
+              showIntro={false}
               trackingContext={trackingContext}
             />
           </>

@@ -13,16 +13,15 @@ export default function QuoterEmbed() {
         </h2>
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-7 text-sm md:text-base text-slate-600">
-          <span>✓ Lifetime warranty</span>
+          <span>Lifetime warranty</span>
           <span className="inline-flex items-center gap-1">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
             <strong className="text-slate-900">4.9 on Google</strong>
           </span>
-          <span>✓ 5,000+ installed</span>
         </div>
 
         <div className="text-left">
-          <AutomatedQuoteForm />
+          <AutomatedQuoteForm showIntro={false} />
         </div>
       </div>
     </section>

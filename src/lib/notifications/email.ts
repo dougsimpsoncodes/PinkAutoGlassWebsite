@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { prepareEmailDelivery } from './mode';
 
 export interface EmailOptions {
   to: string | string[];
@@ -13,6 +14,18 @@ export interface EmailOptions {
  */
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
+    const delivery = await prepareEmailDelivery({
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      provider: 'resend',
+      metadata: { leadId: options.leadId ?? null },
+    });
+    if (!delivery.shouldSend) {
+      console.log(`📧 Email captured (${Array.isArray(options.to) ? options.to.join(', ') : options.to}): ${options.subject}`);
+      return delivery.accepted;
+    }
+
     if (!process.env.RESEND_API_KEY) {
       console.error('Resend API key not configured');
       return false;
@@ -28,16 +41,16 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     // Build unsubscribe URL for List-Unsubscribe header (required by Yahoo/AOL/Gmail)
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinkautoglass.com';
-    const recipient = Array.isArray(options.to) ? options.to[0] : options.to;
+    const recipient = Array.isArray(delivery.to) ? delivery.to[0] : delivery.to;
     const unsubParams = new URLSearchParams({ email: recipient });
     if (options.leadId) unsubParams.set('lead_id', options.leadId);
     const unsubUrl = `${siteUrl}/api/unsubscribe?${unsubParams}`;
 
     const { data, error } = await resend.emails.send({
       from: options.from || `Pink Auto Glass <${fromEmail}>`,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
+      to: delivery.to,
+      subject: delivery.subject,
+      html: delivery.html,
       headers: {
         'List-Unsubscribe': `<${unsubUrl}>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
@@ -49,8 +62,8 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       return false;
     }
 
-    const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
-    console.log(`✅ Email sent to ${recipients}: ${options.subject}`);
+    const recipients = Array.isArray(delivery.to) ? delivery.to.join(', ') : delivery.to;
+    console.log(`✅ Email sent to ${recipients}: ${delivery.subject}`);
     return true;
   } catch (error: any) {
     console.error('❌ Email send error:', error.message || error);

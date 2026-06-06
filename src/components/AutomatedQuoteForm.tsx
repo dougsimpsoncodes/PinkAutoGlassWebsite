@@ -66,6 +66,7 @@ type VehicleMode = 'plate' | 'vin';
 
 interface AutomatedQuoteFormProps {
   flowMode?: 'standard' | 'zip-first-unlocked';
+  showIntro?: boolean;
   trackingContext?: SatelliteQuoterTrackingContext;
 }
 
@@ -139,6 +140,7 @@ function formatPhoneInput(raw: string): string {
 
 export default function AutomatedQuoteForm({
   flowMode = 'standard',
+  showIntro = true,
   trackingContext,
 }: AutomatedQuoteFormProps) {
   const [stage, setStage] = useState<Stage>('vehicle');
@@ -261,6 +263,7 @@ export default function AutomatedQuoteForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId: currentSessionId(),
+          clientId: getVisitorId(),
           vehicle: {
             vin: v.vin || undefined,
             year: Number.parseInt(v.year, 10),
@@ -323,6 +326,20 @@ export default function AutomatedQuoteForm({
           via: mode,
           quote_token: data.quoteToken,
         });
+        trackFormSubmission('quote_form', {
+          stage: 'contact_saved',
+          leadId: contactData.leadId,
+          quote_token: data.quoteToken,
+          phone: contactToSave.phone,
+          email: contactToSave.email || undefined,
+          vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
+          vehicle_make: v.make,
+          vehicle_model: v.model,
+          surface: quoteSurface(trackingContext),
+          market: resolveQuoteMarket(plateState, trackingContext),
+          flow_mode: flowMode,
+          ...trackingContext,
+        }).catch(() => { /* analytics never blocks UX */ });
       }
       setQuote(data);
       setStage('priced');
@@ -335,8 +352,8 @@ export default function AutomatedQuoteForm({
           'windshield',
           `${v.year} ${v.make} ${v.model}`.trim(),
           {
-            quote_id: data?.id,
-            quote_total_cents: data?.totalCents,
+            quote_token: data?.quoteToken,
+            quote_total_cents: data?.pricing?.totalCents,
             vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
             vehicle_make: v.make,
             vehicle_model: v.model,
@@ -351,13 +368,11 @@ export default function AutomatedQuoteForm({
         // Quoter Funnel report can count it, but do NOT fire the Ads bidding
         // conversion. Price-shown is a non-contact, window-shopping step; firing
         // it here trained Google/Microsoft toward price curiosity instead of
-        // bookable leads. The bidding conversion fires at booking — the first
-        // real contact in this price-first quote flow. (council 2026-06-01,
-        // unanimous option A)
+        // captured leads. Contact-saved and booking fire the bidding conversions.
         trackFormSubmission('quote_form', {
           stage: 'priced',
-          quote_total_cents: data?.totalCents,
-          quote_id: data?.id,
+          quote_token: data?.quoteToken,
+          quote_total_cents: data?.pricing?.totalCents,
           vehicle_year: v.year ? Number.parseInt(v.year, 10) : undefined,
           vehicle_make: v.make,
           vehicle_model: v.model,
@@ -454,6 +469,7 @@ export default function AutomatedQuoteForm({
         busy={busy}
         notice={notice}
         cooldownSeconds={cooldownSeconds}
+        showIntro={showIntro}
       />
     </div>
   );
@@ -473,6 +489,7 @@ function VehicleStage({
   busy,
   notice,
   cooldownSeconds,
+  showIntro,
 }: {
   mode: VehicleMode;
   setMode: (m: VehicleMode) => void;
@@ -487,6 +504,7 @@ function VehicleStage({
   busy: boolean;
   notice: string;
   cooldownSeconds: number;
+  showIntro: boolean;
 }) {
   const plateReady = plate.trim().length >= 2 && plateState.length === 2;
   const vinReady = vinInput.trim().length === 17;
@@ -510,14 +528,22 @@ function VehicleStage({
 
   return (
     <div>
-      <div className="mb-5 text-center">
-        <h2 className="text-2xl font-extrabold tracking-tight text-gray-950 sm:text-3xl">
-          Get an Instant Price Quote
-        </h2>
-        <p className="mt-2 text-sm font-medium text-gray-600 sm:text-base">
-          Simply enter your license plate or VIN
-        </p>
-      </div>
+      {showIntro && (
+        <div className="mb-5 text-center">
+          <h2 className="text-2xl font-extrabold tracking-tight text-gray-950 sm:text-3xl">
+            Get an Instant Price Quote
+          </h2>
+          <p className="mt-2 text-sm font-medium text-gray-600 sm:text-base">
+            Simply enter your license plate or VIN
+          </p>
+        </div>
+      )}
+
+      <h3 className="mb-3 text-center text-base font-bold text-gray-950">
+        Simply enter your vehicle details
+        <br />
+        to get your price.
+      </h3>
 
       {/* 2-tab vehicle-lookup selector */}
       <div className="mb-4 flex gap-2">
@@ -616,8 +642,7 @@ function VehicleStage({
       )}
 
       <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-        <div className="font-bold text-gray-900">Simply enter your vehicle details to get your price.</div>
-        <div className="mt-3 space-y-2">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />
             <span>Mobile service included</span>

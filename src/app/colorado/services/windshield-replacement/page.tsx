@@ -98,7 +98,7 @@ export default function WindshieldReplacementPage() {
               <span className="block text-2xl md:text-4xl font-semibold mt-1 text-pink-200">and book your install</span>
             </h1>
             <div className="text-left">
-              <AutomatedQuoteForm />
+              <AutomatedQuoteForm showIntro={false} />
             </div>
           </div>
         </section>

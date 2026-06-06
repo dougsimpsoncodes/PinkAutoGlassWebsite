@@ -392,9 +392,15 @@ export async function initializeSession(): Promise<SessionData> {
 
   // Check if we already inserted this session (prevents duplicate requests)
   const sessionInsertedKey = `session_inserted_${sessionId}`;
-  if (typeof window !== 'undefined' && sessionStorage.getItem(sessionInsertedKey)) {
-    // Session already inserted in this browser session, skip DB call
-    return sessionData;
+  if (typeof window !== 'undefined') {
+    if (sessionStorage.getItem(sessionInsertedKey)) {
+      // Session already inserted or in-flight in this browser session, skip DB call
+      return sessionData;
+    }
+    // Mark before the async insert so parallel initializers in host + embed do
+    // not race into duplicate Supabase requests. Cleared below only on real
+    // non-duplicate failures.
+    sessionStorage.setItem(sessionInsertedKey, 'pending');
   }
 
   const landingPage = window.location.pathname + window.location.search;
@@ -444,6 +450,9 @@ export async function initializeSession(): Promise<SessionData> {
       sessionInsertError.message?.includes('already exists');
 
     if (!isDuplicate) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(sessionInsertedKey);
+      }
       console.warn('Failed to insert user_session:', sessionInsertError.message);
     }
     // Silently ignore duplicates - session already exists which is fine

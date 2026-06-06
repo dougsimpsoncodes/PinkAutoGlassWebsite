@@ -169,11 +169,12 @@ export default function QuoteBookingForm({
       );
 
       // Fire booking-conversion event with the same `quote_form` name so Google Ads
-      // + Microsoft Ads pick it up. Phone is captured here for enhanced conversions.
+      // + Microsoft Ads pick it up. Phone/email are captured for enhanced conversions.
       trackFormSubmission('quote_form', {
         stage: 'booked',
         booking_token: data.bookingToken,
         phone,
+        email: emailTrimmed || undefined,
         install_date: slot.date,
         install_window: slot.window,
         ...trackingContext,
@@ -251,7 +252,6 @@ export default function QuoteBookingForm({
             // numeric (not tel) gives a pure number-pad on iOS — no * or #
             // characters; less chance a user thinks the field accepts text.
             inputMode="numeric"
-            pattern="[0-9() \-]*"
             maxLength={14}
           />
         </label>

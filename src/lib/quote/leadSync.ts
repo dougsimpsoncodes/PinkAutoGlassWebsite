@@ -14,7 +14,7 @@
  * See tasks/2026-05-30-reporting-consistency-audit.md (Item 9 / F02/F03).
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { buildAttribution, type AttributionOutput } from '@/lib/attribution';
+import { buildAttribution, type AttributionInput, type AttributionOutput } from '@/lib/attribution';
 import { isExcludedPhone, isTestPhone } from '@/lib/constants';
 
 export type PublicSupabaseClient = SupabaseClient<any, 'public', any>;
@@ -78,9 +78,10 @@ function emptyToUndefined(value?: string | null) {
  */
 export async function buildAttributionFromSession(
   admin: PublicSupabaseClient,
-  sessionId: string | null | undefined
+  sessionId: string | null | undefined,
+  fallback: AttributionInput = {}
 ): Promise<AttributionOutput> {
-  if (!sessionId) return buildAttribution({});
+  if (!sessionId) return buildAttribution(fallback);
   const { data } = await admin
     .from('user_sessions')
     .select('gclid, msclkid, utm_source, utm_medium, utm_campaign, utm_term, utm_content')
@@ -88,15 +89,17 @@ export async function buildAttributionFromSession(
     .order('started_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (!data) return buildAttribution({});
+  if (!data) return buildAttribution(fallback);
   return buildAttribution({
-    bodyGclid: emptyToUndefined(data.gclid),
-    bodyMsclkid: emptyToUndefined(data.msclkid),
-    utmSource: emptyToUndefined(data.utm_source),
-    utmMedium: emptyToUndefined(data.utm_medium),
-    utmCampaign: emptyToUndefined(data.utm_campaign),
-    utmTerm: emptyToUndefined(data.utm_term),
-    utmContent: emptyToUndefined(data.utm_content),
+    lookupGclid: emptyToUndefined(data.gclid),
+    lookupMsclkid: emptyToUndefined(data.msclkid),
+    bodyGclid: fallback.bodyGclid,
+    bodyMsclkid: fallback.bodyMsclkid,
+    utmSource: emptyToUndefined(data.utm_source) ?? fallback.utmSource,
+    utmMedium: emptyToUndefined(data.utm_medium) ?? fallback.utmMedium,
+    utmCampaign: emptyToUndefined(data.utm_campaign) ?? fallback.utmCampaign,
+    utmTerm: emptyToUndefined(data.utm_term) ?? fallback.utmTerm,
+    utmContent: emptyToUndefined(data.utm_content) ?? fallback.utmContent,
   });
 }
 
@@ -110,30 +113,35 @@ export async function findOrCreateQuoteLead(
   quote: QuoteLeadQuote,
   contact: QuoteLeadContact
 ): Promise<string> {
+  const isTest = !!contact.isTest || isExcludedPhone(contact.phone) || isTestPhone(contact.phone);
+
   if (quote.lead_id) {
     await updateQuoteLead(admin, quote.lead_id, quote, contact);
     return quote.lead_id;
   }
 
   // Reuse a recent open lead for this phone before creating a new one.
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: existingLead } = await admin
-    .from('leads')
-    .select('id')
-    .eq('phone_e164', contact.phone)
-    .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
-    .gte('created_at', sevenDaysAgo)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle<{ id: string }>();
+  // Test leads intentionally bypass this branch so repeated 555/Codex QA runs
+  // do not mutate one old lead and make attribution evidence look stale.
+  if (!isTest) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: existingLead } = await admin
+      .from('leads')
+      .select('id')
+      .eq('phone_e164', contact.phone)
+      .in('status', ['new', 'contacted', 'quoted', 'scheduled'])
+      .gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string }>();
 
-  if (existingLead?.id) {
-    await updateQuoteLead(admin, existingLead.id, quote, contact);
-    return existingLead.id;
+    if (existingLead?.id) {
+      await updateQuoteLead(admin, existingLead.id, quote, contact);
+      return existingLead.id;
+    }
   }
 
   const leadId = crypto.randomUUID();
-  const isTest = !!contact.isTest || isExcludedPhone(contact.phone) || isTestPhone(contact.phone);
   const { error } = await anon.rpc('fn_insert_lead', {
     p_id: leadId,
     p_payload: {
@@ -202,15 +210,41 @@ async function updateQuoteLead(
 
   const { data: existing } = await admin
     .from('leads')
-    .select('notes')
+    .select('notes, gclid, msclkid, ad_platform, utm_source, utm_medium, utm_campaign, utm_term, utm_content, client_id, session_id, is_test')
     .eq('id', leadId)
-    .single<{ notes: string | null }>();
+    .single<{
+      notes: string | null;
+      gclid?: string | null;
+      msclkid?: string | null;
+      ad_platform?: string | null;
+      utm_source?: string | null;
+      utm_medium?: string | null;
+      utm_campaign?: string | null;
+      utm_term?: string | null;
+      utm_content?: string | null;
+      client_id?: string | null;
+      session_id?: string | null;
+      is_test?: boolean | null;
+    }>();
   const existingNotes = existing?.notes?.trim() || '';
   const notes = !existingNotes
     ? newNote
     : existingNotes.includes(`Automated quote ${quoteRef}`)
       ? existingNotes
       : `${existingNotes}\n${newNote}`;
+  const attribution = contact.attribution;
+  const attributionFill = attribution ? {
+    ...(!existing?.gclid && attribution.gclid ? { gclid: attribution.gclid } : {}),
+    ...(!existing?.msclkid && attribution.msclkid ? { msclkid: attribution.msclkid } : {}),
+    ...(!existing?.ad_platform && attribution.ad_platform ? { ad_platform: attribution.ad_platform } : {}),
+    ...(!existing?.utm_source && attribution.utm_source ? { utm_source: attribution.utm_source } : {}),
+    ...(!existing?.utm_medium && attribution.utm_medium ? { utm_medium: attribution.utm_medium } : {}),
+    ...(!existing?.utm_campaign && attribution.utm_campaign ? { utm_campaign: attribution.utm_campaign } : {}),
+    ...(!existing?.utm_term && attribution.utm_term ? { utm_term: attribution.utm_term } : {}),
+    ...(!existing?.utm_content && attribution.utm_content ? { utm_content: attribution.utm_content } : {}),
+  } : {};
+  const clientId = emptyToUndefined(contact.clientId);
+  const sessionId = emptyToUndefined(contact.sessionId);
 
   const { error } = await admin
     .from('leads')
@@ -229,6 +263,10 @@ async function updateQuoteLead(
       // Only advance status when the caller asks (e.g. booking → 'scheduled').
       // revenue_amount is intentionally NEVER set here — Omega completion owns it (F09).
       ...(contact.status ? { status: contact.status } : {}),
+      ...(!existing?.client_id && clientId ? { client_id: clientId } : {}),
+      ...(!existing?.session_id && sessionId ? { session_id: sessionId } : {}),
+      ...(contact.isTest && existing?.is_test === false ? { is_test: true } : {}),
+      ...attributionFill,
       notes,
     })
     .eq('id', leadId);

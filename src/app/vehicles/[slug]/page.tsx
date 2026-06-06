@@ -253,7 +253,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                 <div className="bg-white rounded-lg shadow-xl p-4">
                   <h3 className="text-lg font-bold text-gray-900 mb-1 text-center">Get Your Instant Price</h3>
                   <p className="text-sm text-gray-500 mb-4 text-center">Enter plate or VIN — price in seconds</p>
-                  <AutomatedQuoteForm />
+                  <AutomatedQuoteForm showIntro={false} />
                 </div>
 
                 {/* Why Choose Us */}
