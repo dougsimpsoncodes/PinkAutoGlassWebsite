@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendCustomerSMS } from '@/lib/notifications/beetexting';
+import { sendCustomerSMS } from '@/lib/notifications/ringcentral-customer';
 import { BUSINESS_PHONE_NUMBER, isCustomerSmsEnabled } from '@/lib/constants';
 import { isAnsweringServiceNumber } from '@/lib/answeringService';
 import { ingestAnsweringServiceMessage } from '@/lib/answeringServiceIngest';

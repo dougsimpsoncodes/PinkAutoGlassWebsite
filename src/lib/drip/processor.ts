@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { sendCustomerSMS } from '@/lib/notifications/beetexting';
+import { sendCustomerSMS } from '@/lib/notifications/ringcentral-customer';
 import { sendEmail } from '@/lib/notifications/email';
 import { renderTemplate } from './templates';
 import { isTCPAQuietHours, getNextSafeTime } from './scheduler';
@@ -110,7 +110,7 @@ export async function processScheduledMessages(): Promise<ProcessingResult> {
         continue;
       }
 
-      // Skip SMS when customer SMS is disabled (Beetexting migration)
+      // Skip SMS when customer SMS is disabled.
       if (msg.channel === 'sms' && !isCustomerSmsEnabled()) {
         await markSkipped(supabase, msg.id, 'customer_sms_disabled');
         result.skipped++;

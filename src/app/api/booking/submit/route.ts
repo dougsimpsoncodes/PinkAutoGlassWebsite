@@ -5,7 +5,7 @@ import { bookingFormSchema, validateHoneypot, validateTimestamp } from "@/lib/va
 import { buildAttribution } from "@/lib/attribution";
 import { sendEmail, sendAdminAlertEmail } from "@/lib/notifications/email";
 import { sendAdminSMS } from "@/lib/notifications/sms";
-import { sendCustomerSMS } from "@/lib/notifications/beetexting";
+import { sendCustomerSMS } from "@/lib/notifications/ringcentral-customer";
 import { isTeamOrTestContact } from "@/lib/constants";
 import {
   getCustomerConfirmationEmail,

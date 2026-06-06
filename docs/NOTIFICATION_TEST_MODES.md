@@ -19,7 +19,7 @@ Default behavior.
 - Email sends through Resend.
 - Auto-quoter contact and booking customer SMS sends through RingCentral.
 - Team SMS sends through RingCentral.
-- Beetexting is not approved for new notification work.
+- Deprecated SMS providers are not approved for new notification work.
 
 RingCentral sender requirement:
 
@@ -32,22 +32,20 @@ RingCentral sender requirement:
 npm run check:ringcentral-sms-sender
 ```
 
-## Beetexting Status
+## RingCentral SMS Status
 
-Do not use Beetexting for the auto-quoter or any new notification work.
+Use RingCentral for the auto-quoter and all notification work.
 
-The redirect-mode QA for the auto-quoter exposed why this matters:
+The redirect-mode QA for the auto-quoter exposed why direct RingCentral routing matters:
 
-- Beetexting was not configured in the local/staging notification path.
-- The Beetexting helper fell back to RingCentral, which made provider behavior harder to reason about.
+- Deprecated provider wrappers made provider behavior harder to reason about.
 - The existing auto-quoter booking SMS system already uses RingCentral directly and is the trusted pattern.
 
 Decision:
 
 - New customer SMS must use `src/lib/notifications/sms.ts`.
 - New team SMS must use `sendAdminSMS` from `src/lib/notifications/sms.ts`.
-- Do not add new imports from `src/lib/notifications/beetexting.ts`.
-- Existing legacy references should be treated as migration debt, not a pattern to copy.
+- Customer SMS that needs opt-out checks should use `src/lib/notifications/ringcentral-customer.ts`.
 - Real recipients receive messages.
 
 Use only when intentionally testing or running production notifications.
@@ -277,7 +275,7 @@ The mode layer is isolated behind:
 - `src/lib/notifications/mode.ts`
 - `src/lib/notifications/email.ts`
 - `src/lib/notifications/sms.ts`
-- `src/lib/notifications/beetexting.ts`
+- `src/lib/notifications/ringcentral-customer.ts`
 
 To rollback safely, revert the commit that introduced this mode layer. If urgent mitigation is needed without a deploy, set:
 

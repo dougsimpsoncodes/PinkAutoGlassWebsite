@@ -5,7 +5,7 @@ import { leadFormSchema, validateHoneypot, validateTimestamp } from '@/lib/valid
 import { buildAttribution } from '@/lib/attribution';
 import { sendEmail, sendAdminAlertEmail } from '@/lib/notifications/email';
 import { sendAdminSMS } from '@/lib/notifications/sms';
-import { sendCustomerSMS } from '@/lib/notifications/beetexting';
+import { sendCustomerSMS } from '@/lib/notifications/ringcentral-customer';
 import { getAdminQuickQuoteEmail, getAdminQuickQuoteSMS } from '@/lib/notifications/templates';
 import { getQuoteInstantSMS, getQuoteInstantEmail } from '@/lib/drip/templates';
 import { scheduleDripSequence } from '@/lib/drip/scheduler';

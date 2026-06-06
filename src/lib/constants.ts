@@ -34,7 +34,7 @@ export const ATTRIBUTION_WINDOW_MINUTES = 60;
 // Customer-facing SMS kill switch. Set ENABLE_CUSTOMER_SMS=false to disable all
 // automated SMS to customers (instant replies, drip follow-ups, review requests,
 // inbound auto-replies). Admin SMS notifications are NOT affected.
-// See docs/BEETEXTING_MIGRATION.md for context and re-enablement steps.
+// See docs/RINGCENTRAL_SMS.md for context.
 export function isCustomerSmsEnabled(): boolean {
   return process.env.ENABLE_CUSTOMER_SMS !== 'false';
 }
