@@ -1,5 +1,6 @@
 import { SMSOptions, sendSMS as sendViaRingCentral } from './sms';
 import { isOptedOut } from '@/lib/sms-opt-out';
+import { prepareSmsDelivery } from './mode';
 
 // --- Token cache ---
 let cachedToken: string | null = null;
@@ -98,6 +99,18 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
     }
   }
 
+  const delivery = options.bypassNotificationMode
+    ? { shouldSend: true, accepted: true, to: options.to, message: options.message }
+    : await prepareSmsDelivery({
+        to: options.to,
+        message: options.message,
+        provider: 'beetexting',
+      });
+  if (!delivery.shouldSend) {
+    console.log(`📱 Customer SMS captured (${options.to})`);
+    return delivery.accepted;
+  }
+
   const agentEmail = process.env.BEETEXTING_AGENT_EMAIL;
   const fromNumber = process.env.BEETEXTING_FROM_NUMBER;
   const apiKey = process.env.BEETEXTING_API_KEY;
@@ -106,7 +119,12 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
   // This allows SMS to function while Beetexting OAuth is pending.
   if (!agentEmail || !fromNumber || !apiKey) {
     console.log('⚠️ Beetexting not configured — falling back to RingCentral');
-    return sendViaRingCentral(options);
+    return sendViaRingCentral({
+      ...options,
+      to: delivery.to,
+      message: delivery.message,
+      bypassNotificationMode: true,
+    });
   }
 
   const accessToken = await getAccessToken();
@@ -115,11 +133,11 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
   }
 
   // API max is 1000 chars
-  const text = options.message.slice(0, 1000);
+  const text = delivery.message.slice(0, 1000);
 
   const url = new URL(`${BEETEXTING_SEND_URL}/${encodeURIComponent(agentEmail)}`);
   url.searchParams.set('from', fromNumber);
-  url.searchParams.set('to', options.to);
+  url.searchParams.set('to', delivery.to);
   url.searchParams.set('text', text);
 
   try {
@@ -138,7 +156,7 @@ export async function sendCustomerSMS(options: SMSOptions): Promise<boolean> {
     }
 
     const data = await res.json();
-    console.log(`✅ SMS sent to ${options.to} via Beetexting (status: ${data.status})`);
+    console.log(`✅ SMS sent to ${delivery.to} via Beetexting (status: ${data.status})`);
     return true;
   } catch (err) {
     console.error('❌ Beetexting sendSMS exception:', err);

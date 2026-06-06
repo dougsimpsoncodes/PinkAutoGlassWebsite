@@ -21,6 +21,7 @@ const currentYear = new Date().getFullYear() + 1;
 
 const quotePriceSchema = z.object({
   sessionId: z.string().trim().max(100).optional().or(z.literal('')),
+  clientId: z.string().trim().max(100).optional().or(z.literal('')),
   vehicle: z.object({
     vin: z.string().trim().regex(/^[A-HJ-NPR-Z0-9]{17}$/i, 'Enter a valid 17-character VIN.').optional().or(z.literal('')),
     year: z.coerce.number().int().min(1981).max(currentYear),
@@ -280,6 +281,7 @@ function normalizeQuoteInput(input: QuotePriceInput): QuotePriceInput {
   return {
     ...input,
     sessionId: input.sessionId?.trim() || '',
+    clientId: input.clientId?.trim() || '',
     state: input.state ? input.state.trim().toUpperCase() : '',
     zip: input.zip || '',
     vehicle: {
@@ -704,6 +706,7 @@ async function storeAutomatedQuote(
       state: input.state || null,
       market: classifyLeadMarket({ state: input.state || null, zip: input.zip || null }) || null,
       session_id: input.sessionId || null,
+      client_id: input.clientId || null,
       ip_address: context.ipAddress || null,
       user_agent: context.userAgent || null,
       plate_last4: input.plateLast4 || null,

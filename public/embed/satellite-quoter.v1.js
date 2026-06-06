@@ -1,5 +1,9 @@
 /* Pink Auto Glass satellite quoter embed bundle */
-var process = globalThis.process || { env: {"NODE_ENV":"production","NEXT_PUBLIC_APP_ENV":"","NEXT_PUBLIC_BASE_URL":"","NEXT_PUBLIC_SITE_URL":"","NEXT_PUBLIC_STICKY_CALLBAR":"","NEXT_PUBLIC_SUPABASE_URL":"","NEXT_PUBLIC_SUPABASE_ANON_KEY":""} };
+var __pagPublicEnv = {};
+[["NODE_ENV","production"],["NEXT_PUBLIC_APP_ENV",""],["NEXT_PUBLIC_BASE_URL",""],["NEXT_PUBLIC_SITE_URL",""],["NEXT_PUBLIC_STICKY_CALLBAR",""],["NEXT_PUBLIC_SUPABASE_URL","https://fypzafbsfrrlrrufzkol.supabase.co"],["NEXT_PUBLIC_SUPABASE_ANON_KEY",["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9","eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5cHphZmJzZnJybHJydWZ6a29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4NDA0ODYsImV4cCI6MjA3MTQxNjQ4Nn0","wj5QwIU7PuuatjqCrO6wDMlO7h3E1PlNNfjTv4SCREo"]]].forEach(function(entry) {
+  __pagPublicEnv[entry[0]] = Array.isArray(entry[1]) ? entry[1].join(".") : entry[1];
+});
+var process = globalThis.process && globalThis.process.env ? globalThis.process : { env: __pagPublicEnv };
 "use strict";
 "use client";
 (() => {
@@ -15696,8 +15700,11 @@ Option 2: Install and provide the "ws" package:
       geoInfo: {}
     };
     const sessionInsertedKey = `session_inserted_${sessionId}`;
-    if (typeof window !== "undefined" && sessionStorage.getItem(sessionInsertedKey)) {
-      return sessionData;
+    if (typeof window !== "undefined") {
+      if (sessionStorage.getItem(sessionInsertedKey)) {
+        return sessionData;
+      }
+      sessionStorage.setItem(sessionInsertedKey, "pending");
     }
     const landingPage = window.location.pathname + window.location.search;
     const market = classifySessionMarket({
@@ -15728,6 +15735,9 @@ Option 2: Install and provide the "ws" package:
     if (sessionInsertError) {
       const isDuplicate = sessionInsertError.code === "23505" || sessionInsertError.code === "PGRST409" || ((_a = sessionInsertError.message) == null ? void 0 : _a.includes("duplicate")) || ((_b = sessionInsertError.message) == null ? void 0 : _b.includes("unique constraint")) || ((_c = sessionInsertError.message) == null ? void 0 : _c.includes("already exists"));
       if (!isDuplicate) {
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem(sessionInsertedKey);
+        }
         console.warn("Failed to insert user_session:", sessionInsertError.message);
       }
     }
@@ -15899,14 +15909,15 @@ Option 2: Install and provide the "ws" package:
   function QuoteBookingForm({
     quoteToken,
     totalDollars,
-    trackingContext
+    trackingContext,
+    initialCustomer
   }) {
     const [submit, setSubmit] = (0, import_react2.useState)({ kind: "idle" });
     const slots = (0, import_react2.useMemo)(buildSlotOptions, []);
     const [selectedSlot, setSelectedSlot] = (0, import_react2.useState)("day1_am");
-    const [fullName, setFullName] = (0, import_react2.useState)("");
-    const [phone, setPhone] = (0, import_react2.useState)("");
-    const [email, setEmail] = (0, import_react2.useState)("");
+    const [fullName, setFullName] = (0, import_react2.useState)((initialCustomer == null ? void 0 : initialCustomer.fullName) || "");
+    const [phone, setPhone] = (0, import_react2.useState)((initialCustomer == null ? void 0 : initialCustomer.phone) || "");
+    const [email, setEmail] = (0, import_react2.useState)((initialCustomer == null ? void 0 : initialCustomer.email) || "");
     const [street, setStreet] = (0, import_react2.useState)("");
     const [installZip, setInstallZip] = (0, import_react2.useState)("");
     const [smsConsent, setSmsConsent] = (0, import_react2.useState)(true);
@@ -15915,7 +15926,7 @@ Option 2: Install and provide the "ws" package:
     const emailTrimmed = email.trim();
     const emailValid = emailTrimmed === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed);
     const ready = fullName.trim().length >= 2 && phoneDigits.length === 10 && street.trim().length >= 3 && /^\d{5}(-\d{4})?$/.test(installZip.trim()) && emailValid;
-    function formatPhoneInput(raw) {
+    function formatPhoneInput2(raw) {
       const d = raw.replace(/\D/g, "").slice(0, 10);
       if (d.length === 0) return "";
       if (d.length < 4) return `(${d}`;
@@ -15964,6 +15975,7 @@ Option 2: Install and provide the "ws" package:
           stage: "booked",
           booking_token: data.bookingToken,
           phone,
+          email: emailTrimmed || void 0,
           install_date: slot.date,
           install_window: slot.window,
           ...trackingContext
@@ -16014,7 +16026,7 @@ Option 2: Install and provide the "ws" package:
             "input",
             {
               value: phone,
-              onChange: (e) => setPhone(formatPhoneInput(e.target.value)),
+              onChange: (e) => setPhone(formatPhoneInput2(e.target.value)),
               onKeyDown: (e) => {
                 if (e.metaKey || e.ctrlKey || e.altKey) return;
                 const allowed = [
@@ -16040,7 +16052,6 @@ Option 2: Install and provide the "ws" package:
               required: true,
               autoComplete: "tel",
               inputMode: "numeric",
-              pattern: "[0-9() \\-]*",
               maxLength: 14
             }
           )
@@ -16270,15 +16281,28 @@ Option 2: Install and provide the "ws" package:
     if (typeof window === "undefined") return void 0;
     return getSessionId();
   }
+  function vehicleLine(vehicle) {
+    return [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(" ");
+  }
+  function formatPhoneInput(raw) {
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    if (digits.length === 0) return "";
+    if (digits.length < 4) return `(${digits}`;
+    if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
   function AutomatedQuoteForm({
     flowMode = "standard",
+    showIntro = true,
     trackingContext
   }) {
     const [stage, setStage] = (0, import_react3.useState)("vehicle");
     const [vehicleMode, setVehicleMode] = (0, import_react3.useState)("plate");
+    const [pendingVehicleMode, setPendingVehicleMode] = (0, import_react3.useState)("plate");
     const [plate, setPlate] = (0, import_react3.useState)("");
     const [plateState, setPlateState] = (0, import_react3.useState)("");
     const [vehicle, setVehicle] = (0, import_react3.useState)({ vin: "", year: "", make: "", model: "", trim: "" });
+    const [contact, setContact] = (0, import_react3.useState)({ fullName: "", phone: "", email: "" });
     const [busy, setBusy] = (0, import_react3.useState)(false);
     const [notice, setNotice] = (0, import_react3.useState)("");
     const [quote, setQuote] = (0, import_react3.useState)(null);
@@ -16340,7 +16364,9 @@ Option 2: Install and provide the "ws" package:
           trim: ((_e = data.vehicle) == null ? void 0 : _e.trim) || ""
         };
         setVehicle(v);
-        await requestPrice(v, "plate");
+        setPendingVehicleMode("plate");
+        setStage("contact");
+        fireQuoteDiagnostic("quote_contact_gate_shown", { via: "plate" });
       } catch (e) {
         setNotice("Plate lookup is temporarily unavailable. Try a VIN below, or call (720) 918-7465.");
       } finally {
@@ -16371,21 +16397,24 @@ Option 2: Install and provide the "ws" package:
           trim: ((_e = data.vehicle) == null ? void 0 : _e.trim) || ""
         };
         setVehicle(v);
-        await requestPrice(v, "vin");
+        setPendingVehicleMode("vin");
+        setStage("contact");
+        fireQuoteDiagnostic("quote_contact_gate_shown", { via: "vin" });
       } catch (e) {
         setNotice("VIN lookup is temporarily unavailable. Call (720) 918-7465.");
       } finally {
         setBusy(false);
       }
     }
-    async function requestPrice(v, mode) {
-      var _a;
+    async function requestPrice(v, mode, contactToSave) {
+      var _a, _b, _c;
       try {
         const response = await fetch("/api/quote/price", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sessionId: currentSessionId(),
+            clientId: getVisitorId(),
             vehicle: {
               vin: v.vin || void 0,
               year: Number.parseInt(v.year, 10),
@@ -16411,6 +16440,58 @@ Option 2: Install and provide the "ws" package:
             trim: (_a = data.vehicle.trim) != null ? _a : v.trim
           });
         }
+        if (contactToSave) {
+          if (!data.quoteToken) {
+            setNotice("We found your vehicle, but could not save the quote reference. Please try again or call (720) 918-7465.");
+            return;
+          }
+          const utm = getUTMParams();
+          const contactResponse = await fetch("/api/quote/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              quoteToken: data.quoteToken,
+              fullName: contactToSave.fullName,
+              phone: contactToSave.phone,
+              email: contactToSave.email || "",
+              smsConsent: contactToSave.phone.trim().length > 0,
+              clientId: getVisitorId(),
+              sessionId: currentSessionId(),
+              utmSource: utm.source || "",
+              utmMedium: utm.medium || "",
+              utmCampaign: utm.campaign || "",
+              utmTerm: utm.term || "",
+              utmContent: utm.content || "",
+              gclid: getGclid() || "",
+              msclkid: getMsclkid() || "",
+              state: plateState
+            })
+          });
+          const contactData = await contactResponse.json().catch(() => ({}));
+          if (!contactResponse.ok || !contactData.success) {
+            setNotice(contactData.error || "We found your price, but could not save your contact info. Please try again or call (720) 918-7465.");
+            return;
+          }
+          fireQuoteDiagnostic("quote_contact_saved", {
+            via: mode,
+            quote_token: data.quoteToken
+          });
+          trackFormSubmission("quote_form", {
+            stage: "contact_saved",
+            leadId: contactData.leadId,
+            quote_token: data.quoteToken,
+            phone: contactToSave.phone,
+            email: contactToSave.email || void 0,
+            vehicle_year: v.year ? Number.parseInt(v.year, 10) : void 0,
+            vehicle_make: v.make,
+            vehicle_model: v.model,
+            surface: quoteSurface(trackingContext),
+            market: resolveQuoteMarket(plateState, trackingContext),
+            flow_mode: flowMode,
+            ...trackingContext
+          }).catch(() => {
+          });
+        }
         setQuote(data);
         setStage("priced");
         if (data.status !== "manual_review" && data.pricing) {
@@ -16418,8 +16499,8 @@ Option 2: Install and provide the "ws" package:
             "windshield",
             `${v.year} ${v.make} ${v.model}`.trim(),
             {
-              quote_id: data == null ? void 0 : data.id,
-              quote_total_cents: data == null ? void 0 : data.totalCents,
+              quote_token: data == null ? void 0 : data.quoteToken,
+              quote_total_cents: (_b = data == null ? void 0 : data.pricing) == null ? void 0 : _b.totalCents,
               vehicle_year: v.year ? Number.parseInt(v.year, 10) : void 0,
               vehicle_make: v.make,
               vehicle_model: v.model,
@@ -16432,8 +16513,8 @@ Option 2: Install and provide the "ws" package:
           });
           trackFormSubmission("quote_form", {
             stage: "priced",
-            quote_total_cents: data == null ? void 0 : data.totalCents,
-            quote_id: data == null ? void 0 : data.id,
+            quote_token: data == null ? void 0 : data.quoteToken,
+            quote_total_cents: (_c = data == null ? void 0 : data.pricing) == null ? void 0 : _c.totalCents,
             vehicle_year: v.year ? Number.parseInt(v.year, 10) : void 0,
             vehicle_make: v.make,
             vehicle_model: v.model,
@@ -16453,10 +16534,33 @@ Option 2: Install and provide the "ws" package:
         setNotice("Quote pricing is unavailable. Call (720) 918-7465.");
       }
     }
+    async function submitContactAndPrice() {
+      const phoneDigits = contact.phone.replace(/\D/g, "");
+      if (contact.fullName.trim().length < 2 || phoneDigits.length !== 10) {
+        setNotice("Enter your name and a valid mobile phone number to see your installed price.");
+        return;
+      }
+      if (contact.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) {
+        setNotice("Enter a valid email, or leave the email field blank.");
+        return;
+      }
+      setNotice("");
+      setBusy(true);
+      try {
+        await requestPrice(vehicle, pendingVehicleMode, {
+          fullName: contact.fullName.trim(),
+          phone: contact.phone,
+          email: contact.email.trim()
+        });
+      } finally {
+        setBusy(false);
+      }
+    }
     function newQuote() {
       setStage("vehicle");
       setQuote(null);
       setVehicle({ vin: "", year: "", make: "", model: "", trim: "" });
+      setContact({ fullName: "", phone: "", email: "" });
       setPlate("");
       setNotice("");
     }
@@ -16466,49 +16570,45 @@ Option 2: Install and provide the "ws" package:
         {
           quote,
           vehicle,
+          contact,
           onNewQuote: newQuote,
           onDiagnostic: fireQuoteDiagnostic,
           trackingContext
         }
       );
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "rounded-lg border border-gray-200 bg-white p-5 shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        VehicleStage,
+    if (stage === "contact") {
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "rounded-lg border border-gray-200 bg-white p-5 shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        ContactStage,
         {
-          mode: vehicleMode,
-          setMode: setVehicleMode,
-          plate,
-          setPlate,
-          plateState,
-          setPlateState,
-          vinInput: vehicle.vin,
-          setVinInput: (vin) => setVehicle((prev) => ({ ...prev, vin })),
-          onLookupPlate: lookupPlate,
-          onLookupVin: lookupVin,
+          vehicle,
+          contact,
+          setContact,
+          onSubmit: submitContactAndPrice,
           busy,
-          notice,
-          cooldownSeconds
+          notice
         }
-      ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("aside", { className: "rounded-lg border border-gray-200 bg-gray-50 p-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h2", { className: "text-xl font-bold text-gray-900", children: "Your quote will appear here" }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 space-y-3 text-sm text-gray-700", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
-            "Mobile service included"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
-            "ADAS calibration added when required"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
-            "No payment collected online"
-          ] })
-        ] })
-      ] })
-    ] });
+      ) });
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "rounded-lg border border-gray-200 bg-white p-5 shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+      VehicleStage,
+      {
+        mode: vehicleMode,
+        setMode: setVehicleMode,
+        plate,
+        setPlate,
+        plateState,
+        setPlateState,
+        vinInput: vehicle.vin,
+        setVinInput: (vin) => setVehicle((prev) => ({ ...prev, vin })),
+        onLookupPlate: lookupPlate,
+        onLookupVin: lookupVin,
+        busy,
+        notice,
+        cooldownSeconds,
+        showIntro
+      }
+    ) });
   }
   function VehicleStage({
     mode,
@@ -16523,7 +16623,8 @@ Option 2: Install and provide the "ws" package:
     onLookupVin,
     busy,
     notice,
-    cooldownSeconds
+    cooldownSeconds,
+    showIntro
   }) {
     const plateReady = plate.trim().length >= 2 && plateState.length === 2;
     const vinReady = vinInput.trim().length === 17;
@@ -16535,6 +16636,15 @@ Option 2: Install and provide the "ws" package:
       boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)"
     } : void 0;
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+      showIntro && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-5 text-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h2", { className: "text-2xl font-extrabold tracking-tight text-gray-950 sm:text-3xl", children: "Get an Instant Price Quote" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "mt-2 text-sm font-medium text-gray-600 sm:text-base", children: "Simply enter your license plate or VIN" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "mb-3 text-center text-base font-bold text-gray-950", children: [
+        "Simply enter your vehicle details",
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("br", {}),
+        "to get your price."
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-4 flex gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { type: "button", className: tabClass(mode === "plate"), style: tabStyle(mode === "plate"), onClick: () => setMode("plate"), children: "License plate" }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { type: "button", className: tabClass(mode === "vin"), style: tabStyle(mode === "vin"), onClick: () => setMode("vin"), children: "VIN" })
@@ -16579,7 +16689,7 @@ Option 2: Install and provide the "ws" package:
             className: "inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300",
             children: [
               busy ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Search, { className: "h-5 w-5" }),
-              busy ? "Looking up your price\u2026" : cooldownSeconds > 0 ? `Try again in ${cooldownSeconds}s` : plate.trim().length < 2 ? "Enter plate to continue" : !plateState ? "Select state to continue" : "Get my price"
+              busy ? "Finding your vehicle\u2026" : cooldownSeconds > 0 ? `Try again in ${cooldownSeconds}s` : plate.trim().length < 2 ? "Enter plate to continue" : !plateState ? "Select state to continue" : "Find my vehicle"
             ]
           }
         )
@@ -16609,42 +16719,155 @@ Option 2: Install and provide the "ws" package:
             className: "inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300",
             children: [
               busy ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Search, { className: "h-5 w-5" }),
-              busy ? "Looking up your price\u2026" : !vinReady ? `${vinInput.length}/17 characters` : "Get my price"
+              busy ? "Finding your vehicle\u2026" : !vinReady ? `${vinInput.length}/17 characters` : "Find my vehicle"
             ]
           }
         )
       ] }),
-      notice && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AlertTriangle, { className: "mt-0.5 h-4 w-4 flex-shrink-0" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: notice })
+      notice && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AlertTriangle, { className: "mt-0.5 h-4 w-4 flex-shrink-0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: notice })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Mobile service included" })
         ] }),
-        mode === "plate" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-          "button",
-          {
-            type: "button",
-            onClick: () => setMode("vin"),
-            className: "mt-2 ml-6 font-semibold text-pink-700 hover:underline",
-            children: "Enter VIN instead \u2192"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-6 border-t border-gray-100 pt-4 text-center text-sm text-gray-500", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "ADAS calibration added when required" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ShieldCheck, { className: "h-5 w-5 text-green-600" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "No payment collected online" })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-5 border-t border-gray-100 pt-4 text-center text-sm text-gray-500", children: [
         "Can't find your plate or VIN?",
         " ",
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "tel:+17209187465", className: "font-semibold text-pink-700 hover:underline", children: "Call (720) 918-7465" })
       ] })
     ] });
   }
+  function ContactStage({
+    vehicle,
+    contact,
+    setContact,
+    onSubmit,
+    busy,
+    notice
+  }) {
+    const phoneDigits = contact.phone.replace(/\D/g, "");
+    const emailTrimmed = contact.email.trim();
+    const emailValid = emailTrimmed === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed);
+    const ready = contact.fullName.trim().length >= 2 && phoneDigits.length === 10 && emailValid;
+    const smsChecked = contact.phone.trim().length > 0;
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+      "form",
+      {
+        onSubmit: (event2) => {
+          event2.preventDefault();
+          onSubmit();
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "rounded-lg border border-green-200 bg-green-50 p-4", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-green-600 text-white", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(CheckCircle2, { className: "h-7 w-7" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-lg font-extrabold text-gray-950", children: vehicleLine(vehicle) || "Vehicle matched" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-sm font-medium text-gray-600", children: "Glass matched. Mobile replacement quote ready." })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h2", { className: "text-2xl font-extrabold tracking-tight text-gray-950", children: "Almost there." }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "mt-1 text-sm font-medium text-gray-600", children: "Enter your contact info." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 grid gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "mb-1 block text-sm font-semibold text-gray-700", children: "Full name" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "input",
+                {
+                  value: contact.fullName,
+                  onChange: (event2) => setContact({ ...contact, fullName: event2.target.value }),
+                  className: "w-full rounded-md border border-gray-300 px-3 py-3 text-base font-medium text-gray-950 focus:border-pink-500 focus:outline-none",
+                  placeholder: "Alex Morgan",
+                  autoComplete: "name"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "mb-1 block text-sm font-semibold text-gray-700", children: "Mobile phone" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "input",
+                {
+                  value: contact.phone,
+                  onChange: (event2) => setContact({ ...contact, phone: formatPhoneInput(event2.target.value) }),
+                  className: "w-full rounded-md border border-gray-300 px-3 py-3 text-base font-medium text-gray-950 focus:border-pink-500 focus:outline-none",
+                  placeholder: "(720) 555-0198",
+                  inputMode: "tel",
+                  autoComplete: "tel"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "mb-1 block text-sm font-semibold text-gray-700", children: [
+                "Email ",
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400", children: "optional" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "input",
+                {
+                  value: contact.email,
+                  onChange: (event2) => setContact({ ...contact, email: event2.target.value }),
+                  className: "w-full rounded-md border border-gray-300 px-3 py-3 text-base font-medium text-gray-950 focus:border-pink-500 focus:outline-none",
+                  placeholder: "alex@example.com",
+                  inputMode: "email",
+                  autoComplete: "email"
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "mt-4 flex items-start gap-2 text-xs font-medium text-gray-600", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "input",
+              {
+                type: "checkbox",
+                checked: smsChecked,
+                readOnly: true,
+                className: "mt-0.5 h-4 w-4 rounded border-gray-300 accent-pink-600"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Text me this quote and booking updates. Reply STOP to opt out." })
+          ] }),
+          notice && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AlertTriangle, { className: "mt-0.5 h-4 w-4 flex-shrink-0" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: notice })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+            "button",
+            {
+              type: "submit",
+              disabled: busy || !ready,
+              className: "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300",
+              children: [
+                busy && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Loader2, { className: "h-5 w-5 animate-spin" }),
+                busy ? "Preparing your price\u2026" : "Show my installed price"
+              ]
+            }
+          )
+        ]
+      }
+    );
+  }
   function PricedHero({
     quote,
     vehicle,
+    contact,
     onNewQuote,
     onDiagnostic,
     trackingContext
   }) {
-    var _a;
-    const [breakdownOpen, setBreakdownOpen] = (0, import_react3.useState)(false);
+    const [bookingOpen, setBookingOpen] = (0, import_react3.useState)(false);
     if (quote.status === "manual_review" || !quote.pricing) {
       return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "rounded-lg border border-amber-200 bg-amber-50 p-6", children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Phone, { className: "mb-4 h-9 w-9 text-amber-700" }),
@@ -16677,11 +16900,11 @@ Option 2: Install and provide the "ws" package:
         )
       ] });
     }
-    const vehicleLine = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(" ");
+    const vehicleSummary = vehicleLine(vehicle);
     const totalDollars = (quote.pricing.totalCents / 100).toFixed(2);
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "rounded-xl border-2 border-pink-500 bg-white p-5 shadow-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "rounded-lg border border-gray-200 bg-white p-5 shadow-sm", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "rounded-xl border-2 border-pink-500 bg-white p-5 text-center shadow-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "inline-flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(CheckCircle2, { className: "h-5 w-5" }),
           " Installed price, we come to you"
         ] }),
@@ -16691,50 +16914,45 @@ Option 2: Install and provide the "ws" package:
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "mt-3 text-sm text-gray-600", children: [
           "for your ",
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-semibold text-gray-900", children: vehicleLine || "vehicle" }),
-          " \xB7 + sales tax"
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-semibold text-gray-900", children: vehicleSummary || "vehicle" }),
+          " plus sales tax."
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-5 text-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-xl font-bold text-gray-900", children: "Lock in this price." }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-1 text-sm text-gray-600", children: "Quick form below \u2014 we come to you, no shop visit." })
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-xl font-bold text-gray-900", children: "Lock in this price" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-1 text-sm text-gray-600", children: "Quick scheduling below. We come to you, no shop visit." })
       ] }),
-      quote.quoteToken && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-5", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-5 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "grid grid-cols-[90px_1fr] gap-y-2 text-left", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-600", children: "Customer" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-bold text-gray-950", children: contact.fullName || "Customer" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-600", children: "Phone" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-bold text-gray-950", children: contact.phone || "Mobile phone" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-600", children: "Next step" }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-bold text-gray-950", children: "Choose install time" })
+      ] }) }),
+      quote.quoteToken && !bookingOpen && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            setBookingOpen(true);
+            onDiagnostic("quote_schedule_opened", { quote_token: quote.quoteToken });
+          },
+          className: "mt-4 inline-flex w-full items-center justify-center rounded-md bg-pink-600 px-4 py-4 text-lg font-bold text-white hover:bg-pink-700",
+          children: "Schedule installation"
+        }
+      ),
+      quote.quoteToken && bookingOpen && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-5", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         QuoteBookingForm,
         {
           quoteToken: quote.quoteToken,
           totalDollars,
-          trackingContext
+          trackingContext,
+          initialCustomer: contact
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "button",
-        {
-          type: "button",
-          onClick: () => setBreakdownOpen((v) => !v),
-          className: "mt-5 text-sm text-gray-500 underline hover:text-pink-600",
-          children: breakdownOpen ? "Hide price breakdown" : "See price breakdown"
-        }
-      ),
-      breakdownOpen && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm", children: [
-        quote.pricing.lineItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-between gap-4 px-3 py-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-700", children: item.description }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-semibold text-gray-900", children: [
-            "$",
-            (item.amountCents / 100).toFixed(2)
-          ] })
-        ] }, `${item.kind}-${item.description}`)),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-between gap-4 bg-gray-50 px-3 py-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-semibold text-gray-900", children: "Total" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-bold text-gray-900", children: [
-            "$",
-            totalDollars
-          ] })
-        ] }),
-        ((_a = quote.adas) == null ? void 0 : _a.requiresCalibration) && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "px-3 py-2 text-xs text-blue-900", children: "Calibration included \u2014 we detected lane-assist or camera sensors on your vehicle." })
-      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-4 text-xs text-gray-500", children: [
-        vehicleLine && `Quoted for ${vehicleLine}. `,
+        vehicleSummary && `Quoted for ${vehicleSummary}. `,
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { type: "button", onClick: onNewQuote, className: "underline hover:text-pink-600", children: "Not your car?" })
       ] })
     ] });
@@ -16897,6 +17115,7 @@ Option 2: Install and provide the "ws" package:
           AutomatedQuoteForm,
           {
             flowMode,
+            showIntro: false,
             trackingContext
           }
         )

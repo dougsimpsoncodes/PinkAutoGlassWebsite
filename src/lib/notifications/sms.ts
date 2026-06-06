@@ -1,4 +1,5 @@
 import { SDK } from '@ringcentral/sdk';
+import { prepareSmsDelivery } from './mode';
 
 // Initialize RingCentral SDK
 let rcClient: SDK | null = null;
@@ -52,6 +53,8 @@ export interface SMSOptions {
   message: string;
   /** Skip opt-out check — ONLY for TCPA-required confirmation messages (STOP/START replies) */
   bypassOptOutCheck?: boolean;
+  /** Internal: prevents double redirect/capture when another notification provider already applied safety mode. */
+  bypassNotificationMode?: boolean;
 }
 
 /**
@@ -59,6 +62,18 @@ export interface SMSOptions {
  */
 export async function sendSMS(options: SMSOptions): Promise<boolean> {
   try {
+    const delivery = options.bypassNotificationMode
+      ? { shouldSend: true, accepted: true, to: options.to, message: options.message }
+      : await prepareSmsDelivery({
+          to: options.to,
+          message: options.message,
+          provider: 'ringcentral',
+        });
+    if (!delivery.shouldSend) {
+      console.log(`📱 SMS captured (${options.to})`);
+      return delivery.accepted;
+    }
+
     const client = await getRingCentralClient();
 
     if (!client) {
@@ -76,12 +91,12 @@ export async function sendSMS(options: SMSOptions): Promise<boolean> {
     const platform = client.platform();
     const response = await platform.post('/restapi/v1.0/account/~/extension/~/sms', {
       from: { phoneNumber: fromNumber },
-      to: [{ phoneNumber: options.to }],
-      text: options.message,
+      to: [{ phoneNumber: delivery.to }],
+      text: delivery.message,
     });
 
     const result = await response.json();
-    console.log(`✅ SMS sent to ${options.to} via RingCentral: ${result.id}`);
+    console.log(`✅ SMS sent to ${delivery.to} via RingCentral: ${result.id}`);
     return true;
   } catch (error: any) {
     console.error('❌ SMS send error:', error.message || error);

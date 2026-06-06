@@ -323,9 +323,54 @@ export async function POST(request: NextRequest) {
     // `after()` (waitUntil under the hood) keeps BOTH channels reliable. Errors
     // are logged inside sendTeamAlert; the .catch is a last-resort backstop so a
     // rejection can't escape the callback unlogged.
-    after(() =>
-      sendTeamAlert(
-        {
+    if (!isTest) {
+      after(() =>
+        sendTeamAlert(
+          {
+            bookingToken: rpcResult.booking_token,
+            customer: {
+              fullName: input.customer.fullName,
+              phoneE164,
+              email: input.customer.email?.trim() || null,
+              smsConsent: input.smsConsent,
+            },
+            install: {
+              street: input.install.street,
+              city: installCity || null,
+              state: quoteRow.state,
+              zip: installZip,
+              date: input.install.date,
+              window: input.install.window,
+            },
+            quote: {
+              totalCents: quoteRow.quote_total_cents || 0,
+              vehicleSummary: vehicleSummary || 'your vehicle',
+            },
+          },
+          {
+            supplierCostCents: quoteRow.supplier_cost_cents,
+            glassBrand: quoteRow.selected_brand,
+            glassPartNumber: quoteRow.selected_nags_number,
+            glassDescription: quoteRow.selected_part_description,
+            qtyAvailable: quoteRow.selected_qty_available,
+            estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
+          }
+        ).catch((err) => {
+          console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
+        })
+      );
+    }
+
+    const adasTier = readAdasTier(quoteRow.confidence_reasons);
+    const notification = isTest
+      ? {
+          status: 'skipped' as const,
+          channels: [
+            { channel: 'email' as const, outcome: 'skipped' as const, reason: 'test booking' },
+            { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'test booking' },
+          ],
+        }
+      : await sendBookingNotifications({
           bookingToken: rpcResult.booking_token,
           customer: {
             fullName: input.customer.fullName,
@@ -335,7 +380,7 @@ export async function POST(request: NextRequest) {
           },
           install: {
             street: input.install.street,
-            city: installCity || null,
+            city: null,
             state: quoteRow.state,
             zip: installZip,
             date: input.install.date,
@@ -345,43 +390,8 @@ export async function POST(request: NextRequest) {
             totalCents: quoteRow.quote_total_cents || 0,
             vehicleSummary: vehicleSummary || 'your vehicle',
           },
-        },
-        {
-          supplierCostCents: quoteRow.supplier_cost_cents,
-          glassBrand: quoteRow.selected_brand,
-          glassPartNumber: quoteRow.selected_nags_number,
-          glassDescription: quoteRow.selected_part_description,
-          qtyAvailable: quoteRow.selected_qty_available,
-          estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
-        }
-      ).catch((err) => {
-        console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
-      })
-    );
-
-    const adasTier = readAdasTier(quoteRow.confidence_reasons);
-    const notification = await sendBookingNotifications({
-      bookingToken: rpcResult.booking_token,
-      customer: {
-        fullName: input.customer.fullName,
-        phoneE164,
-        email: input.customer.email?.trim() || null,
-        smsConsent: input.smsConsent,
-      },
-      install: {
-        street: input.install.street,
-        city: null,
-        state: quoteRow.state,
-        zip: installZip,
-        date: input.install.date,
-        window: input.install.window,
-      },
-      quote: {
-        totalCents: quoteRow.quote_total_cents || 0,
-        vehicleSummary: vehicleSummary || 'your vehicle',
-      },
-      adasTier,
-    });
+          adasTier,
+        });
 
     // 8) Persist notification outcome onto the booking row. Failure to
     // update is logged but does not affect the response.

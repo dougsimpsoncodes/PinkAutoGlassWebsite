@@ -2,10 +2,10 @@
 /**
  * CI guard: quote-funnel diagnostic telemetry isolation.
  *
- * Diagnostic funnel events (diagnostic_*, quote_attempt_*) measure YMM demand
- * and nudge effectiveness. They MUST route through trackEvent (GA4 + DB only)
- * and must NEVER be passed to an ad-conversion sender (trackFormSubmission /
- * trackConversion), or YMM-miss volume — which fires on most quote attempts —
+ * Diagnostic funnel events (diagnostic_*, quote_attempt_*) measure vehicle
+ * lookup demand and auto-quoter friction. They MUST route through trackEvent
+ * (GA4 + DB only) and must NEVER be passed to an ad-conversion sender
+ * (trackFormSubmission / trackConversion), or high-volume diagnostic activity
  * would inflate Google/Microsoft Ads conversions.
  *
  * This guard was mandated by the 2026-05-29 council (Codex + Gemini): both
@@ -73,7 +73,7 @@ for (const file of files) {
 // Positive sanity: the diagnostic names we ship must exist somewhere (catches a
 // rename that would silently disable measurement).
 const allSrc = files.map((f) => readFileSync(f, 'utf8')).join('\n');
-for (const required of ['diagnostic_ymm_miss', 'quote_attempt_ymm']) {
+for (const required of ['quote_attempt_plate', 'quote_attempt_vin', 'quote_contact_gate_shown', 'quote_contact_saved', 'diagnostic_manual_review']) {
   if (!allSrc.includes(required)) {
     fail(`Expected diagnostic event "${required}" not found in src — measurement may be broken.`);
   }

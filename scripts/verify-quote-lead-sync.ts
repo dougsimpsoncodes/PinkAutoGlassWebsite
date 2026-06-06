@@ -84,6 +84,59 @@ function mockClient(opts: {
   assert(!writes.some(w => w.type === 'rpc'), 'branch2: no insert (reused existing)');
 }
 
+// ── Branch 2b: reused leads get blank attribution/session fields enriched ──
+{
+  const { client, writes } = mockClient({
+    existingLead: {
+      id: 'L-phone',
+      notes: null,
+      gclid: null,
+      msclkid: null,
+      ad_platform: null,
+      utm_source: null,
+      client_id: null,
+      session_id: null,
+      is_test: false,
+    },
+  });
+  await findOrCreateQuoteLead(client, client, QUOTE, {
+    firstName: 'Pat',
+    lastName: 'M',
+    phone: '+13037771234',
+    clientId: 'visitor-1',
+    sessionId: 'sess-1',
+    attribution: {
+      gclid: 'G123',
+      msclkid: null,
+      ad_platform: 'google',
+      utm_source: 'google',
+      utm_medium: 'cpc',
+      utm_campaign: 'quote-test',
+      utm_term: null,
+      utm_content: null,
+    },
+  });
+  const upd = writes.find(w => w.type === 'update');
+  assert(upd?.payload.gclid === 'G123', 'branch2b: blank gclid is enriched');
+  assert(upd?.payload.ad_platform === 'google', 'branch2b: blank ad_platform is enriched');
+  assert(upd?.payload.utm_source === 'google', 'branch2b: blank UTM is enriched');
+  assert(upd?.payload.client_id === 'visitor-1', 'branch2b: blank client_id is enriched');
+  assert(upd?.payload.session_id === 'sess-1', 'branch2b: blank session_id is enriched');
+}
+
+// ── Branch 2c: test leads bypass phone dedupe so QA runs keep fresh attribution ──
+{
+  const { client, writes } = mockClient({ existingLead: { id: 'L-old-test' } });
+  const id = await findOrCreateQuoteLead(client, client, QUOTE, {
+    firstName: 'Codex',
+    lastName: 'Test',
+    phone: '+13035551234',
+    isTest: true,
+  });
+  assert(id !== 'L-old-test', 'branch2c: test contact does not reuse old phone-matched lead');
+  assert(writes.some(w => w.type === 'rpc'), 'branch2c: test contact inserts a fresh lead');
+}
+
 // ── Branch 3: no lead anywhere → fn_insert_lead, then update ──
 {
   const { client, writes } = mockClient({ existingLead: null });
@@ -114,8 +167,12 @@ function mockClient(opts: {
   const a = await buildAttributionFromSession(client, null);
   assert(a !== null && typeof a === 'object', 'attr: null session → empty attribution object (direct)');
   const { client: c2 } = mockClient({ sessionRow: { gclid: 'G123', utm_source: 'google' } });
-  const a2 = await buildAttributionFromSession(c2, 'sess-1');
-  assert(a2 !== null && typeof a2 === 'object', 'attr: session row → attribution object built');
+  const a2 = await buildAttributionFromSession(c2, 'sess-1', { bodyGclid: 'BODY', utmSource: 'bing' });
+  assert(a2.gclid === 'G123', 'attr: session click ID wins over body fallback');
+  assert(a2.utm_source === 'google', 'attr: session UTM wins over body fallback');
+  const { client: c3 } = mockClient({ sessionRow: null });
+  const a3 = await buildAttributionFromSession(c3, 'missing', { bodyGclid: 'BODY', utmSource: 'bing' });
+  assert(a3.gclid === 'BODY' && a3.utm_source === 'bing', 'attr: missing session falls back to body values');
 }
 
   console.log(failures === 0 ? '\nQUOTE LEAD SYNC: ALL CHECKS PASSED' : `\nQUOTE LEAD SYNC: ${failures} FAILURE(S)`);

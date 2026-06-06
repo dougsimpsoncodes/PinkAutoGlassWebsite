@@ -22,6 +22,11 @@ interface QuoteBookingFormProps {
   quoteToken: string;
   totalDollars: string;
   trackingContext?: SatelliteQuoterTrackingContext;
+  initialCustomer?: {
+    fullName?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 interface BookingSuccess {
@@ -88,14 +93,15 @@ export default function QuoteBookingForm({
   quoteToken,
   totalDollars,
   trackingContext,
+  initialCustomer,
 }: QuoteBookingFormProps) {
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const slots = useMemo(buildSlotOptions, []);
   const [selectedSlot, setSelectedSlot] = useState<SlotKey>('day1_am');
 
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState(initialCustomer?.fullName || '');
+  const [phone, setPhone] = useState(initialCustomer?.phone || '');
+  const [email, setEmail] = useState(initialCustomer?.email || '');
   const [street, setStreet] = useState('');
   const [installZip, setInstallZip] = useState('');
   const [smsConsent, setSmsConsent] = useState(true);
@@ -163,11 +169,12 @@ export default function QuoteBookingForm({
       );
 
       // Fire booking-conversion event with the same `quote_form` name so Google Ads
-      // + Microsoft Ads pick it up. Phone is captured here for enhanced conversions.
+      // + Microsoft Ads pick it up. Phone/email are captured for enhanced conversions.
       trackFormSubmission('quote_form', {
         stage: 'booked',
         booking_token: data.bookingToken,
         phone,
+        email: emailTrimmed || undefined,
         install_date: slot.date,
         install_window: slot.window,
         ...trackingContext,
@@ -245,7 +252,6 @@ export default function QuoteBookingForm({
             // numeric (not tel) gives a pure number-pad on iOS — no * or #
             // characters; less chance a user thinks the field accepts text.
             inputMode="numeric"
-            pattern="[0-9() \-]*"
             maxLength={14}
           />
         </label>
