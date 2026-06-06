@@ -1,14 +1,21 @@
-import { NextRequest, NextResponse, after } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
-import { sendBookingNotifications, sendTeamAlert } from '@/lib/quote/booking-notifications';
+import { sendBookingNotifications, sendTeamAlert, type BookingNotificationOutcome } from '@/lib/quote/booking-notifications';
 import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
 import { assertEnvCoherent } from '@/lib/env';
 import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
 import { isTeamOrTestContact } from '@/lib/constants';
+import {
+  claimQuoteNotificationEvent,
+  combineEventStatus,
+  completeQuoteNotificationEvent,
+  type AutoQuoteNotificationEventStatus,
+  type ChannelStatus,
+} from '@/lib/quote/notification-events';
 
 export const runtime = 'nodejs';
 // The team alert runs in an `after()` callback (post-response) and includes a
@@ -67,6 +74,23 @@ interface QuoteSummary {
   // Used to surface a Tier-2 ADAS recommendation in the booking
   // confirmation when calibration wasn't bundled in the quote total.
   confidence_reasons: string[] | null;
+}
+
+interface ExistingBookingSummary {
+  id: string;
+  booking_token: string;
+  full_name: string;
+  phone_e164: string;
+  email: string | null;
+  install_street: string;
+  install_city: string | null;
+  install_state: string | null;
+  install_zip: string;
+  preferred_install_date: string;
+  preferred_install_window: 'AM' | 'PM';
+  sms_consent: boolean;
+  is_test: boolean | null;
+  notification_status: 'pending' | 'email_sent' | 'sms_sent' | 'both_sent' | 'failed' | 'partial' | 'skipped';
 }
 
 /**
@@ -143,10 +167,19 @@ export async function POST(request: NextRequest) {
     // 2) One booking per quote.
     const { data: existing } = await supabase
       .from('automated_quote_bookings')
-      .select('id, booking_token')
+      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, notification_status')
       .eq('quote_id', quoteRow.id)
-      .maybeSingle<{ id: string; booking_token: string }>();
+      .maybeSingle<ExistingBookingSummary>();
     if (existing) {
+      const repair = await sendAppointmentBookedNotificationEvent({
+        supabase,
+        quoteRow,
+        booking: existing,
+        isTest: (quoteRow.is_test ?? false) || (existing.is_test ?? false),
+      });
+      if (repair.status !== 'skipped' || repair.firstError) {
+        await persistBookingNotificationOutcome(supabase, existing.id, repair);
+      }
       return NextResponse.json(
         { error: 'This quote is already booked. Please call (720) 918-7465 if you need to change it.', existingBookingToken: existing.booking_token },
         { status: 409 }
@@ -239,6 +272,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: persistedBooking, error: persistedBookingError } = await supabase
+      .from('automated_quote_bookings')
+      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, notification_status')
+      .eq('id', rpcResult.id)
+      .single<ExistingBookingSummary>();
+    if (persistedBookingError || !persistedBooking) {
+      console.error('[quote-book] persisted booking lookup failed:', persistedBookingError?.message);
+      return NextResponse.json(
+        { error: 'Booking was saved, but confirmation lookup failed. Please call (720) 918-7465.' },
+        { status: 500 }
+      );
+    }
+    const effectiveIsTest = (quoteRow.is_test ?? false) || (persistedBooking.is_test ?? false);
+
     // If auto-detected as team/test, propagate the flag to the parent quote AND
     // its session so neither is counted as real in the funnel / traffic. The
     // session join only matters once quotes carry session_id (today it's always
@@ -273,19 +320,19 @@ export async function POST(request: NextRequest) {
         const anon = createClient(url, anonKey, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
-        const name = splitName(input.customer.fullName);
+        const name = splitName(persistedBooking.full_name);
         const attribution = await buildAttributionFromSession(supabase, quoteRow.session_id);
         const leadId = await findOrCreateQuoteLead(supabase, anon, quoteRow, {
           firstName: name.firstName,
           lastName: name.lastName,
-          phone: phoneE164,
-          email: input.customer.email?.trim() || null,
-          smsConsent: input.smsConsent,
+          phone: persistedBooking.phone_e164,
+          email: persistedBooking.email,
+          smsConsent: persistedBooking.sms_consent,
           state: quoteRow.state,
-          zip: installZip || quoteRow.zip,
+          zip: persistedBooking.install_zip || quoteRow.zip,
           sessionId: quoteRow.session_id,
           attribution,
-          isTest,
+          isTest: effectiveIsTest,
           status: 'scheduled',
         });
         if (!quoteRow.lead_id && leadId) {
@@ -294,7 +341,7 @@ export async function POST(request: NextRequest) {
         // Ensure the resolved lead is tagged test when this booking is team/test.
         // findOrCreateQuoteLead only stamps is_test on NEW inserts, so a reused or
         // pre-existing lead would otherwise stay visible in reporting (codex P2).
-        if (isTest && leadId) {
+        if (effectiveIsTest && leadId) {
           await supabase.from('leads').update({ is_test: true }).eq('id', leadId).eq('is_test', false);
         }
       }
@@ -302,108 +349,30 @@ export async function POST(request: NextRequest) {
       console.error('[quote-book] lead sync failed (booking still saved):', leadErr instanceof Error ? leadErr.message : leadErr);
     }
 
-    // 7) Notifications — non-blocking. Booking row is durable; if these
-    // fail the customer still has the on-screen confirmation and ops
-    // can chase notification_status from the row.
-    const vehicleSummary = [quoteRow.vehicle_year, quoteRow.vehicle_make, quoteRow.vehicle_model, quoteRow.vehicle_trim]
-      .filter(Boolean)
-      .join(' ');
+    // 7) Notifications. Booking row is durable; if these fail the customer still
+    // has the on-screen confirmation and ops can chase notification_status.
+    const notification = await sendAppointmentBookedNotificationEvent({
+      supabase,
+      quoteRow,
+      booking: persistedBooking,
+      isTest: effectiveIsTest,
+    });
 
-    // Team alert — scheduled with Next.js `after()` so it runs AFTER the
-    // response is sent (never blocks the customer's "You're booked!" — council
-    // reco 2026-05-28, Codex + Gemini unanimous) WHILE keeping the serverless
-    // function alive until it finishes.
-    //
-    // Why not a bare `void` promise (the prior implementation): once the handler
-    // returned, Vercel froze the lambda and the SECOND leg of the alert — the
-    // team SMS, gated behind a ~1.5s RingCentral JWT cold-login — was cut off
-    // mid-POST, while the FIRST leg (team email) had already landed. Result:
-    // bookings produced an email alert but no SMS, intermittently (warm lambdas
-    // reused a cached RC client and finished in time; cold ones didn't).
-    // `after()` (waitUntil under the hood) keeps BOTH channels reliable. Errors
-    // are logged inside sendTeamAlert; the .catch is a last-resort backstop so a
-    // rejection can't escape the callback unlogged.
-    if (!isTest) {
-      after(() =>
-        sendTeamAlert(
-          {
-            bookingToken: rpcResult.booking_token,
-            customer: {
-              fullName: input.customer.fullName,
-              phoneE164,
-              email: input.customer.email?.trim() || null,
-              smsConsent: input.smsConsent,
-            },
-            install: {
-              street: input.install.street,
-              city: installCity || null,
-              state: quoteRow.state,
-              zip: installZip,
-              date: input.install.date,
-              window: input.install.window,
-            },
-            quote: {
-              totalCents: quoteRow.quote_total_cents || 0,
-              vehicleSummary: vehicleSummary || 'your vehicle',
-            },
-          },
-          {
-            supplierCostCents: quoteRow.supplier_cost_cents,
-            glassBrand: quoteRow.selected_brand,
-            glassPartNumber: quoteRow.selected_nags_number,
-            glassDescription: quoteRow.selected_part_description,
-            qtyAvailable: quoteRow.selected_qty_available,
-            estimatedDeliveryDate: quoteRow.selected_estimated_delivery_date,
-          }
-        ).catch((err) => {
-          console.error('[quote-book] sendTeamAlert threw unexpectedly:', err);
-        })
-      );
-    }
-
-    const adasTier = readAdasTier(quoteRow.confidence_reasons);
-    const notification = isTest
-      ? {
-          status: 'skipped' as const,
-          channels: [
-            { channel: 'email' as const, outcome: 'skipped' as const, reason: 'test booking' },
-            { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'test booking' },
-          ],
-        }
-      : await sendBookingNotifications({
-          bookingToken: rpcResult.booking_token,
-          customer: {
-            fullName: input.customer.fullName,
-            phoneE164,
-            email: input.customer.email?.trim() || null,
-            smsConsent: input.smsConsent,
-          },
-          install: {
-            street: input.install.street,
-            city: null,
-            state: quoteRow.state,
-            zip: installZip,
-            date: input.install.date,
-            window: input.install.window,
-          },
-          quote: {
-            totalCents: quoteRow.quote_total_cents || 0,
-            vehicleSummary: vehicleSummary || 'your vehicle',
-          },
-          adasTier,
-        });
+    await supabase
+      .from('automated_quote_notification_events')
+      .update({
+        status: 'skipped',
+        last_error: 'booked_before_followup',
+        metadata: { quoteToken: quoteRow.quote_token, bookingToken: rpcResult.booking_token, reason: 'booked_before_followup' },
+      })
+      .eq('quote_id', quoteRow.id)
+      .eq('event_type', 'quote_unbooked_5m')
+      .in('status', ['pending', 'processing', 'failed', 'partial']);
 
     // 8) Persist notification outcome onto the booking row. Failure to
     // update is logged but does not affect the response.
-    const { error: updateError } = await supabase
-      .from('automated_quote_bookings')
-      .update({
-        notification_status: notification.status,
-        notification_error: notification.firstError ?? null,
-      })
-      .eq('id', rpcResult.id);
-    if (updateError) {
-      console.error('[quote-book] notification_status update failed:', updateError.message);
+    if (effectiveIsTest || notification.status !== 'skipped' || notification.firstError) {
+      await persistBookingNotificationOutcome(supabase, rpcResult.id, notification);
     }
 
     return NextResponse.json({
@@ -434,4 +403,142 @@ function getServiceRoleClient() {
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+}
+
+async function sendAppointmentBookedNotificationEvent(input: {
+  supabase: SupabaseClient;
+  quoteRow: QuoteSummary;
+  booking: ExistingBookingSummary;
+  isTest: boolean;
+}): Promise<BookingNotificationOutcome> {
+  if (input.isTest) {
+    return {
+      status: 'skipped',
+      firstError: undefined,
+      channels: [
+        { channel: 'email', outcome: 'skipped', reason: 'test booking' },
+        { channel: 'sms', outcome: 'skipped', reason: 'test booking' },
+      ],
+    };
+  }
+
+  const claim = await claimQuoteNotificationEvent({
+    admin: input.supabase,
+    quoteId: input.quoteRow.id,
+    eventType: 'appointment_booked',
+    metadata: { quoteToken: input.quoteRow.quote_token, bookingToken: input.booking.booking_token },
+  });
+  if (!claim.claimed || !claim.eventId) {
+    return {
+      status: 'skipped',
+      firstError: undefined,
+      channels: [
+        { channel: 'email', outcome: 'skipped', reason: claim.reason ?? 'appointment_booked_event_not_claimed' },
+        { channel: 'sms', outcome: 'skipped', reason: claim.reason ?? 'appointment_booked_event_not_claimed' },
+      ],
+    };
+  }
+
+  const vehicleSummary = [
+    input.quoteRow.vehicle_year,
+    input.quoteRow.vehicle_make,
+    input.quoteRow.vehicle_model,
+    input.quoteRow.vehicle_trim,
+  ].filter(Boolean).join(' ');
+
+  const bookingNotificationInput = {
+    bookingToken: input.booking.booking_token,
+    customer: {
+      fullName: input.booking.full_name,
+      phoneE164: input.booking.phone_e164,
+      email: input.booking.email,
+      smsConsent: input.booking.sms_consent,
+    },
+    install: {
+      street: input.booking.install_street,
+      city: input.booking.install_city,
+      state: input.booking.install_state || input.quoteRow.state,
+      zip: input.booking.install_zip,
+      date: String(input.booking.preferred_install_date).slice(0, 10),
+      window: input.booking.preferred_install_window,
+    },
+    quote: {
+      totalCents: input.quoteRow.quote_total_cents || 0,
+      vehicleSummary: vehicleSummary || 'your vehicle',
+    },
+    adasTier: readAdasTier(input.quoteRow.confidence_reasons),
+  };
+  const teamAlertContext = {
+    supplierCostCents: input.quoteRow.supplier_cost_cents,
+    glassBrand: input.quoteRow.selected_brand,
+    glassPartNumber: input.quoteRow.selected_nags_number,
+    glassDescription: input.quoteRow.selected_part_description,
+    qtyAvailable: input.quoteRow.selected_qty_available,
+    estimatedDeliveryDate: input.quoteRow.selected_estimated_delivery_date,
+  };
+
+  const customerOutcome = await sendBookingNotifications(bookingNotificationInput, {
+    skipEmail: claim.priorChannels?.customerEmail === 'sent',
+    skipSms: claim.priorChannels?.customerSms === 'sent',
+  });
+  const teamOutcome = await sendTeamAlert(bookingNotificationInput, teamAlertContext, {
+    skipEmail: claim.priorChannels?.teamEmail === 'sent',
+    skipSms: claim.priorChannels?.teamSms === 'sent',
+  });
+  const channels = {
+    customerEmail: channelOutcomeToStatus(customerOutcome.channels.find((channel) => channel.channel === 'email')?.outcome),
+    customerSms: channelOutcomeToStatus(customerOutcome.channels.find((channel) => channel.channel === 'sms')?.outcome),
+    teamEmail: channelOutcomeToStatus(teamOutcome.channels.find((channel) => channel.channel === 'email')?.outcome),
+    teamSms: channelOutcomeToStatus(teamOutcome.channels.find((channel) => channel.channel === 'sms')?.outcome),
+  };
+  const eventStatus = combineEventStatus(channels);
+  const firstError = customerOutcome.firstError
+    ?? teamOutcome.channels.find((channel) => channel.outcome === 'failed')?.reason
+    ?? null;
+  await completeQuoteNotificationEvent({
+    admin: input.supabase,
+    eventId: claim.eventId,
+    status: eventStatus,
+    channels,
+    error: firstError,
+    metadata: { quoteToken: input.quoteRow.quote_token, bookingToken: input.booking.booking_token },
+  });
+  return {
+    ...customerOutcome,
+    status: eventStatusToBookingStatus(eventStatus, customerOutcome.status),
+    firstError: firstError ?? undefined,
+  };
+}
+
+async function persistBookingNotificationOutcome(
+  supabase: SupabaseClient,
+  bookingId: string,
+  notification: BookingNotificationOutcome
+): Promise<void> {
+  const { error } = await supabase
+    .from('automated_quote_bookings')
+    .update({
+      notification_status: notification.status,
+      notification_error: notification.firstError ?? null,
+    })
+    .eq('id', bookingId);
+  if (error) {
+    console.error('[quote-book] notification_status update failed:', error.message);
+  }
+}
+
+function channelOutcomeToStatus(outcome?: 'sent' | 'skipped' | 'failed'): ChannelStatus {
+  if (outcome === 'sent') return 'sent';
+  if (outcome === 'failed') return 'failed';
+  return 'skipped';
+}
+
+function eventStatusToBookingStatus(
+  eventStatus: AutoQuoteNotificationEventStatus,
+  customerStatus: 'pending' | 'email_sent' | 'sms_sent' | 'both_sent' | 'partial' | 'failed' | 'skipped'
+) {
+  if (eventStatus === 'failed') return 'failed';
+  if (eventStatus === 'partial') return 'partial';
+  if (eventStatus === 'skipped') return 'skipped';
+  return customerStatus;
 }

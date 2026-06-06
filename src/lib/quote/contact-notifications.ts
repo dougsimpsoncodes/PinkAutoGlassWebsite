@@ -3,10 +3,20 @@ import { sendEmail, sendAdminAlertEmail } from '@/lib/notifications/email';
 import { sendSMS, sendAdminSMS } from '@/lib/notifications/sms';
 import { centsToDollars } from '@/lib/quote/pricing';
 import { shortQuoteToken } from '@/lib/quote/leadSync';
+import {
+  boolToChannelStatus,
+  claimQuoteNotificationEvent,
+  combineEventStatus,
+  completeQuoteNotificationEvent,
+  scheduleQuoteNotificationEvent,
+  shouldSendNotificationChannel,
+  type ChannelStatus,
+} from '@/lib/quote/notification-events';
 
 const CALLBACK_PHONE = '(720) 918-7465';
 
 export interface QuoteContactNotificationInput {
+  quoteId: string;
   quoteToken: string;
   status: string;
   leadId: string;
@@ -25,6 +35,10 @@ export interface QuoteContactNotificationInput {
     model?: string | null;
     trim?: string | null;
     vin?: string | null;
+  };
+  location?: {
+    state?: string | null;
+    zip?: string | null;
   };
   quote: {
     totalCents?: number | null;
@@ -53,7 +67,7 @@ export async function sendQuoteContactNotifications(input: QuoteContactNotificat
   if (input.isTest || isExcludedPhone(input.customer.phoneE164) || isTestPhone(input.customer.phoneE164)) {
     return { kind, skipped: true, reason: 'test_or_internal_contact' };
   }
-  if (input.hadLeadBeforeContact) {
+  if (input.hadLeadBeforeContact && kind === 'manual_review') {
     return { kind, skipped: true, reason: 'contact_already_linked' };
   }
 
@@ -67,10 +81,42 @@ export async function sendQuoteContactNotifications(input: QuoteContactNotificat
     return { kind, skipped: false };
   }
 
-  await Promise.allSettled([
-    sendQuoteReadyCustomerEmail(input),
-    sendQuoteReadyCustomerSms(input),
+  const claim = await claimQuoteNotificationEvent({
+    quoteId: input.quoteId,
+    eventType: 'quote_ready',
+    metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
+  });
+  if (!claim.claimed || !claim.eventId) {
+    return { kind, skipped: true, reason: claim.reason ?? 'quote_ready_event_not_claimed' };
+  }
+
+  const [teamEmail, teamSms, customerEmail, customerSms] = await Promise.all([
+    shouldSendNotificationChannel(claim.priorChannels, 'teamEmail') ? sendQuoteReadyTeamEmail(input) : Promise.resolve(true),
+    shouldSendNotificationChannel(claim.priorChannels, 'teamSms') ? sendQuoteReadyTeamSms(input) : Promise.resolve(true),
+    shouldSendNotificationChannel(claim.priorChannels, 'customerEmail') ? sendQuoteReadyCustomerEmail(input) : Promise.resolve(true),
+    shouldSendNotificationChannel(claim.priorChannels, 'customerSms') ? sendQuoteReadyCustomerSms(input) : Promise.resolve(true),
   ]);
+  const channels = {
+    teamEmail: channelStatusFromAttempt(claim.priorChannels?.teamEmail, true, teamEmail),
+    teamSms: channelStatusFromAttempt(claim.priorChannels?.teamSms, true, teamSms),
+    customerEmail: channelStatusFromAttempt(claim.priorChannels?.customerEmail, Boolean(input.customer.email), customerEmail),
+    customerSms: channelStatusFromAttempt(claim.priorChannels?.customerSms, input.customer.smsConsent && isCustomerSmsEnabled(), customerSms),
+  };
+  const eventStatus = combineEventStatus(channels);
+  await completeQuoteNotificationEvent({
+    eventId: claim.eventId,
+    status: eventStatus,
+    channels,
+    metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
+  });
+
+  if (Object.values(channels).some((status) => status === 'sent')) {
+    await scheduleQuoteNotificationEvent({
+      quoteId: input.quoteId,
+      eventType: 'quote_unbooked_5m',
+      metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
+    });
+  }
   return { kind, skipped: false };
 }
 
@@ -91,8 +137,48 @@ function formatQuotePrice(input: QuoteContactNotificationInput): string {
   return input.quote.totalCents ? `$${centsToDollars(input.quote.totalCents).toFixed(2)}` : 'confirmation needed';
 }
 
+function locationSummary(input: QuoteContactNotificationInput): string {
+  return [input.location?.state, input.location?.zip].filter(Boolean).join(' ') || 'Location not captured';
+}
+
 function quoteRef(input: QuoteContactNotificationInput): string {
   return shortQuoteToken(input.quoteToken);
+}
+
+function channelStatusFromAttempt(prior: ChannelStatus | undefined, eligible: boolean, ok: boolean): ChannelStatus {
+  if (prior === 'sent') return 'sent';
+  if (!eligible) return 'skipped';
+  return boolToChannelStatus(ok);
+}
+
+async function sendQuoteReadyTeamEmail(input: QuoteContactNotificationInput): Promise<boolean> {
+  const ref = quoteRef(input);
+  const vehicle = vehicleSummary(input);
+  const price = formatQuotePrice(input);
+  return sendAdminAlertEmail(
+    `Hot Quote Ready - ${ref}: ${customerName(input)} - ${price}`,
+    `<!DOCTYPE html>
+<html><body style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+  <h2>Hot Quote Ready</h2>
+  <p>A customer received an installed price from the auto-quoter. Follow up while the quote is fresh.</p>
+  <p><strong>Reference:</strong> ${escapeHtml(ref)}</p>
+  <p><strong>Price:</strong> ${escapeHtml(price)}</p>
+  <p><strong>Customer:</strong> ${escapeHtml(customerName(input))}</p>
+  <p><strong>Phone:</strong> ${escapeHtml(input.customer.phoneE164)}</p>
+  ${input.customer.email ? `<p><strong>Email:</strong> ${escapeHtml(input.customer.email)}</p>` : ''}
+  <p><strong>Vehicle:</strong> ${escapeHtml(vehicle)}</p>
+  <p><strong>Location:</strong> ${escapeHtml(locationSummary(input))}</p>
+  ${input.vehicle.vin ? `<p><strong>VIN:</strong> ${escapeHtml(input.vehicle.vin)}</p>` : ''}
+  <p><strong>Lead ID:</strong> ${escapeHtml(input.leadId)}</p>
+</body></html>`,
+  );
+}
+
+async function sendQuoteReadyTeamSms(input: QuoteContactNotificationInput): Promise<boolean> {
+  const ref = quoteRef(input);
+  return sendAdminSMS(
+    `Hot quote ${ref}: ${customerName(input)} | ${input.customer.phoneE164} | ${vehicleSummary(input)} | ${formatQuotePrice(input)} | ${locationSummary(input)}`
+  );
 }
 
 async function sendQuoteReadyCustomerEmail(input: QuoteContactNotificationInput): Promise<boolean> {

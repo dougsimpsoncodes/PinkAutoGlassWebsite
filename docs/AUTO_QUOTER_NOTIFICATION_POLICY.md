@@ -1,8 +1,8 @@
 # Auto-Quoter Notification Policy
 
-Status: Phase 1 implementation on `feat/auto-quoter-notification-policy`
+Status: Production policy.
 
-This document describes the notification behavior for the contact-gated Pink Auto Glass auto-quoter. The policy was split into two phases so the immediate customer/team messages can ship independently from the delayed hot-lead follow-up job.
+This document describes the notification behavior for the contact-gated Pink Auto Glass auto-quoter. Every customer-facing event also alerts the operations team at the same stage.
 
 ## Flow Terms
 
@@ -12,7 +12,7 @@ This document describes the notification behavior for the contact-gated Pink Aut
 - Booking submitted: the customer completed the appointment form.
 - Hot quote not booked: the customer received an installed price but did not book within the follow-up window.
 
-## Phase 1 Behavior
+## Behavior
 
 All outbound email/SMS in this policy is subject to the global notification safety mode documented in `docs/NOTIFICATION_TEST_MODES.md`.
 
@@ -28,7 +28,8 @@ Trigger:
 - `/api/quote/contact` receives contact information for a quote with an installed price.
 
 Team notification:
-- None.
+- Immediate email.
+- Immediate SMS.
 
 Customer notification:
 - Email when an email address is present.
@@ -43,8 +44,7 @@ Message requirements:
 - Explain that sales tax may be collected at installation.
 
 Reasoning:
-- The site can still complete the sale by itself, so team alerts here create noise.
-- The customer should still receive a lightweight confirmation that Pink received the request and is ready to help.
+- A priced quote with captured contact info is a hot lead. The customer can self-book, but the team should also have the customer details immediately for follow-up.
 
 ### Manual Review
 
@@ -75,11 +75,12 @@ Trigger:
 - `/api/quote/book` successfully creates an auto-quoter booking.
 
 Team notification:
-- Existing team email and SMS behavior stays in place.
+- Immediate email.
+- Immediate SMS.
 
 Customer notification:
-- Existing booking confirmation email behavior stays in place.
-- Existing customer SMS behavior stays in place when enabled and consented.
+- Booking confirmation email when an email address is present.
+- Booking confirmation SMS when customer SMS is enabled and the customer consented.
 
 Reasoning:
 - Booking is operationally real work and should notify the team immediately.
@@ -99,14 +100,6 @@ Customer notification:
 Data behavior:
 - Rows are still written for QA and attribution verification.
 
-## Duplicate-Send Guard
-
-Phase 1 uses a simple server-side guard in `/api/quote/contact`: if the quote already had a `lead_id` before the current contact request, contact notifications are skipped.
-
-This prevents common duplicate sends from browser retries, refreshes, or repeated submit calls without requiring a schema change.
-
-## Phase 2 Behavior
-
 ### Hot Quote Not Booked
 
 Trigger:
@@ -121,27 +114,35 @@ Team notification:
 - SMS.
 
 Customer notification:
-- None. The customer already received the quote-ready message in Phase 1.
+- Email when an email address is present.
+- SMS only when customer SMS is enabled and the customer consented.
 
-Required implementation guard:
-- Must be DB-backed and idempotent before enabling.
-- Recommended fields on `automated_quotes`:
-  - `hot_quote_followup_sent_at`
-  - `hot_quote_followup_status`
-  - `hot_quote_followup_error`
-
-Alternative:
-- A generic notification events table keyed by quote id and notification type.
+Implementation guard:
+- `automated_quote_notification_events` stores one row per quote/event type.
+- `UNIQUE (quote_id, event_type)` prevents duplicate sends for `quote_ready`, `quote_unbooked_5m`, and `appointment_booked`.
+- The 5-minute job re-checks `automated_quote_bookings` after claiming the event and before sending.
 
 Reasoning:
 - These are high-intent leads, so five minutes is the right follow-up window.
-- The implementation must avoid duplicate alerts and must re-check booking status at send time.
+- The customer gets a light reminder, while the team gets the customer contact details to follow up.
+
+## Duplicate-Send Guard
+
+Notification idempotency is DB-backed:
+
+- `quote_ready`: claimed by `/api/quote/contact`.
+- `quote_unbooked_5m`: claimed by the five-minute cron processor.
+- `appointment_booked`: claimed by `/api/quote/book`.
+
+Each claim writes a row to `automated_quote_notification_events` before sending. Existing sent, partial, skipped, or processing events are not sent again.
 
 ## Rollback Notes
 
 The Phase 1 code is isolated behind:
 - `src/lib/quote/contact-notifications.ts`
 - the `/api/quote/contact` call to `sendQuoteContactNotifications`
+- `src/lib/quote/hot-quote-followup.ts`
+- `src/lib/quote/notification-events.ts`
 
 To rollback the notification policy while keeping the rest of the auto-quoter work:
 - revert the branch/commit containing this policy, or

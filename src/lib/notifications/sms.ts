@@ -124,19 +124,19 @@ export async function sendAdminSMS(message: string): Promise<boolean> {
   const adminPhones = adminPhonesStr.split(',').map(phone => phone.trim());
 
   try {
-    const results = await Promise.all(
-      adminPhones.map(phone =>
-        sendSMS({ to: phone, message }).catch(err => {
-          console.error('Failed to send SMS to:', phone, err);
-          return false;
-        })
-      )
-    );
+    const results: boolean[] = [];
+    for (const phone of adminPhones) {
+      const ok = await sendSMS({ to: phone, message }).catch(err => {
+        console.error('Failed to send SMS to:', phone, err);
+        return false;
+      });
+      results.push(ok);
+    }
 
     const successCount = results.filter(r => r).length;
     console.log(`✅ Sent admin SMS to ${successCount}/${adminPhones.length} recipients`);
 
-    return successCount > 0;
+    return successCount === adminPhones.length;
   } catch (error: any) {
     console.error('❌ Admin SMS batch error:', error.message);
     return false;

@@ -44,6 +44,7 @@ interface AutomatedQuoteRow {
   status: string;
   session_id: string | null;
   is_test: boolean | null;
+  contact_submitted_at: string | null;
   quote_total_cents: number | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     const { data: quote, error: quoteError } = await admin
       .from('automated_quotes')
-      .select('id, quote_token, lead_id, status, session_id, is_test, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
+      .select('id, quote_token, lead_id, status, session_id, is_test, contact_submitted_at, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .single<AutomatedQuoteRow>();
 
@@ -155,6 +156,8 @@ export async function POST(request: NextRequest) {
         last_name: name.lastName || null,
         phone_e164: input.phone,
         email: input.email || null,
+        sms_consent: input.smsConsent,
+        contact_submitted_at: quote.contact_submitted_at ?? new Date().toISOString(),
         status: nextQuoteStatus,
         ...(isTest ? { is_test: true } : {}),
       })
@@ -174,6 +177,7 @@ export async function POST(request: NextRequest) {
 
     after(() =>
       sendQuoteContactNotifications({
+        quoteId: quote.id,
         quoteToken: quote.quote_token,
         status: quote.status,
         leadId,
@@ -192,6 +196,10 @@ export async function POST(request: NextRequest) {
           model: quote.vehicle_model,
           trim: quote.vehicle_trim,
           vin: quote.vin,
+        },
+        location: {
+          state: input.state || quote.state,
+          zip: input.zip || quote.zip,
         },
         quote: {
           totalCents: quote.quote_total_cents,

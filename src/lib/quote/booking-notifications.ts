@@ -170,12 +170,18 @@ function combineStatus(emailOutcome: BookingChannelResult, smsOutcome: BookingCh
   return 'pending';
 }
 
-export async function sendBookingNotifications(input: BookingNotificationInput): Promise<BookingNotificationOutcome> {
+export async function sendBookingNotifications(
+  input: BookingNotificationInput,
+  options: { skipEmail?: boolean; skipSms?: boolean } = {}
+): Promise<BookingNotificationOutcome> {
   const channels: BookingChannelResult[] = [];
   let firstError: string | undefined;
 
   // Email — fire if we have an address.
   const emailResult: BookingChannelResult = await (async () => {
+    if (options.skipEmail) {
+      return { channel: 'email' as const, outcome: 'sent' as const, reason: 'already_sent' };
+    }
     if (!input.customer.email) {
       return { channel: 'email' as const, outcome: 'skipped' as const, reason: 'no_recipient' };
     }
@@ -199,6 +205,9 @@ export async function sendBookingNotifications(input: BookingNotificationInput):
 
   // SMS — both flag AND consent gate. Without both, we skip.
   const smsResult: BookingChannelResult = await (async () => {
+    if (options.skipSms) {
+      return { channel: 'sms' as const, outcome: 'sent' as const, reason: 'already_sent' };
+    }
     if (process.env.ENABLE_CUSTOMER_SMS !== 'true') {
       return { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'flag_disabled' };
     }
@@ -206,7 +215,7 @@ export async function sendBookingNotifications(input: BookingNotificationInput):
       return { channel: 'sms' as const, outcome: 'skipped' as const, reason: 'no_consent' };
     }
     try {
-      const ok = await sendSMS({
+      const ok = await sendSmsWithRetries({
         to: input.customer.phoneE164,
         message: buildSmsText(input),
       });
@@ -227,6 +236,23 @@ export async function sendBookingNotifications(input: BookingNotificationInput):
     channels,
     firstError,
   };
+}
+
+async function sendSmsWithRetries(options: { to: string; message: string }): Promise<boolean> {
+  const delaysMs = [0, 4_000, 10_000];
+  for (let attempt = 0; attempt < delaysMs.length; attempt++) {
+    if (delaysMs[attempt] > 0) {
+      await sleep(delaysMs[attempt]);
+    }
+    const ok = await sendSMS(options);
+    if (ok) return true;
+    console.warn(`[booking-notifications] customer SMS attempt ${attempt + 1}/${delaysMs.length} failed; ${attempt < delaysMs.length - 1 ? 'retrying' : 'giving up'}`);
+  }
+  return false;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ---------------------------------------------------------------------------
@@ -347,12 +373,16 @@ export interface TeamAlertOutcome {
  */
 export async function sendTeamAlert(
   input: BookingNotificationInput,
-  ctx: TeamAlertContext
+  ctx: TeamAlertContext,
+  options: { skipEmail?: boolean; skipSms?: boolean } = {}
 ): Promise<TeamAlertOutcome> {
   const channels: BookingChannelResult[] = [];
 
   // Email — delegate recipient resolution + comma-splitting to the shared helper.
   const emailResult: BookingChannelResult = await (async () => {
+    if (options.skipEmail) {
+      return { channel: 'email' as const, outcome: 'sent' as const, reason: 'already_sent' };
+    }
     try {
       const subjectPrice = input.quote.totalCents != null ? ` · $${Math.round(input.quote.totalCents / 100)}` : '';
       const ok = await sendAdminAlertEmail(
@@ -375,6 +405,9 @@ export async function sendTeamAlert(
   // SMS — delegate to the shared helper, which comma-splits ADMIN_PHONE and
   // sends to each teammate. No ENABLE_CUSTOMER_SMS / consent gate: internal.
   const smsResult: BookingChannelResult = await (async () => {
+    if (options.skipSms) {
+      return { channel: 'sms' as const, outcome: 'sent' as const, reason: 'already_sent' };
+    }
     try {
       const ok = await sendAdminSMS(buildTeamSmsText(input, ctx));
       return ok

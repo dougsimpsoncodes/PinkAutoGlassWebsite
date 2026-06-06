@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledMessages } from '@/lib/drip/processor';
 import { sendSMS } from '@/lib/notifications/sms';
+import { processHotQuoteFollowups } from '@/lib/quote/hot-quote-followup';
 
 async function alertOwner(message: string) {
   const phone = process.env.OWNER_PHONE;
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await processScheduledMessages();
+    const hotQuotes = await processHotQuoteFollowups();
 
     // Only alert on permanent failures (max retries exceeded, unknown template,
     // or unhandled exception). result.errors is populated only for those cases.
@@ -24,14 +26,16 @@ export async function GET(request: NextRequest) {
     // they increment result.failed but do not push to result.errors.
     // Previously this fired on every retry attempt, causing repeated alerts for
     // a single failing message (up to 6 alerts per customer).
-    if (result.errors.length > 0) {
-      const summary = `Pink Auto Glass Alert: ${result.errors.length} review message(s) permanently failed (${result.sent} sent successfully today). Check Supabase scheduled_messages for details.`;
+    const errorCount = result.errors.length + hotQuotes.errors.length;
+    if (errorCount > 0) {
+      const summary = `Pink Auto Glass Alert: ${errorCount} customer messaging task(s) permanently failed (${result.sent} drip sent, ${hotQuotes.sent} hot quote follow-up sent). Check Supabase scheduled_messages and automated_quote_notification_events for details.`;
       await alertOwner(summary);
     }
 
     return NextResponse.json({
       ok: true,
       ...result,
+      hotQuotes,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

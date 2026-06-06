@@ -9,7 +9,7 @@ function run() {
       quote: { totalCents: 31730 },
     }),
     'quote_ready',
-    'ready_exact quote with a total should send the customer quote-ready message'
+    'ready_exact quote with a total should send quote-ready customer and team messages'
   );
 
   assert.equal(
@@ -18,7 +18,7 @@ function run() {
       quote: { totalCents: 31730 },
     }),
     'quote_ready',
-    'priced estimate with a total should send the customer quote-ready message'
+    'priced estimate with a total should send quote-ready customer and team messages'
   );
 
   assert.equal(
@@ -49,6 +49,7 @@ function run() {
   );
 
   console.log('Quote contact notification policy checks passed.');
+  console.log('Quote-ready notifications are customer + team; 5-minute no-booking follow-up is DB-event backed.');
 }
 
 run();
