@@ -9,6 +9,7 @@ import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
 import { assertEnvCoherent } from '@/lib/env';
 import { findOrCreateQuoteLead, buildAttributionFromSession, splitName } from '@/lib/quote/leadSync';
 import { isTeamOrTestContact } from '@/lib/constants';
+import { markAnalyticsSessionTest } from '@/lib/analytics-test-server';
 import {
   claimQuoteNotificationEvent,
   combineEventStatus,
@@ -286,12 +287,11 @@ export async function POST(request: NextRequest) {
     }
     const effectiveIsTest = (quoteRow.is_test ?? false) || (persistedBooking.is_test ?? false);
 
-    // If auto-detected as team/test, propagate the flag to the parent quote AND
-    // its session so neither is counted as real in the funnel / traffic. The
-    // session join only matters once quotes carry session_id (today it's always
-    // null), but tag it defensively for when that gap is closed. Best-effort —
-    // the booking is already durable, so a tag failure must never fail the request.
-    if (autoTestTag) {
+    // If the quote/booking is test, propagate the flag to the parent quote and
+    // purge its raw analytics session so it cannot count as real funnel/traffic.
+    // Best-effort: the booking is already durable, so a tag failure must never
+    // fail the request.
+    if (effectiveIsTest) {
       if (!quoteRow.is_test) {
         const { error: qErr } = await supabase
           .from('automated_quotes')
@@ -300,11 +300,7 @@ export async function POST(request: NextRequest) {
         if (qErr) console.error('[quote-book] quote is_test back-tag failed:', qErr.message);
       }
       if (quoteRow.session_id) {
-        const { error: sErr } = await supabase
-          .from('user_sessions')
-          .update({ is_test: true })
-          .eq('session_id', quoteRow.session_id);
-        if (sErr) console.error('[quote-book] session is_test back-tag failed:', sErr.message);
+        await markAnalyticsSessionTest(supabase, quoteRow.session_id);
       }
     }
 

@@ -14,6 +14,7 @@ import { checkCompatibility } from '@/lib/quote/nags-compatibility';
 import { assertEnvCoherent } from '@/lib/env';
 import { classifyAdasTier, type AdasTier } from '@/lib/quote/adas-tier';
 import { classifyLeadMarket } from '@/lib/market';
+import { getAnalyticsSessionIsTest } from '@/lib/analytics-test-server';
 
 export const runtime = 'nodejs';
 
@@ -33,6 +34,7 @@ const quotePriceSchema = z.object({
   state: z.string().trim().length(2).optional().or(z.literal('')),
   hasAdas: z.boolean().optional(),
   plateLast4: z.string().trim().max(4).optional(),
+  isTest: z.boolean().optional().default(false),
 });
 
 type QuotePriceInput = z.infer<typeof quotePriceSchema>;
@@ -50,6 +52,7 @@ interface CreateAutomatedQuoteResult {
 interface PersistenceContext {
   ipAddress?: string;
   userAgent?: string;
+  cacheClient?: SupabaseClient;
 }
 
 export async function POST(request: NextRequest) {
@@ -141,6 +144,7 @@ export async function POST(request: NextRequest) {
       }, selectedPart, mygrantResult.safeSnapshot, {
         ipAddress: ip === 'unknown' ? undefined : ip,
         userAgent: request.headers.get('user-agent') || undefined,
+        cacheClient,
       });
 
       return NextResponse.json({
@@ -176,6 +180,7 @@ export async function POST(request: NextRequest) {
       }, selectedPart, mygrantResult.safeSnapshot, {
         ipAddress: ip === 'unknown' ? undefined : ip,
         userAgent: request.headers.get('user-agent') || undefined,
+        cacheClient,
       });
 
       return NextResponse.json({
@@ -222,6 +227,7 @@ export async function POST(request: NextRequest) {
     const stored = await storeAutomatedQuote(effectiveInput, quoteWithMygrantConfidence, selectedPart, mygrantResult.safeSnapshot, {
       ipAddress: ip === 'unknown' ? undefined : ip,
       userAgent: request.headers.get('user-agent') || undefined,
+      cacheClient,
     });
 
     return NextResponse.json({
@@ -697,6 +703,9 @@ async function storeAutomatedQuote(
     const supabase = createClient(supabaseUrl, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+    const sessionIsTest = context.cacheClient
+      ? await getAnalyticsSessionIsTest(context.cacheClient, input.sessionId)
+      : false;
 
     const payload = {
       status: quote.status,
@@ -738,6 +747,7 @@ async function storeAutomatedQuote(
         vehicleModel: input.vehicle.model,
       },
       mygrant_response: mygrantSnapshot,
+      is_test: Boolean(input.isTest || sessionIsTest),
       line_items: quote.lineItems.map((item, index) => ({
         sort_order: index + 1,
         kind: item.kind,

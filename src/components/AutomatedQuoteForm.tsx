@@ -17,6 +17,7 @@ import {
   getSessionId,
   getUTMParams,
   getVisitorId,
+  isCurrentAnalyticsTestSession,
   trackFormSubmission,
   trackEvent,
   trackQuoteGeneratedConversion,
@@ -273,6 +274,7 @@ export default function AutomatedQuoteForm({
           },
           state: plateState,
           plateLast4: plate.slice(-4),
+          isTest: isCurrentAnalyticsTestSession(),
         }),
       });
       const data = await response.json();

@@ -6,6 +6,7 @@ import { isTeamOrTestContact } from '@/lib/constants';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { sendQuoteContactNotifications } from '@/lib/quote/contact-notifications';
 import { buildAttributionFromSession, findOrCreateQuoteLead, splitName } from '@/lib/quote/leadSync';
+import { markAnalyticsSessionTest } from '@/lib/analytics-test-server';
 
 export const runtime = 'nodejs';
 
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (isTest && quoteSessionId) {
-      await admin.from('user_sessions').update({ is_test: true }).eq('session_id', quoteSessionId);
+      await markAnalyticsSessionTest(admin, quoteSessionId);
     }
 
     after(() =>

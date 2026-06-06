@@ -10,6 +10,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import * as analytics from './analytics';
+import { isAnalyticsTestTraffic } from './analytics-test';
 import { classifySessionMarket, type Market } from './market';
 
 // Market is computed at session start and persisted in sessionStorage so
@@ -17,6 +18,7 @@ import { classifySessionMarket, type Market } from './market';
 // session without doubling DB calls. Clearing sessionStorage falls back
 // to recomputing from current request inputs (best-effort).
 const SESSION_MARKET_KEY = 'pag_session_market';
+const SESSION_IS_TEST_KEY = 'pag_session_is_test';
 
 function getSessionMarket(): Market | null {
   if (typeof window === 'undefined') return null;
@@ -35,6 +37,24 @@ function setSessionMarket(market: Market | null): void {
     sessionStorage.setItem(SESSION_MARKET_KEY, market);
   } catch {
     // sessionStorage write may fail; child events will fall back to NULL
+  }
+}
+
+export function isCurrentAnalyticsTestSession(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return sessionStorage.getItem(SESSION_IS_TEST_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setCurrentAnalyticsTestSession(isTest: boolean): void {
+  if (typeof window === 'undefined' || !isTest) return;
+  try {
+    sessionStorage.setItem(SESSION_IS_TEST_KEY, 'true');
+  } catch {
+    // sessionStorage may be blocked; downstream checks will recompute best-effort
   }
 }
 
@@ -404,6 +424,20 @@ export async function initializeSession(): Promise<SessionData> {
   }
 
   const landingPage = window.location.pathname + window.location.search;
+  const isTest = isAnalyticsTestTraffic({
+    sessionId,
+    visitorId,
+    landingPage,
+    referrer: document.referrer || null,
+    utmParams,
+  });
+  setCurrentAnalyticsTestSession(isTest);
+  if (isTest) {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(sessionInsertedKey, 'true');
+    }
+    return sessionData;
+  }
 
   // Classify market once at session creation; persist to sessionStorage so
   // child page_views/conversion_events can denormalize from the same value
@@ -437,6 +471,7 @@ export async function initializeSession(): Promise<SessionData> {
       browser: deviceInfo.browser,
       os: deviceInfo.os,
       market,
+      is_test: isTest,
     });
 
   // Tolerate duplicates due to races or multiple calls
@@ -480,6 +515,17 @@ export async function trackPageView(pagePath: string, pageTitle?: string) {
   const visitorId = getVisitorId();
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
+  const isTest = isCurrentAnalyticsTestSession() || isAnalyticsTestTraffic({
+    sessionId,
+    visitorId,
+    pagePath,
+    referrer: document.referrer || null,
+    utmParams,
+  });
+  if (isTest) {
+    setCurrentAnalyticsTestSession(true);
+    return;
+  }
 
   // Track in database — denormalize market from the parent session
   await supabase.from('page_views').insert({
@@ -531,6 +577,20 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   const visitorId = getVisitorId();
   const utmParams = getUTMParams();
   const deviceInfo = getDeviceInfo();
+  const isTest = isCurrentAnalyticsTestSession() || isAnalyticsTestTraffic({
+    sessionId,
+    visitorId,
+    pagePath: window.location.pathname,
+    referrer: document.referrer || null,
+    utmParams,
+    metadata: event.metadata,
+    phone: event.phoneNumber || (event.metadata?.phone as string | undefined) || null,
+    email: (event.metadata?.email as string | undefined) || null,
+  });
+  if (isTest) {
+    setCurrentAnalyticsTestSession(true);
+    return false;
+  }
 
   // Per-stage de-dup for form_submit. Each funnel stage (priced / booked /
   // ymm_text_capture / default) records its OWN conversion_events row.
@@ -680,6 +740,18 @@ export async function trackEvent(event: AnalyticsEvent) {
 
   const sessionId = getSessionId();
   const visitorId = getVisitorId();
+  const isTest = isCurrentAnalyticsTestSession() || isAnalyticsTestTraffic({
+    sessionId,
+    visitorId,
+    pagePath: window.location.pathname,
+    referrer: document.referrer || null,
+    utmParams: getUTMParams(),
+    metadata: event.metadata,
+  });
+  if (isTest) {
+    setCurrentAnalyticsTestSession(true);
+    return;
+  }
 
   // Track in database
   await supabase.from('analytics_events').insert({

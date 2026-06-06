@@ -8,11 +8,11 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // Create Supabase client function to avoid build-time initialization
-function getSupabaseClient() {
+function getSupabaseClient(): any {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  ) as any;
 }
 
 // Helper function to parse traffic source from referrer and landing page
@@ -157,11 +157,11 @@ export async function GET(req: NextRequest) {
 // shipped in P2a/P2c — see migrations 20260504_add_market_to_*.sql and
 // 20260504_market_triggers_leads_calls.sql. 'all' bypasses the filter so
 // unclassified rows count toward the total.
-function applyMarket<T extends { eq: (col: string, val: string) => T }>(
+function applyMarket<T extends { eq: (col: string, val: string) => unknown }>(
   query: T,
   market: MarketFilter
 ): T {
-  return market === 'all' ? query : query.eq('market', market);
+  return market === 'all' ? query : (query.eq('market', market) as T);
 }
 
 async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
@@ -171,7 +171,8 @@ async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
       supabase
         .from('user_sessions')
         .select('*', { count: 'exact', head: true })
-        .gte('started_at', startDate.toISOString()),
+        .gte('started_at', startDate.toISOString())
+        .eq('is_test', false),
       market
     ),
     applyMarket(
@@ -179,6 +180,7 @@ async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
         .from('page_views')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startDate.toISOString())
+        .eq('is_test', false)
         .not('page_path', 'like', '/admin%')
         .not('page_path', 'like', '/test%'),
       market
@@ -188,6 +190,7 @@ async function getOverviewMetrics(startDate: Date, market: MarketFilter) {
         .from('conversion_events')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startDate.toISOString())
+        .eq('is_test', false)
         .not('page_path', 'like', '/admin%')
         .not('page_path', 'like', '/test%')
         // Phase-0: 'quote_priced' is a diagnostic event, not a real conversion.
@@ -215,7 +218,8 @@ async function getTrafficSources(startDate: Date, market: MarketFilter) {
     supabase
       .from('user_sessions')
       .select('utm_source, utm_medium, utm_campaign, referrer, landing_page')
-      .gte('started_at', startDate.toISOString()),
+      .gte('started_at', startDate.toISOString())
+      .eq('is_test', false),
     market
   );
 
@@ -246,6 +250,7 @@ async function getConversions(startDate: Date, market: MarketFilter) {
       .from('conversion_events')
       .select('*')
       .gte('created_at', startDate.toISOString())
+      .eq('is_test', false)
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
       // Phase-0: exclude the quoter price-shown diagnostic event.
@@ -273,6 +278,7 @@ async function getTopPages(startDate: Date, market: MarketFilter) {
       .from('page_views')
       .select('page_path')
       .gte('created_at', startDate.toISOString())
+      .eq('is_test', false)
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%'),
     market
@@ -299,6 +305,7 @@ async function getSessions(startDate: Date, market: MarketFilter) {
       .from('user_sessions')
       .select('*')
       .gte('started_at', startDate.toISOString())
+      .eq('is_test', false)
       .order('started_at', { ascending: false })
       .limit(100),
     market
@@ -311,18 +318,19 @@ async function getSessions(startDate: Date, market: MarketFilter) {
     .from('conversion_events')
     .select('session_id')
     .gte('created_at', startDate.toISOString())
+    .eq('is_test', false)
     .not('event_type', 'eq', 'quote_priced');
 
   if (conversionsError) throw conversionsError;
 
   // Count conversions per session
-  const conversionCounts = conversions?.reduce((acc, conv) => {
+  const conversionCounts = conversions?.reduce((acc: Record<string, number>, conv: any) => {
     acc[conv.session_id] = (acc[conv.session_id] || 0) + 1;
     return acc;
   }, {} as Record<string, number>) || {};
 
   // Add conversion counts to sessions
-  const sessionsWithConversions = sessions?.map(session => ({
+  const sessionsWithConversions = sessions?.map((session: any) => ({
     ...session,
     conversions: conversionCounts[session.session_id] || 0,
   }));
@@ -340,7 +348,8 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
     supabase
       .from('user_sessions')
       .select('session_id, utm_source, utm_medium, utm_campaign, referrer, landing_page')
-      .gte('started_at', startDate.toISOString()),
+      .gte('started_at', startDate.toISOString())
+      .eq('is_test', false),
     market
   );
 
@@ -351,6 +360,7 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
     .from('page_views')
     .select('session_id')
     .gte('created_at', startDate.toISOString())
+    .eq('is_test', false)
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%');
 
@@ -361,6 +371,7 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
     .from('conversion_events')
     .select('session_id, utm_source, page_path')
     .gte('created_at', startDate.toISOString())
+    .eq('is_test', false)
     .not('page_path', 'like', '/admin%')
     .not('page_path', 'like', '/test%')
     .not('event_type', 'eq', 'quote_priced');
@@ -369,14 +380,14 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
 
   // Count page views per session
   const sessionPageViewsCount = new Map();
-  pageViews?.forEach((pv) => {
+  pageViews?.forEach((pv: any) => {
     sessionPageViewsCount.set(pv.session_id, (sessionPageViewsCount.get(pv.session_id) || 0) + 1);
   });
 
   // Group by source (parse from referrer and gclid if utm_source is missing)
   const sourceMap = new Map();
 
-  sessions?.forEach((session) => {
+  sessions?.forEach((session: any) => {
     const source = parseSourceFromReferrer(session.referrer, session.utm_source, session.landing_page);
     if (!sourceMap.has(source)) {
       sourceMap.set(source, {
@@ -394,7 +405,7 @@ async function getTrafficDetail(startDate: Date, market: MarketFilter) {
     sourceData.page_views += sessionPageViewsCount.get(session.session_id) || 0;
   });
 
-  conversions?.forEach((conversion) => {
+  conversions?.forEach((conversion: any) => {
     // Find the session for this conversion to get the correct source
     const session = sessions?.find((s: any) => s.session_id === conversion.session_id);
     if (session) {
@@ -437,6 +448,7 @@ async function getConversionsDetail(startDate: Date, market: MarketFilter) {
       .from('conversion_events')
       .select('*')
       .gte('created_at', startDate.toISOString())
+      .eq('is_test', false)
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
       .not('event_type', 'eq', 'quote_priced')
@@ -456,6 +468,7 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
       .from('page_views')
       .select('page_path, session_id, visitor_id')
       .gte('created_at', startDate.toISOString())
+      .eq('is_test', false)
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%'),
     market
@@ -467,6 +480,7 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
       .from('conversion_events')
       .select('page_path, session_id')
       .gte('created_at', startDate.toISOString())
+      .eq('is_test', false)
       .not('page_path', 'like', '/admin%')
       .not('page_path', 'like', '/test%')
       .not('event_type', 'eq', 'quote_priced'),
@@ -487,7 +501,7 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
   }>();
 
   // Count page views and unique visitors
-  pageViews?.forEach((view) => {
+  pageViews?.forEach((view: any) => {
     if (!pageMap.has(view.page_path)) {
       pageMap.set(view.page_path, {
         views: 0,
@@ -504,7 +518,7 @@ async function getPagePerformance(startDate: Date, market: MarketFilter) {
   });
 
   // Count conversions per page
-  conversions?.forEach((conversion) => {
+  conversions?.forEach((conversion: any) => {
     if (pageMap.has(conversion.page_path)) {
       pageMap.get(conversion.page_path)!.conversions += 1;
     }
