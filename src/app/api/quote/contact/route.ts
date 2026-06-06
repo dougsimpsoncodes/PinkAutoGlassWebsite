@@ -7,12 +7,15 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { sendQuoteContactNotifications } from '@/lib/quote/contact-notifications';
 import { buildAttributionFromSession, findOrCreateQuoteLead, splitName } from '@/lib/quote/leadSync';
 import { markAnalyticsSessionTest } from '@/lib/analytics-test-server';
+import { isValidCustomerPhoneE164 } from '@/lib/booking-schema';
 
 export const runtime = 'nodejs';
 
 const phoneSchema = z.string().trim().regex(/^(\+?1)?[\s\-.]?\(?([0-9]{3})\)?[\s\-.]?([0-9]{3})[\s\-.]?([0-9]{4})$/).transform((phone) => {
   const digits = phone.replace(/\D/g, '');
   return digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits.startsWith('1') ? `+${digits}` : `+${digits}`;
+}).refine((phone) => isValidCustomerPhoneE164(phone), {
+  message: 'Please enter a valid US phone number.',
 });
 
 const quoteContactSchema = z.object({

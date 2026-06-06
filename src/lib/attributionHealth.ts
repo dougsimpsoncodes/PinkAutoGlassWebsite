@@ -13,6 +13,7 @@ export interface AttributionHealthSnapshot {
   microsoft_uploaded_call_count: number;
   direct_match_count: number;
   direct_match_conflict_count: number;
+  session_fallback_count: number;
   unknown_count: number;
   unknown_rate: number;
   conflict_rate: number;
@@ -137,6 +138,7 @@ export async function buildAttributionHealthSnapshot(
   const microsoftUploadedCallCount = qualifyingCalls.filter(c => c.attribution_method === 'microsoft_uploaded_call').length;
   const directMatchCount = qualifyingCalls.filter(c => c.attribution_method === 'direct_match').length;
   const directMatchConflictCount = qualifyingCalls.filter(c => c.attribution_method === 'direct_match_conflict').length;
+  const sessionFallbackCount = qualifyingCalls.filter(c => c.attribution_method === 'session_fallback').length;
   const unknownCount = qualifyingCalls.filter(c => !c.attribution_method || c.attribution_method === 'unknown').length;
   const attributedCalls = total - unknownCount;
   const avgConfidence = total
@@ -176,6 +178,7 @@ export async function buildAttributionHealthSnapshot(
     microsoft_uploaded_call_count: microsoftUploadedCallCount,
     direct_match_count: directMatchCount,
     direct_match_conflict_count: directMatchConflictCount,
+    session_fallback_count: sessionFallbackCount,
     unknown_count: unknownCount,
     unknown_rate: rate(unknownCount, total),
     conflict_rate: rate(directMatchConflictCount, total),

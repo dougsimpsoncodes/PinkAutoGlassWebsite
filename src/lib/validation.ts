@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { isValidCustomerPhoneE164 } from './booking-schema';
 
 // Common validators shortened for space - full implementation with:
 // - Name, phone, email, city, state, zip validators
@@ -45,6 +46,8 @@ const nameSchema = z.string().trim().min(2).max(50).regex(/^[a-zA-Z\s\-']+$/);
 const phoneSchema = z.string().trim().regex(/^(\+?1)?[\s\-.]?\(?([0-9]{3})\)?[\s\-.]?([0-9]{3})[\s\-.]?([0-9]{4})$/).transform((phone) => {
   const digits = phone.replace(/\D/g, '');
   return digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits.startsWith('1') ? `+${digits}` : `+${digits}`;
+}).refine((phone) => isValidCustomerPhoneE164(phone), {
+  message: 'Please enter a valid US phone number.',
 });
 
 // Email validator with temp/disposable email blocking

@@ -177,6 +177,41 @@ function markBookingFired(bookingToken: string): void {
   }
 }
 
+const PHONE_CLICK_DEDUP_WINDOW_MS = 30_000;
+
+function normalizePhoneForDedup(phone?: string): string {
+  if (!phone) return 'unknown';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return digits || phone.trim().toLowerCase();
+}
+
+function phoneClickDedupKey(event: ConversionEvent, sessionId: string): string {
+  const phone = normalizePhoneForDedup(event.phoneNumber);
+  const page = typeof window === 'undefined' ? '' : window.location.pathname;
+  return `phone_click_${sessionId}_${page}_${phone}`;
+}
+
+function hasRecentPhoneClick(key: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const prior = Number(sessionStorage.getItem(key) || '0');
+    return prior > 0 && Date.now() - prior < PHONE_CLICK_DEDUP_WINDOW_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markRecentPhoneClick(key: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(key, String(Date.now()));
+  } catch {
+    // sessionStorage write may fail; dedupe is best-effort only.
+  }
+}
+
 // ============================================================================
 // SESSION MANAGEMENT
 // ============================================================================
@@ -564,6 +599,7 @@ export interface ConversionEvent {
   eventValue?: number;
   phoneNumber?: string; // The phone number that was clicked
   metadata?: Record<string, any>;
+  dedupReserved?: boolean;
 }
 
 /**
@@ -590,6 +626,15 @@ export async function trackConversion(event: ConversionEvent): Promise<boolean> 
   if (isTest) {
     setCurrentAnalyticsTestSession(true);
     return false;
+  }
+
+  if (event.eventType === 'phone_click' && !event.dedupReserved) {
+    const dedupKey = phoneClickDedupKey(event, sessionId);
+    if (hasRecentPhoneClick(dedupKey)) {
+      console.log('⚠️ Duplicate phone_click blocked for session/page/phone:', sessionId, event.phoneNumber || 'unknown');
+      return false;
+    }
+    markRecentPhoneClick(dedupKey);
   }
 
   // Per-stage de-dup for form_submit. Each funnel stage (priced / booked /
@@ -818,25 +863,38 @@ export function resetScrollTracking() {
 /**
  * Track phone click
  */
-export function trackPhoneClick(source: string, buttonText?: string, phoneNumber?: string) {
-  trackConversion({
+export async function trackPhoneClick(source: string, buttonText?: string, phoneNumber?: string) {
+  const conversionEvent: ConversionEvent = {
     eventType: 'phone_click',
     buttonText,
     buttonLocation: source,
     phoneNumber,
-  });
+  };
+  const sessionId = getSessionId();
+  const dedupKey = phoneClickDedupKey(conversionEvent, sessionId);
+  if (hasRecentPhoneClick(dedupKey)) {
+    console.log('⚠️ Duplicate phone_click blocked before Ads conversion:', sessionId, phoneNumber || 'unknown');
+    return;
+  }
+  markRecentPhoneClick(dedupKey);
+
   // Note: trackConversion already fires analytics.event() via gaEventMap
   // so we don't call analytics.trackPhoneClick() to avoid duplicate GA events
 
   // Fire Google Ads call conversion with session_id as transaction_id
-  // This prevents duplicate conversions from the same session
-  const sessionId = getSessionId();
+  // This prevents duplicate conversions from the same session. Fire before
+  // awaiting the DB insert so mobile tel: handoff cannot suspend the page first.
   if (sessionId) {
     analytics.trackCallClickConversion(sessionId);
   }
 
   // Fire Microsoft Ads UET phone call conversion (dedup by session)
   analytics.trackMicrosoftAdsCallClick(source, sessionId ? `call_${sessionId}` : undefined);
+
+  await trackConversion({
+    ...conversionEvent,
+    dedupReserved: true,
+  });
 }
 
 /**

@@ -171,6 +171,7 @@ export async function GET(req: NextRequest) {
     const microsoftUploadedMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'microsoft_uploaded_call').length;
     const directMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'direct_match').length;
     const conflictedMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'direct_match_conflict').length;
+    const sessionFallbackMatches = qualifyingCalls.filter((c: any) => c.attribution_method === 'session_fallback').length;
     const timeCorrelated = qualifyingCalls.filter((c: any) => c.attribution_method === 'time_correlation').length;
     const unknown = qualifyingCalls.filter((c: any) => c.attribution_method === 'unknown' || !c.attribution_method).length;
     const avgConfidence = qualifyingCalls.reduce((sum: number, c: any) =>
@@ -189,6 +190,7 @@ export async function GET(req: NextRequest) {
           googleCallViewMatches: 0,
           microsoftUploadedMatches: 0,
           conflictedMatches: 0,
+          sessionFallbackMatches: 0,
           timeCorrelated: 0,
         };
       }
@@ -198,6 +200,7 @@ export async function GET(req: NextRequest) {
       if (call.attribution_method === 'direct_match_conflict') platformBreakdown[platform].conflictedMatches++;
       if (call.attribution_method === 'google_call_view') platformBreakdown[platform].googleCallViewMatches++;
       if (call.attribution_method === 'microsoft_uploaded_call') platformBreakdown[platform].microsoftUploadedMatches++;
+      if (call.attribution_method === 'session_fallback') platformBreakdown[platform].sessionFallbackMatches++;
       if (call.attribution_method === 'time_correlation') platformBreakdown[platform].timeCorrelated++;
     });
 
@@ -211,6 +214,7 @@ export async function GET(req: NextRequest) {
         googleCallViewMatches: data.googleCallViewMatches,
         microsoftUploadedMatches: data.microsoftUploadedMatches,
         conflictedMatches: data.conflictedMatches,
+        sessionFallbackMatches: data.sessionFallbackMatches,
         timeCorrelated: data.timeCorrelated,
       };
     }
@@ -224,6 +228,7 @@ export async function GET(req: NextRequest) {
         microsoftUploadedMatches,
         directMatches,
         conflictedMatches,
+        sessionFallbackMatches,
         timeCorrelated,
         unknown,
         avgConfidence: Math.round(avgConfidence),

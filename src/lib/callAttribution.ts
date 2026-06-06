@@ -14,6 +14,7 @@ const METHOD_PRIORITY: Record<string, number> = {
   microsoft_uploaded_call: 95,
   direct_match: 80,
   direct_match_conflict: 50,
+  session_fallback: 45,
   unknown: 0,
 };
 
@@ -35,6 +36,7 @@ export interface AttributionResult {
     | 'microsoft_uploaded_call'
     | 'direct_match'
     | 'direct_match_conflict'
+    | 'session_fallback'
     | 'unknown';
   attributionConfidence: number;
   adPlatform: string | null;
@@ -59,6 +61,22 @@ interface ConversionEvent {
   utm_term?: string | null;
   gclid?: string | null;
   msclkid?: string | null;
+}
+
+interface UserSessionAttribution {
+  session_id: string;
+  started_at: string;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
+  gclid?: string | null;
+  msclkid?: string | null;
+}
+
+interface HydratedConversionEvent extends ConversionEvent {
+  platform: string | null;
 }
 
 interface RingCentralCall {
@@ -87,6 +105,44 @@ function getSupabaseClient() {
   }
 
   return createClient(supabaseUrl, supabaseKey);
+}
+
+function inferPaidPlatform(source?: string | null, medium?: string | null, gclid?: string | null, msclkid?: string | null): string | null {
+  const normalizedSource = (source || '').toLowerCase();
+  const normalizedMedium = (medium || '').toLowerCase();
+
+  if (gclid) return 'google';
+  if (msclkid) return 'microsoft';
+  if (normalizedSource === 'google' && ['cpc', 'ppc', 'paid', 'paid_search'].includes(normalizedMedium)) return 'google';
+  if (['bing', 'microsoft', 'microsoft-ads'].includes(normalizedSource) && ['cpc', 'ppc', 'paid', 'paid_search'].includes(normalizedMedium)) {
+    return 'microsoft';
+  }
+  return null;
+}
+
+function hydrateEventWithSession(
+  event: ConversionEvent,
+  sessionById: Map<string, UserSessionAttribution>
+): HydratedConversionEvent {
+  const session = sessionById.get(event.session_id);
+  const gclid = event.gclid || session?.gclid || null;
+  const msclkid = event.msclkid || session?.msclkid || null;
+  const utmSource = event.utm_source || session?.utm_source || null;
+  const utmMedium = event.utm_medium || session?.utm_medium || null;
+  const utmCampaign = event.utm_campaign || session?.utm_campaign || null;
+  const utmTerm = event.utm_term || session?.utm_term || null;
+  const platform = inferPaidPlatform(utmSource, utmMedium, gclid, msclkid);
+
+  return {
+    ...event,
+    gclid,
+    msclkid,
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    utm_term: utmTerm,
+    platform,
+  };
 }
 
 function matchCanonicalPlatformEvidence(calls: RingCentralCall[]): AttributionResult[] {
@@ -152,6 +208,7 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
     .from('conversion_events')
     .select('created_at, session_id, utm_source, utm_medium, utm_campaign, utm_term, gclid, msclkid')
     .eq('event_type', 'phone_click')
+    .eq('is_test', false)
     .gte('created_at', windowStart.toISOString())
     .lte('created_at', windowEnd.toISOString())
     .order('created_at', { ascending: true });
@@ -161,7 +218,25 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
     return results;
   }
 
-  const attributedEvents = (events || []).filter((event: ConversionEvent) => event.gclid || event.msclkid);
+  const sessionIds = Array.from(new Set((events || []).map((event: ConversionEvent) => event.session_id).filter(Boolean)));
+  const { data: sessions, error: sessionsError } = sessionIds.length > 0
+    ? await client
+      .from('user_sessions')
+      .select('session_id, started_at, utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, msclkid')
+      .in('session_id', sessionIds)
+      .eq('is_test', false)
+    : { data: [], error: null };
+
+  if (sessionsError) {
+    console.error('Error fetching conversion sessions:', sessionsError);
+  }
+
+  const sessionById = new Map(
+    ((sessions || []) as UserSessionAttribution[]).map(session => [session.session_id, session])
+  );
+  const attributedEvents = (events || [])
+    .map((event: ConversionEvent) => hydrateEventWithSession(event, sessionById))
+    .filter(event => Boolean(event.platform));
 
   for (const call of calls) {
     if (call.direction !== 'Inbound') continue;
@@ -177,10 +252,10 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
 
     if (windowEvents.length === 0) continue;
 
-    const hasGoogle = windowEvents.some((event: ConversionEvent) => Boolean(event.gclid));
-    const hasMicrosoft = windowEvents.some((event: ConversionEvent) => Boolean(event.msclkid));
+    const hasGoogle = windowEvents.some(event => event.platform === 'google');
+    const hasMicrosoft = windowEvents.some(event => event.platform === 'microsoft');
 
-    const nearestEvent = windowEvents.reduce<{ event: ConversionEvent | null; diff: number }>((best, event) => {
+    const nearestEvent = windowEvents.reduce<{ event: HydratedConversionEvent | null; diff: number }>((best, event) => {
       const diff = Math.abs(callTime - new Date(event.created_at).getTime());
       return diff < best.diff ? { event, diff } : best;
     }, { event: null, diff: Infinity });
@@ -188,7 +263,7 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
     const sessionMatchedEvents = call.website_session_id
       ? windowEvents.filter((event: ConversionEvent) => event.session_id === call.website_session_id)
       : [];
-    const sessionMatchedNearest = sessionMatchedEvents.reduce<{ event: ConversionEvent | null; diff: number }>((best, event) => {
+    const sessionMatchedNearest = sessionMatchedEvents.reduce<{ event: HydratedConversionEvent | null; diff: number }>((best, event) => {
       const diff = Math.abs(callTime - new Date(event.created_at).getTime());
       return diff < best.diff ? { event, diff } : best;
     }, { event: null, diff: Infinity });
@@ -205,14 +280,7 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
     if (timeDiffSec > 120) confidence = 85;
     if (timeDiffSec > 180) confidence = 80;
 
-    let platform: string | null = null;
-    if (matchingEvent.gclid) {
-      platform = 'google';
-    } else if (matchingEvent.msclkid) {
-      platform = 'microsoft';
-    } else if (matchingEvent.utm_source === 'google' && matchingEvent.utm_medium === 'organic') {
-      platform = 'google_organic';
-    }
+    const platform: string | null = matchingEvent.platform || null;
 
     const resolvedBySessionLink = Boolean(sessionMatchedNearest.event && hasGoogle && hasMicrosoft && platform);
     const remainsConflict = Boolean(hasGoogle && hasMicrosoft && !resolvedBySessionLink);
@@ -250,6 +318,86 @@ export async function matchDirectConversions(calls: RingCentralCall[]): Promise<
   return results;
 }
 
+export async function matchSessionFallback(calls: RingCentralCall[]): Promise<AttributionResult[]> {
+  if (calls.length === 0) return [];
+
+  const client = getSupabaseClient();
+  const callTimes = calls.map(call => new Date(call.start_time).getTime());
+  const windowStart = new Date(Math.min(...callTimes) - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000);
+  const windowEnd = new Date(Math.max(...callTimes) + 60 * 1000);
+
+  const { data: sessions, error } = await client
+    .from('user_sessions')
+    .select('session_id, started_at, utm_source, utm_medium, utm_campaign, utm_term, utm_content, gclid, msclkid')
+    .eq('is_test', false)
+    .gte('started_at', windowStart.toISOString())
+    .lte('started_at', windowEnd.toISOString())
+    .order('started_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching session fallback candidates:', error);
+    return [];
+  }
+
+  const paidSessions = ((sessions || []) as UserSessionAttribution[])
+    .map(session => ({
+      ...session,
+      platform: inferPaidPlatform(session.utm_source, session.utm_medium, session.gclid, session.msclkid),
+    }))
+    .filter(session => Boolean(session.platform));
+
+  return calls.flatMap((call): AttributionResult[] => {
+    if (call.direction !== 'Inbound') return [];
+
+    const callTime = new Date(call.start_time).getTime();
+    const matchWindowStart = callTime - ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
+    const matchWindowEnd = callTime + 60 * 1000;
+    const windowSessions = paidSessions.filter(session => {
+      const sessionTime = new Date(session.started_at).getTime();
+      return sessionTime >= matchWindowStart && sessionTime <= matchWindowEnd;
+    });
+
+    if (windowSessions.length === 0) return [];
+
+    const platforms = new Set(windowSessions.map(session => session.platform));
+    if (platforms.size !== 1) return [];
+
+    const nearest = windowSessions.reduce<{ session: (UserSessionAttribution & { platform: string | null }) | null; diff: number }>((best, session) => {
+      const diff = Math.abs(callTime - new Date(session.started_at).getTime());
+      return diff < best.diff ? { session, diff } : best;
+    }, { session: null, diff: Infinity });
+
+    if (!nearest.session) return [];
+
+    const timeDiffMin = Math.round(nearest.diff / 60_000);
+    let confidence = 70;
+    if (timeDiffMin > 15) confidence = 60;
+    if (timeDiffMin > 30) confidence = 50;
+    if (timeDiffMin > 45) confidence = 45;
+
+    return [{
+      callId: call.call_id,
+      fromNumber: call.from_number,
+      callTimestamp: call.start_time,
+      attributionMethod: 'session_fallback',
+      attributionConfidence: confidence,
+      adPlatform: nearest.session.platform,
+      campaignId: null,
+      campaignName: nearest.session.utm_campaign || null,
+      utmSource: nearest.session.utm_source || null,
+      utmMedium: nearest.session.utm_medium || null,
+      utmCampaign: nearest.session.utm_campaign || null,
+      utmTerm: nearest.session.utm_term || null,
+      // Do not persist fallback click IDs onto ringcentral_calls. Downstream
+      // export logic treats call-level click IDs as direct attribution evidence.
+      gclid: undefined,
+      msclkid: undefined,
+      sessionId: nearest.session.session_id,
+      matchDetails: `Fallback matched ${nearest.session.platform} session ${nearest.session.session_id} ${timeDiffMin}m from call; no phone_click event was available`,
+    }];
+  });
+}
+
 export async function attributeAllCalls(
   startDate: string,
   endDate: string
@@ -262,6 +410,7 @@ export async function attributeAllCalls(
     microsoftUploadedMatches: number;
     directMatches: number;
     conflictedMatches: number;
+    sessionFallbackMatches: number;
     timeCorrelated: number;
     unknown: number;
     avgConfidence: number;
@@ -287,6 +436,7 @@ export async function attributeAllCalls(
         microsoftUploadedMatches: 0,
         directMatches: 0,
         conflictedMatches: 0,
+        sessionFallbackMatches: 0,
         timeCorrelated: 0,
         unknown: 0,
         avgConfidence: 0,
@@ -302,7 +452,14 @@ export async function attributeAllCalls(
 
   const remainingCalls = qualifyingCalls.filter(call => !evidenceMatchedCallIds.has(call.call_id));
   const directMatches = await matchDirectConversions(remainingCalls);
-  const matchedCallIds = new Set([...evidenceMatchedCallIds, ...directMatches.map(result => result.callId)]);
+  const directMatchedCallIds = new Set(directMatches.map(result => result.callId));
+  const fallbackCalls = remainingCalls.filter(call => !directMatchedCallIds.has(call.call_id));
+  const sessionFallbackMatches = await matchSessionFallback(fallbackCalls);
+  const matchedCallIds = new Set([
+    ...evidenceMatchedCallIds,
+    ...directMatches.map(result => result.callId),
+    ...sessionFallbackMatches.map(result => result.callId),
+  ]);
 
   const unknownResults: AttributionResult[] = qualifyingCalls
     .filter(call => !matchedCallIds.has(call.call_id))
@@ -322,7 +479,7 @@ export async function attributeAllCalls(
       matchDetails: 'No direct attribution evidence found',
     }));
 
-  const allResults = [...canonicalEvidenceMatches, ...directMatches, ...unknownResults];
+  const allResults = [...canonicalEvidenceMatches, ...directMatches, ...sessionFallbackMatches, ...unknownResults];
   const summary = {
     total: allResults.length,
     qualifyingCalls: qualifyingCalls.length,
@@ -330,6 +487,7 @@ export async function attributeAllCalls(
     microsoftUploadedMatches: allResults.filter(result => result.attributionMethod === 'microsoft_uploaded_call').length,
     directMatches: allResults.filter(result => result.attributionMethod === 'direct_match').length,
     conflictedMatches: allResults.filter(result => result.attributionMethod === 'direct_match_conflict').length,
+    sessionFallbackMatches: allResults.filter(result => result.attributionMethod === 'session_fallback').length,
     timeCorrelated: 0,
     unknown: allResults.filter(result => result.attributionMethod === 'unknown').length,
     avgConfidence: allResults.reduce((sum, result) => sum + result.attributionConfidence, 0) / allResults.length || 0,
@@ -411,6 +569,7 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
   conflictedMatches: number;
   googleCallViewMatches: number;
   microsoftUploadedMatches: number;
+  sessionFallbackMatches: number;
 }> {
   const breakdown: Record<string, any> = {};
 
@@ -425,6 +584,7 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
         conflictedMatches: 0,
         googleCallViewMatches: 0,
         microsoftUploadedMatches: 0,
+        sessionFallbackMatches: 0,
       };
     }
 
@@ -439,6 +599,8 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
       breakdown[platform].googleCallViewMatches++;
     } else if (result.attributionMethod === 'microsoft_uploaded_call') {
       breakdown[platform].microsoftUploadedMatches++;
+    } else if (result.attributionMethod === 'session_fallback') {
+      breakdown[platform].sessionFallbackMatches++;
     }
   }
 
@@ -451,6 +613,7 @@ export function getAttributionBreakdown(results: AttributionResult[]): Record<st
       conflictedMatches: data.conflictedMatches,
       googleCallViewMatches: data.googleCallViewMatches,
       microsoftUploadedMatches: data.microsoftUploadedMatches,
+      sessionFallbackMatches: data.sessionFallbackMatches,
     };
   }
 

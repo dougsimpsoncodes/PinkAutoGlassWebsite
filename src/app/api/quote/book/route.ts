@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { normalizePhoneE164 } from '@/lib/booking-schema';
+import { isValidCustomerPhoneE164, normalizePhoneE164 } from '@/lib/booking-schema';
 import { isInServiceArea, OUT_OF_AREA_MESSAGE } from '@/lib/quote/service-area';
 import { sendBookingNotifications, sendTeamAlert, type BookingNotificationOutcome } from '@/lib/quote/booking-notifications';
 import { lookupCityFromZip } from '@/lib/quote/zip-to-city';
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
 
     // 5) Normalize phone. The DB constraint enforces E.164 format.
     const phoneE164 = normalizePhoneE164(input.customer.phone);
-    if (!/^\+[1-9][0-9]{1,14}$/.test(phoneE164)) {
+    if (!isValidCustomerPhoneE164(phoneE164)) {
       return NextResponse.json(
         { error: 'Please enter a valid US phone number.' },
         { status: 400 }
