@@ -8,7 +8,7 @@ Live client site at `pinkautoglass.com`; as of 2026-06-05 the satellite quoter/q
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
 
 ## Current Focus
-Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satellite quoter parity is now closed across the 24-domain inventory; next attribution gate is the export-candidate comparison after the 7-day observation window.
+Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satellite quoter parity is now closed across the 24-domain inventory; next attribution gate is the export-candidate comparison after the 7-day observation window. Deferred 2026-06-06: Automated Quotes report display simplification only, using the existing page and no data changes; preferred direction is customer-first Version 2 in `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
@@ -22,7 +22,7 @@ Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satel
 
 ## Next Steps (priority order)
 1. **Attribution PR2 observation gate** — after 7+ days of cron runs, execute `node scripts/compare-export-candidates.js`; only proceed to PR2b if newly-skipped rate is acceptably low.
-2. ~~Admin quotes dashboard redesign~~ — DONE, merged: `f653fa7` + `d404cb1`/`520a6d9`/`f5d0c6b` (dedup + attempts badge) on main.
+2. **Automated Quotes report display cleanup (deferred to 2026-06-07)** — presentation-layer only. Use existing page, no data/API changes. Preferred table: `Customer | Source | Vehicle | Lookup | Quote | Stage | Timestamp`, with customer cell stacking name/phone/email and no default Comms/Action columns. Handoff: `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
 3. ~~RingCentral sync bug~~ — DONE, merged (see Open-Questions note above; commits `0a5e1bb`/`4b0b61b`/`a0103e6`).
 4. **Monitor quoter vs call volume** — watch call volume vs quoter engagement; decide on phone-first homepage fast-follow if calls stay soft.
 5. **Reconnect-monitor guard (deferred)** — council (2026-06-04) approved adding the satellite stale-build audit (`tasks/2026-06-04-vercel-git-reconnect-steps.md`) as a scheduled check so a silent auto-deploy break can't recur undetected. Not yet built.
