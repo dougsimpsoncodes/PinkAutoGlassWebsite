@@ -40,6 +40,20 @@ interface BookingSummary {
   preferred_install_window: string | null;
 }
 
+interface NotificationEventSummary {
+  quote_id: string;
+  event_type: 'quote_ready' | 'quote_unbooked_5m' | 'appointment_booked';
+  status: 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
+  customer_email_status: string | null;
+  customer_sms_status: string | null;
+  team_email_status: string | null;
+  team_sms_status: string | null;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+  last_error: string | null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -135,6 +149,7 @@ export async function GET(request: NextRequest) {
 
     let leadMap = new Map<string, LeadSummary>();
     let bookingMap = new Map<string, BookingSummary>();
+    let notificationEventMap = new Map<string, Record<string, NotificationEventSummary>>();
 
     if (leadIds.length > 0) {
       const { data: leads, error: leadsError } = await client
@@ -168,6 +183,26 @@ export async function GET(request: NextRequest) {
       }
 
       bookingMap = new Map((bookings || []).map((booking) => [booking.quote_id, booking as BookingSummary]));
+
+      const { data: notificationEvents, error: notificationEventsError } = await client
+        .from('automated_quote_notification_events')
+        .select('quote_id, event_type, status, customer_email_status, customer_sms_status, team_email_status, team_sms_status, sent_at, created_at, updated_at, last_error')
+        .in('quote_id', quoteIds)
+        .order('created_at', { ascending: true });
+
+      if (notificationEventsError) {
+        console.error('[admin-quotes] notification enrichment failed:', notificationEventsError.message);
+        return NextResponse.json(
+          { ok: false, error: notificationEventsError.message },
+          { status: 500 }
+        );
+      }
+
+      for (const event of (notificationEvents || []) as NotificationEventSummary[]) {
+        const existing = notificationEventMap.get(event.quote_id) || {};
+        existing[event.event_type] = event;
+        notificationEventMap.set(event.quote_id, existing);
+      }
     }
 
     const enrichedQuotes = quotes.map((quote) => {
@@ -192,6 +227,7 @@ export async function GET(request: NextRequest) {
         booking_status: booking?.status || null,
         booking_date: booking?.preferred_install_date || null,
         booking_window: booking?.preferred_install_window || null,
+        notification_events: notificationEventMap.get(quote.id) || {},
       };
     });
 

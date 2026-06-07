@@ -6,10 +6,12 @@ import DateFilterBar, { type DateFilter } from '@/components/admin/DateFilterBar
 import { useMarket } from '@/contexts/MarketContext';
 import {
   Car,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   ChevronsUpDown,
   Clock,
+  AlertTriangle,
   Filter,
   Loader2,
   Mail,
@@ -17,7 +19,25 @@ import {
   Phone,
   RefreshCw,
   Search,
+  XCircle,
 } from 'lucide-react';
+
+type NotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'appointment_booked';
+type NotificationEventStatus = 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
+type ChannelStatus = 'sent' | 'skipped' | 'failed' | null;
+
+interface NotificationEventSummary {
+  event_type: NotificationEventType;
+  status: NotificationEventStatus;
+  customer_email_status: ChannelStatus;
+  customer_sms_status: ChannelStatus;
+  team_email_status: ChannelStatus;
+  team_sms_status: ChannelStatus;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+  last_error: string | null;
+}
 
 interface AutomatedQuoteRow {
   id: string;
@@ -62,6 +82,7 @@ interface AutomatedQuoteRow {
   booking_status: string | null;
   booking_date: string | null;
   booking_window: string | null;
+  notification_events: Partial<Record<NotificationEventType, NotificationEventSummary>>;
 }
 
 type DisplayQuoteRow = AutomatedQuoteRow & { attemptCount: number };
@@ -190,6 +211,7 @@ export default function AutomatedQuotesDashboard() {
     scheduled: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'scheduled').length,
     lead: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'lead').length,
     quoteOnly: deduplicatedQuotes.filter((q) => normalizeLeadStatus(q) === 'quote_only').length,
+    commsNeedsAttention: deduplicatedQuotes.filter((q) => commsNeedsAttention(q)).length,
   }), [deduplicatedQuotes]);
 
   const handleSort = (column: SortColumn) => {
@@ -245,11 +267,12 @@ export default function AutomatedQuotesDashboard() {
         />
 
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 divide-x divide-y lg:divide-y-0 divide-gray-200">
             <SummaryStat label="TOTAL QUOTE REQUESTS" value={stats.total} detail="All quote attempts" />
             <SummaryStat label="SCHEDULED" value={stats.scheduled} valueClassName="text-green-600" detail="Install booked" />
             <SummaryStat label="LEAD" value={stats.lead} valueClassName="text-blue-600" detail="Contact captured, not yet booked" />
             <SummaryStat label="QUOTE ONLY" value={stats.quoteOnly} valueClassName="text-gray-500" detail="Price shown, no contact captured" />
+            <SummaryStat label="COMMS ATTENTION" value={stats.commsNeedsAttention} valueClassName={stats.commsNeedsAttention > 0 ? 'text-red-600' : 'text-green-600'} detail="Failed or pending sends" />
           </div>
         </div>
 
@@ -312,13 +335,14 @@ export default function AutomatedQuotesDashboard() {
                   <SortableHeader column="vehicle" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Vehicle</SortableHeader>
                   <SortableHeader column="date" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Date</SortableHeader>
                   <SortableHeader column="lead_status" sortColumn={sortColumn} sortDirection={sortDirection} onClick={handleSort}>Status</SortableHeader>
+                  <HeaderCell>Comms</HeaderCell>
                   <HeaderCell>Actions</HeaderCell>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                       <div className="inline-flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Loading automated quotes...
@@ -327,7 +351,7 @@ export default function AutomatedQuotesDashboard() {
                   </tr>
                 ) : filteredQuotes.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                       No automated quotes found
                     </td>
                   </tr>
@@ -431,18 +455,18 @@ export default function AutomatedQuotesDashboard() {
                           ) : null}
                         </td>
 
+                        <td className="px-4 py-4 min-w-[210px]">
+                          <CommsStatusStack quote={quote} />
+                        </td>
+
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
-                            {isLead ? (
-                              <button
-                                onClick={() => setReviewQuote(quote)}
-                                className="text-pink-600 hover:text-pink-900 font-medium text-sm"
-                              >
-                                Contact
-                              </button>
-                            ) : (
-                              <span className="text-sm text-gray-400">{leadStatus === 'scheduled' ? 'Booked' : '—'}</span>
-                            )}
+                            <button
+                              onClick={() => setReviewQuote(quote)}
+                              className="text-pink-600 hover:text-pink-900 font-medium text-sm"
+                            >
+                              {isLead ? 'Contact' : 'View'}
+                            </button>
                             {quote.email && (
                               <a href={`mailto:${quote.email}`} className="text-blue-600 hover:text-blue-800" aria-label="Email customer">
                                 <Mail className="w-4 h-4" />
@@ -483,6 +507,7 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
   const [price, setPrice] = useState(quote.quote_total_cents ? String(Math.round(quote.quote_total_cents / 100)) : '');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
+  const canEditQuote = MANUAL_REVIEW_STATUSES.has(quote.status);
 
   const patch = async (body: Record<string, unknown>) => {
     setSaving(true);
@@ -536,53 +561,284 @@ function ReviewModal({ quote, onClose, onSaved }: { quote: AutomatedQuoteRow; on
           </div>
         )}
 
-        <label className="block text-sm font-medium text-gray-700">Set price (USD)</label>
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-gray-500">$</span>
-          <input
-            type="number"
-            min="0"
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            placeholder="e.g. 450"
-            className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
-          />
-          {quote.supplier_cost_cents != null && (
-            <span className="text-xs text-gray-500">Supplier cost {formatCents(quote.supplier_cost_cents)}</span>
-          )}
-        </div>
+        <CommunicationHistory quote={quote} />
+
+        {canEditQuote ? (
+          <>
+            <label className="block text-sm font-medium text-gray-700">Set price (USD)</label>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-gray-500">$</span>
+              <input
+                type="number"
+                min="0"
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+                placeholder="e.g. 450"
+                className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
+              />
+              {quote.supplier_cost_cents != null && (
+                <span className="text-xs text-gray-500">Supplier cost {formatCents(quote.supplier_cost_cents)}</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <QuoteModalSummary quote={quote} />
+        )}
 
         {err && <div className="mt-3 text-sm text-red-600">{err}</div>}
 
-        <div className="mt-6 flex items-center justify-between gap-2">
-          <button
-            onClick={() => patch({ status: 'declined' })}
-            disabled={saving}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Decline quote
-          </button>
-          <div className="flex gap-2">
+        {canEditQuote ? (
+          <div className="mt-6 flex items-center justify-between gap-2">
+            <button
+              onClick={() => patch({ status: 'declined' })}
+              disabled={saving}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Decline quote
+            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveReady}
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save price &amp; mark ready
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6 flex justify-end">
             <button
               onClick={onClose}
-              disabled={saving}
               className="rounded-md px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50"
             >
-              Cancel
-            </button>
-            <button
-              onClick={saveReady}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-            >
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save price &amp; mark ready
+              Close
             </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
+}
+
+function QuoteModalSummary({ quote }: { quote: AutomatedQuoteRow }) {
+  return (
+    <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm">
+      <div className="font-semibold text-gray-900">Quote details</div>
+      <div className="mt-2 grid gap-2 text-gray-600 sm:grid-cols-2">
+        <div>
+          <div className="text-xs font-medium uppercase text-gray-400">Status</div>
+          <div>{normalizeLeadStatus(quote) === 'scheduled' ? 'Booked' : toTitleLabel(quote.status)}</div>
+        </div>
+        <div>
+          <div className="text-xs font-medium uppercase text-gray-400">Installed price</div>
+          <div>{quote.quote_total_cents ? formatCents(quote.quote_total_cents) : 'Not set'}</div>
+        </div>
+        {quote.booking_date && (
+          <div className="sm:col-span-2">
+            <div className="text-xs font-medium uppercase text-gray-400">Appointment</div>
+            <div>
+              {formatShortDate(quote.booking_date)}
+              {quote.booking_window && `, ${formatInstallWindow(quote.booking_window)}`}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CommsStatusStack({ quote }: { quote: AutomatedQuoteRow }) {
+  const rows = commsRowsForQuote(quote);
+
+  if (rows.length === 0) {
+    return <span className="text-xs text-gray-400">No comms event</span>;
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {rows.map((row) => (
+        <div key={row.eventType} className="flex items-center justify-between gap-2 text-xs">
+          <span className="font-medium text-gray-700">{row.label}</span>
+          <div className="flex items-center gap-1">
+            <ChannelGroupBadge label="Cust" status={row.customerStatus} />
+            <ChannelGroupBadge label="Team" status={row.teamStatus} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CommunicationHistory({ quote }: { quote: AutomatedQuoteRow }) {
+  const rows = commsRowsForQuote(quote, true);
+
+  return (
+    <div className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-3">
+      <div className="mb-2 text-sm font-semibold text-gray-900">Communication history</div>
+      {rows.length === 0 ? (
+        <div className="text-sm text-gray-500">No notification events recorded for this quote yet.</div>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <div key={row.eventType} className="rounded-md bg-white p-2.5 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="font-medium text-gray-900">{row.label}</div>
+                <EventStatusBadge event={row.event} />
+              </div>
+              <div className="mt-2 grid gap-1 text-xs text-gray-600 sm:grid-cols-2">
+                <ChannelDetail label="Customer email" status={row.event?.customer_email_status ?? null} />
+                <ChannelDetail label="Customer SMS" status={row.event?.customer_sms_status ?? null} />
+                <ChannelDetail label="Team email" status={row.event?.team_email_status ?? null} />
+                <ChannelDetail label="Team SMS" status={row.event?.team_sms_status ?? null} />
+              </div>
+              <div className="mt-2 text-xs text-gray-500">
+                {row.event?.sent_at ? `Sent ${formatDate(row.event.sent_at)}` : row.event?.created_at ? `Created ${formatDate(row.event.created_at)}` : 'Not scheduled'}
+              </div>
+              {row.event?.last_error && (
+                <div className="mt-1 text-xs text-red-600">{row.event.last_error}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChannelGroupBadge({ label, status }: { label: string; status: NotificationEventStatus | 'not_due' | 'missing' }) {
+  const config = channelGroupConfig(status);
+  const Icon = config.icon;
+  return (
+    <span className={`inline-flex min-w-[54px] items-center justify-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${config.style}`} title={`${label}: ${config.title}`}>
+      <Icon className="h-3 w-3" />
+      {label}
+    </span>
+  );
+}
+
+function EventStatusBadge({ event }: { event?: NotificationEventSummary }) {
+  const status = event?.status ?? 'missing';
+  const config = channelGroupConfig(status);
+  const Icon = config.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${config.style}`}>
+      <Icon className="h-3.5 w-3.5" />
+      {config.title}
+    </span>
+  );
+}
+
+function ChannelDetail({ label, status }: { label: string; status: ChannelStatus }) {
+  const config = channelStatusConfig(status);
+  const Icon = config.icon;
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span>{label}</span>
+      <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold ${config.style}`}>
+        <Icon className="h-3 w-3" />
+        {config.label}
+      </span>
+    </div>
+  );
+}
+
+function commsRowsForQuote(quote: AutomatedQuoteRow, includeNotDue = false) {
+  const events = quote.notification_events || {};
+  const rows = [
+    { eventType: 'quote_ready' as const, label: 'Quote sent', event: events.quote_ready },
+    { eventType: 'quote_unbooked_5m' as const, label: '5m follow-up', event: events.quote_unbooked_5m },
+    { eventType: 'appointment_booked' as const, label: 'Booked', event: events.appointment_booked },
+  ];
+
+  return rows
+    .filter((row) => includeNotDue || row.event || shouldShowMissingCommsRow(quote, row.eventType))
+    .map((row) => ({
+      ...row,
+      customerStatus: groupStatus(row.event, ['customer_email_status', 'customer_sms_status'], quote, row.eventType),
+      teamStatus: groupStatus(row.event, ['team_email_status', 'team_sms_status'], quote, row.eventType),
+    }));
+}
+
+function shouldShowMissingCommsRow(quote: AutomatedQuoteRow, eventType: NotificationEventType): boolean {
+  if (eventType === 'quote_ready') return !!quote.lead_id && PRICED_STATUSES.has(quote.status);
+  if (eventType === 'quote_unbooked_5m') return !!quote.lead_id && PRICED_STATUSES.has(quote.status) && !hasBooking(quote);
+  if (eventType === 'appointment_booked') return hasBooking(quote);
+  return false;
+}
+
+function groupStatus(
+  event: NotificationEventSummary | undefined,
+  channelKeys: Array<'customer_email_status' | 'customer_sms_status' | 'team_email_status' | 'team_sms_status'>,
+  quote: AutomatedQuoteRow,
+  eventType: NotificationEventType
+): NotificationEventStatus | 'not_due' | 'missing' {
+  if (!event) return shouldShowMissingCommsRow(quote, eventType) ? 'missing' : 'not_due';
+  if (event.status === 'pending' || event.status === 'processing' || event.status === 'failed' || event.status === 'skipped') {
+    return event.status;
+  }
+
+  const statuses = channelKeys.map((key) => event[key]).filter(Boolean);
+  if (statuses.length === 0) return event.status;
+  if (statuses.some((status) => status === 'failed')) return 'failed';
+  if (statuses.some((status) => status === 'sent')) return 'sent';
+  if (statuses.every((status) => status === 'skipped')) return 'skipped';
+  return event.status;
+}
+
+function commsNeedsAttention(quote: AutomatedQuoteRow): boolean {
+  return commsRowsForQuote(quote).some((row) =>
+    row.customerStatus === 'failed' ||
+    row.teamStatus === 'failed' ||
+    row.customerStatus === 'missing' ||
+    row.teamStatus === 'missing' ||
+    row.customerStatus === 'pending' ||
+    row.teamStatus === 'pending' ||
+    row.customerStatus === 'processing' ||
+    row.teamStatus === 'processing'
+  );
+}
+
+function channelGroupConfig(status: NotificationEventStatus | 'not_due' | 'missing') {
+  switch (status) {
+    case 'sent':
+      return { title: 'Sent', style: 'bg-green-100 text-green-800', icon: CheckCircle2 };
+    case 'partial':
+      return { title: 'Partial', style: 'bg-amber-100 text-amber-800', icon: AlertTriangle };
+    case 'failed':
+      return { title: 'Failed', style: 'bg-red-100 text-red-800', icon: XCircle };
+    case 'pending':
+    case 'processing':
+      return { title: status === 'pending' ? 'Pending' : 'Processing', style: 'bg-amber-100 text-amber-800', icon: Clock };
+    case 'missing':
+      return { title: 'Missing', style: 'bg-red-100 text-red-800', icon: AlertTriangle };
+    case 'skipped':
+      return { title: 'Skipped', style: 'bg-gray-100 text-gray-600', icon: Clock };
+    case 'not_due':
+    default:
+      return { title: 'Not due', style: 'bg-gray-100 text-gray-500', icon: Clock };
+  }
+}
+
+function channelStatusConfig(status: ChannelStatus) {
+  switch (status) {
+    case 'sent':
+      return { label: 'Sent', style: 'bg-green-100 text-green-800', icon: CheckCircle2 };
+    case 'failed':
+      return { label: 'Failed', style: 'bg-red-100 text-red-800', icon: XCircle };
+    case 'skipped':
+      return { label: 'Skipped', style: 'bg-gray-100 text-gray-600', icon: Clock };
+    default:
+      return { label: 'None', style: 'bg-gray-100 text-gray-500', icon: Clock };
+  }
 }
 
 function SummaryStat({
