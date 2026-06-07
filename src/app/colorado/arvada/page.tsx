@@ -8,7 +8,6 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Arvada CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Arvada CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair arvada, windshield replacement arvada, auto glass arvada co, mobile windshield service arvada, windshield replacement near me arvada, old town arvada windshield repair, candelas auto glass',

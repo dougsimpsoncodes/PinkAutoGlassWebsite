@@ -9,7 +9,6 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Frederick CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Frederick CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair frederick, windshield replacement frederick, auto glass frederick co, mobile windshield service frederick, frederick colorado windshield',

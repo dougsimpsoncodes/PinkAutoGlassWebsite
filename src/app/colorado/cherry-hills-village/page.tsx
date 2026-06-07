@@ -9,7 +9,6 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Cherry Hills CO | Mobile',
   description: 'Mobile windshield replacement in Cherry Hills Village CO. Same-day service, $0 deductible often. We come to you! (720) 918-7465.',
   keywords: 'windshield repair cherry hills village, windshield replacement cherry hills village, auto glass cherry hills village co, mobile windshield service cherry hills village',

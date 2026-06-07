@@ -9,7 +9,6 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Auto Glass Insurance Claims Colorado | $0 Deductible',
   description: 'We handle all insurance paperwork — Progressive, Geico, State Farm, AAA & more. $0 deductible often. Direct billing. (480) 712-7465.',
   keywords: 'auto glass insurance claims colorado, auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, zero deductible windshield colorado, insurance glass replacement, aaa windshield claim',

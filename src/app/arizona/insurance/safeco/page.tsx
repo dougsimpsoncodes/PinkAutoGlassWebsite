@@ -6,7 +6,6 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Safeco Windshield Replacement CO | $0 Deductible',
   description: 'Safeco covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Safeco directly. Call (480) 712-7465.',
   alternates: {

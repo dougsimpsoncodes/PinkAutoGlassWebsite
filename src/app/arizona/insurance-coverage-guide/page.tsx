@@ -7,7 +7,6 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Does Insurance Cover Windshield Replacement?',
   description: 'Yes — most comprehensive policies cover windshield replacement. Colorado law: often $0 deductible. We handle all paperwork. (480) 712-7465.',
   keywords: 'does insurance cover windshield replacement, windshield insurance colorado, zero deductible windshield, insurance windshield claim, comprehensive coverage windshield',

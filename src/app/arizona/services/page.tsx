@@ -7,7 +7,6 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, getBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Auto Glass Services | Repair & Replacement CO & AZ',
   description: 'Complete auto glass services across the Front Range. Windshield repair and replacement. Mobile service, same-day appointments, lifetime warranty.',
   keywords: 'auto glass services denver, windshield services, windshield repair, windshield replacement, mobile auto glass, adas calibration denver',

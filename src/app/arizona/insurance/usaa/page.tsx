@@ -6,7 +6,6 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'USAA Windshield Replacement CO | $0 Deductible',
   description: 'USAA covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill USAA directly. Call (480) 712-7465.',
   alternates: {

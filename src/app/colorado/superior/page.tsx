@@ -9,7 +9,6 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Superior CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Superior CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair superior, windshield replacement superior, auto glass superior co, mobile windshield service superior colorado, boulder county auto glass',

@@ -7,7 +7,6 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'How Long Does Windshield Replacement Take?',
   description: 'Windshield replacement takes 60-90 minutes plus 1 hour cure time. Same-day mobile service — we come to you. Call (720) 918-7465.',
   keywords: 'how long windshield replacement, windshield replacement time, same day windshield replacement, mobile windshield replacement time',

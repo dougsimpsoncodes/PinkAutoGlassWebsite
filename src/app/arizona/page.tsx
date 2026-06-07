@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     siteName: "Pink Auto Glass",
     type: "website",
   },
-  robots: { index: false }, // Phase 1: noindex during coexistence
 };
 
 const arizonaCities = [

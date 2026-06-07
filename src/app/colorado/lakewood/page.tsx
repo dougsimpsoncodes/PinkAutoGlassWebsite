@@ -8,7 +8,6 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Lakewood CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield replacement lakewood co, windshield repair lakewood, auto glass lakewood co, mobile windshield service lakewood, belmar windshield repair, bear valley auto glass, windshield replacement near me lakewood',

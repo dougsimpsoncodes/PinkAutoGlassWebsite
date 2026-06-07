@@ -9,7 +9,6 @@ import { combineSchemas } from "@/lib/schema";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: "Colorado Mobile Auto Glass Repair & Replacement | Pink Auto Glass",
   description: "Colorado's #1 mobile auto glass service. Same-day windshield repair & replacement at your home or office. Lifetime warranty. (720) 918-7465.",
   openGraph: {

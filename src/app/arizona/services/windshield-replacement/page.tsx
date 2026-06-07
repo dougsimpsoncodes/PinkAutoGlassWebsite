@@ -10,7 +10,6 @@ import { generateServiceSchema, generateFAQSchema, generateBreadcrumbSchema, com
 import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Phoenix Windshield Replacement | Same-Day Mobile Service',
   description:
     'Mobile windshield replacement across Phoenix, Scottsdale, Mesa, and Tempe. OEM-quality glass, lifetime workmanship warranty, and insurance help. Call (480) 712-7465.',

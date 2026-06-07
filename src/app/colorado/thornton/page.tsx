@@ -8,7 +8,6 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Thornton CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Thornton CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair thornton, windshield replacement thornton, auto glass thornton co, mobile windshield service thornton, windshield replacement near me thornton, eastlake windshield repair, thornton town center auto glass',

@@ -9,7 +9,6 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Lone Tree CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Lone Tree CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair lone tree, windshield replacement lone tree, auto glass lone tree co, mobile windshield service lone tree, auto glass ridgegate, park meadows windshield',

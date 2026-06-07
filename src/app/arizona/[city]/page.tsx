@@ -28,7 +28,6 @@ export async function generateMetadata({ params }: ArizonaCityRouteProps): Promi
         url: `https://pinkautoglass.com/arizona/${newSlug}/`,
         type: 'website',
       },
-      robots: { index: false }, // Phase 1: noindex during coexistence
     };
   } catch {
     return { title: 'City Not Found' };

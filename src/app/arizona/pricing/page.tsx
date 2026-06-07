@@ -6,7 +6,6 @@ import TrustBadges from '@/components/TrustBadges';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: "Windshield Replacement Cost | Pricing Guide CO & AZ",
   description: "Windshield replacement costs by vehicle type. Transparent pricing, insurance info. All makes and models in CO & AZ. Get a quote!",
   keywords: "windshield replacement cost denver, auto glass prices denver, windshield cost, insurance windshield replacement",

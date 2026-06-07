@@ -10,7 +10,6 @@ import GoogleReviewsWidget from '@/components/GoogleReviewsWidget';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Denver CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Denver CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'auto glass denver co, auto glass repair denver co, windshield repair denver, windshield replacement denver, auto glass denver, mobile windshield service denver co, mobile windshield replacement denver',

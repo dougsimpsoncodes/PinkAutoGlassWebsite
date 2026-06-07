@@ -9,7 +9,6 @@ import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false }, // Phase 1: noindex during coexistence
   title: 'Windshield Replacement Lafayette CO | Mobile, $0 Deductible',
   description: 'Mobile windshield replacement & repair in Lafayette CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
   keywords: 'windshield repair lafayette, windshield replacement lafayette, auto glass lafayette co, mobile windshield service lafayette colorado, boulder county auto glass',

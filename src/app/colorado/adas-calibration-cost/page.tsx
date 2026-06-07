@@ -7,7 +7,6 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'ADAS Calibration Cost | Pricing After Replacement',
   description: 'ADAS calibration costs $150-$400 after windshield replacement. Often covered by insurance. Required for safety. Call (720) 918-7465.',
   keywords: 'adas calibration cost, windshield calibration cost, camera calibration after windshield replacement, adas recalibration price',

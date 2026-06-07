@@ -10,7 +10,6 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Mobile Windshield Replacement | We Come to You Free',
   description: 'No extra charge for mobile service in 65+ cities across CO & AZ. Same-day windshield replacement at your home or office. Call (480) 712-7465.',
   keywords: 'mobile windshield replacement denver, mobile windshield repair denver, mobile windshield service denver, mobile auto glass denver, windshield replacement at home, mobile glass repair denver',

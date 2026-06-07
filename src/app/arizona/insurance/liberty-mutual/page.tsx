@@ -6,7 +6,6 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Liberty Mutual Windshield Replacement CO | $0 Deductible',
   description: 'Liberty Mutual covers windshield replacement in Colorado — often $0. We handle all paperwork and bill Liberty Mutual directly. (480) 712-7465.',
   alternates: {

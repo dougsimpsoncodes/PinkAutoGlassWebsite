@@ -6,7 +6,6 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Esurance Windshield Replacement CO | $0 Deductible',
   description: 'Esurance covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Esurance directly. Call (720) 918-7465.',
   alternates: {

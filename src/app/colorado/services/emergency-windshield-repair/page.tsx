@@ -9,7 +9,6 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: "Emergency Windshield Repair | Same-Day 24/7 Mobile",
   description: "Urgent windshield repair and replacement. Available 24/7 with same-day mobile service. We come to you. Call (720) 918-7465 now.",
   keywords: "emergency windshield repair denver, 24/7 auto glass, same day windshield replacement, urgent windshield repair",

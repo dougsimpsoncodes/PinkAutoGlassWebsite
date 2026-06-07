@@ -11,7 +11,6 @@ import RelatedServices from '@/components/RelatedServices';
 import AutomatedQuoteForm from '@/components/AutomatedQuoteForm';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Denver Windshield Replacement | Get an Instant Quote | Pink Auto Glass',
   description: 'Get an instant quote for windshield replacement in Denver. Mobile service, OEM glass, lifetime warranty. We come to you. Call (720) 918-7465.',
   keywords: 'windshield replacement denver, windshield replacement cost, mobile windshield replacement, same day windshield replacement, auto glass replacement denver, windshield replacement near me',

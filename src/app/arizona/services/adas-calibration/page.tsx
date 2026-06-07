@@ -10,7 +10,6 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'ADAS Calibration | After Windshield Replacement',
   description: 'ADAS camera calibration required after windshield replacement. Lane assist, collision warning, auto-braking recalibrated. Mobile service. (480) 712-7465.',
   keywords: 'ADAS calibration denver, windshield camera calibration, lane departure calibration, forward collision warning calibration',

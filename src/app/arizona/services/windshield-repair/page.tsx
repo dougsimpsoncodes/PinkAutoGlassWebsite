@@ -10,7 +10,6 @@ import ServiceAreaLinks from '@/components/ServiceAreaLinks';
 import RelatedServices from '@/components/RelatedServices';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Windshield Chip & Crack Repair | $0 With Insurance',
   description: 'Fast windshield chip and crack repair. Often $0 with insurance. Mobile service — we come to you. Lifetime warranty. Call (480) 712-7465.',
   keywords: 'windshield repair denver, rock chip repair, windshield crack repair, auto glass repair denver, chip repair cost, windshield repair near me, mobile windshield repair denver',

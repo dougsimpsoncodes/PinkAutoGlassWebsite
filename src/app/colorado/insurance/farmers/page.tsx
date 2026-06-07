@@ -6,7 +6,6 @@ import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
 import { generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  robots: { index: false },
   title: 'Farmers Windshield Replacement CO | $0 Deductible',
   description: 'Farmers covers windshield replacement in Colorado — often $0 deductible. We handle all paperwork and bill Farmers directly. Call (720) 918-7465.',
   alternates: {
