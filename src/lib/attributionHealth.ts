@@ -1,6 +1,6 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { applyQualifyingFilter } from './callQualifying';
-import { sendAdminAlertEmail } from './notifications/email';
+import { sendAdminEmail } from './notifications/email';
 
 export interface AttributionHealthSnapshot {
   snapshot_date: string;
@@ -362,5 +362,5 @@ export async function sendAttributionHealthAlertEmail(
     </div>
   `;
 
-  return sendAdminAlertEmail(subject, html);
+  return sendAdminEmail(subject, html);
 }
