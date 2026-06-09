@@ -137,6 +137,7 @@ function SMSConversation({ phone }: { phone: string }) {
                   }`}
                 >
                   {new Date(msg.message_time).toLocaleString('en-US', {
+                    timeZone: 'America/Denver',
                     month: 'short',
                     day: 'numeric',
                     hour: 'numeric',
@@ -756,6 +757,7 @@ export default function LeadManagementDashboard() {
                     {/* Date */}
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                       {new Date(lead.created_at).toLocaleString('en-US', {
+                        timeZone: 'America/Denver',
                         month: 'short',
                         day: 'numeric',
                         hour: 'numeric',
@@ -862,7 +864,7 @@ export default function LeadManagementDashboard() {
                   )}
                   <div>
                     <div className="text-sm text-gray-600">Created</div>
-                    <div className="text-gray-900">{new Date(selectedLead.created_at).toLocaleString()}</div>
+                    <div className="text-gray-900">{new Date(selectedLead.created_at).toLocaleString('en-US', { timeZone: 'America/Denver' })}</div>
                   </div>
                 </div>
               </div>

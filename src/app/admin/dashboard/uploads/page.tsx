@@ -453,7 +453,7 @@ export default function UploadsPage() {
                     <td className="px-4 py-2 font-medium text-gray-900">{u.invoice_number}</td>
                     <td className="px-4 py-2 text-gray-700">{u.customer_name}</td>
                     <td className="px-4 py-2 text-right text-gray-900">${u.total_revenue?.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-2 text-gray-500">{new Date(u.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' })}</td>
                   </tr>
                 ))}
               </tbody>

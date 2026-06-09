@@ -82,8 +82,8 @@ export default function ConversionsPage() {
   const exportCSV = () => {
     const headers = ['Date', 'Time', 'Type', 'Location', 'Page', 'Source', 'Medium', 'Campaign'];
     const rows = filteredConversions.map(c => [
-      new Date(c.created_at).toLocaleDateString(),
-      new Date(c.created_at).toLocaleTimeString(),
+      new Date(c.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' }),
+      new Date(c.created_at).toLocaleTimeString('en-US', { timeZone: 'America/Denver' }),
       c.event_type,
       c.button_location,
       c.page_path,
@@ -318,10 +318,10 @@ export default function ConversionsPage() {
 
                           <div className="text-right flex-shrink-0">
                             <div className="text-xs text-gray-600">
-                              {new Date(conversion.created_at).toLocaleDateString()}
+                              {new Date(conversion.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' })}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {new Date(conversion.created_at).toLocaleTimeString()}
+                              {new Date(conversion.created_at).toLocaleTimeString('en-US', { timeZone: 'America/Denver' })}
                             </div>
                           </div>
                         </div>

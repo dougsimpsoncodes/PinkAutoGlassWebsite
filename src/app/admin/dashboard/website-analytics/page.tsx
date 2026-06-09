@@ -483,8 +483,8 @@ export default function WebsiteTrafficPage() {
               onClick={() => exportCSV(
                 ['Date', 'Time', 'Type', 'Location', 'Page', 'Source', 'Medium', 'Campaign'],
                 filteredConversions.map(c => [
-                  new Date(c.created_at).toLocaleDateString(),
-                  new Date(c.created_at).toLocaleTimeString(),
+                  new Date(c.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' }),
+                  new Date(c.created_at).toLocaleTimeString('en-US', { timeZone: 'America/Denver' }),
                   c.event_type, c.button_location, c.page_path,
                   c.utm_source ?? 'direct', c.utm_medium ?? '', c.utm_campaign ?? '',
                 ]),
@@ -562,8 +562,8 @@ export default function WebsiteTrafficPage() {
                       {c.utm_source && <div className="text-xs text-gray-400">{c.utm_source}{c.utm_medium && ` / ${c.utm_medium}`}</div>}
                     </div>
                     <div className="text-xs text-gray-400 flex-shrink-0 text-right">
-                      <div>{new Date(c.created_at).toLocaleDateString()}</div>
-                      <div>{new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div>{new Date(c.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' })}</div>
+                      <div>{new Date(c.created_at).toLocaleTimeString('en-US', { timeZone: 'America/Denver', hour: '2-digit', minute: '2-digit' })}</div>
                     </div>
                   </div>
                 );

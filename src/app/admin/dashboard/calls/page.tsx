@@ -300,7 +300,7 @@ export default function CallAnalyticsPage() {
   const customersByDay = callsForChart
     .filter(isQualifyingInbound) // Only qualifying inbound calls
     .reduce((acc: Record<string, Set<string>>, call) => {
-      const date = new Date(call.start_time).toLocaleDateString();
+      const date = new Date(call.start_time).toLocaleDateString('en-US', { timeZone: 'America/Denver' });
       if (!acc[date]) {
         acc[date] = new Set();
       }
@@ -315,7 +315,7 @@ export default function CallAnalyticsPage() {
     const currentDate = new Date(chartStartDate);
 
     while (currentDate <= now) {
-      const dateStr = currentDate.toLocaleDateString();
+      const dateStr = currentDate.toLocaleDateString('en-US', { timeZone: 'America/Denver' });
       const numbersSet = customersByDay[dateStr];
       result.push({
         date: dateStr,
@@ -363,6 +363,7 @@ export default function CallAnalyticsPage() {
 
     // For older data, show absolute date/time
     return lastUpdated.toLocaleString('en-US', {
+      timeZone: 'America/Denver',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -541,7 +542,7 @@ export default function CallAnalyticsPage() {
                     fontSize="11"
                     fill="#6b7280"
                   >
-                    {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {new Date(point.date).toLocaleDateString('en-US', { timeZone: 'America/Denver', month: 'short', day: 'numeric' })}
                   </text>
                 );
               })}
@@ -714,10 +715,10 @@ export default function CallAnalyticsPage() {
                             )}
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {new Date(call.start_time).toLocaleDateString()}
+                                {new Date(call.start_time).toLocaleDateString('en-US', { timeZone: 'America/Denver' })}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(call.start_time).toLocaleTimeString()}
+                                {new Date(call.start_time).toLocaleTimeString('en-US', { timeZone: 'America/Denver' })}
                               </div>
                             </div>
                           </div>
@@ -789,10 +790,10 @@ export default function CallAnalyticsPage() {
                           <td className="px-6 py-3 whitespace-nowrap">
                             <div className="pl-6">
                               <div className="text-xs text-gray-600">
-                                {new Date(prevCall.start_time).toLocaleDateString()}
+                                {new Date(prevCall.start_time).toLocaleDateString('en-US', { timeZone: 'America/Denver' })}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(prevCall.start_time).toLocaleTimeString()}
+                                {new Date(prevCall.start_time).toLocaleTimeString('en-US', { timeZone: 'America/Denver' })}
                               </div>
                             </div>
                           </td>

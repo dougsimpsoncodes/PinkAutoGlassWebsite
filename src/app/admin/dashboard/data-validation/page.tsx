@@ -292,7 +292,7 @@ export default function DataValidationPage() {
         </button>
         {lastRun && (
           <span className="text-xs text-gray-500 ml-auto">
-            Last run: {lastRun.toLocaleTimeString()}
+            Last run: {lastRun.toLocaleTimeString('en-US', { timeZone: 'America/Denver' })}
           </span>
         )}
       </div>

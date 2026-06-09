@@ -261,7 +261,7 @@ export default function GridScopePage() {
             rankedNodes: nodes.filter((n) => n.rank !== null).length,
             top3Nodes: nodes.filter((n) => n.rank !== null && n.rank <= 3).length,
           });
-          setLastScanTime(new Date(scanMeta.created_at).toLocaleString());
+          setLastScanTime(new Date(scanMeta.created_at).toLocaleString('en-US', { timeZone: 'America/Denver' }));
         }
       }
     } catch {
@@ -289,7 +289,7 @@ export default function GridScopePage() {
         setResults(json.results);
         setSummary(json.summary);
         setSelectedScanId(json.scanId);
-        setLastScanTime(new Date().toLocaleString());
+        setLastScanTime(new Date().toLocaleString('en-US', { timeZone: 'America/Denver' }));
         drawMarkers(json.results);
         fetchRecentScans();
       } else {
@@ -391,7 +391,7 @@ export default function GridScopePage() {
             >
               {recentScans.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {new Date(s.created_at).toLocaleDateString()} — SoLV {s.solv_pct}%
+                  {new Date(s.created_at).toLocaleDateString('en-US', { timeZone: 'America/Denver' })} — SoLV {s.solv_pct}%
                 </option>
               ))}
             </select>

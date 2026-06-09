@@ -1114,6 +1114,7 @@ function formatCents(amountCents: number): string {
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString('en-US', {
+    timeZone: 'America/Denver',
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -1123,11 +1124,8 @@ function formatDate(value: string): string {
 }
 
 function formatShortDate(value: string): string {
-  // Parse the date portion as local midnight to avoid UTC→local timezone shift.
-  // new Date('YYYY-MM-DD') parses as UTC midnight, which in Mountain time
-  // shifts the displayed date back one day.
-  const [y, m, d] = value.slice(0, 10).split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+  return new Date(value).toLocaleDateString('en-US', {
+    timeZone: 'America/Denver',
     month: 'short',
     day: 'numeric',
   });

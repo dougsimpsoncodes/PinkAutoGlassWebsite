@@ -89,7 +89,7 @@ function formatCurrency(val: number | null): string {
 
 function formatDate(iso: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', { timeZone: 'America/Denver', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function SortIcon({ column, sortColumn, sortDirection }: { column: SortKey; sortColumn: SortKey; sortDirection: 'asc' | 'desc' }) {
