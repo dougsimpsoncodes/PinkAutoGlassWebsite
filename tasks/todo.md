@@ -501,3 +501,9 @@ Look for:
 - Fixes shipped: VIN tab now requires state (same dropdown + service-area gate as plate tab — VIN users previously bypassed the CO/AZ gate entirely); admin quotes API includes market-NULL rows in market-filtered views.
 - Per Doug: state is enough at quote — explicitly NOT adding a zip stage (preserves 2026-06-05 Codex+Gemini council decision against zip-stage friction).
 - NOT done: backfill of the 8 NULL-market rows (no state data exists to classify them; view fix surfaces them), morning-digest email (offered, not requested yet).
+
+## 2026-06-10 (night) — Google Ads quoter creative
+- Researched how quote-tool companies write ad copy (Carvana plate/VIN→instant offer, Geico minute-quotes 3.7x CTR, Safelite makes NO speed/price promise — open lane). Full reco built via Codex+Gemini panel, Doug picked "Carvana-plain" register.
+- LIVE: RSA 812440528078 in Denver > Denver Keywords, lands /quote, top-3 quote-first headlines pinned pos 1, phone-first control 811492665732 untouched. No insurance copy (cash-pay positioning), lifetime warranty in, charity in one description, phone # out of headlines (call asset 301656778957 covers).
+- Detail: tasks/2026-06-10-search-ads-deep-dive.md addendum. Script: scripts/create-quoter-rsa.js.
+- Verify next: ad approval clears (~1 day), then Jun 17 measurement week — judge on cost per booked job, not quote volume.
