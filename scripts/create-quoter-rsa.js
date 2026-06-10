@@ -37,7 +37,9 @@ const DESCRIPTIONS = [
   { text: 'A portion of every sale supports breast cancer research. Local, trusted Denver service.' },
 ];
 
-const FINAL_URL = 'https://pinkautoglass.com/quote';
+// Homepage IS the quoter since 2026-05-28 (/quote 308-redirects to / per
+// next.config.js) — point the ad straight at it, no redirect hop.
+const FINAL_URL = 'https://pinkautoglass.com/';
 
 const client = new GoogleAdsApi({
   client_id: process.env.GOOGLE_ADS_CLIENT_ID,
