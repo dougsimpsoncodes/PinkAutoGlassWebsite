@@ -77,12 +77,38 @@ export async function sendQuoteContactNotifications(input: QuoteContactNotificat
   }
 
   if (kind === 'manual_review') {
-    await Promise.allSettled([
-      sendManualReviewTeamEmail(input),
-      sendManualReviewTeamSms(input),
-      sendManualReviewCustomerEmail(input),
-      sendManualReviewCustomerSms(input),
+    const claim = await claimQuoteNotificationEvent({
+      quoteId: input.quoteId,
+      eventType: 'manual_review',
+      metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
+    });
+    if (!claim.claimed || !claim.eventId) {
+      return { kind, skipped: true, reason: claim.reason ?? 'manual_review_event_not_claimed' };
+    }
+
+    // allSettled: a thrown send must not leave the event stuck in 'processing'.
+    const settled = await Promise.allSettled([
+      shouldSendNotificationChannel(claim.priorChannels, 'teamEmail') ? sendManualReviewTeamEmail(input) : Promise.resolve(true),
+      shouldSendNotificationChannel(claim.priorChannels, 'teamSms') ? sendManualReviewTeamSms(input) : Promise.resolve(true),
+      shouldSendNotificationChannel(claim.priorChannels, 'customerEmail') ? sendManualReviewCustomerEmail(input) : Promise.resolve(true),
+      shouldSendNotificationChannel(claim.priorChannels, 'customerSms') ? sendManualReviewCustomerSms(input) : Promise.resolve(true),
     ]);
+    const [teamEmail, teamSms, customerEmail, customerSms] = settled.map(
+      (entry) => entry.status === 'fulfilled' ? entry.value : false
+    );
+    const channels = {
+      teamEmail: channelStatusFromAttempt(claim.priorChannels?.teamEmail, true, teamEmail),
+      teamSms: channelStatusFromAttempt(claim.priorChannels?.teamSms, true, teamSms),
+      customerEmail: channelStatusFromAttempt(claim.priorChannels?.customerEmail, Boolean(input.customer.email), customerEmail),
+      customerSms: channelStatusFromAttempt(claim.priorChannels?.customerSms, input.customer.smsConsent && isCustomerSmsEnabled(), customerSms),
+    };
+    const eventStatus = combineEventStatus(channels);
+    await completeQuoteNotificationEvent({
+      eventId: claim.eventId,
+      status: eventStatus,
+      channels,
+      metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
+    });
     return { kind, skipped: false };
   }
 

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export type AutoQuoteNotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'quote_unbooked_15m_discount' | 'appointment_booked';
+export type AutoQuoteNotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'quote_unbooked_15m_discount' | 'appointment_booked' | 'manual_review';
 export type AutoQuoteNotificationEventStatus = 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
 export type ChannelStatus = 'sent' | 'skipped' | 'failed';
 
