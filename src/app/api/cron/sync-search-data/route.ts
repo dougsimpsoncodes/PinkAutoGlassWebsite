@@ -638,15 +638,11 @@ export async function GET(request: NextRequest) {
         console.log('🔍 Syncing Microsoft Ads search terms...');
         const searchTermData = await fetchMicrosoftSearchTerms(startDateStr, endDateStr);
 
-        // Delete existing data for this date range, then insert fresh
-        await supabase
-          .from('microsoft_ads_search_terms')
-          .delete()
-          .gte('date', startDateStr)
-          .lte('date', endDateStr);
-
-        // Aggregate by (date, campaign_id, search_term) to match unique constraint
-        // Same search term can appear in multiple ad groups within one campaign
+        // Aggregate by (date, campaign_id, search_term) to match the unique
+        // constraint — the same search term can appear in multiple ad groups
+        // within one campaign. Uses each record's REAL report date: stamping
+        // everything with startDateStr collapsed multi-day ranges onto one day
+        // and silently dropped per-day history (bug found 2026-06-10).
         const aggregated = new Map<string, {
           date: string; search_term: string; campaign_name: string;
           campaign_id: string; ad_group_name: string; ad_group_id: string;
@@ -655,7 +651,8 @@ export async function GET(request: NextRequest) {
         }>();
 
         for (const record of searchTermData) {
-          const key = `${startDateStr}|${record.campaign_id || '0'}|${record.search_term}`;
+          const recordDate = record.date || startDateStr;
+          const key = `${recordDate}|${record.campaign_id || '0'}|${record.search_term}`;
           const existing = aggregated.get(key);
           if (existing) {
             existing.impressions += record.impressions;
@@ -664,7 +661,7 @@ export async function GET(request: NextRequest) {
             existing.conversions += record.conversions;
           } else {
             aggregated.set(key, {
-              date: startDateStr,
+              date: recordDate,
               search_term: record.search_term,
               campaign_name: record.campaign_name,
               campaign_id: record.campaign_id || '0',
@@ -683,24 +680,30 @@ export async function GET(request: NextRequest) {
         const dbRecords = Array.from(aggregated.values());
         console.log(`Microsoft Ads: ${searchTermData.length} raw → ${dbRecords.length} aggregated records`);
 
-        // Batch insert in chunks of 100
+        // Upsert in chunks (replaces the old delete-then-insert, which wiped
+        // the range and lost everything whenever the insert leg failed).
+        // Failures propagate to the result so the cron alert can see them.
         let inserted = 0;
+        const insertErrors: string[] = [];
         for (let i = 0; i < dbRecords.length; i += 100) {
           const chunk = dbRecords.slice(i, i + 100);
           const { error } = await supabase
             .from('microsoft_ads_search_terms')
-            .insert(chunk);
+            .upsert(chunk, { onConflict: 'date,campaign_id,search_term' });
 
           if (!error) inserted += chunk.length;
-          else console.error('Microsoft Ads insert error:', error.message, error.code);
+          else {
+            insertErrors.push(`${error.code}: ${error.message}`);
+            console.error('Microsoft Ads upsert error:', error.message, error.code);
+          }
         }
 
         results.microsoftAds.searchTerms = {
-          success: true,
+          success: insertErrors.length === 0,
           records: inserted,
-          error: null,
+          error: insertErrors.length ? insertErrors.slice(0, 3).join(' | ') : null,
         };
-        console.log(`✅ Synced ${inserted} Microsoft Ads search term records`);
+        console.log(`✅ Synced ${inserted} Microsoft Ads search term records${insertErrors.length ? ` (${insertErrors.length} chunk errors)` : ''}`);
       } else {
         results.microsoftAds.searchTerms.error = `Missing config: ${msConfigValid.missingVars.join(', ')}`;
       }
