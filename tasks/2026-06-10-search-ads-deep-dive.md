@@ -52,7 +52,7 @@ This file is the **before picture** — compare against the week of Jun 17.
 
 ## Addendum — 2026-06-10 evening: quoter-led RSA launched
 
-New RSA (ad `812440528078`) added to Denver > Denver Keywords alongside the
+New RSA (ad `812443058767`; originally 812440528078, replaced same night — /quote 308-redirects to /, new ad lands on the homepage directly) added to Denver > Denver Keywords alongside the
 phone-first control (`811492665732`, untouched). Lands on `/quote`. Top-3
 quote-first headlines pinned to position 1 as a pool; "Carvana-plain" register
 chosen by Doug. No insurance angle (cash-pay positioning); lifetime-warranty
