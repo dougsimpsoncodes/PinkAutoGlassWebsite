@@ -201,6 +201,43 @@ export default function QuoterEmbed({
 }
 `;
 
+
+// Dashboard short codes — must match SATELLITE_DOMAINS in src/app/api/admin/satellite-domains/route.ts.
+// Quoter leads must land in leads.utm_source with these exact values or the satellite dashboard won't count them.
+const UTM_SHORT_CODES = {
+  'windshieldcostcalculator.com': 'windshieldcostcalculator',
+  'windshielddenver.com': 'windshielddenver',
+  'windshieldchiprepairdenver.com': 'chiprepairdenver',
+  'windshieldchiprepairboulder.com': 'chiprepairboulder',
+  'aurorawindshield.com': 'aurorawindshield',
+  'mobilewindshielddenver.com': 'mobilewindshielddenver',
+  'cheapestwindshieldnearme.com': 'cheapestwindshield',
+  'newwindshieldcost.com': 'newwindshieldcost',
+  'getawindshieldquote.com': 'getawindshieldquote',
+  'newwindshieldnearme.com': 'newwindshieldnearme',
+  'windshieldpricecompare.com': 'windshieldpricecompare',
+  'windshieldchiprepairmesa.com': 'chiprepairmesa',
+  'windshieldchiprepairphoenix.com': 'chiprepairphoenix',
+  'windshieldchiprepairscottsdale.com': 'chiprepairscottsdale',
+  'windshieldchiprepairtempe.com': 'chiprepairtempe',
+  'windshieldcostphoenix.com': 'windshieldcostphoenix',
+  'mobilewindshieldphoenix.com': 'mobilewindshieldphoenix',
+  'carwindshieldprices.com': 'carwindshieldprices',
+  'windshieldrepairprices.com': 'windshieldrepairprices',
+  'carglassprices.com': 'carglassprices',
+  'coloradospringswindshield.com': 'coloradospringswindshield',
+  'autoglasscoloradosprings.com': 'autoglasscoloradosprings',
+  'mobilewindshieldcoloradosprings.com': 'mobilewindshieldcoloradosprings',
+  'windshieldreplacementfortcollins.com': 'windshieldreplacementfortcollins',
+};
+
+function utmShortCode(url) {
+  const domain = url.replace('https://', '');
+  const code = UTM_SHORT_CODES[domain];
+  if (!code) throw new Error('No UTM short code for ' + domain + ' — add it to UTM_SHORT_CODES');
+  return code;
+}
+
 // ── quoterConfig block to prepend to questions.ts ─────────────────────────────
 
 function quoterConfigBlock(site) {
@@ -208,7 +245,7 @@ function quoterConfigBlock(site) {
   return `export const quoterConfig = {
   siteKey: '${siteKey(site.url)}',
   marketHint: '${marketHint(site.type)}' as const,
-  utmSource: '${site.url.replace('https://', '')}',
+  utmSource: '${utmShortCode(site.url)}',
   mode: '${mode(site.type)}' as const,
   wrapperCopy: {
     headline: "${copy.headline}",
