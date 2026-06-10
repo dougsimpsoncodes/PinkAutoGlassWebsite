@@ -507,3 +507,6 @@ Look for:
 - LIVE: RSA 812440528078 in Denver > Denver Keywords, lands /quote, top-3 quote-first headlines pinned pos 1, phone-first control 811492665732 untouched. No insurance copy (cash-pay positioning), lifetime warranty in, charity in one description, phone # out of headlines (call asset 301656778957 covers).
 - Detail: tasks/2026-06-10-search-ads-deep-dive.md addendum. Script: scripts/create-quoter-rsa.js.
 - Verify next: ad approval clears (~1 day), then Jun 17 measurement week — judge on cost per booked job, not quote volume.
+
+## 2026-06-10 (latest) — MS goal revenue fix applied
+- Panel (Codex+Gemini) unanimous: VariableValue flip is reporting-only under MaxConversions, going-forward, no learning reset; leave count type/windows alone pre-Jun 17. Applied + verified: Quick quote → VariableValue $91, Text_click → VariableValue $55. Dead-goal deletion deferred to Jun 24 session per Codex.

@@ -99,8 +99,8 @@ accepted.
 | Ad-call extension | Calls from ads ($55) | — (no MS call extensions) | — |
 
 ## Recommended actions
-1. **Now:** F1 — flip the two MS goals to VariableValue.
-2. **Now:** F6 — delete the dead paused goal.
+1. ~~F1~~ — **DONE 2026-06-10 (panel-approved, Codex+Gemini unanimous):** "Quick quote" and "Text_click" flipped to VariableValue (defaults $91/$55), verified via readback. Reporting-only under MaxConversions; applies going forward — pre-change per-goal numbers snapshotted above. "Phone call website click" left FixedValue $55 deliberately (tag pushes exactly $55, no variance to lose).
+2. **F6 deferred to after Jun 24** per Codex's conservative option — deleting the dead paused goal is harmless but there's no upside before the budget decision; do it during the Jun 24 session.
 3. **Whenever:** F5 — enable or remove Vercel Web Analytics.
 4. **Jun 17 measurement week:** remember reporting uses ad `812443058767` (not the id in older notes).
 5. **If MS ever goes value-based bidding:** revisit F2 (create the MS quote goal) and recheck F1 first.
