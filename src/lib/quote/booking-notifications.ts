@@ -109,10 +109,12 @@ function formatWindow(window: 'AM' | 'PM'): string {
 function buildSmsText(input: BookingNotificationInput): string {
   const date = formatInstallDate(input.install.date);
   const win = formatWindow(input.install.window);
-  // Body kept under 160 chars where possible. STOP language required for TCPA.
+  const price = `$${centsToDollars(input.quote.totalCents).toFixed(2)}`;
+  const discountTag = input.quote.discountPct ? ` (${input.quote.discountPct}% discount applied)` : '';
   const lines = [
-    `${COMPANY_NAME}: ${input.customer.fullName}, your install is booked.`,
+    `${COMPANY_NAME}: ${input.customer.fullName}, your ${input.quote.vehicleSummary} install is booked.`,
     `${date}, ${win}.`,
+    `Total: ${price}${discountTag} + tax.`,
     `Ref ${input.bookingToken}.`,
   ];
   // Tier-2 ADAS tail — warm-up so the tech's at-install conversation
