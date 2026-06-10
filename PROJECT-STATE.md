@@ -6,14 +6,20 @@ Live client site at `pinkautoglass.com`; as of 2026-06-05 the satellite quoter/q
 ## What's Built
 - [x] Production website and deployment pipeline live in this repo
 - [x] GitHub Actions `CI/CD Pipeline` and `Security Checks` workflows active
+- [x] 2026-06-10: Discount rescue flow live. Quote-unbooked-15m sends a customer-only 10% offer (SMS, email fallback) linking to `/quote/book/[token]` — a server-rendered booking page with prefilled name/zip and the discount auto-applied. Replaced `quote_unbooked_5m` (which spammed the team). Booking RPC snapshots `accepted_total_cents`; reporting/GA4 use the accepted price. E2E verified live same day (booking PAG-50A1, canceled test). Migration: `supabase/migrations/20260610_quote_discount_rescue.sql` (applied to prod).
 
 ## Current Focus
 Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satellite quoter parity is now closed across the 24-domain inventory; next attribution gate is the export-candidate comparison after the 7-day observation window. Deferred 2026-06-06: Automated Quotes report display simplification only, using the existing page and no data changes; preferred direction is customer-first Version 2 in `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
 
 ## Decisions Made
 - 2026-04-12: Treat queued failure `ci_failure_210` as self-healed because `gh run view` for commit `b8b7c5e` showed the relevant `CI/CD Pipeline` run completed successfully, with no failed-step logs available.
+- 2026-06-10 (Doug, discount rescue): 10% off the full total including ADAS calibration, no price-floor cap; "one install spot left" scarcity copy approved despite reviewer pushback; no TCPA quiet-hours gate (customer-initiated); no 30-min team alert — team comms are the immediate quote-ready email only, now with NAGS part number + supplier cost; SMS consent checkbox wording extended to "special offers"; 24h discount expiry; email is fallback-only for SMS-ineligible customers (one message, never two).
+- 2026-06-09/10 (Doug, alerts): admin/system emails (daily report, data-gap, sync-stale, attribution health) go to Doug only via `ADMIN_EMAIL`; operational alerts (hot quote, bookings, manual review) stay on `ADMIN_EMAIL_ALERTS` (all three). All admin dashboard timestamps pinned to America/Denver.
 
 ## Known Issues
+- `POSTGRES_URL` in `.env.local` points at a stale Supabase project ref (`ihbhwusdqdcdpvgucvsr`) — psql fails. Live ref is `fypzafbsfrrlrrufzkol`. Workaround: run SQL via the Supabase management API (`api.supabase.com/v1/projects/<ref>/database/query`, CLI token from `~/.supabase/access-token`, must send a User-Agent header or Cloudflare 403s).
+- 2026-06-10: one stray GA4 purchase conversion (~$286) in Google Ads data from the TESTY MCTEST end-to-end test booking (PAG-50A1, canceled + is_test).
+- ~~Review-request infinite re-enrollment~~ — RESOLVED `7a5cc18`: dedup now includes 'failed' so undeliverable phones (Humayoon loop since 2026-05-22) stop re-enrolling and re-alerting.
 - `scripts/auto-fix/project-map.json` points PinkAutoGlassWebsite at a stale workspace path instead of this repo, which can misroute future auto-fix attempts.
 - Working tree may contain unrelated handoff artifacts such as `tasks/2026-06-04-git-state-handoff.md`; avoid touching them unless explicitly scoped.
 - 2026-06-01 same-day lead checks can look scarier in `leads` than in RingCentral because call rows are fresher than lead rows; use `ringcentral_calls` for real-time phone-volume checks.
@@ -21,13 +27,14 @@ Attribution PR2 observe-only monitoring and quoter/contact-mix monitoring. Satel
 - Homepage quoter rollout may be reducing phone-first intent even though site traffic is not down. Morning 2026-06-01 evidence: normal/high sessions, lower-than-late-May call volume, only one priced quote and no quoter booking by midday.
 
 ## Next Steps (priority order)
-1. **Attribution PR2 observation gate** — after 7+ days of cron runs, execute `node scripts/compare-export-candidates.js`; only proceed to PR2b if newly-skipped rate is acceptably low.
-2. **Automated Quotes report display cleanup (deferred to 2026-06-07)** — presentation-layer only. Use existing page, no data/API changes. Preferred table: `Customer | Source | Vehicle | Lookup | Quote | Stage | Timestamp`, with customer cell stacking name/phone/email and no default Comms/Action columns. Handoff: `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
-3. ~~RingCentral sync bug~~ — DONE, merged (see Open-Questions note above; commits `0a5e1bb`/`4b0b61b`/`a0103e6`).
-4. **Monitor quoter vs call volume** — watch call volume vs quoter engagement; decide on phone-first homepage fast-follow if calls stay soft.
-5. **Reconnect-monitor guard (deferred)** — council (2026-06-04) approved adding the satellite stale-build audit (`tasks/2026-06-04-vercel-git-reconnect-steps.md`) as a scheduled check so a silent auto-deploy break can't recur undetected. Not yet built.
-6. **Review/merge `feat/satellite-quote-attribution`** — preserved ads-audit drift (observation-only "Quote priced" signal + vehicle-page inline quoters) + batch tooling + session docs, pushed but NOT on main/deployed. Verify `/vehicles/[slug]` and `/vehicles/brands/[make]` render before merge.
-7. Continue monitoring CI/CD alerts; only apply a code fix if a currently failing run reproduces.
+1. **Monitor discount rescue conversions** — watch `quote_unbooked_15m_discount` events and `accepted_total_cents` bookings over the next 1-2 weeks; the open question from review is whether the 10% discount outperforms a plain reminder (A/B test deferred until volume justifies it).
+2. **Attribution PR2 observation gate** — after 7+ days of cron runs, execute `node scripts/compare-export-candidates.js`; only proceed to PR2b if newly-skipped rate is acceptably low.
+3. **Automated Quotes report display cleanup (deferred to 2026-06-07)** — presentation-layer only. Use existing page, no data/API changes. Preferred table: `Customer | Source | Vehicle | Lookup | Quote | Stage | Timestamp`, with customer cell stacking name/phone/email and no default Comms/Action columns. Handoff: `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
+4. ~~RingCentral sync bug~~ — DONE, merged (see Open-Questions note above; commits `0a5e1bb`/`4b0b61b`/`a0103e6`).
+5. **Monitor quoter vs call volume** — watch call volume vs quoter engagement; decide on phone-first homepage fast-follow if calls stay soft.
+6. **Reconnect-monitor guard (deferred)** — council (2026-06-04) approved adding the satellite stale-build audit (`tasks/2026-06-04-vercel-git-reconnect-steps.md`) as a scheduled check so a silent auto-deploy break can't recur undetected. Not yet built.
+7. **Review/merge `feat/satellite-quote-attribution`** — preserved ads-audit drift (observation-only "Quote priced" signal + vehicle-page inline quoters) + batch tooling + session docs, pushed but NOT on main/deployed. Verify `/vehicles/[slug]` and `/vehicles/brands/[make]` render before merge.
+8. Continue monitoring CI/CD alerts; only apply a code fix if a currently failing run reproduces.
 
 ## Key Files
 - `.github/workflows/` — CI/CD and security workflows
