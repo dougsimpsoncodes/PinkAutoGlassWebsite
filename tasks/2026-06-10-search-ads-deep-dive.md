@@ -49,3 +49,15 @@ This file is the **before picture** — compare against the week of Jun 17.
 - **~Jun 12**: PR2 export-candidate observation gate (`node scripts/compare-export-candidates.js`)
 - **Jun 17**: re-run the day-by-day table — first week reflecting today's changes (discount rescue, booking links, quote conversions, MS $100/day, biddable call signal)
 - **Jun 24**: Microsoft budget decision — if cost-per-quote-lead holds near $34 at $100/day, shift real budget from Google
+
+## Addendum — 2026-06-10 evening: quoter-led RSA launched
+
+New RSA (ad `812440528078`) added to Denver > Denver Keywords alongside the
+phone-first control (`811492665732`, untouched). Lands on `/quote`. Top-3
+quote-first headlines pinned to position 1 as a pool; "Carvana-plain" register
+chosen by Doug. No insurance angle (cash-pay positioning); lifetime-warranty
+headline included; charity moved to one description; phone number dropped from
+headlines (policy) — account call asset (720) 918-7465 covers callers.
+Consensus process: Claude draft → Codex + Gemini review → Doug sign-off.
+Script: `scripts/create-quoter-rsa.js`. NOTE for Jun 17 comparison: creative
+mix changed tonight — judge the week as ad+landing-page package, not copy-only.
