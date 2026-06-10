@@ -225,6 +225,10 @@ export default function AutomatedQuoteForm({
   }
 
   async function lookupVin() {
+    if (!isStateInServiceArea(plateState)) {
+      setNotice(OUT_OF_AREA_STATE_MESSAGE);
+      return;
+    }
     setNotice('');
     fireQuoteDiagnostic('quote_attempt_vin');
     setBusy(true);
@@ -509,7 +513,10 @@ function VehicleStage({
   showIntro: boolean;
 }) {
   const plateReady = plate.trim().length >= 2 && plateState.length === 2;
-  const vinReady = vinInput.trim().length === 17;
+  // State is required on both tabs: it drives the service-area gate and the
+  // market stamp on the quote row (VIN-only quotes used to land market=NULL
+  // and vanish from market-filtered admin views).
+  const vinReady = vinInput.trim().length === 17 && plateState.length === 2;
 
   const tabClass = (active: boolean) =>
     `flex-1 rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${
@@ -604,20 +611,33 @@ function VehicleStage({
 
       {mode === 'vin' && (
         <div className="grid gap-3">
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-gray-700">VIN (17 characters)</span>
-            <input
-              value={vinInput}
-              onChange={(event) => setVinInput(event.target.value.toUpperCase().slice(0, 17))}
-              className="w-full rounded-md border border-gray-300 px-3 py-3 font-mono text-base tracking-wider focus:border-pink-500 focus:outline-none"
-              maxLength={17}
-              placeholder="1HGCV1F30NA000000"
-              autoComplete="off"
-            />
-            <span className="mt-1 block text-xs text-gray-500">
-              Look on the dashboard near the windshield, or the door jamb.
-            </span>
-          </label>
+          <div className="grid grid-cols-[1fr_120px] gap-3">
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-gray-700">VIN (17 characters)</span>
+              <input
+                value={vinInput}
+                onChange={(event) => setVinInput(event.target.value.toUpperCase().slice(0, 17))}
+                className="w-full rounded-md border border-gray-300 px-3 py-3 font-mono text-base tracking-wider focus:border-pink-500 focus:outline-none"
+                maxLength={17}
+                placeholder="1HGCV1F30NA000000"
+                autoComplete="off"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-gray-700">State</span>
+              <select
+                value={plateState}
+                onChange={(event) => setPlateState(event.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-lg font-semibold focus:border-pink-500 focus:outline-none"
+              >
+                <option value="">—</option>
+                {STATE_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </label>
+          </div>
+          <span className="-mt-2 block text-xs text-gray-500">
+            Look on the dashboard near the windshield, or the door jamb.
+          </span>
           <button
             type="button"
             onClick={onLookupVin}
@@ -627,9 +647,11 @@ function VehicleStage({
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
             {busy
               ? 'Finding your vehicle…'
-              : !vinReady
+              : vinInput.trim().length < 17
                 ? `${vinInput.length}/17 characters`
-                : 'Find my vehicle'}
+                : !plateState
+                  ? 'Select state to continue'
+                  : 'Find my vehicle'}
           </button>
         </div>
       )}

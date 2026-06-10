@@ -492,3 +492,12 @@ Look for:
 - Fixed on sight per project rule: ADMIN_EMAIL and ADMIN_EMAIL_ALERTS in Vercel production had trailing literal \n corruption — re-added clean via printf, verified pulled values clean. (Runtime was unaffected; email.ts strips \n defensively.) Preview-branch copies on feat/auto-quoter-notification-policy left alone.
 - Also resolved review item #6: $299 quotes are the intentional QUOTE_MIN_TOTAL_CENTS floor (Doug 2026-05-28, pricing.ts). Noted: rescue discount pierces the floor ($299→$269.10) per Doug's no-floor-cap decision; 3 of today's 4 discount offers were floor-price quotes.
 - Verification: 19/19 unit tests, clean build, prod constraint verified, Resend + RingCentral delivery logs cited above.
+
+## 2026-06-10 (evening) — Curt Huntsman invisibility: root cause + fixes
+- Curt called to book ($530.16, ref 23AB09D4) and Doug couldn't find him in admin. Three layers, all diagnosed with evidence:
+  (1) Search: admin search is literal substring; record says "Curt", searches for "Kurt" miss. No code change — search by phone/last name.
+  (2) Emails: both team alerts (12:16 AM + 12:25 AM hot-quote) confirmed DELIVERED via Resend log to all three addresses — buried overnight / possibly spam. No code change.
+  (3) Market filter: Denver/CO view does eq('market', ...) and Curt's row has market=NULL — 8 of last 23 real quotes invisible. Root cause: VIN-tab quoters never collect state; market is stamped from state/zip at price time only.
+- Fixes shipped: VIN tab now requires state (same dropdown + service-area gate as plate tab — VIN users previously bypassed the CO/AZ gate entirely); admin quotes API includes market-NULL rows in market-filtered views.
+- Per Doug: state is enough at quote — explicitly NOT adding a zip stage (preserves 2026-06-05 Codex+Gemini council decision against zip-stage friction).
+- NOT done: backfill of the 8 NULL-market rows (no state data exists to classify them; view fix surfaces them), morning-digest email (offered, not requested yet).

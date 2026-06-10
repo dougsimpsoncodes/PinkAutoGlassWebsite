@@ -133,7 +133,11 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', status);
     }
     if (isMarketFilter(market) && market !== 'all') {
-      query = query.eq('market', market);
+      // Include unknown-market rows: VIN-path quotes historically carry no
+      // state, so market is NULL. A geography filter must not hide quotes
+      // whose geography was never captured (a customer called to book and
+      // was invisible in the Denver view, 2026-06-10).
+      query = query.or(`market.eq.${market},market.is.null`);
     }
 
     const { data, error, count } = await query;
