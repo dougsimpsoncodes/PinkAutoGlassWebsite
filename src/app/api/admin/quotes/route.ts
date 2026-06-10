@@ -38,11 +38,13 @@ interface BookingSummary {
   status: string;
   preferred_install_date: string | null;
   preferred_install_window: string | null;
+  accepted_total_cents: number | null;
+  discount_pct: number | null;
 }
 
 interface NotificationEventSummary {
   quote_id: string;
-  event_type: 'quote_ready' | 'quote_unbooked_5m' | 'appointment_booked';
+  event_type: 'quote_ready' | 'quote_unbooked_5m' | 'quote_unbooked_15m_discount' | 'appointment_booked';
   status: 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
   customer_email_status: string | null;
   customer_sms_status: string | null;
@@ -171,7 +173,7 @@ export async function GET(request: NextRequest) {
     if (quoteIds.length > 0) {
       const { data: bookings, error: bookingsError } = await client
         .from('automated_quote_bookings')
-        .select('id, quote_id, booking_token, status, preferred_install_date, preferred_install_window')
+        .select('id, quote_id, booking_token, status, preferred_install_date, preferred_install_window, accepted_total_cents, discount_pct')
         .in('quote_id', quoteIds);
 
       if (bookingsError) {
@@ -227,6 +229,8 @@ export async function GET(request: NextRequest) {
         booking_status: booking?.status || null,
         booking_date: booking?.preferred_install_date || null,
         booking_window: booking?.preferred_install_window || null,
+        booking_accepted_total_cents: booking?.accepted_total_cents ?? null,
+        booking_discount_pct: booking?.discount_pct ?? null,
         notification_events: notificationEventMap.get(quote.id) || {},
       };
     });

@@ -27,6 +27,7 @@ interface QuoteBookingFormProps {
     phone?: string;
     email?: string;
   };
+  initialZip?: string;
 }
 
 interface BookingSuccess {
@@ -94,6 +95,7 @@ export default function QuoteBookingForm({
   totalDollars,
   trackingContext,
   initialCustomer,
+  initialZip,
 }: QuoteBookingFormProps) {
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const slots = useMemo(buildSlotOptions, []);
@@ -103,7 +105,7 @@ export default function QuoteBookingForm({
   const [phone, setPhone] = useState(initialCustomer?.phone || '');
   const [email, setEmail] = useState(initialCustomer?.email || '');
   const [street, setStreet] = useState('');
-  const [installZip, setInstallZip] = useState('');
+  const [installZip, setInstallZip] = useState(initialZip || '');
   const [smsConsent, setSmsConsent] = useState(true);
   const [honeypot, setHoneypot] = useState('');
 
@@ -162,9 +164,13 @@ export default function QuoteBookingForm({
       });
       // Fire GA4 purchase event — enables ROAS bidding in Google Ads.
       // transaction_id = bookingToken deduplicates on re-render.
+      // Server-resolved accepted price (discount applied) keeps ROAS honest.
+      const acceptedDollars = typeof data.acceptedTotalCents === 'number'
+        ? data.acceptedTotalCents / 100
+        : parseFloat(totalDollars) || 150;
       trackPurchase(
         data.bookingToken,
-        parseFloat(totalDollars) || 150,
+        acceptedDollars,
         'Windshield Service',
       );
 

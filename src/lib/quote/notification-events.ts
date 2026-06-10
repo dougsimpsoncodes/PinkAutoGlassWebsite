@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export type AutoQuoteNotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'appointment_booked';
+export type AutoQuoteNotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'quote_unbooked_15m_discount' | 'appointment_booked';
 export type AutoQuoteNotificationEventStatus = 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
 export type ChannelStatus = 'sent' | 'skipped' | 'failed';
 
@@ -134,6 +134,7 @@ export async function scheduleQuoteNotificationEvent(input: {
   eventType: AutoQuoteNotificationEventType;
   metadata?: Record<string, unknown>;
   admin?: SupabaseClient | null;
+  scheduledFor?: Date;
 }): Promise<void> {
   const admin = input.admin ?? getQuoteNotificationAdminClient();
   if (!admin) return;
@@ -146,6 +147,7 @@ export async function scheduleQuoteNotificationEvent(input: {
       status: 'pending',
       attempt_count: 0,
       metadata: input.metadata ?? {},
+      ...(input.scheduledFor ? { scheduled_for: input.scheduledFor.toISOString() } : {}),
     });
 
   if (error && (error as { code?: string }).code !== '23505') {
@@ -176,10 +178,13 @@ export async function completeQuoteNotificationEvent(input: {
     ...(input.metadata ? { metadata: input.metadata } : {}),
   };
 
+  // Guarded on status='processing': if a booking landed mid-send, the booking
+  // route already set this row to 'skipped' and completion must not overwrite it.
   const { error } = await admin
     .from('automated_quote_notification_events')
     .update(update)
-    .eq('id', input.eventId);
+    .eq('id', input.eventId)
+    .eq('status', 'processing');
 
   if (error) {
     console.error('[quote-notification-event] completion failed:', error.message);

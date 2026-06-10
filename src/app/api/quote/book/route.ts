@@ -91,6 +91,8 @@ interface ExistingBookingSummary {
   preferred_install_window: 'AM' | 'PM';
   sms_consent: boolean;
   is_test: boolean | null;
+  accepted_total_cents: number | null;
+  discount_pct: number | null;
   notification_status: 'pending' | 'email_sent' | 'sms_sent' | 'both_sent' | 'failed' | 'partial' | 'skipped';
 }
 
@@ -168,7 +170,7 @@ export async function POST(request: NextRequest) {
     // 2) One booking per quote.
     const { data: existing } = await supabase
       .from('automated_quote_bookings')
-      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, notification_status')
+      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, accepted_total_cents, discount_pct, notification_status')
       .eq('quote_id', quoteRow.id)
       .maybeSingle<ExistingBookingSummary>();
     if (existing) {
@@ -263,7 +265,7 @@ export async function POST(request: NextRequest) {
 
     const { data: rpcResult, error: rpcError } = await supabase
       .rpc('fn_create_quote_booking', { payload: insertPayload })
-      .single<{ id: string; booking_token: string }>();
+      .single<{ id: string; booking_token: string; accepted_total_cents: number | null; discount_pct: number | null }>();
 
     if (rpcError || !rpcResult) {
       console.error('[quote-book] RPC insert failed:', rpcError?.message);
@@ -275,7 +277,7 @@ export async function POST(request: NextRequest) {
 
     const { data: persistedBooking, error: persistedBookingError } = await supabase
       .from('automated_quote_bookings')
-      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, notification_status')
+      .select('id, booking_token, full_name, phone_e164, email, install_street, install_city, install_state, install_zip, preferred_install_date, preferred_install_window, sms_consent, is_test, accepted_total_cents, discount_pct, notification_status')
       .eq('id', rpcResult.id)
       .single<ExistingBookingSummary>();
     if (persistedBookingError || !persistedBooking) {
@@ -318,19 +320,24 @@ export async function POST(request: NextRequest) {
         });
         const name = splitName(persistedBooking.full_name);
         const attribution = await buildAttributionFromSession(supabase, quoteRow.session_id);
-        const leadId = await findOrCreateQuoteLead(supabase, anon, quoteRow, {
-          firstName: name.firstName,
-          lastName: name.lastName,
-          phone: persistedBooking.phone_e164,
-          email: persistedBooking.email,
-          smsConsent: persistedBooking.sms_consent,
-          state: quoteRow.state,
-          zip: persistedBooking.install_zip || quoteRow.zip,
-          sessionId: quoteRow.session_id,
-          attribution,
-          isTest: effectiveIsTest,
-          status: 'scheduled',
-        });
+        const leadId = await findOrCreateQuoteLead(
+          supabase,
+          anon,
+          { ...quoteRow, accepted_total_cents: rpcResult.accepted_total_cents },
+          {
+            firstName: name.firstName,
+            lastName: name.lastName,
+            phone: persistedBooking.phone_e164,
+            email: persistedBooking.email,
+            smsConsent: persistedBooking.sms_consent,
+            state: quoteRow.state,
+            zip: persistedBooking.install_zip || quoteRow.zip,
+            sessionId: quoteRow.session_id,
+            attribution,
+            isTest: effectiveIsTest,
+            status: 'scheduled',
+          },
+        );
         if (!quoteRow.lead_id && leadId) {
           await supabase.from('automated_quotes').update({ lead_id: leadId }).eq('id', quoteRow.id);
         }
@@ -362,8 +369,32 @@ export async function POST(request: NextRequest) {
         metadata: { quoteToken: quoteRow.quote_token, bookingToken: rpcResult.booking_token, reason: 'booked_before_followup' },
       })
       .eq('quote_id', quoteRow.id)
-      .eq('event_type', 'quote_unbooked_5m')
+      .in('event_type', ['quote_unbooked_5m', 'quote_unbooked_15m_discount'])
       .in('status', ['pending', 'processing', 'failed', 'partial']);
+
+    // Also cancel pending discount offers on SIBLING quotes for the same phone.
+    // Quote-wizard retries create multiple quote rows for one person; booking
+    // any of them means none should get a "you haven't booked" discount text.
+    if (persistedBooking.phone_e164) {
+      const { data: siblingQuotes } = await supabase
+        .from('automated_quotes')
+        .select('id')
+        .eq('phone_e164', persistedBooking.phone_e164)
+        .neq('id', quoteRow.id);
+      const siblingIds = (siblingQuotes ?? []).map((row: { id: string }) => row.id);
+      if (siblingIds.length > 0) {
+        await supabase
+          .from('automated_quote_notification_events')
+          .update({
+            status: 'skipped',
+            last_error: 'sibling_quote_booked',
+            metadata: { quoteToken: quoteRow.quote_token, bookingToken: rpcResult.booking_token, reason: 'sibling_quote_booked' },
+          })
+          .in('quote_id', siblingIds)
+          .eq('event_type', 'quote_unbooked_15m_discount')
+          .in('status', ['pending', 'processing', 'failed', 'partial']);
+      }
+    }
 
     // 8) Persist notification outcome onto the booking row. Failure to
     // update is logged but does not affect the response.
@@ -374,6 +405,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       bookingToken: rpcResult.booking_token,
+      acceptedTotalCents: rpcResult.accepted_total_cents ?? quoteRow.quote_total_cents ?? null,
+      discountPct: rpcResult.discount_pct ?? null,
       notification: {
         status: notification.status,
         channels: notification.channels,
@@ -459,7 +492,11 @@ async function sendAppointmentBookedNotificationEvent(input: {
       window: input.booking.preferred_install_window,
     },
     quote: {
-      totalCents: input.quoteRow.quote_total_cents || 0,
+      // The booking row's accepted price is the deal of record — it already
+      // reflects the rescue discount when one was active at booking time.
+      totalCents: input.booking.accepted_total_cents ?? input.quoteRow.quote_total_cents ?? 0,
+      originalTotalCents: input.quoteRow.quote_total_cents,
+      discountPct: input.booking.discount_pct,
       vehicleSummary: vehicleSummary || 'your vehicle',
     },
     adasTier: readAdasTier(input.quoteRow.confidence_reasons),

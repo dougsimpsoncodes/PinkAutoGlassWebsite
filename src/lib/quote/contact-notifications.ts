@@ -42,6 +42,10 @@ export interface QuoteContactNotificationInput {
   };
   quote: {
     totalCents?: number | null;
+    selectedBrand?: string | null;
+    partDescription?: string | null;
+    nagsNumber?: string | null;
+    supplierCostCents?: number | null;
   };
 }
 
@@ -90,12 +94,16 @@ export async function sendQuoteContactNotifications(input: QuoteContactNotificat
     return { kind, skipped: true, reason: claim.reason ?? 'quote_ready_event_not_claimed' };
   }
 
-  const [teamEmail, teamSms, customerEmail, customerSms] = await Promise.all([
+  // allSettled: a thrown send must not leave the event stuck in 'processing'.
+  const settled = await Promise.allSettled([
     shouldSendNotificationChannel(claim.priorChannels, 'teamEmail') ? sendQuoteReadyTeamEmail(input) : Promise.resolve(true),
     shouldSendNotificationChannel(claim.priorChannels, 'teamSms') ? sendQuoteReadyTeamSms(input) : Promise.resolve(true),
     shouldSendNotificationChannel(claim.priorChannels, 'customerEmail') ? sendQuoteReadyCustomerEmail(input) : Promise.resolve(true),
     shouldSendNotificationChannel(claim.priorChannels, 'customerSms') ? sendQuoteReadyCustomerSms(input) : Promise.resolve(true),
   ]);
+  const [teamEmail, teamSms, customerEmail, customerSms] = settled.map(
+    (entry) => entry.status === 'fulfilled' ? entry.value : false
+  );
   const channels = {
     teamEmail: channelStatusFromAttempt(claim.priorChannels?.teamEmail, true, teamEmail),
     teamSms: channelStatusFromAttempt(claim.priorChannels?.teamSms, true, teamSms),
@@ -110,10 +118,13 @@ export async function sendQuoteContactNotifications(input: QuoteContactNotificat
     metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
   });
 
-  if (Object.values(channels).some((status) => status === 'sent')) {
+  // Discount rescue fires only when the CUSTOMER actually received the quote —
+  // a team-only success means the customer never saw a price to discount.
+  if (channels.customerEmail === 'sent' || channels.customerSms === 'sent') {
     await scheduleQuoteNotificationEvent({
       quoteId: input.quoteId,
-      eventType: 'quote_unbooked_5m',
+      eventType: 'quote_unbooked_15m_discount',
+      scheduledFor: new Date(Date.now() + 15 * 60 * 1000),
       metadata: { quoteToken: input.quoteToken, leadId: input.leadId },
     });
   }
@@ -169,6 +180,9 @@ async function sendQuoteReadyTeamEmail(input: QuoteContactNotificationInput): Pr
   <p><strong>Vehicle:</strong> ${escapeHtml(vehicle)}</p>
   <p><strong>Location:</strong> ${escapeHtml(locationSummary(input))}</p>
   ${input.vehicle.vin ? `<p><strong>VIN:</strong> ${escapeHtml(input.vehicle.vin)}</p>` : ''}
+  ${input.quote.nagsNumber ? `<p><strong>Part (NAGS):</strong> ${escapeHtml(input.quote.nagsNumber)}${input.quote.selectedBrand ? ` — ${escapeHtml(input.quote.selectedBrand)}` : ''}</p>` : ''}
+  ${input.quote.partDescription ? `<p><strong>Part description:</strong> ${escapeHtml(input.quote.partDescription)}</p>` : ''}
+  ${input.quote.supplierCostCents ? `<p><strong>Supplier cost:</strong> $${centsToDollars(input.quote.supplierCostCents).toFixed(2)}</p>` : ''}
   <p><strong>Lead ID:</strong> ${escapeHtml(input.leadId)}</p>
 </body></html>`,
   );

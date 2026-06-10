@@ -50,6 +50,10 @@ interface AutomatedQuoteRow {
   is_test: boolean | null;
   contact_submitted_at: string | null;
   quote_total_cents: number | null;
+  selected_brand: string | null;
+  selected_part_description: string | null;
+  selected_nags_number: string | null;
+  supplier_cost_cents: number | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
@@ -103,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     const { data: quote, error: quoteError } = await admin
       .from('automated_quotes')
-      .select('id, quote_token, lead_id, status, session_id, is_test, contact_submitted_at, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
+      .select('id, quote_token, lead_id, status, session_id, is_test, contact_submitted_at, quote_total_cents, selected_brand, selected_part_description, selected_nags_number, supplier_cost_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, zip, state, confidence_reasons')
       .eq('quote_token', input.quoteToken)
       .single<AutomatedQuoteRow>();
 
@@ -207,6 +211,10 @@ export async function POST(request: NextRequest) {
         },
         quote: {
           totalCents: quote.quote_total_cents,
+          selectedBrand: quote.selected_brand,
+          partDescription: quote.selected_part_description,
+          nagsNumber: quote.selected_nags_number,
+          supplierCostCents: quote.supplier_cost_cents,
         },
       }).catch((err) => {
         console.error('[quote-contact] notification policy failed:', err instanceof Error ? err.message : err);

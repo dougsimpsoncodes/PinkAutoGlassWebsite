@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isCustomerSmsEnabled } from '@/lib/constants';
-import { sendEmail, sendAdminAlertEmail } from '@/lib/notifications/email';
-import { sendSMS, sendAdminSMS } from '@/lib/notifications/sms';
+import { sendEmail } from '@/lib/notifications/email';
+import { sendSMS } from '@/lib/notifications/sms';
 import { centsToDollars } from '@/lib/quote/pricing';
-import { shortQuoteToken } from '@/lib/quote/leadSync';
+import { getNextTwoWorkingDays, isTomorrow } from '@/lib/quote/schedule-slots';
 import {
   boolToChannelStatus,
   claimQuoteNotificationEvent,
@@ -15,7 +15,10 @@ import {
 } from '@/lib/quote/notification-events';
 
 const CALLBACK_PHONE = '(720) 918-7465';
-const FOLLOWUP_DELAY_MS = 5 * 60 * 1000;
+const DISCOUNT_EVENT_TYPE = 'quote_unbooked_15m_discount';
+const DISCOUNT_PCT = 10;
+const DISCOUNT_DEDUP_WINDOW_MS = 24 * 60 * 60 * 1000;
+const MAX_ATTEMPTS = 5;
 const MAX_BATCH_SIZE = 20;
 
 interface PendingHotQuoteEventRow {
@@ -25,6 +28,7 @@ interface PendingHotQuoteEventRow {
 interface HotQuoteRow {
   id: string;
   quote_token: string;
+  booking_link_token: string | null;
   lead_id: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -34,13 +38,12 @@ interface HotQuoteRow {
   status: string;
   is_test: boolean | null;
   quote_total_cents: number | null;
+  discount_offered_at: string | null;
+  discounted_total_cents: number | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_trim: string | null;
-  vin: string | null;
-  state: string | null;
-  zip: string | null;
 }
 
 export interface HotQuoteFollowupResult {
@@ -72,16 +75,16 @@ export async function processHotQuoteFollowups(input: {
   }
 
   const now = input.now ?? new Date();
-  const cutoff = new Date(now.getTime() - FOLLOWUP_DELAY_MS).toISOString();
   const limit = Math.min(Math.max(input.limit ?? MAX_BATCH_SIZE, 1), MAX_BATCH_SIZE);
 
   const { data: pendingEvents, error: eventsError } = await admin
     .from('automated_quote_notification_events')
     .select('quote_id')
-    .eq('event_type', 'quote_unbooked_5m')
+    .eq('event_type', DISCOUNT_EVENT_TYPE)
     .in('status', ['pending', 'processing', 'failed', 'partial'])
-    .lte('created_at', cutoff)
-    .order('created_at', { ascending: true })
+    .lte('scheduled_for', now.toISOString())
+    .lt('attempt_count', MAX_ATTEMPTS)
+    .order('scheduled_for', { ascending: true })
     .limit(limit);
 
   if (eventsError) {
@@ -91,13 +94,13 @@ export async function processHotQuoteFollowups(input: {
 
   for (const event of (pendingEvents ?? []) as PendingHotQuoteEventRow[]) {
     result.scanned++;
-    await processOneHotQuote(admin, event.quote_id, result);
+    await processOneDiscountOffer(admin, event.quote_id, result);
   }
 
   return result;
 }
 
-async function processOneHotQuote(
+async function processOneDiscountOffer(
   admin: SupabaseClient,
   quoteId: string,
   result: HotQuoteFollowupResult
@@ -105,7 +108,7 @@ async function processOneHotQuote(
   const claim = await claimQuoteNotificationEvent({
     admin,
     quoteId,
-    eventType: 'quote_unbooked_5m',
+    eventType: DISCOUNT_EVENT_TYPE,
     metadata: { source: 'processHotQuoteFollowups' },
   });
   if (!claim.claimed || !claim.eventId) {
@@ -125,32 +128,34 @@ async function processOneHotQuote(
     return;
   }
 
-  const booked = await hasBooking(admin, quoteId);
-  if (booked) {
+  const skipReason = await discountSkipReason(admin, quote);
+  if (skipReason) {
     result.skipped++;
     await completeQuoteNotificationEvent({
       admin,
       eventId: claim.eventId,
       status: 'skipped',
-      error: 'already_booked',
-      metadata: { quoteToken: quote.quote_token, reason: 'already_booked' },
+      error: skipReason,
+      metadata: { quoteToken: quote.quote_token, reason: skipReason },
     });
     return;
   }
 
-  if (quote.is_test || !quote.phone_e164 || !quote.quote_total_cents) {
-    result.skipped++;
+  const discountedCents = await persistDiscount(admin, quote);
+  if (!discountedCents) {
+    result.failed++;
     await completeQuoteNotificationEvent({
       admin,
       eventId: claim.eventId,
-      status: 'skipped',
-      error: quote.is_test ? 'test_quote' : 'missing_contact_or_price',
+      status: 'failed',
+      error: 'discount_persist_failed',
       metadata: { quoteToken: quote.quote_token },
     });
     return;
   }
 
-  if (await hasBooking(admin, quoteId)) {
+  // Final booking re-check after the discount write, immediately before send.
+  if (await hasBooking(admin, quote.id)) {
     result.skipped++;
     await completeQuoteNotificationEvent({
       admin,
@@ -162,18 +167,27 @@ async function processOneHotQuote(
     return;
   }
 
-  const [teamEmail, teamSms, customerEmail, customerSms] = await Promise.all([
-    shouldSendNotificationChannel(claim.priorChannels, 'teamEmail') ? sendHotQuoteTeamEmail(quote) : Promise.resolve(true),
-    shouldSendNotificationChannel(claim.priorChannels, 'teamSms') ? sendHotQuoteTeamSms(quote) : Promise.resolve(true),
-    shouldSendNotificationChannel(claim.priorChannels, 'customerEmail') ? sendHotQuoteCustomerEmail(quote) : Promise.resolve(true),
-    shouldSendNotificationChannel(claim.priorChannels, 'customerSms') ? sendHotQuoteCustomerSms(quote) : Promise.resolve(true),
+  const smsEligible = Boolean(quote.sms_consent && isCustomerSmsEnabled() && quote.phone_e164);
+  // Email is the fallback for SMS-ineligible customers (no consent or SMS
+  // kill-switch off), not a second message on top of the SMS.
+  const emailEligible = !smsEligible && Boolean(quote.email);
+
+  const [smsSettled, emailSettled] = await Promise.allSettled([
+    smsEligible && shouldSendNotificationChannel(claim.priorChannels, 'customerSms')
+      ? sendDiscountCustomerSms(quote, discountedCents)
+      : Promise.resolve(true),
+    emailEligible && shouldSendNotificationChannel(claim.priorChannels, 'customerEmail')
+      ? sendDiscountCustomerEmail(quote, discountedCents)
+      : Promise.resolve(true),
   ]);
+  const customerSms = smsSettled.status === 'fulfilled' ? smsSettled.value : false;
+  const customerEmail = emailSettled.status === 'fulfilled' ? emailSettled.value : false;
 
   const channels = {
-    teamEmail: channelStatusFromAttempt(claim.priorChannels?.teamEmail, true, teamEmail),
-    teamSms: channelStatusFromAttempt(claim.priorChannels?.teamSms, true, teamSms),
-    customerEmail: channelStatusFromAttempt(claim.priorChannels?.customerEmail, Boolean(quote.email), customerEmail),
-    customerSms: channelStatusFromAttempt(claim.priorChannels?.customerSms, Boolean(quote.sms_consent && isCustomerSmsEnabled()), customerSms),
+    teamEmail: 'skipped' as ChannelStatus,
+    teamSms: 'skipped' as ChannelStatus,
+    customerEmail: channelStatusFromAttempt(claim.priorChannels?.customerEmail, emailEligible, customerEmail),
+    customerSms: channelStatusFromAttempt(claim.priorChannels?.customerSms, smsEligible, customerSms),
   };
   const status = combineEventStatus(channels);
   if (status === 'failed') result.failed++;
@@ -184,14 +198,92 @@ async function processOneHotQuote(
     eventId: claim.eventId,
     status,
     channels,
-    metadata: { quoteToken: quote.quote_token, leadId: quote.lead_id },
+    metadata: {
+      quoteToken: quote.quote_token,
+      leadId: quote.lead_id,
+      discountPct: DISCOUNT_PCT,
+      discountedTotalCents: discountedCents,
+    },
   });
+}
+
+async function discountSkipReason(admin: SupabaseClient, quote: HotQuoteRow): Promise<string | null> {
+  if (quote.is_test) return 'test_quote';
+  // Manual-review quotes have no price to discount; their immediate
+  // team/customer comms already cover follow-up.
+  if (!quote.quote_total_cents) return 'no_price';
+  if (!quote.booking_link_token) return 'missing_booking_link_token';
+  if (!quote.phone_e164 && !quote.email) return 'no_contact';
+
+  if (await hasBooking(admin, quote.id)) return 'already_booked';
+
+  // One discount per phone per 24h: quote-wizard retries create new quote
+  // rows for the same person, and each schedules its own discount event.
+  if (quote.phone_e164) {
+    const since = new Date(Date.now() - DISCOUNT_DEDUP_WINDOW_MS).toISOString();
+    const { data: recentOffer, error } = await admin
+      .from('automated_quotes')
+      .select('id')
+      .eq('phone_e164', quote.phone_e164)
+      .neq('id', quote.id)
+      .gte('discount_offered_at', since)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+    if (error) {
+      console.error('[hot-quote-followup] discount dedup lookup failed:', error.message);
+      return 'dedup_lookup_failed';
+    }
+    if (recentOffer?.id) return 'discount_recently_offered';
+  }
+
+  return null;
+}
+
+/**
+ * Writes the discount to the quote row before any message goes out, so the
+ * booking page and booking RPC always agree with what the customer was told.
+ * The conditional update keeps the original offer timestamp on retries —
+ * a failed SMS retry must not extend the 24h expiry window.
+ */
+async function persistDiscount(admin: SupabaseClient, quote: HotQuoteRow): Promise<number | null> {
+  if (quote.discount_offered_at && quote.discounted_total_cents) {
+    return quote.discounted_total_cents;
+  }
+
+  const discountedCents = Math.round(quote.quote_total_cents! * (1 - DISCOUNT_PCT / 100));
+  const { error } = await admin
+    .from('automated_quotes')
+    .update({
+      discount_pct: DISCOUNT_PCT,
+      discounted_total_cents: discountedCents,
+      discount_offered_at: new Date().toISOString(),
+    })
+    .eq('id', quote.id)
+    .is('discount_offered_at', null);
+
+  if (error) {
+    console.error('[hot-quote-followup] discount persist failed:', error.message);
+    return null;
+  }
+
+  // A concurrent attempt may have won the conditional update; read back the
+  // authoritative value either way.
+  const { data, error: readError } = await admin
+    .from('automated_quotes')
+    .select('discounted_total_cents')
+    .eq('id', quote.id)
+    .single<{ discounted_total_cents: number | null }>();
+  if (readError || !data?.discounted_total_cents) {
+    console.error('[hot-quote-followup] discount readback failed:', readError?.message);
+    return null;
+  }
+  return data.discounted_total_cents;
 }
 
 async function loadQuote(admin: SupabaseClient, quoteId: string): Promise<HotQuoteRow | null> {
   const { data, error } = await admin
     .from('automated_quotes')
-    .select('id, quote_token, lead_id, first_name, last_name, phone_e164, email, sms_consent, status, is_test, quote_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vin, state, zip')
+    .select('id, quote_token, booking_link_token, lead_id, first_name, last_name, phone_e164, email, sms_consent, status, is_test, quote_total_cents, discount_offered_at, discounted_total_cents, vehicle_year, vehicle_make, vehicle_model, vehicle_trim')
     .eq('id', quoteId)
     .single<HotQuoteRow>();
   if (error) {
@@ -215,76 +307,68 @@ async function hasBooking(admin: SupabaseClient, quoteId: string): Promise<boole
   return Boolean(data?.id);
 }
 
-async function sendHotQuoteCustomerEmail(quote: HotQuoteRow): Promise<boolean> {
+/**
+ * Day label for the "install spot" claim, computed on Denver's calendar.
+ * The cron runs in UTC; after ~5pm Denver, UTC is already on the next
+ * calendar day, so naive Date math would name the wrong day. Mirrors the
+ * pill picker rules: no same-day, Mon-Sat, federal holidays skipped.
+ */
+function nextInstallDayLabel(): string {
+  const denverIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Denver' });
+  const [y, m, d] = denverIso.split('-').map(Number);
+  const denverToday = new Date(y, m - 1, d, 12);
+  const [day1] = getNextTwoWorkingDays(denverToday);
+  if (isTomorrow(day1, denverToday)) return 'tomorrow';
+  const fullDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return fullDayNames[day1.getDay()];
+}
+
+function bookingUrl(quote: HotQuoteRow): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinkautoglass.com';
+  return `${siteUrl}/quote/book/${quote.booking_link_token}`;
+}
+
+async function sendDiscountCustomerSms(quote: HotQuoteRow, discountedCents: number): Promise<boolean> {
+  if (!quote.phone_e164) return false;
+  const firstName = quote.first_name || 'Hi';
+  const vehicle = vehicleSummary(quote);
+  const dayLabel = nextInstallDayLabel();
+  const price = `$${centsToDollars(discountedCents).toFixed(2)}`;
+  return sendSMS({
+    to: quote.phone_e164,
+    message: `${firstName}, thanks for your ${vehicle} quote. We have one install spot left ${dayLabel} and can offer you 10% off to book now. Your discounted price: ${price}. Book here: ${bookingUrl(quote)}. Reply STOP to opt out.`,
+  });
+}
+
+async function sendDiscountCustomerEmail(quote: HotQuoteRow, discountedCents: number): Promise<boolean> {
   if (!quote.email) return false;
-  const ref = shortQuoteToken(quote.quote_token);
   const firstName = escapeHtml(quote.first_name || 'there');
-  const price = formatPrice(quote);
+  const vehicle = escapeHtml(vehicleSummary(quote));
+  const dayLabel = escapeHtml(nextInstallDayLabel());
+  const originalPrice = `$${centsToDollars(quote.quote_total_cents!).toFixed(2)}`;
+  const price = `$${centsToDollars(discountedCents).toFixed(2)}`;
+  const url = bookingUrl(quote);
   return sendEmail({
     to: quote.email,
-    subject: 'Pink Auto Glass: your quote is ready to book',
+    subject: `Pink Auto Glass: 10% off your quote — one install spot left ${dayLabel}`,
     leadId: quote.lead_id ?? undefined,
     html: `<!DOCTYPE html>
 <html><body style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <h1 style="color: #ec4899; margin: 0 0 16px 0;">Your quote is ready to book</h1>
+  <h1 style="color: #ec4899; margin: 0 0 16px 0;">10% off — one install spot left ${dayLabel}</h1>
   <p>Hi ${firstName},</p>
-  <p>Your installed price from Pink Auto Glass is still ready: <strong>${escapeHtml(price)}</strong>.</p>
-  <p>If you would like help booking, call us at <strong>${CALLBACK_PHONE}</strong>.</p>
-  <p>Reference: <strong>${escapeHtml(ref)}</strong></p>
+  <p>Thanks for your ${vehicle} quote. We have one install spot left ${dayLabel} and can offer you 10% off to book now.</p>
+  <p style="font-size: 18px;">Your discounted price: <span style="text-decoration: line-through; color: #6b7280;">${escapeHtml(originalPrice)}</span> <strong style="font-size: 24px;">${escapeHtml(price)}</strong></p>
+  <p style="margin: 24px 0;">
+    <a href="${url}" style="background: #ec4899; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Book your install</a>
+  </p>
+  <p>Questions? Call us at <strong>${CALLBACK_PHONE}</strong>.</p>
   <p>Thanks,<br>Pink Auto Glass</p>
 </body></html>`,
   });
 }
 
-async function sendHotQuoteCustomerSms(quote: HotQuoteRow): Promise<boolean> {
-  if (!quote.sms_consent || !isCustomerSmsEnabled() || !quote.phone_e164) return false;
-  return sendSMS({
-    to: quote.phone_e164,
-    message: `Pink Auto Glass: your installed price ${formatPrice(quote)} is ready to book. Call ${CALLBACK_PHONE} if you want help. Ref ${shortQuoteToken(quote.quote_token)}. Reply STOP to opt out.`,
-  });
-}
-
-async function sendHotQuoteTeamEmail(quote: HotQuoteRow): Promise<boolean> {
-  const ref = shortQuoteToken(quote.quote_token);
-  return sendAdminAlertEmail(
-    `Hot Quote Not Booked - ${ref}: ${customerName(quote)} - ${formatPrice(quote)}`,
-    `<!DOCTYPE html>
-<html><body style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-  <h2>Hot Quote Not Booked</h2>
-  <p>A customer received an installed price five minutes ago and has not booked an appointment yet.</p>
-  <p><strong>Reference:</strong> ${escapeHtml(ref)}</p>
-  <p><strong>Price:</strong> ${escapeHtml(formatPrice(quote))}</p>
-  <p><strong>Customer:</strong> ${escapeHtml(customerName(quote))}</p>
-  <p><strong>Phone:</strong> ${escapeHtml(quote.phone_e164 || '')}</p>
-  ${quote.email ? `<p><strong>Email:</strong> ${escapeHtml(quote.email)}</p>` : ''}
-  <p><strong>Vehicle:</strong> ${escapeHtml(vehicleSummary(quote))}</p>
-  <p><strong>Location:</strong> ${escapeHtml(locationSummary(quote))}</p>
-  ${quote.vin ? `<p><strong>VIN:</strong> ${escapeHtml(quote.vin)}</p>` : ''}
-  ${quote.lead_id ? `<p><strong>Lead ID:</strong> ${escapeHtml(quote.lead_id)}</p>` : ''}
-</body></html>`,
-  );
-}
-
-async function sendHotQuoteTeamSms(quote: HotQuoteRow): Promise<boolean> {
-  return sendAdminSMS(
-    `Hot quote not booked ${shortQuoteToken(quote.quote_token)}: ${customerName(quote)} | ${quote.phone_e164 || 'no phone'} | ${vehicleSummary(quote)} | ${formatPrice(quote)} | ${locationSummary(quote)}`
-  );
-}
-
-function customerName(quote: HotQuoteRow): string {
-  return [quote.first_name, quote.last_name].filter(Boolean).join(' ') || 'Customer';
-}
-
 function vehicleSummary(quote: HotQuoteRow): string {
-  return [quote.vehicle_year, quote.vehicle_make, quote.vehicle_model, quote.vehicle_trim].filter(Boolean).join(' ') || 'Vehicle details captured';
-}
-
-function locationSummary(quote: HotQuoteRow): string {
-  return [quote.state, quote.zip].filter(Boolean).join(' ') || 'Location not captured';
-}
-
-function formatPrice(quote: HotQuoteRow): string {
-  return quote.quote_total_cents ? `$${centsToDollars(quote.quote_total_cents).toFixed(2)}` : 'confirmation needed';
+  return [quote.vehicle_year, quote.vehicle_make, quote.vehicle_model].filter(Boolean).join(' ') || 'vehicle';
 }
 
 function channelStatusFromAttempt(prior: ChannelStatus | undefined, eligible: boolean, ok: boolean): ChannelStatus {

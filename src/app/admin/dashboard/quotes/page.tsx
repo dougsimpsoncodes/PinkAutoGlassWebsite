@@ -22,7 +22,7 @@ import {
   XCircle,
 } from 'lucide-react';
 
-type NotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'appointment_booked';
+type NotificationEventType = 'quote_ready' | 'quote_unbooked_5m' | 'quote_unbooked_15m_discount' | 'appointment_booked';
 type NotificationEventStatus = 'pending' | 'processing' | 'sent' | 'partial' | 'failed' | 'skipped';
 type ChannelStatus = 'sent' | 'skipped' | 'failed' | null;
 
@@ -82,6 +82,8 @@ interface AutomatedQuoteRow {
   booking_status: string | null;
   booking_date: string | null;
   booking_window: string | null;
+  booking_accepted_total_cents: number | null;
+  booking_discount_pct: number | null;
   notification_events: Partial<Record<NotificationEventType, NotificationEventSummary>>;
 }
 
@@ -640,7 +642,14 @@ function QuoteModalSummary({ quote }: { quote: AutomatedQuoteRow }) {
         </div>
         <div>
           <div className="text-xs font-medium uppercase text-gray-400">Installed price</div>
-          <div>{quote.quote_total_cents ? formatCents(quote.quote_total_cents) : 'Not set'}</div>
+          <div>
+            {quote.booking_accepted_total_cents != null
+              ? <>
+                  {formatCents(quote.booking_accepted_total_cents)}
+                  {quote.booking_discount_pct ? <span className="ml-1 text-xs font-semibold text-green-700">({quote.booking_discount_pct}% off)</span> : null}
+                </>
+              : quote.quote_total_cents ? formatCents(quote.quote_total_cents) : 'Not set'}
+          </div>
         </div>
         {quote.booking_date && (
           <div className="sm:col-span-2">
@@ -756,6 +765,7 @@ function commsRowsForQuote(quote: AutomatedQuoteRow, includeNotDue = false) {
   const rows = [
     { eventType: 'quote_ready' as const, label: 'Quote sent', event: events.quote_ready },
     { eventType: 'quote_unbooked_5m' as const, label: '5m follow-up', event: events.quote_unbooked_5m },
+    { eventType: 'quote_unbooked_15m_discount' as const, label: '15m discount', event: events.quote_unbooked_15m_discount },
     { eventType: 'appointment_booked' as const, label: 'Booked', event: events.appointment_booked },
   ];
 
@@ -770,7 +780,10 @@ function commsRowsForQuote(quote: AutomatedQuoteRow, includeNotDue = false) {
 
 function shouldShowMissingCommsRow(quote: AutomatedQuoteRow, eventType: NotificationEventType): boolean {
   if (eventType === 'quote_ready') return !!quote.lead_id && PRICED_STATUSES.has(quote.status);
-  if (eventType === 'quote_unbooked_5m') return !!quote.lead_id && PRICED_STATUSES.has(quote.status) && !hasBooking(quote);
+  // 5m follow-up is retired (replaced by the 15m discount) — show historical
+  // rows when they exist, but never expect one on new quotes.
+  if (eventType === 'quote_unbooked_5m') return false;
+  if (eventType === 'quote_unbooked_15m_discount') return !!quote.lead_id && PRICED_STATUSES.has(quote.status) && !hasBooking(quote);
   if (eventType === 'appointment_booked') return hasBooking(quote);
   return false;
 }

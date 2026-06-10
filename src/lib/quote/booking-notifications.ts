@@ -59,6 +59,10 @@ export interface BookingNotificationInput {
   };
   quote: {
     totalCents: number;
+    // Present when a rescue discount was applied at booking: the pre-discount
+    // price and the percentage, for the "discount applied" confirmation line.
+    originalTotalCents?: number | null;
+    discountPct?: number | null;
     vehicleSummary: string;  // e.g. "2022 Honda Accord"
   };
   /**
@@ -139,7 +143,8 @@ function buildEmailHtml(input: BookingNotificationInput): string {
     <tr><td style="padding: 8px 0; color: #555;">Vehicle</td><td style="padding: 8px 0; text-align: right; font-weight: 600;">${input.quote.vehicleSummary}</td></tr>
     <tr><td style="padding: 8px 0; color: #555;">When</td><td style="padding: 8px 0; text-align: right; font-weight: 600;">${date}, ${win}</td></tr>
     <tr><td style="padding: 8px 0; color: #555; vertical-align: top;">Where</td><td style="padding: 8px 0; text-align: right; font-weight: 600;">${address}</td></tr>
-    <tr><td style="padding: 8px 0; color: #555; border-top: 1px solid #eee;">Installed price</td><td style="padding: 8px 0; text-align: right; font-weight: 700; border-top: 1px solid #eee;">$${total}</td></tr>
+    ${input.quote.discountPct && input.quote.originalTotalCents ? `<tr><td style="padding: 8px 0; color: #555; border-top: 1px solid #eee;">Original price</td><td style="padding: 8px 0; text-align: right; color: #777; text-decoration: line-through; border-top: 1px solid #eee;">$${centsToDollars(input.quote.originalTotalCents).toFixed(2)}</td></tr>
+    <tr><td style="padding: 8px 0; color: #555;">Installed price <span style="color: #16a34a; font-weight: 600;">(${input.quote.discountPct}% discount applied)</span></td><td style="padding: 8px 0; text-align: right; font-weight: 700;">$${total}</td></tr>` : `<tr><td style="padding: 8px 0; color: #555; border-top: 1px solid #eee;">Installed price</td><td style="padding: 8px 0; text-align: right; font-weight: 700; border-top: 1px solid #eee;">$${total}</td></tr>`}
     <tr><td colspan="2" style="padding: 4px 0; text-align: right; color: #777; font-size: 12px;">+ sales tax at install</td></tr>
   </table>
   <h2 style="color: #1a1a1a; font-size: 16px; margin: 24px 0 8px 0;">What's next</h2>

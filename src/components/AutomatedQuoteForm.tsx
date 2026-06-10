@@ -759,7 +759,7 @@ function ContactStage({
           readOnly
           className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-pink-600"
         />
-        <span>Text me this quote and booking updates. Reply STOP to opt out.</span>
+        <span>Text me this quote, booking updates, and special offers. Reply STOP to opt out.</span>
       </label>
 
       {notice && (

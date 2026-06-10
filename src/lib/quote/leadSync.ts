@@ -26,6 +26,8 @@ export interface QuoteLeadQuote {
   status: string | null;
   session_id?: string | null;
   quote_total_cents: number | null;
+  /** Booking-time price of record (rescue discount applied). Overrides quote_total_cents for lead revenue fields. */
+  accepted_total_cents?: number | null;
   vehicle_year: number | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
@@ -259,7 +261,7 @@ async function updateQuoteLead(
       zip: contact.zip || quote.zip,
       state: contact.state || quote.state,
       service_type: 'replacement',
-      quote_amount: quote.quote_total_cents ? quote.quote_total_cents / 100 : null,
+      quote_amount: (quote.accepted_total_cents ?? quote.quote_total_cents) ? (quote.accepted_total_cents ?? quote.quote_total_cents)! / 100 : null,
       // Only advance status when the caller asks (e.g. booking → 'scheduled').
       // revenue_amount is intentionally NEVER set here — Omega completion owns it (F09).
       ...(contact.status ? { status: contact.status } : {}),
