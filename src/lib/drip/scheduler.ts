@@ -299,13 +299,17 @@ export async function scheduleReviewRequest(
   const supabase = getSupabaseClient();
   const sequenceName = 'review_request';
 
-  // Dedup: skip if this lead already has pending/sent review request messages
+  // Dedup: skip if this lead already has review request messages in any
+  // attempted state. 'failed' must be included — without it, a lead whose
+  // phone can't receive SMS gets re-enrolled by every sync-omega run,
+  // failing forever and firing a permanent-failure alert every cycle
+  // (Humayoon loop, 2026-05-22 → 2026-06-10).
   const { data: existing } = await supabase
     .from('scheduled_messages')
     .select('id')
     .eq('lead_id', leadId)
     .eq('sequence_name', sequenceName)
-    .in('status', ['pending', 'sent'])
+    .in('status', ['pending', 'sent', 'failed'])
     .limit(1);
 
   if (existing && existing.length > 0) {
