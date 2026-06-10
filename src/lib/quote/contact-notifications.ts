@@ -42,6 +42,7 @@ export interface QuoteContactNotificationInput {
   };
   quote: {
     totalCents?: number | null;
+    bookingLinkToken?: string | null;
     selectedBrand?: string | null;
     partDescription?: string | null;
     nagsNumber?: string | null;
@@ -200,6 +201,8 @@ async function sendQuoteReadyCustomerEmail(input: QuoteContactNotificationInput)
   const price = formatQuotePrice(input);
   const ref = quoteRef(input);
   const firstName = escapeHtml(input.customer.firstName);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinkautoglass.com';
+  const bookingUrl = input.quote.bookingLinkToken ? `${siteUrl}/quote/book/${input.quote.bookingLinkToken}` : null;
   return sendEmail({
     to: input.customer.email,
     subject: 'Your Pink Auto Glass quote is ready',
@@ -210,7 +213,10 @@ async function sendQuoteReadyCustomerEmail(input: QuoteContactNotificationInput)
   <p>Hi ${firstName},</p>
   <p>Thanks for requesting a quote from Pink Auto Glass. We received your information and your installed price is <strong>${escapeHtml(price)}</strong>.</p>
   <p>Mobile service is included. Sales tax may be collected at installation.</p>
-  <p>You can schedule your appointment online, or call us at <strong>${CALLBACK_PHONE}</strong> if you have questions or would like help booking.</p>
+  ${bookingUrl ? `<p style="margin: 24px 0;">
+    <a href="${bookingUrl}" style="background: #ec4899; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Schedule your installation</a>
+  </p>
+  <p>Or call us at <strong>${CALLBACK_PHONE}</strong> if you have questions or would like help booking.</p>` : `<p>You can schedule your appointment online, or call us at <strong>${CALLBACK_PHONE}</strong> if you have questions or would like help booking.</p>`}
   <p>Reference: <strong>${escapeHtml(ref)}</strong></p>
   <p>Thanks,<br>Pink Auto Glass</p>
 </body></html>`,
