@@ -477,3 +477,11 @@ Look for:
 - Then: move step 10 before steps 6/7, rewrite syncOfflineConversions to read from export_candidates
 
 **PR 3 (Google Ads bidding) still on HOLD** until PR 2b verified + per-action conversion query run.
+
+## 2026-06-10 (PM) — Comms-process review fixes
+- Reviewed the morning's discount-rescue/comms commits (53f544a, b099754, 54d1d89, 7a5cc18). Verdict: solid; two fixes applied per Doug's "go".
+- Fix 1: `dedup_lookup_failed` in the discount processor was completed as terminal `skipped`; one transient Supabase error silently killed a customer's offer forever. Now routes to retryable `failed` (cron retries up to MAX_ATTEMPTS=5). Reproducing test written FIRST (failed on old code), fix delegated to subagent, both tests pass.
+- Fix 2: 24h-boundary price mismatch — booking page evaluates the discount window at render, RPC at submit; a customer could see the discounted price and get booked at full price. RPC window now 25h (1h grace); page/copy stay 24h. `supabase/migrations/20260610_discount_grace_window.sql`, applied to prod via management API (POSTGRES_URL still stale), function def verified before/after.
+- Bonus finding while verifying grants: morning migration's `REVOKE ALL FROM public` never removed Supabase default `anon`/`authenticated` EXECUTE grants on `fn_create_quote_booking` — anyone with the anon key could call the booking RPC directly, bypassing route validation. Revoked; grantees now postgres + service_role only. Verified the only caller (book route) uses the service-role client.
+- Deliberately NOT done: partial-index `processing` predicate, PAG-XXXX token retry loop, SMS segment trimming, review-dedup transient-failure nuance — all logged as low-priority in the review, none blocking.
+- Verification: vitest 15/15, `npm run build` clean, prod function def + grants confirmed via management API. (.next/types tsc noise is pre-existing, generated files only.)

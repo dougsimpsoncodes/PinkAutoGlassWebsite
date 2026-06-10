@@ -130,11 +130,19 @@ async function processOneDiscountOffer(
 
   const skipReason = await discountSkipReason(admin, quote);
   if (skipReason) {
-    result.skipped++;
+    // 'dedup_lookup_failed' is a transient infrastructure error — complete as
+    // 'failed' so the cron retries it (up to MAX_ATTEMPTS). All other skip
+    // reasons are terminal business-rule skips.
+    const isTransient = skipReason === 'dedup_lookup_failed';
+    if (isTransient) {
+      result.failed++;
+    } else {
+      result.skipped++;
+    }
     await completeQuoteNotificationEvent({
       admin,
       eventId: claim.eventId,
-      status: 'skipped',
+      status: isTransient ? 'failed' : 'skipped',
       error: skipReason,
       metadata: { quoteToken: quote.quote_token, reason: skipReason },
     });
