@@ -35,10 +35,14 @@ export async function generateMetadata({ params }: MakePageProps): Promise<Metad
   return {
     title: `${makeName} Windshield Replacement Denver | Expert ${makeName} Auto Glass Service`,
     description: `Professional windshield replacement for all ${makeName} models in Denver. OEM glass, ADAS calibration, lifetime warranty. Most insurance claims no out-of-pocket cost. Call 720-918-7465.`,
+    alternates: {
+      canonical: `https://pinkautoglass.com/vehicles/brands/${params.make}`,
+    },
     openGraph: {
       title: `${makeName} Windshield Replacement Denver | Pink Auto Glass`,
       description: `Expert auto glass service for all ${makeName} models. Same-day appointments, mobile service available.`,
       type: 'website',
+      url: `https://pinkautoglass.com/vehicles/brands/${params.make}`,
     },
   };
 }
