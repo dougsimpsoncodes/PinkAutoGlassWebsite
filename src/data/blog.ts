@@ -1067,6 +1067,15 @@ export const blogPosts: BlogPost[] = [
         content: 'Your ADAS safety systems are too important to leave to chance. Choose a shop that has the right equipment, training, and commitment to doing the job correctly - even if it takes more time or costs slightly more upfront. Your safety is worth it.'
       },
       {
+        type: 'heading',
+        level: 2,
+        content: 'Service Areas'
+      },
+      {
+        type: 'paragraph',
+        content: 'Pink Auto Glass provides mobile windshield replacement with ADAS calibration across the Front Range. Find pricing and same-day availability for your city: [Denver](/locations/denver-co), [Aurora](/locations/aurora-co), [Lakewood](/locations/lakewood-co), [Boulder](/locations/boulder-co), and [Colorado Springs](/locations/colorado-springs-co).'
+      },
+      {
         type: 'cta',
         content: 'We perform ADAS calibration in-house using manufacturer-certified equipment for all major vehicle brands. Professional calibration service available with your windshield replacement - never an extra charge. Book online or call (720) 918-7465 for same-day service.'
       }
@@ -2827,6 +2836,15 @@ export const blogPosts: BlogPost[] = [
             answer: 'As soon as possible. Colorado\'s extreme temperature swings, altitude, and dry air cause chips to spread faster than in other states. A chip that might stay stable for weeks elsewhere can crack within days in Colorado. We offer same-day mobile service across the Front Range.'
           }
         ]
+      },
+      {
+        type: 'heading',
+        level: 2,
+        content: 'Service Areas'
+      },
+      {
+        type: 'paragraph',
+        content: 'Pink Auto Glass provides same-day mobile windshield chip repair and replacement across the Front Range. Find pricing and availability for your city: [Denver](/locations/denver-co), [Aurora](/locations/aurora-co), [Lakewood](/locations/lakewood-co), [Boulder](/locations/boulder-co), and [Colorado Springs](/locations/colorado-springs-co).'
       },
       {
         type: 'cta',

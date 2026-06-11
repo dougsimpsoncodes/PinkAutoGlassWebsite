@@ -8,11 +8,11 @@ import { combineSchemas } from "@/lib/schema";
 // as a pure CO landing page after the 2026-05-28 homepage migration.
 export const metadata: Metadata = {
   title: "Get an Instant Windshield Quote | Pink Auto Glass — Colorado",
-  description: "Get an installed windshield replacement quote by license plate or VIN. Mobile service across the Front Range — Denver, Boulder, Fort Collins. Real price in seconds, no phone call needed.",
+  description: "Windshield replacement from $299 — get a real installed price in seconds by plate or VIN. Mobile service across the Front Range. Book online, no phone call needed.",
   alternates: { canonical: "https://pinkautoglass.com/" },
   openGraph: {
     title: "Get an Instant Windshield Quote | Pink Auto Glass — Colorado",
-    description: "Real installed price in seconds. Mobile service across the Front Range. Book online — no phone call needed.",
+    description: "Windshield replacement from $299 — real installed price in seconds. Mobile service across the Front Range. Book online.",
     url: "https://pinkautoglass.com/",
     siteName: "Pink Auto Glass",
     locale: "en_US",

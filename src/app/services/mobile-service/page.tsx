@@ -11,15 +11,15 @@ import RelatedServices from '@/components/RelatedServices';
 import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
-  title: 'Mobile Windshield Replacement | We Come to You Free',
-  description: 'No extra charge for mobile service in 65+ cities across CO & AZ. Same-day windshield replacement at your home or office. Call (720) 918-7465.',
+  title: 'Mobile Windshield Replacement — We Come to You, From $299',
+  description: 'Mobile windshield replacement across metro Denver & Phoenix from $299. Same-day service, OEM glass, ADAS calibration — we come to you. (720) 918-7465.',
   keywords: 'mobile windshield replacement denver, mobile windshield repair denver, mobile windshield service denver, mobile auto glass denver, windshield replacement at home, mobile glass repair denver',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/mobile-service',
   },
   openGraph: {
-    title: 'Mobile Windshield Replacement | We Come to You Free',
-    description: 'No extra charge for mobile service in 65+ cities across CO & AZ. Same-day windshield replacement at your home or office.',
+    title: 'Mobile Windshield Replacement — We Come to You, From $299',
+    description: 'Mobile windshield replacement across metro Denver & Phoenix from $299. Same-day service, OEM glass, ADAS calibration — we come to you.',
     url: 'https://pinkautoglass.com/services/mobile-service',
     type: 'website',
   },

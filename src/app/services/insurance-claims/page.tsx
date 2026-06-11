@@ -10,15 +10,15 @@ import RelatedServices from '@/components/RelatedServices';
 import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
-  title: 'Auto Glass Insurance Claims Help Colorado | We Bill Direct',
-  description: 'Filing an auto glass insurance claim in Colorado? Pink Auto Glass handles paperwork, direct-bills Progressive, Geico, State Farm, AAA, and more, and verifies your coverage before work starts. (720) 918-7465.',
+  title: 'Auto Glass Insurance Claims Colorado — We Bill Direct',
+  description: 'We handle your Colorado auto glass claim — paperwork, direct billing to Progressive, GEICO, State Farm & more. Coverage verified before work starts.',
   keywords: 'auto glass insurance claims colorado, auto glass insurance claims denver, progressive windshield replacement, windshield insurance colorado, comprehensive glass coverage colorado, insurance glass replacement, aaa windshield claim, direct bill insurance windshield',
   alternates: {
     canonical: 'https://pinkautoglass.com/services/insurance-claims',
   },
   openGraph: {
-    title: 'Auto Glass Insurance Claims Help Colorado | We Bill Direct',
-    description: 'Filing an auto glass insurance claim in Colorado? We handle paperwork, direct-bill major insurers, and verify your coverage upfront.',
+    title: 'Auto Glass Insurance Claims Colorado — We Bill Direct',
+    description: 'We handle your Colorado auto glass claim — paperwork, direct billing to major insurers, coverage verified before work starts.',
     url: 'https://pinkautoglass.com/services/insurance-claims',
     type: 'website',
   },

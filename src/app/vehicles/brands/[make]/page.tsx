@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: MakePageProps): Promise<Metad
   }
 
   return {
-    title: `${makeName} Windshield Replacement Denver | Expert ${makeName} Auto Glass Service`,
-    description: `Professional windshield replacement for all ${makeName} models in Denver. OEM glass, ADAS calibration, lifetime warranty. Most insurance claims no out-of-pocket cost. Call 720-918-7465.`,
+    title: `${makeName} Windshield Replacement Denver — ADAS, From $299`,
+    description: `Windshield replacement for all ${makeName} models in Denver from $299. OEM glass, ADAS calibration, lifetime warranty — we come to you. (720) 918-7465.`,
     openGraph: {
-      title: `${makeName} Windshield Replacement Denver | Pink Auto Glass`,
-      description: `Expert auto glass service for all ${makeName} models. Same-day appointments, mobile service available.`,
+      title: `${makeName} Windshield Replacement Denver — ADAS, From $299`,
+      description: `Windshield replacement for all ${makeName} models in Denver from $299. OEM glass, ADAS calibration, lifetime warranty — we come to you.`,
       type: 'website',
     },
   };
