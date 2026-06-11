@@ -344,7 +344,7 @@ async function sendDiscountCustomerSms(quote: HotQuoteRow, discountedCents: numb
   const price = `$${centsToDollars(discountedCents).toFixed(2)}`;
   return sendSMS({
     to: quote.phone_e164,
-    message: `${firstName}, thanks for your ${vehicle} quote. We have one install spot left ${dayLabel} and can offer you 10% off to book now. Your discounted price: ${price}. Book here: ${bookingUrl(quote)}. Reply STOP to opt out.`,
+    message: `${firstName}, thanks for your ${vehicle} quote. We have one install spot left ${dayLabel} and can offer you 10% off to book now. Your discounted price: ${price}. Book here: ${bookingUrl(quote)} or call us at ${CALLBACK_PHONE} and mention this text. Reply STOP to opt out.`,
   });
 }
 
