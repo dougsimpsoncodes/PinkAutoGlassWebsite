@@ -513,9 +513,51 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
+    // 5.6. Cross-Reference Google Ads Calls to RingCentral
+    // ========================================
+    // Must run after both call_view (step 2.5) and RingCentral (step 1) syncs
+    // complete, and BEFORE the offline-conversion uploads (steps 6/7) so the
+    // export-candidate builder sees fresh google_ads_call_match values.
+    // (PR 2b: moved up from step 10.)
+    try {
+      console.log('🔗 Cross-referencing Google Ads calls to RingCentral...');
+      const crossRef = await crossReferenceCallsToRingCentral(supabase, startDateStr, todayStr);
+      results.callAttribution.crossReference = {
+        success: true,
+        matched: crossRef.matched,
+        unmatched: crossRef.unmatched,
+        error: crossRef.errors > 0 ? `${crossRef.errors} update errors` : null,
+      };
+    } catch (error: any) {
+      results.callAttribution.crossReference.error = error.message;
+      console.error('❌ Cross-reference failed:', error.message);
+    }
+
+    // ========================================
+    // 5.7. Build Export Candidates
+    // ========================================
+    // Populates export_candidates with one eligibility decision per
+    // (call/lead × platform) pair. Runs AFTER cross-reference (5.6) and
+    // BEFORE the uploads (6/7), which consume these rows (PR 2b).
+    try {
+      console.log('📊 Building export candidates...');
+      const ecResult = await buildAllExportCandidates(supabase);
+      results.callAttribution.exportCandidates = {
+        success: true,
+        built: ecResult.built,
+        errors: ecResult.errors,
+        error: ecResult.errors > 0 ? `${ecResult.errors} upsert chunk error(s)` : null,
+      };
+      console.log(`✅ Export candidates: ${ecResult.built} built`);
+    } catch (error: any) {
+      results.callAttribution.exportCandidates.error = error.message;
+      console.error('❌ Export candidates build failed:', error.message);
+    }
+
+    // ========================================
     // 6. Upload Offline Conversions to Google Ads
     // ========================================
-    // This must run AFTER RingCentral sync so we have the latest calls
+    // Consumes export_candidates built in step 5.7 (PR 2b)
     try {
       const configValid = validateGoogleAdsConfig();
       const hasOfflineConversionAction = !!process.env.GOOGLE_ADS_OFFLINE_CONVERSION_ACTION_ID || !!process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
@@ -826,50 +868,9 @@ export async function GET(request: NextRequest) {
     }
 
     // ========================================
-    // 10. Cross-Reference Google Ads Calls to RingCentral
-    // ========================================
-    // Must run after both call_view (step 2.5) and RingCentral (step 1) syncs complete
-    try {
-      console.log('🔗 Cross-referencing Google Ads calls to RingCentral...');
-      const crossRef = await crossReferenceCallsToRingCentral(supabase, startDateStr, todayStr);
-      results.callAttribution.crossReference = {
-        success: true,
-        matched: crossRef.matched,
-        unmatched: crossRef.unmatched,
-        error: crossRef.errors > 0 ? `${crossRef.errors} update errors` : null,
-      };
-    } catch (error: any) {
-      results.callAttribution.crossReference.error = error.message;
-      console.error('❌ Cross-reference failed:', error.message);
-    }
-
-    // ========================================
-    // 10.5: Build Export Candidates (observe-only, PR 2)
-    // ========================================
-    // Populates export_candidates with one eligibility decision per
-    // (call/lead × platform) pair. Runs AFTER cross-reference so
-    // google_ads_call_match is already set. Upload behavior unchanged —
-    // this step is purely for dry-run comparison and health coverage.
-    // See scripts/compare-export-candidates.js to evaluate before PR 2b.
-    try {
-      console.log('📊 Building export candidates...');
-      const ecResult = await buildAllExportCandidates(supabase);
-      results.callAttribution.exportCandidates = {
-        success: true,
-        built: ecResult.built,
-        errors: ecResult.errors,
-        error: ecResult.errors > 0 ? `${ecResult.errors} upsert chunk error(s)` : null,
-      };
-      console.log(`✅ Export candidates: ${ecResult.built} built`);
-    } catch (error: any) {
-      results.callAttribution.exportCandidates.error = error.message;
-      console.error('❌ Export candidates build failed:', error.message);
-    }
-
-    // ========================================
     // 11. Create/Update Leads for Qualifying Callers
     // ========================================
-    // Must run AFTER cross-reference (step 10) so Google Ads attribution
+    // Must run AFTER cross-reference (step 5.6) so Google Ads attribution
     // is already populated on ringcentral_calls.ad_platform before we
     // create leads from those calls.
     try {
