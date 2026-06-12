@@ -566,6 +566,53 @@ export interface OfflineConversionResult {
 }
 
 /**
+ * Map a Google Ads partial_failure_error onto INPUT-ORDERED per-conversion
+ * results. results[i] always corresponds to conversions[i] — callers
+ * (offlineConversionSync.syncPlatform) stamp bookkeeping by index, so order
+ * is a contract, not a convenience. Multiple errors pointing at the same
+ * index collapse to one failed result (first message wins).
+ *
+ * Exported for unit tests.
+ */
+export function mapPartialFailureResults(
+  conversions: OfflineConversion[],
+  partialFailureError: { details?: unknown[] | null } | null | undefined
+): { results: OfflineConversionResult[]; successCount: number; failureCount: number } {
+  const results: OfflineConversionResult[] = conversions.map((conv) => ({
+    gclid: conv.gclid,
+    success: true,
+  }));
+
+  if (partialFailureError && partialFailureError.details) {
+    // The details array contains serialized GoogleAdsFailure messages
+    for (const detail of partialFailureError.details as any[]) {
+      const errors = detail.errors || [];
+      for (const error of errors) {
+        if (error.location?.field_path_elements) {
+          for (const element of error.location.field_path_elements) {
+            if (
+              element.field_name === 'conversions' &&
+              element.index !== undefined &&
+              results[element.index] &&
+              results[element.index].success
+            ) {
+              results[element.index] = {
+                gclid: conversions[element.index].gclid,
+                success: false,
+                error: error.message || 'Unknown error',
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const failureCount = results.filter((r) => !r.success).length;
+  return { results, successCount: results.length - failureCount, failureCount };
+}
+
+/**
  * Format a Date object to Google Ads datetime format with timezone
  * Format: yyyy-mm-dd HH:mm:ss+|-HH:mm
  */
@@ -641,48 +688,11 @@ export async function uploadOfflineConversions(
       validate_only: false,
     } as any);
 
-    // Process results
-    const results: OfflineConversionResult[] = [];
-    let successCount = 0;
-    let failureCount = 0;
-
-    // Check for partial failure errors
-    const partialFailureError = response.partial_failure_error;
-    const failedIndices = new Set<number>();
-
-    if (partialFailureError && partialFailureError.details) {
-      // Extract failed indices from error details
-      // The details array contains serialized GoogleAdsFailure messages
-      for (const detail of partialFailureError.details as any[]) {
-        const errors = detail.errors || [];
-        for (const error of errors) {
-          if (error.location?.field_path_elements) {
-            for (const element of error.location.field_path_elements) {
-              if (element.field_name === 'conversions' && element.index !== undefined) {
-                failedIndices.add(element.index);
-                results.push({
-                  gclid: conversions[element.index].gclid,
-                  success: false,
-                  error: error.message || 'Unknown error',
-                });
-                failureCount++;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Add successful results
-    for (let i = 0; i < conversions.length; i++) {
-      if (!failedIndices.has(i)) {
-        results.push({
-          gclid: conversions[i].gclid,
-          success: true,
-        });
-        successCount++;
-      }
-    }
+    // Process results — input-ordered by contract (see mapPartialFailureResults)
+    const { results, successCount, failureCount } = mapPartialFailureResults(
+      conversions,
+      response.partial_failure_error
+    );
 
     console.log(`📤 Uploaded ${successCount} offline conversions (${failureCount} failed)`);
 

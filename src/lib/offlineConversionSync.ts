@@ -209,6 +209,16 @@ function getSupabaseClient(): SupabaseClient {
   return createClient(supabaseUrl, supabaseKey);
 }
 
+// PostgREST encodes .in() lists in the URL; large ID lists can exceed URL
+// limits and fail. Chunk every .in() fetch/update.
+const IN_CHUNK_SIZE = 200;
+
+function chunked<T>(items: T[], size: number = IN_CHUNK_SIZE): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
 async function fetchUploadableCandidates(
   supabase: SupabaseClient,
   platform: 'google' | 'microsoft'
@@ -242,11 +252,11 @@ async function buildPrepareContext(
   const leadIds = [...new Set(candidates.filter((c) => c.source_type === 'lead').map((c) => c.source_id))];
 
   const callRows = new Map<string, SourceCallContext>();
-  if (callIds.length > 0) {
+  for (const idChunk of chunked(callIds)) {
     const { data, error } = await supabase
       .from('ringcentral_calls')
       .select('call_id, from_number, google_ads_uploaded_at, microsoft_ads_uploaded_at')
-      .in('call_id', callIds);
+      .in('call_id', idChunk);
     if (error) throw new Error(`ringcentral_calls fetch failed: ${error.message}`);
     for (const row of data || []) {
       callRows.set(row.call_id, {
@@ -258,11 +268,11 @@ async function buildPrepareContext(
   }
 
   const leadRows = new Map<string, SourceLeadContext>();
-  if (leadIds.length > 0) {
+  for (const idChunk of chunked(leadIds)) {
     const { data, error } = await supabase
       .from('leads')
       .select('id, revenue_amount, is_test, google_ads_form_uploaded_at, microsoft_ads_form_uploaded_at')
-      .in('id', leadIds);
+      .in('id', idChunk);
     if (error) throw new Error(`leads fetch failed: ${error.message}`);
     for (const row of data || []) {
       leadRows.set(row.id, {
@@ -307,18 +317,28 @@ async function applyBackstamps(
   }
 }
 
+/**
+ * Stamp candidates uploaded. Returns error strings (does not throw):
+ * the ad-platform upload already happened, so a stamp failure must be
+ * surfaced to the cron result — an unstamped-but-uploaded candidate will
+ * be re-submitted next run (platforms reject true duplicates, but we want
+ * to know it happened).
+ */
 async function markCandidatesUploaded(
   supabase: SupabaseClient,
   candidateIds: string[]
-): Promise<void> {
-  if (candidateIds.length === 0) return;
-  const { error } = await supabase
-    .from('export_candidates')
-    .update({ uploaded_at: new Date().toISOString(), upload_error: null })
-    .in('id', candidateIds);
-  if (error) {
-    console.error('Error marking candidates uploaded:', error.message);
+): Promise<string[]> {
+  const errors: string[] = [];
+  for (const idChunk of chunked(candidateIds)) {
+    const { error } = await supabase
+      .from('export_candidates')
+      .update({ uploaded_at: new Date().toISOString(), upload_error: null })
+      .in('id', idChunk);
+    if (error) {
+      errors.push(`stamp export_candidates failed (${idChunk.length} ids): ${error.message}`);
+    }
   }
+  return errors;
 }
 
 async function markCandidateErrors(
@@ -348,33 +368,39 @@ async function markCallsAsUploaded(
   supabase: SupabaseClient,
   platform: 'google' | 'microsoft',
   callIds: string[]
-): Promise<void> {
-  if (callIds.length === 0) return;
+): Promise<string[]> {
   const column = platform === 'google' ? 'google_ads_uploaded_at' : 'microsoft_ads_uploaded_at';
-  const { error } = await supabase
-    .from('ringcentral_calls')
-    .update({ [column]: new Date().toISOString() })
-    .in('call_id', callIds);
-  if (error) {
-    console.error(`Error marking calls as uploaded (${platform}):`, error.message);
+  const errors: string[] = [];
+  for (const idChunk of chunked(callIds)) {
+    const { error } = await supabase
+      .from('ringcentral_calls')
+      .update({ [column]: new Date().toISOString() })
+      .in('call_id', idChunk);
+    if (error) {
+      errors.push(`stamp ringcentral_calls.${column} failed (${idChunk.length} ids): ${error.message}`);
+    }
   }
+  return errors;
 }
 
 async function markLeadsAsUploaded(
   supabase: SupabaseClient,
   platform: 'google' | 'microsoft',
   leadIds: string[]
-): Promise<void> {
-  if (leadIds.length === 0) return;
+): Promise<string[]> {
   const column =
     platform === 'google' ? 'google_ads_form_uploaded_at' : 'microsoft_ads_form_uploaded_at';
-  const { error } = await supabase
-    .from('leads')
-    .update({ [column]: new Date().toISOString() })
-    .in('id', leadIds);
-  if (error) {
-    console.error(`Error marking leads as uploaded (${platform}):`, error.message);
+  const errors: string[] = [];
+  for (const idChunk of chunked(leadIds)) {
+    const { error } = await supabase
+      .from('leads')
+      .update({ [column]: new Date().toISOString() })
+      .in('id', idChunk);
+    if (error) {
+      errors.push(`stamp leads.${column} failed (${idChunk.length} ids): ${error.message}`);
+    }
   }
+  return errors;
 }
 
 // ── Shared sync driver ────────────────────────────────────────────────────────
@@ -447,9 +473,17 @@ async function syncPlatform(
       }
     });
 
-    await markCandidatesUploaded(supabase, uploadedCandidateIds);
-    await markCallsAsUploaded(supabase, platform, uploadedCallIds);
-    await markLeadsAsUploaded(supabase, platform, uploadedLeadIds);
+    // Stamp failures are surfaced (not just logged): an uploaded-but-unstamped
+    // conversion would be re-submitted next run.
+    const stampErrors = [
+      ...(await markCandidatesUploaded(supabase, uploadedCandidateIds)),
+      ...(await markCallsAsUploaded(supabase, platform, uploadedCallIds)),
+      ...(await markLeadsAsUploaded(supabase, platform, uploadedLeadIds)),
+    ];
+    for (const stampError of stampErrors) {
+      result.errors.push(stampError);
+      console.error(`❌ ${stampError}`);
+    }
     await markCandidateErrors(supabase, failures);
 
     console.log(`\n✅ ${platform} offline conversion sync complete:`);
