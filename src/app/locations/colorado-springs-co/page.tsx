@@ -9,15 +9,15 @@ import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchem
 import QuoterEmbed from '@/components/QuoterEmbed';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Colorado Springs | Mobile',
-  description: 'Mobile windshield replacement & repair in Colorado Springs CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+  title: 'Windshield Replacement Colorado Springs — From $299, Mobile',
+  description: 'Mobile windshield replacement in Colorado Springs from $299. Same-day service, lifetime warranty — we come to you. Book online or call (720) 918-7465.',
   keywords: 'windshield repair colorado springs, windshield replacement colorado springs, auto glass colorado springs, mobile windshield service colorado springs co',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/colorado-springs-co',
   },
   openGraph: {
-    title: 'Windshield Replacement Colorado Springs | Mobile',
-    description: 'Mobile windshield replacement & repair in Colorado Springs CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+    title: 'Windshield Replacement Colorado Springs — From $299, Mobile',
+    description: 'Mobile windshield replacement in Colorado Springs from $299. Same-day service, lifetime warranty — we come to you. Book online or call (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/colorado-springs-co',
     type: 'website',
   },
@@ -83,7 +83,7 @@ export default function ColoradoSpringsLocationPage() {
                 <span className="text-xl">Colorado Springs, Colorado</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Colorado Springs' Trusted Windshield Repair & Replacement
+                Windshield Replacement in Colorado Springs — From $299
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
                 Navigating Colorado Springs, from the shadow of Pikes Peak to the daily commutes along I-25 or the stunning drives near Garden of the Gods, puts your windshield to the test. The unique blend of military traffic, rapid growth, and direct access to mountain terrain creates a perfect storm for chips and cracks.

@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
-  description: 'Mobile windshield replacement & repair in Lakewood CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+  title: 'Windshield Replacement Lakewood CO — From $299, Same Day',
+  description: 'Windshield replacement & auto glass repair in Lakewood CO from $299. Same-day mobile service — we come to you. Book online or call (720) 918-7465.',
   keywords: 'windshield replacement lakewood co, windshield repair lakewood, auto glass lakewood co, mobile windshield service lakewood, belmar windshield repair, bear valley auto glass, windshield replacement near me lakewood',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/lakewood-co',
   },
   openGraph: {
-    title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
-    description: 'Mobile windshield replacement & repair in Lakewood CO. Same-day service, $0 deductible often, lifetime warranty. We come to you! (720) 918-7465.',
+    title: 'Windshield Replacement Lakewood CO — From $299, Same Day',
+    description: 'Windshield replacement & auto glass repair in Lakewood CO from $299. Same-day mobile service — we come to you. Book online or call (720) 918-7465.',
     url: 'https://pinkautoglass.com/locations/lakewood-co',
     type: 'website',
   },
@@ -76,7 +76,7 @@ export default function LakewoodLocationPage() {
                 <span className="text-xl">Lakewood, Colorado</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Lakewood's Trusted Windshield Repair & Replacement
+                Windshield Replacement & Auto Glass Repair in Lakewood, CO
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
                 Driving through Lakewood, whether you\'re commuting along US-6 to downtown or heading out to the foothills near Red Rocks Amphitheatre, your windshield takes a beating. The mix of city streets and gateway roads to mountain adventures means encountering diverse road conditions, from construction zones to gravel kick-up.

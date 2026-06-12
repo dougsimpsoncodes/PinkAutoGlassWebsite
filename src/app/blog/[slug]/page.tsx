@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
     openGraph: {
       title: post.title,
       description: post.excerpt,
+      url: `https://pinkautoglass.com/blog/${post.slug}`,
       type: 'article',
       publishedTime: post.publishDate,
       authors: [post.author],

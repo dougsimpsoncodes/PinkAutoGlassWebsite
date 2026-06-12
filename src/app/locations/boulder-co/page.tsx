@@ -8,15 +8,15 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Boulder Auto Glass Replacement | Mobile Same-Day Service',
-  description: 'Mobile windshield replacement and repair in Boulder, CO. Same-day service, comprehensive insurance billing, lifetime warranty. Most CO drivers with comprehensive pay $0. (720) 918-7465.',
+  title: 'Windshield Replacement Boulder CO — From $299, Mobile',
+  description: 'Mobile windshield replacement in Boulder CO from $299. Same-day service, lifetime warranty — we come to you. Book online or call (720) 918-7465.',
   keywords: 'auto glass boulder, windshield repair boulder, boulder windshield repair, boulder chip repair, windshield replacement boulder, mobile windshield service boulder, cu boulder windshield repair, gunbarrel auto glass, table mesa windshield replacement',
   alternates: {
     canonical: 'https://pinkautoglass.com/locations/boulder-co',
   },
   openGraph: {
-    title: 'Boulder Auto Glass Replacement | Mobile Same-Day Service',
-    description: 'Mobile windshield replacement and repair in Boulder, CO. Same-day service, comprehensive insurance billing, lifetime warranty.',
+    title: 'Windshield Replacement Boulder CO — From $299, Mobile',
+    description: 'Mobile windshield replacement in Boulder CO from $299. Same-day service, lifetime warranty — we come to you.',
     url: 'https://pinkautoglass.com/locations/boulder-co',
     type: 'website',
   },
@@ -76,7 +76,7 @@ export default function BoulderLocationPage() {
                 <span className="text-xl">Boulder, Colorado</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Boulder's Trusted Windshield Repair & Replacement
+                Windshield Replacement in Boulder, CO — From $299
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-pink-100">
                 Driving in Boulder, whether you\'re cruising down US-36 with views of the Flatirons or navigating the bustling Pearl Street Mall area, often means encountering unique challenges for your windshield. The blend of busy urban routes, access to mountain recreational areas, and a community focused on outdoor activities can expose your glass to unexpected debris.
