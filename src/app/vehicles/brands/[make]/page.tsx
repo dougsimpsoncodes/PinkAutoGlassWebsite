@@ -35,10 +35,14 @@ export async function generateMetadata({ params }: MakePageProps): Promise<Metad
   return {
     title: `${makeName} Windshield Replacement Denver — ADAS, From $299`,
     description: `Windshield replacement for all ${makeName} models in Denver from $299. OEM glass, ADAS calibration, lifetime warranty — we come to you. (720) 918-7465.`,
+    alternates: {
+      canonical: `https://pinkautoglass.com/vehicles/brands/${params.make}`,
+    },
     openGraph: {
       title: `${makeName} Windshield Replacement Denver — ADAS, From $299`,
       description: `Windshield replacement for all ${makeName} models in Denver from $299. OEM glass, ADAS calibration, lifetime warranty — we come to you.`,
       type: 'website',
+      url: `https://pinkautoglass.com/vehicles/brands/${params.make}`,
     },
   };
 }
