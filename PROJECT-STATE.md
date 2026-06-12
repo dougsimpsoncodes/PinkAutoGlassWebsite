@@ -30,7 +30,7 @@ Post-improvement measurement week: discount rescue, quote-priced ad conversions,
 
 ## Next Steps (priority order)
 1. **Monitor discount rescue conversions** — watch `quote_unbooked_15m_discount` events and `accepted_total_cents` bookings over the next 1-2 weeks; the open question from review is whether the 10% discount outperforms a plain reminder (A/B test deferred until volume justifies it).
-2. **Attribution PR2 observation gate** — after 7+ days of cron runs, execute `node scripts/compare-export-candidates.js`; only proceed to PR2b if newly-skipped rate is acceptably low.
+2. **Attribution PR2 observation gate — PASSED 2026-06-12.** `compare-export-candidates.js` over 7d: 98.4% agreement (62 calls), newly-skipped 0.8% (1 call) and newly-eligible 0.8% (1 Google call the old uploader missed). All newly-skipped calls (1 in 7d, 10 in 30d) are `skip_google_call_view` — calls Google's own call reporting already claimed, i.e. the contract preventing double-counts, not losing conversions. Clear to build PR2b (flip uploader to the contract) pending Doug's go.
 3. **Automated Quotes report display cleanup (deferred to 2026-06-07)** — presentation-layer only. Use existing page, no data/API changes. Preferred table: `Customer | Source | Vehicle | Lookup | Quote | Stage | Timestamp`, with customer cell stacking name/phone/email and no default Comms/Action columns. Handoff: `docs/AUTOMATED_QUOTES_REPORT_DISPLAY_HANDOFF.md`.
 4. ~~RingCentral sync bug~~ — DONE, merged (see Open-Questions note above; commits `0a5e1bb`/`4b0b61b`/`a0103e6`).
 5. **Monitor quoter vs call volume** — watch call volume vs quoter engagement; decide on phone-first homepage fast-follow if calls stay soft.
