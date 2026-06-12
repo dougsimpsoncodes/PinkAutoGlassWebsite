@@ -1,21 +1,24 @@
 /**
- * Offline Conversion Sync
+ * Offline Conversion Sync (PR 2b — export-contract consumer)
  *
- * Matches RingCentral phone calls to Google Ads clicks (via stored GCLID)
- * and Microsoft Ads clicks (via stored MSCLKID) and uploads them as offline conversions.
+ * Uploads offline conversions to Google Ads and Microsoft Ads by consuming
+ * export_candidates (built every cron run by exportCandidateBuilder, which owns
+ * ALL attribution/eligibility logic). This module no longer does inline
+ * attribution — it:
  *
- * Attribution Methods (in priority order):
+ *   1. Fetches eligible, not-yet-uploaded candidates for its platform
+ *   2. Plans uploads via prepareCandidateUploads (pure, unit-tested):
+ *      - backstamps candidates whose source row was already uploaded by the
+ *        pre-PR2b uploader (transition safety — never re-upload)
+ *      - re-checks test/excluded sources (defense in depth)
+ *   3. Uploads, then stamps BOTH export_candidates.uploaded_at AND the legacy
+ *      per-source columns (ringcentral_calls.*_uploaded_at,
+ *      leads.*_form_uploaded_at) — dashboards, getAttributionStats, and the
+ *      compare script still read the legacy columns.
  *
- * 1. Direct phone_click match (highest confidence)
- *    - User clicks phone button on website (phone_click event recorded with click ID)
- *    - User calls within attribution window
- *    - Direct link between click and call
- *
- * 2. Session-based match (attribution window)
- *    - User visits website from ad (session recorded with click ID)
- *    - User calls within 5 minutes of session start
- *    - Only used when exactly ONE platform has a session in the window
- *    - Skipped if both Google and Microsoft have sessions (conflict)
+ * Failures set export_candidates.upload_error and leave uploaded_at NULL, so
+ * the next cron run retries (Google/Microsoft reject true duplicates
+ * server-side, so a retry after a partially-failed batch is safe).
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -31,8 +34,6 @@ import {
   validateMicrosoftAdsConfig,
 } from './microsoftAds';
 import {
-  ATTRIBUTION_WINDOW_MINUTES,
-  DEDUP_WINDOW_MINUTES,
   MIN_CALL_DURATION_SECONDS,
   isExcludedPhone,
   isTestPhone,
@@ -43,6 +44,12 @@ const DEFAULT_CALL_VALUE = 55;
 // Default conversion value for form leads (25.2% close rate × $360 avg ticket)
 const DEFAULT_FORM_VALUE = 91;
 
+// How far back to consider candidates. The builder only writes a 7-day window,
+// but a candidate that failed upload repeatedly may be older; 30 days matches
+// the platforms' click-attribution ceilings.
+const CANDIDATE_LOOKBACK_DAYS = 30;
+const CANDIDATE_BATCH_LIMIT = 2000;
+
 // Optional: separate conversion action for form leads.
 // SAFETY: if enabled, this action MUST be a distinct action from GOOGLE_ADS_LEAD_FORM_LABEL
 // (the online gtag action). Using the same action would double-count every gclid form lead —
@@ -50,38 +57,59 @@ const DEFAULT_FORM_VALUE = 91;
 const GOOGLE_ADS_FORM_CONVERSION_ACTION_ID = process.env.GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID;
 const MICROSOFT_OFFLINE_FORM_CONVERSION_NAME = process.env.MICROSOFT_OFFLINE_FORM_CONVERSION_NAME;
 
-interface AttributedCall {
-  callId: string;
-  callTime: Date;
-  fromNumber: string;
-  duration: number;
-  gclid: string;
-  sessionId: string;
-  clickTime: Date;
+// Microsoft Ads offline conversion goal name (must match exactly what was created in UI)
+const MICROSOFT_OFFLINE_CONVERSION_NAME = 'Phone Call (Ring Central)';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+/** Subset of export_candidates columns the uploader consumes. */
+export interface UploadCandidateRow {
+  id: string;
+  source_type: 'call' | 'lead';
+  source_id: string;
+  platform: 'google' | 'microsoft';
+  click_id_type: 'gclid' | 'msclkid' | null;
+  click_id: string | null;
+  conversion_time: string;
+  call_value: number | null;
 }
 
-interface AttributedLead {
-  leadId: string;
-  leadTime: Date;
-  gclid: string;
-  conversionValue: number;
+interface SourceCallContext {
+  legacyUploadedAt: string | null;
+  fromNumber: string | null;
 }
 
-interface MicrosoftAttributedCall {
-  callId: string;
-  callTime: Date;
-  fromNumber: string;
-  duration: number;
-  msclkid: string;
-  sessionId: string;
-  clickTime: Date;
+interface SourceLeadContext {
+  legacyUploadedAt: string | null;
+  revenueAmount: number | null;
+  isTest: boolean;
 }
 
-interface MicrosoftAttributedLead {
-  leadId: string;
-  leadTime: Date;
-  msclkid: string;
-  conversionValue: number;
+export interface PrepareContext {
+  callRows: Map<string, SourceCallContext>;
+  leadRows: Map<string, SourceLeadContext>;
+  /** Is the platform's separate form-lead conversion action configured? */
+  formActionConfigured: boolean;
+  /** Defense in depth: true → never upload this candidate's source. */
+  isExcludedSource: (candidate: UploadCandidateRow) => boolean;
+  now: Date;
+}
+
+export interface PlannedUpload {
+  candidateId: string;
+  sourceType: 'call' | 'lead';
+  sourceId: string;
+  clickId: string;
+  conversionTime: Date;
+  value: number;
+  isFormLead: boolean;
+}
+
+export interface UploadPlan {
+  uploads: PlannedUpload[];
+  /** Candidates whose source the LEGACY uploader already sent — stamp, don't upload. */
+  backstamps: Array<{ candidateId: string; uploadedAt: string }>;
+  skipped: Array<{ candidateId: string; reason: string }>;
 }
 
 interface SyncResult {
@@ -92,20 +120,84 @@ interface SyncResult {
   errors: string[];
 }
 
-interface MicrosoftSyncResult {
-  callsProcessed: number;
-  callsAttributed: number;
-  conversionsUploaded: number;
-  conversionsFailed: number;
-  errors: string[];
+// ── Pure planning function (unit-tested) ──────────────────────────────────────
+
+export function prepareCandidateUploads(
+  candidates: UploadCandidateRow[],
+  ctx: PrepareContext
+): UploadPlan {
+  const plan: UploadPlan = { uploads: [], backstamps: [], skipped: [] };
+
+  for (const candidate of candidates) {
+    if (!candidate.click_id) {
+      plan.skipped.push({ candidateId: candidate.id, reason: 'missing_click_id' });
+      continue;
+    }
+
+    if (candidate.source_type === 'call') {
+      const source = ctx.callRows.get(candidate.source_id);
+      if (!source) {
+        plan.skipped.push({ candidateId: candidate.id, reason: 'source_row_missing' });
+        continue;
+      }
+      if (ctx.isExcludedSource(candidate)) {
+        plan.skipped.push({ candidateId: candidate.id, reason: 'excluded_source' });
+        continue;
+      }
+      if (source.legacyUploadedAt) {
+        plan.backstamps.push({ candidateId: candidate.id, uploadedAt: source.legacyUploadedAt });
+        continue;
+      }
+      plan.uploads.push({
+        candidateId: candidate.id,
+        sourceType: 'call',
+        sourceId: candidate.source_id,
+        clickId: candidate.click_id,
+        conversionTime: new Date(candidate.conversion_time),
+        value: candidate.call_value ?? DEFAULT_CALL_VALUE,
+        isFormLead: false,
+      });
+      continue;
+    }
+
+    // source_type === 'lead'
+    const lead = ctx.leadRows.get(candidate.source_id);
+    if (!lead) {
+      plan.skipped.push({ candidateId: candidate.id, reason: 'source_row_missing' });
+      continue;
+    }
+    if (lead.isTest) {
+      plan.skipped.push({ candidateId: candidate.id, reason: 'test_lead' });
+      continue;
+    }
+    if (ctx.isExcludedSource(candidate)) {
+      plan.skipped.push({ candidateId: candidate.id, reason: 'excluded_source' });
+      continue;
+    }
+    if (lead.legacyUploadedAt) {
+      plan.backstamps.push({ candidateId: candidate.id, uploadedAt: lead.legacyUploadedAt });
+      continue;
+    }
+    if (!ctx.formActionConfigured) {
+      plan.skipped.push({ candidateId: candidate.id, reason: 'form_action_not_configured' });
+      continue;
+    }
+    plan.uploads.push({
+      candidateId: candidate.id,
+      sourceType: 'lead',
+      sourceId: candidate.source_id,
+      clickId: candidate.click_id,
+      conversionTime: new Date(candidate.conversion_time),
+      value: Number(lead.revenueAmount) || DEFAULT_FORM_VALUE,
+      isFormLead: true,
+    });
+  }
+
+  return plan;
 }
 
-// Microsoft Ads offline conversion goal name (must match exactly what was created in UI)
-const MICROSOFT_OFFLINE_CONVERSION_NAME = 'Phone Call (Ring Central)';
+// ── Supabase plumbing ─────────────────────────────────────────────────────────
 
-/**
- * Get Supabase client
- */
 function getSupabaseClient(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -117,280 +209,184 @@ function getSupabaseClient(): SupabaseClient {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-/**
- * Find calls that can be attributed to Google Ads clicks
- *
- * Attribution priority:
- * 1. Direct phone_click match - user clicked phone button with GCLID within attribution window
- * 2. Session match - user visited from Google ad within attribution window (only if no Microsoft session)
- */
-async function findAttributableCalls(
+async function fetchUploadableCandidates(
   supabase: SupabaseClient,
-  lookbackDays: number = 7
-): Promise<AttributedCall[]> {
-  const lookbackDate = new Date();
-  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
+  platform: 'google' | 'microsoft'
+): Promise<UploadCandidateRow[]> {
+  const lookback = new Date();
+  lookback.setDate(lookback.getDate() - CANDIDATE_LOOKBACK_DAYS);
 
-  // Get recent inbound calls that haven't been uploaded to Google Ads
-  let calls;
-  let callsError;
+  const { data, error } = await supabase
+    .from('export_candidates')
+    .select('id, source_type, source_id, platform, click_id_type, click_id, conversion_time, call_value')
+    .eq('platform', platform)
+    .eq('eligible', true)
+    .is('uploaded_at', null)
+    .in('source_type', ['call', 'lead'])
+    .gte('conversion_time', lookback.toISOString())
+    .order('conversion_time', { ascending: true })
+    .limit(CANDIDATE_BATCH_LIMIT);
 
-  try {
-    const result = await supabase
+  if (error) {
+    throw new Error(`export_candidates fetch failed: ${error.message}`);
+  }
+  return (data || []) as UploadCandidateRow[];
+}
+
+async function buildPrepareContext(
+  supabase: SupabaseClient,
+  candidates: UploadCandidateRow[],
+  platform: 'google' | 'microsoft'
+): Promise<PrepareContext> {
+  const callIds = [...new Set(candidates.filter((c) => c.source_type === 'call').map((c) => c.source_id))];
+  const leadIds = [...new Set(candidates.filter((c) => c.source_type === 'lead').map((c) => c.source_id))];
+
+  const callRows = new Map<string, SourceCallContext>();
+  if (callIds.length > 0) {
+    const { data, error } = await supabase
       .from('ringcentral_calls')
-      .select('call_id, start_time, from_number, duration, direction, result, google_ads_uploaded_at')
-      .eq('direction', 'Inbound')
-      .gte('start_time', lookbackDate.toISOString())
-      .is('google_ads_uploaded_at', null)
-      .gte('duration', MIN_CALL_DURATION_SECONDS);
-
-    calls = result.data;
-    callsError = result.error;
-
-    if (callsError?.message?.includes('does not exist')) {
-      console.warn('⚠️ google_ads_uploaded_at column not found - fetching all calls');
-      const fallbackResult = await supabase
-        .from('ringcentral_calls')
-        .select('call_id, start_time, from_number, duration, direction, result')
-        .eq('direction', 'Inbound')
-        .gte('start_time', lookbackDate.toISOString())
-        .gte('duration', MIN_CALL_DURATION_SECONDS);
-
-      calls = fallbackResult.data;
-      callsError = fallbackResult.error;
-    }
-  } catch (err: any) {
-    console.error('Error fetching calls:', err.message);
-    return [];
-  }
-
-  if (callsError) {
-    console.error('Error fetching calls:', callsError);
-    return [];
-  }
-
-  if (!calls || calls.length === 0) {
-    console.log('📞 No new calls to process');
-    return [];
-  }
-
-  // Filter out test/internal phone numbers — never upload these as real conversions
-  const realCalls = calls.filter(
-    (call: any) => !isExcludedPhone(call.from_number || '') && !isTestPhone(call.from_number || '')
-  );
-  if (realCalls.length < calls.length) {
-    console.log(`🧪 Filtered ${calls.length - realCalls.length} test call(s) from Google Ads conversion upload`);
-  }
-  console.log(`📞 Found ${realCalls.length} calls to check for Google Ads attribution`);
-
-  const attributedCalls: AttributedCall[] = [];
-  const dedupWindowMs = DEDUP_WINDOW_MINUTES * 60 * 1000;
-  const attributionWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
-
-  for (const call of realCalls) {
-    const callTime = new Date(call.start_time);
-
-    // Strategy 1: Check for phone_click within DEDUP window
-    // If a phone_click fired, the real-time conversion already counted this call.
-    // Skip the offline upload to avoid double-counting.
-    const dedupWindowStart = new Date(callTime.getTime() - dedupWindowMs);
-    const { data: dedupClickEvents } = await supabase
-      .from('conversion_events')
-      .select('session_id, gclid, msclkid, created_at')
-      .eq('event_type', 'phone_click')
-      .gte('created_at', dedupWindowStart.toISOString())
-      .lte('created_at', callTime.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (dedupClickEvents && dedupClickEvents.length > 0) {
-      const hasAdClick = dedupClickEvents.some((e: any) => e.gclid || e.msclkid);
-      if (hasAdClick) {
-        // Phone click already fired real-time conversion — skip offline upload
-        console.log(`⏭️ Dedup: skipping call ${call.call_id} — phone_click with ad click ID fired within ${DEDUP_WINDOW_MINUTES}min`);
-        continue;
-      }
-    }
-
-    // Strategy 2: No phone_click match — try session-based attribution
-    // Use the wider ATTRIBUTION window for calls that didn't originate from a website click
-    const attributionWindowStart = new Date(callTime.getTime() - attributionWindowMs);
-
-    // Check for GCLID sessions (Google Ads)
-    // First check phone_click events outside the dedup window but within attribution window
-    const { data: clickEvents } = await supabase
-      .from('conversion_events')
-      .select('session_id, gclid, msclkid, created_at')
-      .eq('event_type', 'phone_click')
-      .gte('created_at', attributionWindowStart.toISOString())
-      .lt('created_at', dedupWindowStart.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (clickEvents && clickEvents.length > 0) {
-      const gclidClicks = clickEvents.filter((e: any) => e.gclid);
-      const msclkidClicks = clickEvents.filter((e: any) => e.msclkid);
-
-      if (gclidClicks.length > 0 && msclkidClicks.length === 0) {
-        attributedCalls.push({
-          callId: call.call_id,
-          callTime,
-          fromNumber: call.from_number,
-          duration: call.duration,
-          gclid: gclidClicks[0].gclid,
-          sessionId: gclidClicks[0].session_id,
-          clickTime: new Date(gclidClicks[0].created_at),
-        });
-        continue;
-      }
-      if (gclidClicks.length > 0 && msclkidClicks.length > 0) {
-        continue;
-      }
-    }
-
-    // Strategy 3: Session-based match (only if no conflict with Microsoft)
-    const { data: googleSessions } = await supabase
-      .from('user_sessions')
-      .select('session_id, gclid, started_at')
-      .not('gclid', 'is', null)
-      .gte('started_at', attributionWindowStart.toISOString())
-      .lte('started_at', callTime.toISOString())
-      .order('started_at', { ascending: false })
-      .limit(1);
-
-    if (googleSessions && googleSessions.length > 0 && googleSessions[0].gclid) {
-      // Check if Microsoft also has a session in this window (conflict)
-      const { data: msSessions } = await supabase
-        .from('user_sessions')
-        .select('session_id')
-        .not('msclkid', 'is', null)
-        .gte('started_at', attributionWindowStart.toISOString())
-        .lte('started_at', callTime.toISOString())
-        .limit(1);
-
-      // Only attribute to Google if no Microsoft session in window
-      if (!msSessions || msSessions.length === 0) {
-        attributedCalls.push({
-          callId: call.call_id,
-          callTime,
-          fromNumber: call.from_number,
-          duration: call.duration,
-          gclid: googleSessions[0].gclid,
-          sessionId: googleSessions[0].session_id,
-          clickTime: new Date(googleSessions[0].started_at),
-        });
-      }
+      .select('call_id, from_number, google_ads_uploaded_at, microsoft_ads_uploaded_at')
+      .in('call_id', callIds);
+    if (error) throw new Error(`ringcentral_calls fetch failed: ${error.message}`);
+    for (const row of data || []) {
+      callRows.set(row.call_id, {
+        legacyUploadedAt:
+          platform === 'google' ? row.google_ads_uploaded_at : row.microsoft_ads_uploaded_at,
+        fromNumber: row.from_number,
+      });
     }
   }
 
-  console.log(`✅ Attributed ${attributedCalls.length} calls to Google Ads (${realCalls.length - attributedCalls.length} skipped/unmatched)`);
+  const leadRows = new Map<string, SourceLeadContext>();
+  if (leadIds.length > 0) {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('id, revenue_amount, is_test, google_ads_form_uploaded_at, microsoft_ads_form_uploaded_at')
+      .in('id', leadIds);
+    if (error) throw new Error(`leads fetch failed: ${error.message}`);
+    for (const row of data || []) {
+      leadRows.set(row.id, {
+        legacyUploadedAt:
+          platform === 'google' ? row.google_ads_form_uploaded_at : row.microsoft_ads_form_uploaded_at,
+        revenueAmount: row.revenue_amount,
+        isTest: !!row.is_test,
+      });
+    }
+  }
 
-  return attributedCalls;
+  const formActionConfigured =
+    platform === 'google'
+      ? !!GOOGLE_ADS_FORM_CONVERSION_ACTION_ID
+      : !!MICROSOFT_OFFLINE_FORM_CONVERSION_NAME;
+
+  return {
+    callRows,
+    leadRows,
+    formActionConfigured,
+    isExcludedSource: (candidate) => {
+      if (candidate.source_type !== 'call') return false;
+      const fromNumber = callRows.get(candidate.source_id)?.fromNumber || '';
+      return isExcludedPhone(fromNumber) || isTestPhone(fromNumber);
+    },
+    now: new Date(),
+  };
+}
+
+async function applyBackstamps(
+  supabase: SupabaseClient,
+  backstamps: UploadPlan['backstamps']
+): Promise<void> {
+  for (const stamp of backstamps) {
+    const { error } = await supabase
+      .from('export_candidates')
+      .update({ uploaded_at: stamp.uploadedAt })
+      .eq('id', stamp.candidateId);
+    if (error) {
+      console.error(`Error backstamping candidate ${stamp.candidateId}:`, error.message);
+    }
+  }
+}
+
+async function markCandidatesUploaded(
+  supabase: SupabaseClient,
+  candidateIds: string[]
+): Promise<void> {
+  if (candidateIds.length === 0) return;
+  const { error } = await supabase
+    .from('export_candidates')
+    .update({ uploaded_at: new Date().toISOString(), upload_error: null })
+    .in('id', candidateIds);
+  if (error) {
+    console.error('Error marking candidates uploaded:', error.message);
+  }
+}
+
+async function markCandidateErrors(
+  supabase: SupabaseClient,
+  failures: Array<{ candidateId: string; error: string }>
+): Promise<void> {
+  for (const failure of failures) {
+    const { error } = await supabase
+      .from('export_candidates')
+      .update({ upload_error: failure.error.slice(0, 500) })
+      .eq('id', failure.candidateId);
+    if (error) {
+      console.error(`Error recording upload_error for ${failure.candidateId}:`, error.message);
+    }
+  }
 }
 
 /**
- * Mark calls as uploaded to Google Ads.
+ * Mark calls as uploaded (legacy bookkeeping columns).
  *
- * Bookkeeping only — sets the upload timestamp so the next sync run knows
- * not to re-upload the same call. Does NOT write ad_platform: that's the
- * canonical attribution resolver's job (src/lib/callAttribution.ts), and
- * letting the upload path also write it created the last-writer-wins
- * corruption documented in tasks/2026-04-14-attribution-remediation.md.
+ * Dashboards, getAttributionStats, and compare-export-candidates.js read these
+ * columns. Does NOT write ad_platform: that's the canonical attribution
+ * resolver's job (src/lib/callAttribution.ts) — see
+ * tasks/2026-04-14-attribution-remediation.md.
  */
 async function markCallsAsUploaded(
   supabase: SupabaseClient,
+  platform: 'google' | 'microsoft',
   callIds: string[]
 ): Promise<void> {
   if (callIds.length === 0) return;
-
+  const column = platform === 'google' ? 'google_ads_uploaded_at' : 'microsoft_ads_uploaded_at';
   const { error } = await supabase
     .from('ringcentral_calls')
-    .update({
-      google_ads_uploaded_at: new Date().toISOString(),
-    })
+    .update({ [column]: new Date().toISOString() })
     .in('call_id', callIds);
-
   if (error) {
-    console.error('Error marking calls as uploaded:', error);
+    console.error(`Error marking calls as uploaded (${platform}):`, error.message);
   }
 }
 
 async function markLeadsAsUploaded(
   supabase: SupabaseClient,
+  platform: 'google' | 'microsoft',
   leadIds: string[]
 ): Promise<void> {
   if (leadIds.length === 0) return;
-
+  const column =
+    platform === 'google' ? 'google_ads_form_uploaded_at' : 'microsoft_ads_form_uploaded_at';
   const { error } = await supabase
     .from('leads')
-    .update({
-      google_ads_form_uploaded_at: new Date().toISOString(),
-    })
+    .update({ [column]: new Date().toISOString() })
     .in('id', leadIds);
-
   if (error) {
-    console.error('Error marking leads as uploaded:', error);
+    console.error(`Error marking leads as uploaded (${platform}):`, error.message);
   }
 }
 
-async function findAttributableLeads(
-  supabase: SupabaseClient,
-  lookbackDays: number = 30
-): Promise<AttributedLead[]> {
-  const lookbackDate = new Date();
-  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
+// ── Shared sync driver ────────────────────────────────────────────────────────
 
-  let leads;
-  let leadsError;
-
-  try {
-    const result = await supabase
-      .from('leads')
-      .select('id, created_at, gclid, revenue_amount, is_test, google_ads_form_uploaded_at')
-      .not('gclid', 'is', null)
-      .eq('is_test', false)
-      .gte('created_at', lookbackDate.toISOString())
-      .is('google_ads_form_uploaded_at', null);
-
-    leads = result.data;
-    leadsError = result.error;
-
-    if (leadsError?.message?.includes('does not exist')) {
-      console.warn('⚠️ google_ads_form_uploaded_at column not found - skipping lead uploads');
-      return [];
-    }
-  } catch (err: any) {
-    console.error('Error fetching leads for Google Ads upload:', err.message);
-    return [];
-  }
-
-  if (leadsError) {
-    console.error('Error fetching leads:', leadsError);
-    return [];
-  }
-
-  if (!leads || leads.length === 0) {
-    return [];
-  }
-
-  return leads.map((lead: any) => ({
-    leadId: lead.id,
-    leadTime: new Date(lead.created_at),
-    gclid: lead.gclid,
-    conversionValue: Number(lead.revenue_amount) || DEFAULT_FORM_VALUE,
-  }));
-}
-
-/**
- * Sync RingCentral calls to Google Ads as offline conversions
- *
- * This should be called as part of the daily sync cron job
- */
-export async function syncOfflineConversions(): Promise<SyncResult> {
-  console.log('\n📤 Starting offline conversion sync...');
-  console.log(`   Attribution method: Direct phone_click match (${ATTRIBUTION_WINDOW_MINUTES} min window)`);
-  console.log(`   Min call duration: ${MIN_CALL_DURATION_SECONDS} seconds`);
-
+async function syncPlatform(
+  platform: 'google' | 'microsoft',
+  upload: (uploads: PlannedUpload[]) => Promise<{
+    results: Array<{ success: boolean; error?: string }>;
+    successCount: number;
+    failureCount: number;
+  }>
+): Promise<SyncResult> {
   const result: SyncResult = {
     callsProcessed: 0,
     callsAttributed: 0,
@@ -402,86 +398,67 @@ export async function syncOfflineConversions(): Promise<SyncResult> {
   try {
     const supabase = getSupabaseClient();
 
-    // Find calls that can be attributed to Google Ads
-    const attributedCalls = await findAttributableCalls(supabase);
-    const attributedLeads = GOOGLE_ADS_FORM_CONVERSION_ACTION_ID
-      ? await findAttributableLeads(supabase)
-      : [];
-    if (!GOOGLE_ADS_FORM_CONVERSION_ACTION_ID) {
-      console.warn('⚠️ GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID not set - skipping lead uploads');
-    }
+    const candidates = await fetchUploadableCandidates(supabase, platform);
+    result.callsProcessed = candidates.length;
 
-    result.callsProcessed = attributedCalls.length;
-    result.callsAttributed = attributedCalls.length;
-
-    if (attributedCalls.length === 0 && attributedLeads.length === 0) {
-      console.log('📭 No offline conversions to upload');
+    if (candidates.length === 0) {
+      console.log(`📭 No pending export candidates for ${platform}`);
       return result;
     }
 
-    const conversionsToUpload: Array<{ kind: 'call' | 'lead'; id: string; conversion: OfflineConversion }> = [];
+    const ctx = await buildPrepareContext(supabase, candidates, platform);
+    const plan = prepareCandidateUploads(candidates, ctx);
+    result.callsAttributed = plan.uploads.length;
 
-    for (const call of attributedCalls) {
-      conversionsToUpload.push({
-        kind: 'call',
-        id: call.callId,
-        conversion: {
-          gclid: call.gclid,
-          conversionDateTime: formatConversionDateTime(call.callTime),
-          conversionValue: DEFAULT_CALL_VALUE,
-          currencyCode: 'USD',
-        },
-      });
+    if (plan.backstamps.length > 0) {
+      console.log(`🕰️ Backstamping ${plan.backstamps.length} candidate(s) already uploaded by legacy uploader`);
+      await applyBackstamps(supabase, plan.backstamps);
+    }
+    for (const skip of plan.skipped) {
+      console.log(`⏭️ Skipping candidate ${skip.candidateId}: ${skip.reason}`);
     }
 
-    for (const lead of attributedLeads) {
-      conversionsToUpload.push({
-        kind: 'lead',
-        id: lead.leadId,
-        conversion: {
-          gclid: lead.gclid,
-          conversionDateTime: formatConversionDateTime(lead.leadTime),
-          conversionValue: lead.conversionValue,
-          currencyCode: 'USD',
-          conversionActionId: GOOGLE_ADS_FORM_CONVERSION_ACTION_ID,
-        },
-      });
+    if (plan.uploads.length === 0) {
+      console.log(`📭 No offline conversions to upload to ${platform}`);
+      return result;
     }
 
-    // Upload to Google Ads
-    const uploadResult = await uploadOfflineConversions(conversionsToUpload.map((item) => item.conversion));
+    const uploadResult = await upload(plan.uploads);
     result.conversionsUploaded = uploadResult.successCount;
     result.conversionsFailed = uploadResult.failureCount;
 
-    // Mark successful uploads
-    const successfulCallIds: string[] = [];
-    const successfulLeadIds: string[] = [];
+    const uploadedCandidateIds: string[] = [];
+    const uploadedCallIds: string[] = [];
+    const uploadedLeadIds: string[] = [];
+    const failures: Array<{ candidateId: string; error: string }> = [];
+
     uploadResult.results.forEach((res, index) => {
-      if (!res.success) return;
-      const item = conversionsToUpload[index];
-      if (!item) return;
-      if (item.kind === 'call') successfulCallIds.push(item.id);
-      if (item.kind === 'lead') successfulLeadIds.push(item.id);
+      const planned = plan.uploads[index];
+      if (!planned) return;
+      if (res.success) {
+        uploadedCandidateIds.push(planned.candidateId);
+        if (planned.sourceType === 'call') uploadedCallIds.push(planned.sourceId);
+        if (planned.sourceType === 'lead') uploadedLeadIds.push(planned.sourceId);
+      } else {
+        failures.push({ candidateId: planned.candidateId, error: res.error || 'unknown error' });
+        const errorMsg = `Failed to upload ${platform} conversion (candidate ${planned.candidateId}): ${res.error}`;
+        result.errors.push(errorMsg);
+        console.error(`❌ ${errorMsg}`);
+      }
     });
 
-    await markCallsAsUploaded(supabase, successfulCallIds);
-    await markLeadsAsUploaded(supabase, successfulLeadIds);
+    await markCandidatesUploaded(supabase, uploadedCandidateIds);
+    await markCallsAsUploaded(supabase, platform, uploadedCallIds);
+    await markLeadsAsUploaded(supabase, platform, uploadedLeadIds);
+    await markCandidateErrors(supabase, failures);
 
-    // Log failures
-    for (const failedResult of uploadResult.results.filter((r) => !r.success)) {
-      const errorMsg = `Failed to upload GCLID ${failedResult.gclid}: ${failedResult.error}`;
-      result.errors.push(errorMsg);
-      console.error(`❌ ${errorMsg}`);
-    }
-
-    console.log(`\n✅ Offline conversion sync complete:`);
-    console.log(`   Calls attributed: ${result.callsAttributed}`);
-    console.log(`   Form leads attributed: ${attributedLeads.length}`);
+    console.log(`\n✅ ${platform} offline conversion sync complete:`);
+    console.log(`   Candidates fetched: ${candidates.length}`);
+    console.log(`   Uploads planned: ${plan.uploads.length} (backstamped: ${plan.backstamps.length}, skipped: ${plan.skipped.length})`);
     console.log(`   Conversions uploaded: ${result.conversionsUploaded}`);
     console.log(`   Failures: ${result.conversionsFailed}`);
-
   } catch (error: any) {
-    const errorMsg = `Offline conversion sync failed: ${error.message}`;
+    const errorMsg = `${platform} offline conversion sync failed: ${error.message}`;
     result.errors.push(errorMsg);
     console.error(`❌ ${errorMsg}`);
   }
@@ -489,8 +466,89 @@ export async function syncOfflineConversions(): Promise<SyncResult> {
   return result;
 }
 
+// ── Public API (signatures unchanged from pre-PR2b) ───────────────────────────
+
 /**
- * Get attribution stats for a date range
+ * Upload pending Google Ads offline conversions from export_candidates.
+ */
+export async function syncOfflineConversions(): Promise<SyncResult> {
+  console.log('\n📤 Starting offline conversion sync (export contract)...');
+  if (!GOOGLE_ADS_FORM_CONVERSION_ACTION_ID) {
+    console.warn('⚠️ GOOGLE_ADS_OFFLINE_LEAD_FORM_ACTION_ID not set - lead candidates will be skipped');
+  }
+
+  return syncPlatform('google', async (uploads) => {
+    const conversions: OfflineConversion[] = uploads.map((u) => ({
+      gclid: u.clickId,
+      conversionDateTime: formatConversionDateTime(u.conversionTime),
+      conversionValue: u.value,
+      currencyCode: 'USD',
+      ...(u.isFormLead ? { conversionActionId: GOOGLE_ADS_FORM_CONVERSION_ACTION_ID } : {}),
+    }));
+    return uploadOfflineConversions(conversions);
+  });
+}
+
+/**
+ * Upload pending Microsoft Ads offline conversions from export_candidates.
+ */
+export async function syncMicrosoftOfflineConversions(): Promise<SyncResult> {
+  console.log('\n📤 Starting Microsoft Ads offline conversion sync (export contract)...');
+
+  const msConfig = validateMicrosoftAdsConfig();
+  if (!msConfig.isValid) {
+    console.log('⚠️ Microsoft Ads not configured, skipping sync');
+    return {
+      callsProcessed: 0,
+      callsAttributed: 0,
+      conversionsUploaded: 0,
+      conversionsFailed: 0,
+      errors: [],
+    };
+  }
+  if (!MICROSOFT_OFFLINE_FORM_CONVERSION_NAME) {
+    console.warn('⚠️ MICROSOFT_OFFLINE_FORM_CONVERSION_NAME not set - lead candidates will be skipped');
+  }
+
+  return syncPlatform('microsoft', async (uploads) => {
+    const conversions: MicrosoftOfflineConversion[] = uploads.map((u) => ({
+      msclkid: u.clickId,
+      conversionName: u.isFormLead
+        ? MICROSOFT_OFFLINE_FORM_CONVERSION_NAME || MICROSOFT_OFFLINE_CONVERSION_NAME
+        : MICROSOFT_OFFLINE_CONVERSION_NAME,
+      conversionTime: formatMicrosoftConversionDateTime(u.conversionTime),
+      conversionValue: u.value,
+      conversionCurrency: 'USD',
+    }));
+    return uploadMicrosoftOfflineConversions(conversions);
+  });
+}
+
+/**
+ * Sync offline conversions to both Google Ads and Microsoft Ads
+ */
+export async function syncAllOfflineConversions(): Promise<{
+  googleAds: SyncResult;
+  microsoftAds: SyncResult;
+}> {
+  console.log('\n🔄 Starting offline conversion sync for all platforms...');
+
+  const googleAdsResult = await syncOfflineConversions();
+  const microsoftAdsResult = await syncMicrosoftOfflineConversions();
+
+  console.log('\n📊 Summary:');
+  console.log(`   Google Ads: ${googleAdsResult.conversionsUploaded} uploaded, ${googleAdsResult.conversionsFailed} failed`);
+  console.log(`   Microsoft Ads: ${microsoftAdsResult.conversionsUploaded} uploaded, ${microsoftAdsResult.conversionsFailed} failed`);
+
+  return {
+    googleAds: googleAdsResult,
+    microsoftAds: microsoftAdsResult,
+  };
+}
+
+/**
+ * Get attribution stats for a date range (reads legacy bookkeeping columns,
+ * which the PR2b uploader keeps in sync).
  */
 export async function getAttributionStats(
   startDate: string,
@@ -543,408 +601,5 @@ export async function getAttributionStats(
     uploadedCalls: uploaded,
     pendingCalls: attributed - uploaded,
     attributionRate: total > 0 ? (attributed / total) * 100 : 0,
-  };
-}
-
-// ============================================================================
-// MICROSOFT ADS OFFLINE CONVERSION SYNC
-// ============================================================================
-
-/**
- * Find calls that can be attributed to Microsoft Ads clicks (via MSCLKID)
- *
- * Attribution priority:
- * 1. Direct phone_click match - user clicked phone button with MSCLKID within attribution window
- * 2. Session match - user visited from Microsoft ad within attribution window (only if no Google session)
- */
-async function findMicrosoftAttributableCalls(
-  supabase: SupabaseClient,
-  lookbackDays: number = 7
-): Promise<MicrosoftAttributedCall[]> {
-  const lookbackDate = new Date();
-  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
-
-  // Get recent inbound calls that haven't been uploaded to Microsoft Ads
-  let calls;
-  let callsError;
-
-  try {
-    const result = await supabase
-      .from('ringcentral_calls')
-      .select('call_id, start_time, from_number, duration, direction, result, microsoft_ads_uploaded_at, google_ads_call_match, google_ads_call_resource_name')
-      .eq('direction', 'Inbound')
-      .gte('start_time', lookbackDate.toISOString())
-      .is('microsoft_ads_uploaded_at', null)
-      .gte('duration', MIN_CALL_DURATION_SECONDS);
-
-    calls = result.data;
-    callsError = result.error;
-
-    if (callsError?.message?.includes('does not exist')) {
-      console.warn('⚠️ microsoft_ads_uploaded_at column not found - fetching all calls');
-      const fallbackResult = await supabase
-        .from('ringcentral_calls')
-        .select('call_id, start_time, from_number, duration, direction, result, google_ads_call_match, google_ads_call_resource_name')
-        .eq('direction', 'Inbound')
-        .gte('start_time', lookbackDate.toISOString())
-        .gte('duration', MIN_CALL_DURATION_SECONDS);
-
-      calls = fallbackResult.data;
-      callsError = fallbackResult.error;
-    }
-  } catch (err: any) {
-    console.error('Error fetching calls for Microsoft Ads:', err.message);
-    return [];
-  }
-
-  if (callsError) {
-    console.error('Error fetching calls for Microsoft Ads:', callsError);
-    return [];
-  }
-
-  if (!calls || calls.length === 0) {
-    console.log('📞 No new calls to process for Microsoft Ads');
-    return [];
-  }
-
-  // Filter out test/internal phone numbers — never upload these as real conversions
-  const realCallsMs = calls.filter(
-    (call: any) => !isExcludedPhone(call.from_number || '') && !isTestPhone(call.from_number || '')
-  );
-  if (realCallsMs.length < calls.length) {
-    console.log(`🧪 Filtered ${calls.length - realCallsMs.length} test call(s) from Microsoft Ads conversion upload`);
-  }
-  console.log(`📞 Found ${realCallsMs.length} calls to check for Microsoft Ads attribution`);
-
-  const attributedCalls: MicrosoftAttributedCall[] = [];
-  const dedupWindowMs = DEDUP_WINDOW_MINUTES * 60 * 1000;
-  const attributionWindowMs = ATTRIBUTION_WINDOW_MINUTES * 60 * 1000;
-
-  for (const call of realCallsMs) {
-    if (call.google_ads_call_match || call.google_ads_call_resource_name) {
-      console.log(`⏭️ Policy Guard: skipping call ${call.call_id} — already claimed by deterministic Google call_view`);
-      continue;
-    }
-
-    const callTime = new Date(call.start_time);
-
-    // Strategy 1: Dedup check — phone_click within tight window already fired real-time conversion
-    const dedupWindowStart = new Date(callTime.getTime() - dedupWindowMs);
-    const { data: dedupClickEvents } = await supabase
-      .from('conversion_events')
-      .select('session_id, gclid, msclkid, created_at')
-      .eq('event_type', 'phone_click')
-      .gte('created_at', dedupWindowStart.toISOString())
-      .lte('created_at', callTime.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (dedupClickEvents && dedupClickEvents.length > 0) {
-      const hasAdClick = dedupClickEvents.some((e: any) => e.gclid || e.msclkid);
-      if (hasAdClick) {
-        console.log(`⏭️ Dedup: skipping call ${call.call_id} — phone_click with ad click ID fired within ${DEDUP_WINDOW_MINUTES}min (Microsoft)`);
-        continue;
-      }
-    }
-
-    // Strategy 2: Check for phone_click with MSCLKID outside dedup window but within attribution window
-    const attributionWindowStart = new Date(callTime.getTime() - attributionWindowMs);
-    const { data: msClickEvents } = await supabase
-      .from('conversion_events')
-      .select('session_id, gclid, msclkid, created_at')
-      .eq('event_type', 'phone_click')
-      .gte('created_at', attributionWindowStart.toISOString())
-      .lt('created_at', dedupWindowStart.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (msClickEvents && msClickEvents.length > 0) {
-      const msClicks = msClickEvents.filter((e: any) => e.msclkid);
-      const googleClicks = msClickEvents.filter((e: any) => e.gclid);
-
-      if (msClicks.length > 0 && googleClicks.length === 0) {
-        attributedCalls.push({
-          callId: call.call_id,
-          callTime,
-          fromNumber: call.from_number,
-          duration: call.duration,
-          msclkid: msClicks[0].msclkid,
-          sessionId: msClicks[0].session_id,
-          clickTime: new Date(msClicks[0].created_at),
-        });
-        continue;
-      }
-      if (msClicks.length > 0 && googleClicks.length > 0) {
-        continue;
-      }
-    }
-
-    // Strategy 3: Session-based match (only if no conflict with Google)
-    const { data: msSessions } = await supabase
-      .from('user_sessions')
-      .select('session_id, msclkid, started_at')
-      .not('msclkid', 'is', null)
-      .gte('started_at', attributionWindowStart.toISOString())
-      .lte('started_at', callTime.toISOString())
-      .order('started_at', { ascending: false })
-      .limit(1);
-
-    if (msSessions && msSessions.length > 0 && msSessions[0].msclkid) {
-      // Check if Google also has a session in this window (conflict)
-      const { data: googleSessions } = await supabase
-        .from('user_sessions')
-        .select('session_id')
-        .not('gclid', 'is', null)
-        .gte('started_at', attributionWindowStart.toISOString())
-        .lte('started_at', callTime.toISOString())
-        .limit(1);
-
-      // Only attribute to Microsoft if no Google session in window
-      if (!googleSessions || googleSessions.length === 0) {
-        attributedCalls.push({
-          callId: call.call_id,
-          callTime,
-          fromNumber: call.from_number,
-          duration: call.duration,
-          msclkid: msSessions[0].msclkid,
-          sessionId: msSessions[0].session_id,
-          clickTime: new Date(msSessions[0].started_at),
-        });
-      }
-    }
-  }
-
-  console.log(`✅ Attributed ${attributedCalls.length} calls to Microsoft Ads (${realCallsMs.length - attributedCalls.length} skipped/unmatched)`);
-
-  return attributedCalls;
-}
-
-/**
- * Mark calls as uploaded to Microsoft Ads.
- *
- * Bookkeeping only — sets the upload timestamp so the next sync run knows
- * not to re-upload the same call. Does NOT write ad_platform: that's the
- * canonical attribution resolver's job (src/lib/callAttribution.ts), and
- * letting the upload path also write it created the last-writer-wins
- * corruption documented in tasks/2026-04-14-attribution-remediation.md.
- */
-async function markCallsAsUploadedToMicrosoft(
-  supabase: SupabaseClient,
-  callIds: string[]
-): Promise<void> {
-  if (callIds.length === 0) return;
-
-  const { error } = await supabase
-    .from('ringcentral_calls')
-    .update({
-      microsoft_ads_uploaded_at: new Date().toISOString(),
-    })
-    .in('call_id', callIds);
-
-  if (error) {
-    console.error('Error marking calls as uploaded to Microsoft Ads:', error);
-  }
-}
-
-async function markLeadsAsUploadedToMicrosoft(
-  supabase: SupabaseClient,
-  leadIds: string[]
-): Promise<void> {
-  if (leadIds.length === 0) return;
-
-  const { error } = await supabase
-    .from('leads')
-    .update({
-      microsoft_ads_form_uploaded_at: new Date().toISOString(),
-    })
-    .in('id', leadIds);
-
-  if (error) {
-    console.error('Error marking leads as uploaded to Microsoft Ads:', error);
-  }
-}
-
-async function findMicrosoftAttributableLeads(
-  supabase: SupabaseClient,
-  lookbackDays: number = 30
-): Promise<MicrosoftAttributedLead[]> {
-  const lookbackDate = new Date();
-  lookbackDate.setDate(lookbackDate.getDate() - lookbackDays);
-
-  let leads;
-  let leadsError;
-
-  try {
-    const result = await supabase
-      .from('leads')
-      .select('id, created_at, msclkid, revenue_amount, is_test, microsoft_ads_form_uploaded_at')
-      .not('msclkid', 'is', null)
-      .eq('is_test', false)
-      .gte('created_at', lookbackDate.toISOString())
-      .is('microsoft_ads_form_uploaded_at', null);
-
-    leads = result.data;
-    leadsError = result.error;
-
-    if (leadsError?.message?.includes('does not exist')) {
-      console.warn('⚠️ microsoft_ads_form_uploaded_at column not found - skipping lead uploads');
-      return [];
-    }
-  } catch (err: any) {
-    console.error('Error fetching leads for Microsoft Ads upload:', err.message);
-    return [];
-  }
-
-  if (leadsError) {
-    console.error('Error fetching leads:', leadsError);
-    return [];
-  }
-
-  if (!leads || leads.length === 0) {
-    return [];
-  }
-
-  return leads.map((lead: any) => ({
-    leadId: lead.id,
-    leadTime: new Date(lead.created_at),
-    msclkid: lead.msclkid,
-    conversionValue: Number(lead.revenue_amount) || DEFAULT_FORM_VALUE,
-  }));
-}
-
-/**
- * Sync RingCentral calls to Microsoft Ads as offline conversions
- */
-export async function syncMicrosoftOfflineConversions(): Promise<MicrosoftSyncResult> {
-  console.log('\n📤 Starting Microsoft Ads offline conversion sync...');
-  console.log(`   Attribution method: Direct phone_click match (${ATTRIBUTION_WINDOW_MINUTES} min window)`);
-  console.log(`   Min call duration: ${MIN_CALL_DURATION_SECONDS} seconds`);
-  console.log(`   Conversion name: ${MICROSOFT_OFFLINE_CONVERSION_NAME}`);
-
-  const result: MicrosoftSyncResult = {
-    callsProcessed: 0,
-    callsAttributed: 0,
-    conversionsUploaded: 0,
-    conversionsFailed: 0,
-    errors: [],
-  };
-
-  // Check if Microsoft Ads is configured
-  const msConfig = validateMicrosoftAdsConfig();
-  if (!msConfig.isValid) {
-    console.log('⚠️ Microsoft Ads not configured, skipping sync');
-    return result;
-  }
-
-  try {
-    const supabase = getSupabaseClient();
-
-    // Find calls that can be attributed to Microsoft Ads
-    const attributedCalls = await findMicrosoftAttributableCalls(supabase);
-    const attributedLeads = MICROSOFT_OFFLINE_FORM_CONVERSION_NAME
-      ? await findMicrosoftAttributableLeads(supabase)
-      : [];
-    if (!MICROSOFT_OFFLINE_FORM_CONVERSION_NAME) {
-      console.warn('⚠️ MICROSOFT_OFFLINE_FORM_CONVERSION_NAME not set - skipping lead uploads');
-    }
-
-    result.callsProcessed = attributedCalls.length;
-    result.callsAttributed = attributedCalls.length;
-
-    if (attributedCalls.length === 0 && attributedLeads.length === 0) {
-      console.log('📭 No offline conversions to upload to Microsoft Ads');
-      return result;
-    }
-
-    const conversionsToUpload: Array<{ kind: 'call' | 'lead'; id: string; conversion: MicrosoftOfflineConversion }> = [];
-
-    for (const call of attributedCalls) {
-      conversionsToUpload.push({
-        kind: 'call',
-        id: call.callId,
-        conversion: {
-          msclkid: call.msclkid,
-          conversionName: MICROSOFT_OFFLINE_CONVERSION_NAME,
-          conversionTime: formatMicrosoftConversionDateTime(call.callTime),
-          conversionValue: DEFAULT_CALL_VALUE,
-          conversionCurrency: 'USD',
-        },
-      });
-    }
-
-    for (const lead of attributedLeads) {
-      conversionsToUpload.push({
-        kind: 'lead',
-        id: lead.leadId,
-        conversion: {
-          msclkid: lead.msclkid,
-          conversionName: MICROSOFT_OFFLINE_FORM_CONVERSION_NAME || MICROSOFT_OFFLINE_CONVERSION_NAME,
-          conversionTime: formatMicrosoftConversionDateTime(lead.leadTime),
-          conversionValue: lead.conversionValue,
-          conversionCurrency: 'USD',
-        },
-      });
-    }
-
-    // Upload to Microsoft Ads
-    const uploadResult = await uploadMicrosoftOfflineConversions(conversionsToUpload.map((item) => item.conversion));
-    result.conversionsUploaded = uploadResult.successCount;
-    result.conversionsFailed = uploadResult.failureCount;
-
-    // Mark successful uploads
-    const successfulCallIds: string[] = [];
-    const successfulLeadIds: string[] = [];
-    uploadResult.results.forEach((res, index) => {
-      if (!res.success) return;
-      const item = conversionsToUpload[index];
-      if (!item) return;
-      if (item.kind === 'call') successfulCallIds.push(item.id);
-      if (item.kind === 'lead') successfulLeadIds.push(item.id);
-    });
-
-    await markCallsAsUploadedToMicrosoft(supabase, successfulCallIds);
-    await markLeadsAsUploadedToMicrosoft(supabase, successfulLeadIds);
-
-    // Log failures
-    for (const failedResult of uploadResult.results.filter((r) => !r.success)) {
-      const errorMsg = `Failed to upload MSCLKID ${failedResult.msclkid}: ${failedResult.error}`;
-      result.errors.push(errorMsg);
-      console.error(`❌ ${errorMsg}`);
-    }
-
-    console.log(`\n✅ Microsoft Ads offline conversion sync complete:`);
-    console.log(`   Calls attributed: ${result.callsAttributed}`);
-    console.log(`   Form leads attributed: ${attributedLeads.length}`);
-    console.log(`   Conversions uploaded: ${result.conversionsUploaded}`);
-    console.log(`   Failures: ${result.conversionsFailed}`);
-
-  } catch (error: any) {
-    const errorMsg = `Microsoft Ads offline conversion sync failed: ${error.message}`;
-    result.errors.push(errorMsg);
-    console.error(`❌ ${errorMsg}`);
-  }
-
-  return result;
-}
-
-/**
- * Sync offline conversions to both Google Ads and Microsoft Ads
- */
-export async function syncAllOfflineConversions(): Promise<{
-  googleAds: SyncResult;
-  microsoftAds: MicrosoftSyncResult;
-}> {
-  console.log('\n🔄 Starting offline conversion sync for all platforms...');
-
-  const googleAdsResult = await syncOfflineConversions();
-  const microsoftAdsResult = await syncMicrosoftOfflineConversions();
-
-  console.log('\n📊 Summary:');
-  console.log(`   Google Ads: ${googleAdsResult.conversionsUploaded} uploaded, ${googleAdsResult.conversionsFailed} failed`);
-  console.log(`   Microsoft Ads: ${microsoftAdsResult.conversionsUploaded} uploaded, ${microsoftAdsResult.conversionsFailed} failed`);
-
-  return {
-    googleAds: googleAdsResult,
-    microsoftAds: microsoftAdsResult,
   };
 }
