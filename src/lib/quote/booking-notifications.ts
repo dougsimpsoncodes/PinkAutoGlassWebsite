@@ -103,7 +103,7 @@ function formatInstallDate(iso: string): string {
 }
 
 function formatWindow(window: 'AM' | 'PM'): string {
-  return window === 'AM' ? 'Morning (8a-12p)' : 'Afternoon (12-5p)';
+  return window === 'AM' ? 'Morning (8a-1p)' : 'Afternoon (1-5p)';
 }
 
 function buildSmsText(input: BookingNotificationInput): string {
@@ -343,7 +343,7 @@ function buildTeamEmailHtml(input: BookingNotificationInput, ctx: TeamAlertConte
 
 function buildTeamSmsText(input: BookingNotificationInput, ctx: TeamAlertContext): string {
   const date = formatInstallDate(input.install.date);
-  const win = input.install.window === 'AM' ? '8a-12p' : '12-5p';
+  const win = input.install.window === 'AM' ? '8a-1p' : '1-5p';
   const price = input.quote.totalCents != null ? `$${Math.round(input.quote.totalCents / 100)}` : '—';
   const loc = [input.install.state, input.install.zip].filter(Boolean).join(' ') || '—';
   const phone = formatPhone(input.customer.phoneE164);

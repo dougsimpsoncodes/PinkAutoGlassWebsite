@@ -67,7 +67,7 @@ interface SlotOption {
   window: 'AM' | 'PM';
   dayLabel: string;      // "Tomorrow" / "Sat" / "Mon" / etc
   dateLabel: string;     // "5/29"
-  timeLabel: string;     // "8a-12p" / "12p-5p"
+  timeLabel: string;     // "8a-1p" / "1p-5p"
 }
 
 function buildSlotOptions(now: Date = new Date()): SlotOption[] {
@@ -76,10 +76,10 @@ function buildSlotOptions(now: Date = new Date()): SlotOption[] {
   const day2Label = pillDayLabel(day2, now);
 
   return [
-    { key: 'day1_am', date: toIsoLocal(day1), window: 'AM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '8a-12p' },
-    { key: 'day1_pm', date: toIsoLocal(day1), window: 'PM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '12p-5p' },
-    { key: 'day2_am', date: toIsoLocal(day2), window: 'AM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '8a-12p' },
-    { key: 'day2_pm', date: toIsoLocal(day2), window: 'PM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '12p-5p' },
+    { key: 'day1_am', date: toIsoLocal(day1), window: 'AM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '8a-1p' },
+    { key: 'day1_pm', date: toIsoLocal(day1), window: 'PM', dayLabel: day1Label, dateLabel: pillDateLabel(day1), timeLabel: '1p-5p' },
+    { key: 'day2_am', date: toIsoLocal(day2), window: 'AM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '8a-1p' },
+    { key: 'day2_pm', date: toIsoLocal(day2), window: 'PM', dayLabel: day2Label, dateLabel: pillDateLabel(day2), timeLabel: '1p-5p' },
   ];
 }
 
@@ -372,7 +372,7 @@ export default function QuoteBookingForm({
 }
 
 function BookingConfirmation({ success, submitted }: { success: BookingSuccess; submitted: SubmittedSnapshot }) {
-  const window = submitted.window === 'AM' ? '8a-12p' : '12p-5p';
+  const window = submitted.window === 'AM' ? '8a-1p' : '1p-5p';
   return (
     <div className="rounded-md border border-green-200 bg-green-50 p-5">
       <CheckCircle2 className="mb-3 h-9 w-9 text-green-600" />

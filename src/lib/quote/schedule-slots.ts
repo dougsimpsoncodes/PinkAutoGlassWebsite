@@ -7,7 +7,7 @@
  *   - US federal holidays are non-working days.
  *
  * The form offers the next 2 working days after today, each with an
- * AM (8a-12p) and PM (12p-5p) window — 4 pills total.
+ * AM (8a-1p) and PM (1p-5p) window — 4 pills total.
  *
  * Pill day labels: "Tomorrow" only when the offered day is literally
  * today + 1. Otherwise the day-of-week abbreviation (e.g., a Saturday
