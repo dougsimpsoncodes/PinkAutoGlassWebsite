@@ -647,6 +647,73 @@ function getSourceStyle(source: Contact['source']): { label: string; color: stri
   }
 }
 
+// Auto-quoter funnel section (additive + self-contained).
+// Pulls from automated_quotes / automated_quote_bookings. Wrapped so any failure
+// returns '' and never blocks the core daily report. Mirrors scripts/analyze-quoter-funnel.sh.
+async function buildQuoterFunnelSection(): Promise<string> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const mtOffset = getMtOffset();
+    const now = new Date();
+    const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
+    const mtNow = new Date(utcNow + mtOffset * 60000);
+    const todayMT = new Date(mtNow);
+    todayMT.setHours(0, 0, 0, 0);
+    const dayStartUTC = todayMT.getTime() - mtOffset * 60000;
+    const yStartUTC = new Date(dayStartUTC - 86400000);   // yesterday 00:00 MT
+    const yEndUTC = new Date(dayStartUTC);                 // today 00:00 MT
+    const sevenAgoUTC = new Date(dayStartUTC - 7 * 86400000);
+
+    const [yQ, yB, wQ, wB] = await Promise.all([
+      supabase.from('automated_quotes').select('contact_submitted_at').eq('is_test', false)
+        .gte('created_at', yStartUTC.toISOString()).lt('created_at', yEndUTC.toISOString()),
+      supabase.from('automated_quote_bookings').select('discount_pct, accepted_total_cents').eq('is_test', false)
+        .gte('created_at', yStartUTC.toISOString()).lt('created_at', yEndUTC.toISOString()),
+      supabase.from('automated_quotes').select('id').eq('is_test', false)
+        .gte('created_at', sevenAgoUTC.toISOString()),
+      supabase.from('automated_quote_bookings').select('quote_id').eq('is_test', false)
+        .gte('created_at', sevenAgoUTC.toISOString()),
+    ]);
+
+    const priced = yQ.data?.length || 0;
+    const contacts = yQ.data?.filter((q) => q.contact_submitted_at).length || 0;
+    const bookings = yB.data?.length || 0;
+    const discount = yB.data?.filter((b) => Number(b.discount_pct) > 0).length || 0;
+    const revUsd = Math.round((yB.data || []).reduce((s, b) => s + (b.accepted_total_cents || 0), 0) / 100);
+
+    const wqIds = new Set((wQ.data || []).map((q) => q.id));
+    const bookedInWindow = new Set((wB.data || []).map((b) => b.quote_id).filter((id) => wqIds.has(id)));
+    const wq = wQ.data?.length || 0;
+    const rate7d = wq ? Math.round((1000 * bookedInWindow.size) / wq) / 10 : 0;
+    const contactPct = priced ? Math.round((100 * contacts) / priced) : 0;
+
+    return `
+  <div style="max-width:600px;margin:16px auto;padding:16px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="font-size:13px;font-weight:700;color:#be185d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Auto-Quoter Funnel (yesterday)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#111;">
+      <tr>
+        <td style="padding:6px 4px;">Quotes priced</td><td style="padding:6px 4px;text-align:right;font-weight:600;">${priced}</td>
+        <td style="padding:6px 4px;">Contact captured</td><td style="padding:6px 4px;text-align:right;font-weight:600;">${contacts} (${contactPct}%)</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 4px;">Bookings</td><td style="padding:6px 4px;text-align:right;font-weight:600;">${bookings}</td>
+        <td style="padding:6px 4px;">Discount-rescue</td><td style="padding:6px 4px;text-align:right;font-weight:600;">${discount}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 4px;">Booked revenue</td><td style="padding:6px 4px;text-align:right;font-weight:600;">$${revUsd.toLocaleString()}</td>
+        <td style="padding:6px 4px;">Quote→book (7d)</td><td style="padding:6px 4px;text-align:right;font-weight:600;color:#be185d;">${rate7d}%</td>
+      </tr>
+    </table>
+  </div>`;
+  } catch (e) {
+    console.error('quoter funnel section failed (non-fatal):', e);
+    return '';
+  }
+}
+
 // Generate HTML email with all 5 lead sources
 function generateEmailHTML(
   metrics: any,
@@ -1054,7 +1121,10 @@ export async function GET(request: NextRequest) {
     const revenueStats = calculateRevenueStats(data.revenueData, totalLeadsThisWeek);
 
     // Generate HTML
-    const html = generateEmailHTML(metrics, contacts, reportDay, dataStatus, revenueStats);
+    const baseHtml = generateEmailHTML(metrics, contacts, reportDay, dataStatus, revenueStats);
+    // Append auto-quoter funnel section (non-fatal: returns '' on any failure)
+    const funnelSection = await buildQuoterFunnelSection();
+    const html = funnelSection ? baseHtml.replace('</body>', `${funnelSection}\n</body>`) : baseHtml;
 
     // Send email - use yesterday's date (in Mountain Time)
     const mtOffset = getMtOffset();
