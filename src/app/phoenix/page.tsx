@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     "insurance windshield replacement phoenix",
     "same day windshield phoenix",
   ],
+  alternates: {
+    canonical: "https://pinkautoglass.com/phoenix",
+  },
   openGraph: {
     title: "Phoenix Windshield Replacement | $0 Out of Pocket",
     description:

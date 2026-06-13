@@ -448,6 +448,40 @@ export default function LocationsPage() {
                   </Link>
                 ))}
               </div>
+
+              {/* More Front Range communities — internal links so these pages get crawled + indexed */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">More Front Range communities we serve</h4>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                  {[
+                    { name: 'Wheat Ridge', slug: 'wheat-ridge-co' },
+                    { name: 'Northglenn', slug: 'northglenn-co' },
+                    { name: 'Federal Heights', slug: 'federal-heights-co' },
+                    { name: 'Sheridan', slug: 'sheridan-co' },
+                    { name: 'Greenwood Village', slug: 'greenwood-village-co' },
+                    { name: 'Cherry Hills Village', slug: 'cherry-hills-village-co' },
+                    { name: 'Lone Tree', slug: 'lone-tree-co' },
+                    { name: 'Castle Rock', slug: 'castle-rock-co' },
+                    { name: 'Lafayette', slug: 'lafayette-co' },
+                    { name: 'Louisville', slug: 'louisville-co' },
+                    { name: 'Superior', slug: 'superior-co' },
+                    { name: 'Erie', slug: 'erie-co' },
+                    { name: 'Firestone', slug: 'firestone-co' },
+                    { name: 'Frederick', slug: 'frederick-co' },
+                    { name: 'Johnstown', slug: 'johnstown-co' },
+                    { name: 'Timnath', slug: 'timnath-co' },
+                    { name: 'Wellington', slug: 'wellington-co' },
+                    { name: 'Fountain', slug: 'fountain-co' },
+                    { name: 'Security-Widefield', slug: 'security-widefield-co' },
+                    { name: 'Manitou Springs', slug: 'manitou-springs-co' },
+                    { name: 'Black Forest', slug: 'black-forest-co' },
+                  ].map((c) => (
+                    <Link key={c.slug} href={`/locations/${c.slug}`} className="text-pink-600 hover:text-pink-700 hover:underline">
+                      {c.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Arizona Cities */}
