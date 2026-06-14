@@ -445,13 +445,13 @@ export default function VehiclesPage() {
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href="/services/windshield-replacement"
+                  href="/colorado/services/windshield-replacement"
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Windshield Replacement
                 </Link>
                 <Link
-                  href="/services/windshield-repair"
+                  href="/colorado/services/windshield-repair"
                   className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
                 >
                   Windshield Repair

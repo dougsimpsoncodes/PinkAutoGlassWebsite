@@ -122,7 +122,7 @@ export default function ContactPage() {
                 ))}
               </div>
               <Link
-                href="/locations"
+                href="/colorado"
                 className="text-pink-600 hover:text-pink-700 font-semibold"
               >
                 View All Locations →

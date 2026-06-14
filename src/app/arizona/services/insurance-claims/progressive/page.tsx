@@ -52,7 +52,7 @@ export default function ProgressiveInsurancePage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Insurance Claims', url: 'https://pinkautoglass.com/arizona/services/insurance-claims' },
     { name: 'Progressive', url: 'https://pinkautoglass.com/arizona/services/insurance-claims/progressive' }
   ]);
@@ -91,8 +91,8 @@ export default function ProgressiveInsurancePage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Insurance Claims', href: '/services/insurance-claims' },
-              { label: 'Progressive', href: '/services/insurance-claims/progressive' }
+              { label: 'Insurance Claims', href: '/colorado/services/insurance-claims' },
+              { label: 'Progressive', href: '/colorado/services/insurance-claims/progressive' }
             ]}
           />
         </div>
@@ -321,17 +321,17 @@ export default function ProgressiveInsurancePage() {
                   <p className="text-sm text-gray-600 mb-3">We also work with:</p>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="/services/insurance-claims" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/insurance-claims" className="text-blue-600 hover:underline">
                         Geico, State Farm, Allstate →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/insurance-claims" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/insurance-claims" className="text-blue-600 hover:underline">
                         USAA, Farmers, AAA →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/insurance-claims" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/insurance-claims" className="text-blue-600 hover:underline">
                         View All Insurers →
                       </Link>
                     </li>

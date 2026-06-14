@@ -62,7 +62,7 @@ export default function JohnstownLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Johnstown, CO', url: 'https://pinkautoglass.com/colorado/johnstown/' }
   ]);
 
@@ -101,7 +101,7 @@ export default function JohnstownLocationPage() {
 
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Johnstown, CO', href: '/colorado/johnstown/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Johnstown, CO', href: '/colorado/johnstown/' }]} />
         </div>
 
         {/* Main Content */}
@@ -153,11 +153,11 @@ export default function JohnstownLocationPage() {
                   We bring a full range of auto glass services directly to you in Johnstown:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -165,7 +165,7 @@ export default function JohnstownLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -254,19 +254,19 @@ export default function JohnstownLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Complete windshield replacement with OEM quality glass. ADAS calibration available.</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Mobile Service</h3>
                     <p className="text-blue-600 font-bold text-2xl mb-3">No Extra Charge</p>
                     <p className="text-gray-700 mb-4">We come to you anywhere in Johnstown. No need to drive to Loveland or Fort Collins.</p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">ADAS Calibration</h3>
@@ -365,11 +365,11 @@ export default function JohnstownLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
-                  <Link href="/locations/greeley-co" className="text-pink-600 hover:underline font-medium">Greeley</Link>
-                  <Link href="/locations/milliken-co" className="text-pink-600 hover:underline font-medium">Milliken</Link>
-                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
-                  <Link href="/locations/berthoud-co" className="text-pink-600 hover:underline font-medium">Berthoud</Link>
+                  <Link href="/colorado/loveland" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                  <Link href="/colorado/greeley" className="text-pink-600 hover:underline font-medium">Greeley</Link>
+                  <Link href="/colorado/milliken" className="text-pink-600 hover:underline font-medium">Milliken</Link>
+                  <Link href="/colorado/windsor" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/colorado/berthoud" className="text-pink-600 hover:underline font-medium">Berthoud</Link>
                 </div>
               </section>
 
@@ -417,10 +417,10 @@ export default function JohnstownLocationPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
-                    <li><Link href="/locations/loveland-co" className="text-pink-600 hover:underline">Loveland, CO →</Link></li>
-                    <li><Link href="/locations/windsor-co" className="text-pink-600 hover:underline">Windsor, CO →</Link></li>
-                    <li><Link href="/locations/fort-collins-co" className="text-pink-600 hover:underline">Fort Collins, CO →</Link></li>
-                    <li><Link href="/locations/greeley-co" className="text-pink-600 hover:underline">Greeley, CO →</Link></li>
+                    <li><Link href="/colorado/loveland" className="text-pink-600 hover:underline">Loveland, CO →</Link></li>
+                    <li><Link href="/colorado/windsor" className="text-pink-600 hover:underline">Windsor, CO →</Link></li>
+                    <li><Link href="/colorado/fort-collins" className="text-pink-600 hover:underline">Fort Collins, CO →</Link></li>
+                    <li><Link href="/colorado/greeley" className="text-pink-600 hover:underline">Greeley, CO →</Link></li>
                   </ul>
                 </div>
 

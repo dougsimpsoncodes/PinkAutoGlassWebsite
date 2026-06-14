@@ -182,7 +182,7 @@ export default function InsuranceCoveragePage() {
                   ))}
                 </div>
                 <p className="mt-4 text-gray-600">
-                  Want the full details? See our <Link href="/services/insurance-claims" className="text-blue-600 hover:underline font-semibold">insurance claims service page</Link>.
+                  Want the full details? See our <Link href="/colorado/services/insurance-claims" className="text-blue-600 hover:underline font-semibold">insurance claims service page</Link>.
                 </p>
               </section>
 
@@ -209,7 +209,7 @@ export default function InsuranceCoveragePage() {
                   ].map((carrier) => (
                     <Link
                       key={carrier.slug}
-                      href={`/insurance/${carrier.slug}`}
+                      href={`/colorado/insurance/${carrier.slug}`}
                       className="bg-white border border-gray-200 rounded-lg p-3 text-center hover:bg-blue-50 hover:border-blue-300 transition-colors"
                     >
                       <span className="text-gray-700 font-medium text-sm">{carrier.name}</span>
@@ -247,11 +247,11 @@ export default function InsuranceCoveragePage() {
                     <h3 className="font-semibold text-gray-900 mb-1">Pricing Guide</h3>
                     <p className="text-sm text-gray-600">See costs by vehicle type</p>
                   </Link>
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-gray-900 mb-1">Windshield Replacement</h3>
                     <p className="text-sm text-gray-600">Our replacement service details</p>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-gray-900 mb-1">Chip & Crack Repair</h3>
                     <p className="text-sm text-gray-600">Fast 30-minute repair service</p>
                   </Link>
@@ -301,12 +301,12 @@ export default function InsuranceCoveragePage() {
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Areas</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
-                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/phoenix-az" className="text-blue-600 hover:underline">Phoenix</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/aurora" className="text-blue-600 hover:underline">Aurora</Link>
+                    <Link href="/colorado/boulder" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/colorado-springs" className="text-blue-600 hover:underline">Colorado Springs</Link>
+                    <Link href="/colorado/fort-collins" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/arizona/phoenix" className="text-blue-600 hover:underline">Phoenix</Link>
                   </div>
                 </div>
               </div>

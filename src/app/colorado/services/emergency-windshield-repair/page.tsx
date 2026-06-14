@@ -181,7 +181,7 @@ export default function EmergencyWindshieldRepairPage() {
 
       <div className="page-top-padding">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Breadcrumbs items={[{ label: 'Services', href: '/services' }, { label: 'Emergency Windshield Repair', href: '/services/emergency-windshield-repair' }]} />
+          <Breadcrumbs items={[{ label: 'Services', href: '/services' }, { label: 'Emergency Windshield Repair', href: '/colorado/services/emergency-windshield-repair' }]} />
 
           {/* Emergency Alert Hero */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-8 md:p-12 text-center text-white mb-12">
@@ -419,7 +419,7 @@ export default function EmergencyWindshieldRepairPage() {
           </section>
 
           <ServiceAreaLinks />
-          <RelatedServices currentSlug="/services/emergency-windshield-repair" />
+          <RelatedServices currentSlug="/colorado/services/emergency-windshield-repair" />
 
           {/* Final Emergency CTA */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-8 md:p-12 text-center text-white">

@@ -155,13 +155,13 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
 
                 <p className="text-sm text-gray-600 mb-6 flex flex-wrap gap-2">
                   <span className="font-medium">Also serving:</span>
-                  <Link href="/locations/aurora-co" className="text-pink-600 hover:underline">Aurora</Link>
+                  <Link href="/colorado/aurora" className="text-pink-600 hover:underline">Aurora</Link>
                   <span>•</span>
-                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline">Lakewood</Link>
+                  <Link href="/colorado/lakewood" className="text-pink-600 hover:underline">Lakewood</Link>
                   <span>•</span>
-                  <Link href="/locations/boulder-co" className="text-pink-600 hover:underline">Boulder</Link>
+                  <Link href="/colorado/boulder" className="text-pink-600 hover:underline">Boulder</Link>
                   <span>•</span>
-                  <Link href="/locations/highlands-ranch-co" className="text-pink-600 hover:underline">Highlands Ranch</Link>
+                  <Link href="/colorado/highlands-ranch" className="text-pink-600 hover:underline">Highlands Ranch</Link>
                 </p>
                 {vehicle.notes && (
                   <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
@@ -309,12 +309,12 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Our Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-replacement" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/windshield-replacement" className="text-blue-600 hover:underline">
                         Windshield Replacement →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/windshield-repair" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/windshield-repair" className="text-blue-600 hover:underline">
                         Windshield Repair →
                       </Link>
                     </li>
@@ -326,7 +326,7 @@ export default function VehiclePage({ params }: { params: { slug: string } }) {
                       </li>
                     )}
                     <li>
-                      <Link href="/services/mobile-service" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline">
                         Mobile Service →
                       </Link>
                     </li>

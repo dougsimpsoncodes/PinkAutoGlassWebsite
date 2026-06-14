@@ -577,3 +577,27 @@ Completes the franchise migration for Aurora (was the one major location strande
 - /services/adas-calibration: still only on old URL (no franchise page). Build /colorado/services/adas-calibration, then flip.
 - DEAD FILE CLEANUP (deferred from this PR for reviewability): all old src/app/locations/*-co/ dirs (64 cities + 6 nbhd routes) now redirect and never render. Delete them in a dedicated PR + update any inbound internal links from /locations/* to /colorado/*. Safe (redirects cover paths) but large diff.
 - /arizona/insurance/* titles say "CO" — needs AZ copy.
+
+## 2026-06-14 — Franchise cleanup: delete dead old-structure pages + repoint internal links [PR pending]
+Removes the now-redirecting old-structure page files and points all internal links straight at franchise URLs (no 301 hops).
+
+**Deleted (all 308-redirect to franchise; verified redirect-covered before deleting):**
+- src/app/locations/ entirely (64 city pages + 6 [neighborhood] routes + index)
+- src/app/insurance/ (10 carriers)
+- src/app/services/ EXCEPT adas-calibration (windshield-replacement/-repair, mobile-service, emergency-windshield-repair, insurance-claims + carrier subpages, index)
+- src/app/phoenix, pricing, does-insurance-cover-windshield-replacement, how-long-does-windshield-replacement-take, adas-calibration-cost
+
+**Kept on old URL (intentional, no franchise page):** /services/adas-calibration.
+
+**Added redirect:** /services/insurance-claims/arizona → /arizona/services/insurance-claims (was the one uncovered subpage).
+
+**Internal link repoint (~1,000 refs):**
+- Static regex across 123 files: /locations/<x>-co→/colorado/<x>, /locations/<x>-az→/arizona/<x>, /services/<x>→/colorado/services/<x> (adas excluded), /insurance/<x>→/colorado/insurance/<x>, /phoenix→/arizona.
+- 50 files: absolute breadcrumb-schema URLs (pinkautoglass.com/services...) that the regex lookbehind had skipped.
+- NEW src/lib/locationUrl.ts (franchiseLocationPath helper) for dynamic template-literal refs in blog pages, arizona/services, ArizonaCityPage, ServiceAreaLinks, colorado/services.
+- schema.ts generateLocalBusinessSchema now emits /colorado|/arizona LocalBusiness url (was /locations/<city>-<state>).
+- NeighborhoodLinks default basePath now /colorado/<citySlug> (was /locations/<citySlug>-co).
+
+**Verified:** build exit 0; old /locations,/insurance,/phoenix routes absent from build; /services/adas-calibration kept; franchise aurora+denver intact; denver LocalBusiness schema url = /colorado/denver; final grep for old refs = clean.
+
+**STILL OPEN:** build /colorado/services/adas-calibration then migrate that last page; /arizona/insurance/* titles say "CO".

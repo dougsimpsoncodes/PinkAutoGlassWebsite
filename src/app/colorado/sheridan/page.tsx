@@ -62,7 +62,7 @@ export default function SheridanLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Sheridan, CO', url: 'https://pinkautoglass.com/colorado/sheridan/' }
   ]);
 
@@ -98,7 +98,7 @@ export default function SheridanLocationPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Sheridan, CO', href: '/colorado/sheridan/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Sheridan, CO', href: '/colorado/sheridan/' }]} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -148,11 +148,11 @@ export default function SheridanLocationPage() {
                   We bring a full range of auto glass services directly to you in Sheridan:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -160,7 +160,7 @@ export default function SheridanLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -255,7 +255,7 @@ export default function SheridanLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -264,7 +264,7 @@ export default function SheridanLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -273,7 +273,7 @@ export default function SheridanLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Sheridan. Home, office, River Point, or Oxford Station parking.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -377,11 +377,11 @@ export default function SheridanLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
-                  <Link href="/locations/littleton-co" className="text-pink-600 hover:underline font-medium">Littleton</Link>
-                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
-                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
-                  <Link href="/locations/glendale-co" className="text-pink-600 hover:underline font-medium">Glendale</Link>
+                  <Link href="/colorado/englewood" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/colorado/littleton" className="text-pink-600 hover:underline font-medium">Littleton</Link>
+                  <Link href="/colorado/denver" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/colorado/lakewood" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
+                  <Link href="/colorado/glendale" className="text-pink-600 hover:underline font-medium">Glendale</Link>
                 </div>
               </section>
 
@@ -427,10 +427,10 @@ export default function SheridanLocationPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
-                    <li><Link href="/locations/englewood-co" className="text-pink-600 hover:underline">Englewood, CO →</Link></li>
-                    <li><Link href="/locations/denver-co" className="text-pink-600 hover:underline">Denver, CO →</Link></li>
-                    <li><Link href="/locations/lakewood-co" className="text-pink-600 hover:underline">Lakewood, CO →</Link></li>
-                    <li><Link href="/locations/littleton-co" className="text-pink-600 hover:underline">Littleton, CO →</Link></li>
+                    <li><Link href="/colorado/englewood" className="text-pink-600 hover:underline">Englewood, CO →</Link></li>
+                    <li><Link href="/colorado/denver" className="text-pink-600 hover:underline">Denver, CO →</Link></li>
+                    <li><Link href="/colorado/lakewood" className="text-pink-600 hover:underline">Lakewood, CO →</Link></li>
+                    <li><Link href="/colorado/littleton" className="text-pink-600 hover:underline">Littleton, CO →</Link></li>
                   </ul>
                 </div>
 

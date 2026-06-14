@@ -172,6 +172,8 @@ const franchiseRedirects = [
   // State hub + location index
   { source: '/phoenix', destination: '/arizona', permanent: true },
   { source: '/locations', destination: '/colorado', permanent: true },
+  // AZ insurance-claims sub-page → franchise AZ services
+  { source: '/services/insurance-claims/arizona', destination: '/arizona/services/insurance-claims', permanent: true },
 ];
 
 /** @type {import('next').NextConfig} */

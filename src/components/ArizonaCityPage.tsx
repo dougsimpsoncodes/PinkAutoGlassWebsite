@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 import { Phone, MapPin, Shield, Star } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
@@ -28,8 +29,8 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
-    { name: `${city.city}, AZ`, url: `https://pinkautoglass.com/locations/${city.slug}` },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
+    { name: `${city.city}, AZ`, url: `https://pinkautoglass.com${franchiseLocationPath(city.slug)}` },
   ]);
 
   const combinedSchema = combineSchemas(localBusinessSchema, faqSchema, breadcrumbSchema);
@@ -66,8 +67,8 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
-              { label: `${city.city}, AZ`, href: `/locations/${city.slug}` },
+              { label: 'Locations', href: '/colorado' },
+              { label: `${city.city}, AZ`, href: franchiseLocationPath(city.slug) },
             ]}
           />
         </div>
@@ -150,12 +151,12 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-gray-700 mb-3">Fix chips before Arizona heat turns them into full cracks. Fast, $0 with coverage.</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-gray-700 mb-3">Full replacement with OEM-quality glass. $0 out of pocket with coverage.</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
               </section>
@@ -205,14 +206,14 @@ export default function ArizonaCityPage({ city }: { city: ArizonaCity }) {
                       <span><strong>Right to Choose:</strong> Pick any shop you want</span>
                     </li>
                   </ul>
-                  <Link href="/services/insurance-claims/arizona" className="block mt-4 text-pink-600 hover:underline font-semibold">Full AZ Insurance Guide →</Link>
+                  <Link href="/arizona/services/insurance-claims" className="block mt-4 text-pink-600 hover:underline font-semibold">Full AZ Insurance Guide →</Link>
                 </div>
 
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Nearby Arizona Cities</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {city.nearbyLinks.map(name => (
-                      <Link key={name} href={`/locations/${cityNameToSlug(name)}`} className="text-blue-600 hover:underline">
+                      <Link key={name} href={franchiseLocationPath(cityNameToSlug(name))} className="text-blue-600 hover:underline">
                         {name}
                       </Link>
                     ))}

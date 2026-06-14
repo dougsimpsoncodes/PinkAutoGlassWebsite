@@ -57,7 +57,7 @@ export default function WestminsterLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Westminster, CO', url: 'https://pinkautoglass.com/colorado/westminster/' }
   ]);
 
@@ -93,7 +93,7 @@ export default function WestminsterLocationPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Westminster, CO', href: '/colorado/westminster/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Westminster, CO', href: '/colorado/westminster/' }]} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -222,12 +222,12 @@ export default function WestminsterLocationPage() {
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
               </section>
@@ -269,10 +269,10 @@ export default function WestminsterLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
-                  <Link href="/locations/thornton-co" className="text-pink-600 hover:underline font-medium">Thornton</Link>
-                  <Link href="/locations/northglenn-co" className="text-pink-600 hover:underline font-medium">Northglenn</Link>
-                  <Link href="/locations/arvada-co" className="text-pink-600 hover:underline font-medium">Arvada</Link>
+                  <Link href="/colorado/broomfield" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/colorado/thornton" className="text-pink-600 hover:underline font-medium">Thornton</Link>
+                  <Link href="/colorado/northglenn" className="text-pink-600 hover:underline font-medium">Northglenn</Link>
+                  <Link href="/colorado/arvada" className="text-pink-600 hover:underline font-medium">Arvada</Link>
                 </div>
               </section>
 
@@ -291,16 +291,16 @@ export default function WestminsterLocationPage() {
                     <li><Link href="/vehicles/subaru-outback-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Subaru Outback</span></Link></li>
                     <li><Link href="/vehicles/honda-cr-v-windshield-replacement-denver" className="text-pink-600 hover:underline flex justify-between"><span>Honda CR-V</span></Link></li>
                   </ul>
-                  <Link href="/services/windshield-replacement" className="block mt-4 text-blue-600 hover:underline font-semibold">View All Services →</Link>
+                  <Link href="/colorado/services/windshield-replacement" className="block mt-4 text-blue-600 hover:underline font-semibold">View All Services →</Link>
                 </div>
 
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Nearby Cities</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
-                    <Link href="/locations/arvada-co" className="text-blue-600 hover:underline">Arvada</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/thornton" className="text-blue-600 hover:underline">Thornton</Link>
+                    <Link href="/colorado/arvada" className="text-blue-600 hover:underline">Arvada</Link>
+                    <Link href="/colorado/boulder" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
                   </div>
                 </div>
 

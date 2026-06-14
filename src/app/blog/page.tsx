@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 import Link from 'next/link';
 import { Calendar, Clock, Tag } from 'lucide-react';
 import { getAllBlogPosts } from '@/data/blog';
@@ -140,7 +141,7 @@ export default function BlogPage() {
             ].map((location) => (
               <Link
                 key={location.slug}
-                href={`/locations/${location.slug}`}
+                href={franchiseLocationPath(location.slug)}
                 className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 transition-colors"
               >
                 <span className="font-medium">{location.name}</span>

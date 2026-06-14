@@ -63,7 +63,7 @@ export default function ManitouSpringsLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Manitou Springs, CO', url: 'https://pinkautoglass.com/colorado/manitou-springs/' }
   ]);
 
@@ -108,7 +108,7 @@ export default function ManitouSpringsLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Manitou Springs, CO', href: '/colorado/manitou-springs/' }
             ]}
           />
@@ -246,7 +246,7 @@ export default function ManitouSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -257,7 +257,7 @@ export default function ManitouSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -268,7 +268,7 @@ export default function ManitouSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Manitou Springs. Home, office, or curbside service available.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -378,11 +378,11 @@ export default function ManitouSpringsLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
-                  <Link href="/locations/old-colorado-city-co" className="text-pink-600 hover:underline font-medium">Old Colorado City</Link>
-                  <Link href="/locations/cascade-co" className="text-pink-600 hover:underline font-medium">Cascade</Link>
-                  <Link href="/locations/green-mountain-falls-co" className="text-pink-600 hover:underline font-medium">Green Mountain Falls</Link>
-                  <Link href="/locations/woodland-park-co" className="text-pink-600 hover:underline font-medium">Woodland Park</Link>
+                  <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/colorado/old-colorado-city" className="text-pink-600 hover:underline font-medium">Old Colorado City</Link>
+                  <Link href="/colorado/cascade" className="text-pink-600 hover:underline font-medium">Cascade</Link>
+                  <Link href="/colorado/green-mountain-falls" className="text-pink-600 hover:underline font-medium">Green Mountain Falls</Link>
+                  <Link href="/colorado/woodland-park" className="text-pink-600 hover:underline font-medium">Woodland Park</Link>
                 </div>
               </section>
 
@@ -439,17 +439,17 @@ export default function ManitouSpringsLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline">
                         Colorado Springs, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/castle-rock" className="text-pink-600 hover:underline">
                         Castle Rock, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/fountain-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/fountain" className="text-pink-600 hover:underline">
                         Fountain, CO &rarr;
                       </Link>
                     </li>

@@ -67,7 +67,7 @@ export default function BlackForestLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Black Forest, CO', url: 'https://pinkautoglass.com/colorado/black-forest/' }
   ]);
 
@@ -111,7 +111,7 @@ export default function BlackForestLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Black Forest, CO', href: '/colorado/black-forest/' }
             ]}
           />
@@ -168,11 +168,11 @@ export default function BlackForestLocationPage() {
                   We bring a full range of auto glass services directly to you in Black Forest:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -180,7 +180,7 @@ export default function BlackForestLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -272,7 +272,7 @@ export default function BlackForestLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -283,7 +283,7 @@ export default function BlackForestLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM-quality glass for trucks, SUVs, and all vehicles.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -294,7 +294,7 @@ export default function BlackForestLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to your property anywhere in Black Forest. Paved road, dirt road, or gravel driveway - no extra fee.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -406,10 +406,10 @@ export default function BlackForestLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
-                  <Link href="/locations/monument-co" className="text-pink-600 hover:underline font-medium">Monument</Link>
-                  <Link href="/locations/falcon-co" className="text-pink-600 hover:underline font-medium">Falcon</Link>
-                  <Link href="/locations/peyton-co" className="text-pink-600 hover:underline font-medium">Peyton</Link>
+                  <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/colorado/monument" className="text-pink-600 hover:underline font-medium">Monument</Link>
+                  <Link href="/colorado/falcon" className="text-pink-600 hover:underline font-medium">Falcon</Link>
+                  <Link href="/colorado/peyton" className="text-pink-600 hover:underline font-medium">Peyton</Link>
                 </div>
               </section>
 
@@ -466,13 +466,13 @@ export default function BlackForestLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline">Colorado Springs, CO →</Link>
+                      <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline">Colorado Springs, CO →</Link>
                     </li>
                     <li>
-                      <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline">Castle Rock, CO →</Link>
+                      <Link href="/colorado/castle-rock" className="text-pink-600 hover:underline">Castle Rock, CO →</Link>
                     </li>
                     <li>
-                      <Link href="/locations/fountain-co" className="text-pink-600 hover:underline">Fountain, CO →</Link>
+                      <Link href="/colorado/fountain" className="text-pink-600 hover:underline">Fountain, CO →</Link>
                     </li>
                   </ul>
                 </div>

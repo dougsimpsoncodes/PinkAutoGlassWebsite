@@ -62,7 +62,7 @@ export default function FirestoneLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Firestone, CO', url: 'https://pinkautoglass.com/colorado/firestone/' }
   ]);
 
@@ -98,7 +98,7 @@ export default function FirestoneLocationPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Firestone, CO', href: '/colorado/firestone/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Firestone, CO', href: '/colorado/firestone/' }]} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -148,11 +148,11 @@ export default function FirestoneLocationPage() {
                   We bring a full range of auto glass services directly to you in Firestone:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -160,7 +160,7 @@ export default function FirestoneLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -255,7 +255,7 @@ export default function FirestoneLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -264,7 +264,7 @@ export default function FirestoneLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -273,7 +273,7 @@ export default function FirestoneLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Firestone. Home, office, or driveway service available.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
 
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
@@ -377,11 +377,11 @@ export default function FirestoneLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/frederick-co" className="text-pink-600 hover:underline font-medium">Frederick</Link>
-                  <Link href="/locations/dacono-co" className="text-pink-600 hover:underline font-medium">Dacono</Link>
-                  <Link href="/locations/longmont-co" className="text-pink-600 hover:underline font-medium">Longmont</Link>
-                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
-                  <Link href="/locations/brighton-co" className="text-pink-600 hover:underline font-medium">Brighton</Link>
+                  <Link href="/colorado/frederick" className="text-pink-600 hover:underline font-medium">Frederick</Link>
+                  <Link href="/colorado/dacono" className="text-pink-600 hover:underline font-medium">Dacono</Link>
+                  <Link href="/colorado/longmont" className="text-pink-600 hover:underline font-medium">Longmont</Link>
+                  <Link href="/colorado/erie" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                  <Link href="/colorado/brighton" className="text-pink-600 hover:underline font-medium">Brighton</Link>
                 </div>
               </section>
 
@@ -427,10 +427,10 @@ export default function FirestoneLocationPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
-                    <li><Link href="/locations/frederick-co" className="text-pink-600 hover:underline">Frederick, CO →</Link></li>
-                    <li><Link href="/locations/erie-co" className="text-pink-600 hover:underline">Erie, CO →</Link></li>
-                    <li><Link href="/locations/longmont-co" className="text-pink-600 hover:underline">Longmont, CO →</Link></li>
-                    <li><Link href="/locations/brighton-co" className="text-pink-600 hover:underline">Brighton, CO →</Link></li>
+                    <li><Link href="/colorado/frederick" className="text-pink-600 hover:underline">Frederick, CO →</Link></li>
+                    <li><Link href="/colorado/erie" className="text-pink-600 hover:underline">Erie, CO →</Link></li>
+                    <li><Link href="/colorado/longmont" className="text-pink-600 hover:underline">Longmont, CO →</Link></li>
+                    <li><Link href="/colorado/brighton" className="text-pink-600 hover:underline">Brighton, CO →</Link></li>
                   </ul>
                 </div>
 

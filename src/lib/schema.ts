@@ -130,7 +130,7 @@ export function generateLocalBusinessSchema(params: {
     "@type": "AutoRepair",
     "name": `Pink Auto Glass - ${params.city}`,
     "image": "https://pinkautoglass.com/pink-logo-horizontal-1200x300.webp",
-    "url": `https://pinkautoglass.com/locations/${params.city.toLowerCase().replace(/\s+/g, '-')}-${params.state.toLowerCase()}`,
+    "url": `https://pinkautoglass.com/${params.state.toLowerCase() === 'az' ? 'arizona' : 'colorado'}/${params.city.toLowerCase().replace(/\s+/g, '-')}`,
     "telephone": params.telephone || "+17209187465",
     "priceRange": "Contact for Quote",
     "address": {

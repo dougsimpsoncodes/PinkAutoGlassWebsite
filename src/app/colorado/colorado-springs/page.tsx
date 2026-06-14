@@ -59,7 +59,7 @@ export default function ColoradoSpringsLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Colorado Springs, CO', url: 'https://pinkautoglass.com/colorado/colorado-springs/' }
   ]);
 
@@ -104,7 +104,7 @@ export default function ColoradoSpringsLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Colorado Springs, CO', href: '/colorado/colorado-springs/' }
             ]}
           />
@@ -180,7 +180,7 @@ export default function ColoradoSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -191,7 +191,7 @@ export default function ColoradoSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -202,7 +202,7 @@ export default function ColoradoSpringsLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Colorado Springs. Home, office, or curbside service available.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -328,9 +328,9 @@ export default function ColoradoSpringsLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/fountain-co" className="text-pink-600 hover:underline font-medium">Fountain</Link>
-                  <Link href="/locations/manitou-springs-co" className="text-pink-600 hover:underline font-medium">Manitou Springs</Link>
-                  <Link href="/locations/security-widefield-co" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
+                  <Link href="/colorado/fountain" className="text-pink-600 hover:underline font-medium">Fountain</Link>
+                  <Link href="/colorado/manitou-springs" className="text-pink-600 hover:underline font-medium">Manitou Springs</Link>
+                  <Link href="/colorado/security-widefield" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
                 </div>
               </section>
 
@@ -381,22 +381,22 @@ export default function ColoradoSpringsLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/denver-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/denver" className="text-pink-600 hover:underline">
                         Denver, CO →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/aurora-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/aurora" className="text-pink-600 hover:underline">
                         Aurora, CO →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/parker-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/parker" className="text-pink-600 hover:underline">
                         Parker, CO →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/centennial-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/centennial" className="text-pink-600 hover:underline">
                         Centennial, CO →
                       </Link>
                     </li>

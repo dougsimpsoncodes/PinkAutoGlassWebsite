@@ -18,34 +18,34 @@ import {
 // Nearby city links per city (other cities we serve)
 const nearbyCities: Record<string, { name: string; href: string }[]> = {
   denver: [
-    { name: 'Aurora, CO', href: '/locations/aurora-co' },
-    { name: 'Lakewood, CO', href: '/locations/lakewood-co' },
-    { name: 'Boulder, CO', href: '/locations/boulder-co' },
+    { name: 'Aurora, CO', href: '/colorado/aurora' },
+    { name: 'Lakewood, CO', href: '/colorado/lakewood' },
+    { name: 'Boulder, CO', href: '/colorado/boulder' },
   ],
   aurora: [
-    { name: 'Denver, CO', href: '/locations/denver-co' },
-    { name: 'Lakewood, CO', href: '/locations/lakewood-co' },
-    { name: 'Colorado Springs, CO', href: '/locations/colorado-springs-co' },
+    { name: 'Denver, CO', href: '/colorado/denver' },
+    { name: 'Lakewood, CO', href: '/colorado/lakewood' },
+    { name: 'Colorado Springs, CO', href: '/colorado/colorado-springs' },
   ],
   lakewood: [
-    { name: 'Denver, CO', href: '/locations/denver-co' },
-    { name: 'Aurora, CO', href: '/locations/aurora-co' },
-    { name: 'Boulder, CO', href: '/locations/boulder-co' },
+    { name: 'Denver, CO', href: '/colorado/denver' },
+    { name: 'Aurora, CO', href: '/colorado/aurora' },
+    { name: 'Boulder, CO', href: '/colorado/boulder' },
   ],
   boulder: [
-    { name: 'Denver, CO', href: '/locations/denver-co' },
-    { name: 'Fort Collins, CO', href: '/locations/fort-collins-co' },
-    { name: 'Lakewood, CO', href: '/locations/lakewood-co' },
+    { name: 'Denver, CO', href: '/colorado/denver' },
+    { name: 'Fort Collins, CO', href: '/colorado/fort-collins' },
+    { name: 'Lakewood, CO', href: '/colorado/lakewood' },
   ],
   'fort-collins': [
-    { name: 'Boulder, CO', href: '/locations/boulder-co' },
-    { name: 'Denver, CO', href: '/locations/denver-co' },
-    { name: 'Colorado Springs, CO', href: '/locations/colorado-springs-co' },
+    { name: 'Boulder, CO', href: '/colorado/boulder' },
+    { name: 'Denver, CO', href: '/colorado/denver' },
+    { name: 'Colorado Springs, CO', href: '/colorado/colorado-springs' },
   ],
   'colorado-springs': [
-    { name: 'Denver, CO', href: '/locations/denver-co' },
-    { name: 'Aurora, CO', href: '/locations/aurora-co' },
-    { name: 'Fort Collins, CO', href: '/locations/fort-collins-co' },
+    { name: 'Denver, CO', href: '/colorado/denver' },
+    { name: 'Aurora, CO', href: '/colorado/aurora' },
+    { name: 'Fort Collins, CO', href: '/colorado/fort-collins' },
   ],
 };
 
@@ -218,7 +218,7 @@ export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neigh
                     <p className="text-gray-700 mb-4">
                       Fast chip and crack repair. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -231,7 +231,7 @@ export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neigh
                     <p className="text-gray-700 mb-4">
                       Complete replacement with OEM-quality glass. ADAS calibration included when needed.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>

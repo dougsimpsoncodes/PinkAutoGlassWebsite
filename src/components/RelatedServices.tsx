@@ -1,12 +1,12 @@
 import Link from 'next/link';
 
 const ALL_SERVICES = [
-  { name: 'Windshield Replacement', slug: '/services/windshield-replacement', desc: 'Full replacement with OEM glass' },
-  { name: 'Chip & Crack Repair', slug: '/services/windshield-repair', desc: 'Fast 30-minute repair service' },
+  { name: 'Windshield Replacement', slug: '/colorado/services/windshield-replacement', desc: 'Full replacement with OEM glass' },
+  { name: 'Chip & Crack Repair', slug: '/colorado/services/windshield-repair', desc: 'Fast 30-minute repair service' },
   { name: 'ADAS Calibration', slug: '/services/adas-calibration', desc: 'Camera recalibration after replacement' },
-  { name: 'Mobile Service', slug: '/services/mobile-service', desc: 'Free — we come to you' },
-  { name: 'Insurance Claims', slug: '/services/insurance-claims', desc: 'We handle all paperwork' },
-  { name: 'Emergency Repair', slug: '/services/emergency-windshield-repair', desc: 'Same-day 24/7 available' },
+  { name: 'Mobile Service', slug: '/colorado/services/mobile-service', desc: 'Free — we come to you' },
+  { name: 'Insurance Claims', slug: '/colorado/services/insurance-claims', desc: 'We handle all paperwork' },
+  { name: 'Emergency Repair', slug: '/colorado/services/emergency-windshield-repair', desc: 'Same-day 24/7 available' },
 ];
 
 interface RelatedServicesProps {
