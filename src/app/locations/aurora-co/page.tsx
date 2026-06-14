@@ -5,6 +5,7 @@ import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
+import NeighborhoodLinks from '@/components/NeighborhoodLinks';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
@@ -171,19 +172,10 @@ export default function AuroraLocationPage() {
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Aurora Neighborhoods We Serve</h2>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  {[
-                    'Stapleton', 'Green Valley Ranch', 'Southlands',
-                    'Buckley AFB', 'Murphy Creek', 'Aurora Highlands',
-                    'Saddle Rock', 'Tollgate Crossing', 'Heather Gardens',
-                    'Side Creek', 'Aurora Hills', 'Fitzsimons',
-                    'Del Mar Parkway', 'Quincy Reservoir', 'Cherry Creek'
-                  ].map(n => (
-                    <div key={n} className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">{n}</span>
-                    </div>
-                  ))}
-                </div>
+                <NeighborhoodLinks citySlug="aurora" />
+                <p className="text-gray-600 text-center">
+                  Don&apos;t see your neighborhood? We serve all of Aurora — <a href="tel:+17209187465" className="text-pink-600 hover:underline font-semibold">call us</a> to confirm service in your area!
+                </p>
               </section>
 
               <section>

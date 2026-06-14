@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getAllVehicleSlugs, getAllMakes } from '@/data/makes-models';
 import { getAllBlogPosts } from '@/data/blog';
+import { allNeighborhoods } from '@/data/neighborhoods';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://pinkautoglass.com';
@@ -151,6 +152,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: slug === 'denver-co' ? 0.9 : 0.8,
   }));
 
+  // Neighborhood pages (dynamically generated from data — /locations/{city}-co/{slug})
+  const neighborhoods = allNeighborhoods.map((n) => ({
+    url: `${baseUrl}/locations/${n.citySlug}-co/${n.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
   // Vehicle pages (dynamically generated from data)
   const vehicleSlugs = getAllVehicleSlugs();
   const vehicles = vehicleSlugs.map((slug) => ({
@@ -260,5 +269,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...carrierInsurancePages, ...locations, ...azLocations, ...vehicles, ...blog, ...brands];
+  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...carrierInsurancePages, ...locations, ...azLocations, ...neighborhoods, ...vehicles, ...blog, ...brands];
 }
