@@ -82,6 +82,99 @@ function validateEnvironmentVariables() {
 // Run validation before build
 validateEnvironmentVariables();
 
+// ============================================================================
+// Franchise URL migration (2026-06-14)
+// Old structure (/locations, /services, /insurance, /phoenix) → franchise
+// subfolder structure (/colorado/*, /arizona/*). Every entry below has a
+// VERIFIED live target page. Two pages are intentionally NOT migrated because
+// their franchise versions don't exist yet (they already resolve to the old
+// URL via existing reverse redirects, so they aren't cannibalizing):
+//   - Aurora (/locations/aurora-co + its 14 neighborhoods)
+//   - /services/adas-calibration
+// Build these franchise pages later, then add their redirects here.
+// Source of truth: data/url-restructure-redirect-map.md
+// ============================================================================
+
+// CO cities that have a live /colorado/<city> page (Aurora excluded on purpose)
+const CO_CITIES = [
+  'arvada', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
+  'centennial', 'cherry-hills-village', 'colorado-springs', 'commerce-city',
+  'denver', 'englewood', 'erie', 'evergreen', 'federal-heights', 'firestone',
+  'fort-collins', 'fountain', 'frederick', 'golden', 'greeley',
+  'greenwood-village', 'highlands-ranch', 'johnstown', 'lafayette', 'lakewood',
+  'littleton', 'lone-tree', 'longmont', 'louisville', 'loveland',
+  'manitou-springs', 'northglenn', 'parker', 'security-widefield', 'sheridan',
+  'superior', 'thornton', 'timnath', 'wellington', 'westminster', 'wheat-ridge',
+  'windsor',
+];
+
+// CO cities with a live /colorado/<city>/[neighborhood] route (Aurora excluded)
+const CO_NEIGHBORHOOD_CITIES = [
+  'boulder', 'colorado-springs', 'denver', 'fort-collins', 'lakewood',
+];
+
+// AZ cities with a live /arizona/<city> page (slug strips the -az suffix)
+const AZ_CITIES = [
+  'ahwatukee', 'apache-junction', 'avondale', 'buckeye', 'cave-creek',
+  'chandler', 'el-mirage', 'fountain-hills', 'gilbert', 'glendale', 'goodyear',
+  'litchfield-park', 'maricopa', 'mesa', 'peoria', 'phoenix', 'queen-creek',
+  'scottsdale', 'surprise', 'tempe',
+];
+
+// Service pages with a live /colorado/services/<slug> page (adas-calibration excluded)
+const CO_SERVICES = [
+  'windshield-replacement', 'windshield-repair', 'mobile-service',
+  'insurance-claims', 'emergency-windshield-repair',
+];
+
+// Insurance carriers with a live /colorado/insurance/<carrier> page
+const INSURANCE_CARRIERS = [
+  'aaa', 'allstate', 'esurance', 'farmers', 'geico', 'liberty-mutual',
+  'progressive', 'safeco', 'state-farm', 'usaa',
+];
+
+const franchiseRedirects = [
+  // CO location pages: /locations/<city>-co → /colorado/<city>
+  ...CO_CITIES.map((c) => ({
+    source: `/locations/${c}-co`,
+    destination: `/colorado/${c}`,
+    permanent: true,
+  })),
+  // CO neighborhood pages: /locations/<city>-co/<n> → /colorado/<city>/<n>
+  ...CO_NEIGHBORHOOD_CITIES.map((c) => ({
+    source: `/locations/${c}-co/:neighborhood`,
+    destination: `/colorado/${c}/:neighborhood`,
+    permanent: true,
+  })),
+  // AZ location pages: /locations/<city>-az → /arizona/<city>
+  ...AZ_CITIES.map((c) => ({
+    source: `/locations/${c}-az`,
+    destination: `/arizona/${c}`,
+    permanent: true,
+  })),
+  // Service pages: /services/<slug> → /colorado/services/<slug>
+  ...CO_SERVICES.map((s) => ({
+    source: `/services/${s}`,
+    destination: `/colorado/services/${s}`,
+    permanent: true,
+  })),
+  { source: '/services', destination: '/colorado/services', permanent: true },
+  // Insurance pages: /insurance/<carrier> → /colorado/insurance/<carrier>
+  ...INSURANCE_CARRIERS.map((c) => ({
+    source: `/insurance/${c}`,
+    destination: `/colorado/insurance/${c}`,
+    permanent: true,
+  })),
+  // High-intent content pages → /colorado equivalents
+  { source: '/pricing', destination: '/colorado/pricing', permanent: true },
+  { source: '/does-insurance-cover-windshield-replacement', destination: '/colorado/insurance-coverage-guide', permanent: true },
+  { source: '/how-long-does-windshield-replacement-take', destination: '/colorado/how-long-windshield-replacement', permanent: true },
+  { source: '/adas-calibration-cost', destination: '/colorado/adas-calibration-cost', permanent: true },
+  // State hub + location index
+  { source: '/phoenix', destination: '/arizona', permanent: true },
+  { source: '/locations', destination: '/colorado', permanent: true },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -179,22 +272,22 @@ const nextConfig = {
         destination: '/privacy',
         permanent: true, // 301 redirect
       },
-      // Legacy insurance claims pages → new /insurance/[carrier] pages
+      // Legacy insurance claims pages → franchise /colorado/insurance/[carrier]
       {
         source: '/services/insurance-claims/:carrier(progressive|geico|state-farm|allstate|usaa|aaa|farmers|liberty-mutual|nationwide|travelers)',
-        destination: '/insurance/:carrier',
+        destination: '/colorado/insurance/:carrier',
         permanent: true,
       },
-      // Windshield replacement cost → pricing page (2026-04-09)
+      // Windshield replacement cost → franchise pricing page
       {
         source: '/windshield-replacement-cost',
-        destination: '/pricing',
+        destination: '/colorado/pricing',
         permanent: true,
       },
-      // Rock chip repair consolidated into windshield repair (2026-04-09)
+      // Rock chip repair consolidated into windshield repair (franchise)
       {
         source: '/services/rock-chip-repair',
-        destination: '/services/windshield-repair',
+        destination: '/colorado/services/windshield-repair',
         permanent: true, // 301 redirect
       },
       // Homepage migration 2026-05-28: the auto-quoter moved from /quote to /.
@@ -227,7 +320,10 @@ const nextConfig = {
         destination: '/services/adas-calibration',
         permanent: true,
       },
-      // Consolidate duplicate Aurora pages → canonical /locations/aurora-co
+      // Aurora has no franchise page yet — keep it canonical on /locations/aurora-co
+      // and route the franchise URL back to it (NOT cannibalizing). When the
+      // /colorado/aurora franchise page + [neighborhood] route are built, flip
+      // these to forward redirects and add Aurora to franchiseRedirects above.
       {
         source: '/colorado/aurora',
         destination: '/locations/aurora-co',
@@ -238,22 +334,24 @@ const nextConfig = {
         destination: '/locations/aurora-co',
         permanent: true,
       },
-      // Location shorthand → proper slugs
+      // Location shorthand → franchise slugs
       {
         source: '/locations/denver',
-        destination: '/locations/denver-co',
+        destination: '/colorado/denver',
         permanent: true,
       },
       {
         source: '/locations/boulder',
-        destination: '/locations/boulder-co',
+        destination: '/colorado/boulder',
         permanent: true,
       },
       {
         source: '/locations/phoenix',
-        destination: '/locations/phoenix-az',
+        destination: '/arizona/phoenix',
         permanent: true,
       },
+      // Franchise URL migration: old structure → /colorado/* and /arizona/*
+      ...franchiseRedirects,
     ];
   },
 }
