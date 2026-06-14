@@ -5,7 +5,7 @@ import { allNeighborhoods } from '@/data/neighborhoods';
 
 /**
  * Franchise URL structure (2026-06-14 migration).
- * Old /locations, /services, /insurance, /phoenix URLs 301-redirect to the
+ * Old /colorado, /services, /insurance, /arizona URLs 301-redirect to the
  * /colorado/* and /arizona/* equivalents (see next.config.js franchiseRedirects),
  * so the sitemap must list ONLY the canonical franchise URLs.
  *

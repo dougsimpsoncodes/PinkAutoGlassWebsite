@@ -306,7 +306,7 @@ export default function MakePage({ params }: MakePageProps) {
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               <Link
-                href="/services/windshield-repair"
+                href="/colorado/services/windshield-repair"
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 group"
               >
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
@@ -332,7 +332,7 @@ export default function MakePage({ params }: MakePageProps) {
               )}
 
               <Link
-                href="/services/mobile-service"
+                href="/colorado/services/mobile-service"
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 group"
               >
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
@@ -344,7 +344,7 @@ export default function MakePage({ params }: MakePageProps) {
               </Link>
 
               <Link
-                href="/services/insurance-claims"
+                href="/colorado/services/insurance-claims"
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 group"
               >
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">

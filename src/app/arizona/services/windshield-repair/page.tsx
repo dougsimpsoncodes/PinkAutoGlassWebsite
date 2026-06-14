@@ -59,7 +59,7 @@ export default function WindshieldRepairPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Windshield Repair', url: 'https://pinkautoglass.com/arizona/services/windshield-repair' }
   ]);
 
@@ -108,7 +108,7 @@ export default function WindshieldRepairPage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Windshield Repair', href: '/services/windshield-repair' }
+              { label: 'Windshield Repair', href: '/colorado/services/windshield-repair' }
             ]}
           />
         </div>
@@ -190,14 +190,14 @@ export default function WindshieldRepairPage() {
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   {[
-                    { city: 'Denver', path: '/locations/denver-co' },
-                    { city: 'Aurora', path: '/locations/aurora-co' },
-                    { city: 'Boulder', path: '/locations/boulder-co' },
-                    { city: 'Colorado Springs', path: '/locations/colorado-springs-co' },
-                    { city: 'Lakewood', path: '/locations/lakewood-co' },
-                    { city: 'Fort Collins', path: '/locations/fort-collins-co' },
-                    { city: 'Thornton', path: '/locations/thornton-co' },
-                    { city: 'Arvada', path: '/locations/arvada-co' },
+                    { city: 'Denver', path: '/colorado/denver' },
+                    { city: 'Aurora', path: '/colorado/aurora' },
+                    { city: 'Boulder', path: '/colorado/boulder' },
+                    { city: 'Colorado Springs', path: '/colorado/colorado-springs' },
+                    { city: 'Lakewood', path: '/colorado/lakewood' },
+                    { city: 'Fort Collins', path: '/colorado/fort-collins' },
+                    { city: 'Thornton', path: '/colorado/thornton' },
+                    { city: 'Arvada', path: '/colorado/arvada' },
                   ].map((location) => (
                     <Link
                       key={location.city}
@@ -259,7 +259,7 @@ export default function WindshieldRepairPage() {
                         <span>Cracks at windshield edge</span>
                       </li>
                     </ul>
-                    <Link href="/services/windshield-replacement" className="inline-block mt-4 text-red-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="inline-block mt-4 text-red-600 hover:underline font-semibold">
                       Learn about replacement →
                     </Link>
                   </div>
@@ -343,7 +343,7 @@ export default function WindshieldRepairPage() {
 
               
               <ServiceAreaLinks />
-              <RelatedServices currentSlug="/services/windshield-repair" />
+              <RelatedServices currentSlug="/colorado/services/windshield-repair" />
 
               <section className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Stop That Chip From Spreading</h2>
@@ -404,10 +404,10 @@ export default function WindshieldRepairPage() {
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/aurora" className="text-blue-600 hover:underline">Aurora</Link>
+                    <Link href="/colorado/lakewood" className="text-blue-600 hover:underline">Lakewood</Link>
+                    <Link href="/colorado/boulder" className="text-blue-600 hover:underline">Boulder</Link>
                   </div>
                 </div>
 
@@ -415,12 +415,12 @@ export default function WindshieldRepairPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-replacement" className="text-green-600 hover:underline">
+                      <Link href="/colorado/services/windshield-replacement" className="text-green-600 hover:underline">
                         Windshield Replacement →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/mobile-service" className="text-green-600 hover:underline">
+                      <Link href="/colorado/services/mobile-service" className="text-green-600 hover:underline">
                         Mobile Service →
                       </Link>
                     </li>

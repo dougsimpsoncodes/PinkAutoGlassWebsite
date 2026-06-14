@@ -47,7 +47,7 @@ export default function MobileServicePage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Mobile Service', url: 'https://pinkautoglass.com/arizona/services/mobile-service' }
   ]);
 
@@ -85,7 +85,7 @@ export default function MobileServicePage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Mobile Service', href: '/services/mobile-service' }
+              { label: 'Mobile Service', href: '/colorado/services/mobile-service' }
             ]}
           />
         </div>
@@ -243,7 +243,7 @@ export default function MobileServicePage() {
 
               
               <ServiceAreaLinks />
-              <RelatedServices currentSlug="/services/mobile-service" />
+              <RelatedServices currentSlug="/colorado/services/mobile-service" />
 
               <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready for Mobile Service?</h2>
@@ -314,12 +314,12 @@ export default function MobileServicePage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-replacement" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/windshield-replacement" className="text-blue-600 hover:underline">
                         Windshield Replacement →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/windshield-repair" className="text-blue-600 hover:underline">
+                      <Link href="/colorado/services/windshield-repair" className="text-blue-600 hover:underline">
                         Windshield Repair →
                       </Link>
                     </li>

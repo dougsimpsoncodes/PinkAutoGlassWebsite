@@ -184,12 +184,12 @@ export default function AuroraLocationPage() {
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                 </div>
               </section>
@@ -231,11 +231,11 @@ export default function AuroraLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
-                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
-                  <Link href="/locations/parker-co" className="text-pink-600 hover:underline font-medium">Parker</Link>
-                  <Link href="/locations/commerce-city-co" className="text-pink-600 hover:underline font-medium">Commerce City</Link>
-                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/colorado/denver" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/colorado/centennial" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/colorado/parker" className="text-pink-600 hover:underline font-medium">Parker</Link>
+                  <Link href="/colorado/commerce-city" className="text-pink-600 hover:underline font-medium">Commerce City</Link>
+                  <Link href="/colorado/englewood" className="text-pink-600 hover:underline font-medium">Englewood</Link>
                 </div>
               </section>
 
@@ -263,16 +263,16 @@ export default function AuroraLocationPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/services/windshield-replacement" className="block mt-4 text-blue-600 hover:underline font-semibold">View All Services →</Link>
+                  <Link href="/colorado/services/windshield-replacement" className="block mt-4 text-blue-600 hover:underline font-semibold">View All Services →</Link>
                 </div>
 
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Nearby Cities</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/centennial-co" className="text-blue-600 hover:underline">Centennial</Link>
-                    <Link href="/locations/parker-co" className="text-blue-600 hover:underline">Parker</Link>
-                    <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/centennial" className="text-blue-600 hover:underline">Centennial</Link>
+                    <Link href="/colorado/parker" className="text-blue-600 hover:underline">Parker</Link>
+                    <Link href="/colorado/thornton" className="text-blue-600 hover:underline">Thornton</Link>
                   </div>
                 </div>
 

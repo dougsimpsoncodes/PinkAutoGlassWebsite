@@ -34,12 +34,12 @@ Phoenix, Scottsdale, Tempe, Mesa, Chandler, Gilbert, Glendale, Peoria, Surprise,
 ## Pages
 - /: Homepage - auto glass services overview
 - /services: All services offered
-- /services/windshield-replacement: Full windshield replacement
-- /services/chip-repair: Chip and crack repair
-- /services/insurance-claims: Insurance claim assistance
-- /services/insurance-claims/arizona: Arizona-specific insurance guide (, 20-263, 20-469)
+- /colorado/services/windshield-replacement: Full windshield replacement
+- /colorado/services/chip-repair: Chip and crack repair
+- /colorado/services/insurance-claims: Insurance claim assistance
+- /arizona/services/insurance-claims: Arizona-specific insurance guide (, 20-263, 20-469)
 - /vehicles: Vehicle-specific glass services
-- /locations: Service area and locations (Colorado + Arizona)
+- /colorado: Service area and locations (Colorado + Arizona)
 - /blog: Auto glass tips, guides, and news
 - /book: Book an appointment online
 

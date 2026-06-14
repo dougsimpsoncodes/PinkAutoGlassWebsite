@@ -46,7 +46,7 @@ export default function InsuranceClaimsPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Insurance Claims', url: 'https://pinkautoglass.com/arizona/services/insurance-claims' }
   ]);
 
@@ -94,7 +94,7 @@ export default function InsuranceClaimsPage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Insurance Claims', href: '/services/insurance-claims' }
+              { label: 'Insurance Claims', href: '/colorado/services/insurance-claims' }
             ]}
           />
         </div>
@@ -133,7 +133,7 @@ export default function InsuranceClaimsPage() {
                   ].map((carrier) => (
                     <Link
                       key={carrier.slug}
-                      href={`/insurance/${carrier.slug}`}
+                      href={`/colorado/insurance/${carrier.slug}`}
                       className="flex flex-col items-center justify-center text-center bg-teal-50 hover:bg-teal-100 border border-teal-200 hover:border-teal-400 rounded-lg px-3 py-4 text-gray-900 transition-colors group"
                     >
                       <Shield className="w-5 h-5 text-teal-600 mb-1 group-hover:scale-110 transition-transform" />
@@ -257,7 +257,7 @@ export default function InsuranceClaimsPage() {
 
               
               <ServiceAreaLinks />
-              <RelatedServices currentSlug="/services/insurance-claims" />
+              <RelatedServices currentSlug="/colorado/services/insurance-claims" />
 
               <section className="bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to File Your Claim?</h2>
@@ -290,7 +290,7 @@ export default function InsuranceClaimsPage() {
                   ].map((insurer) => (
                     <Link
                       key={insurer.slug}
-                      href={`/insurance/${insurer.slug}`}
+                      href={`/colorado/insurance/${insurer.slug}`}
                       className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 transition-colors"
                     >
                       <span className="font-medium">{insurer.name}</span>
@@ -367,12 +367,12 @@ export default function InsuranceClaimsPage() {
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/colorado-springs-co" className="text-blue-600 hover:underline">Colorado Springs</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/aurora" className="text-blue-600 hover:underline">Aurora</Link>
+                    <Link href="/colorado/lakewood" className="text-blue-600 hover:underline">Lakewood</Link>
+                    <Link href="/colorado/boulder" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/fort-collins" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/colorado/colorado-springs" className="text-blue-600 hover:underline">Colorado Springs</Link>
                   </div>
                 </div>
 
@@ -380,17 +380,17 @@ export default function InsuranceClaimsPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-replacement" className="text-teal-600 hover:underline">
+                      <Link href="/colorado/services/windshield-replacement" className="text-teal-600 hover:underline">
                         Windshield Replacement →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/windshield-repair" className="text-teal-600 hover:underline">
+                      <Link href="/colorado/services/windshield-repair" className="text-teal-600 hover:underline">
                         Windshield Repair →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/mobile-service" className="text-teal-600 hover:underline">
+                      <Link href="/colorado/services/mobile-service" className="text-teal-600 hover:underline">
                         Mobile Service →
                       </Link>
                     </li>

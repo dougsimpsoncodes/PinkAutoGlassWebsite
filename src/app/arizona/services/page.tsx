@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 import Link from 'next/link';
 import { Phone, MessageSquare, CheckCircle, Clock, DollarSign, Shield, Wrench, Car, ArrowRight } from 'lucide-react';
 import CTAButtons from '@/components/CTAButtons';
@@ -278,7 +279,7 @@ export default function ServicesPage() {
                     <li>• Multiple chips or previous repairs</li>
                   </ul>
                   <Link
-                    href="/services/windshield-replacement"
+                    href="/colorado/services/windshield-replacement"
                     className="block text-center bg-pink-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-pink-700 transition-colors mb-2"
                   >
                     Learn More
@@ -337,7 +338,7 @@ export default function ServicesPage() {
                     <li>• Recent damage (repair works best when fresh)</li>
                   </ul>
                   <Link
-                    href="/services/windshield-repair"
+                    href="/colorado/services/windshield-repair"
                     className="block text-center bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors mb-2"
                   >
                     Learn More
@@ -441,7 +442,7 @@ export default function ServicesPage() {
                     <li>• Anywhere in our service area</li>
                   </ul>
                   <Link
-                    href="/services/mobile-service"
+                    href="/colorado/services/mobile-service"
                     className="block text-center bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
                   >
                     Learn More
@@ -491,7 +492,7 @@ export default function ServicesPage() {
                     <div>• And all others</div>
                   </div>
                   <Link
-                    href="/services/insurance-claims"
+                    href="/colorado/services/insurance-claims"
                     className="block text-center bg-teal-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-teal-700 transition-colors"
                   >
                     Learn More
@@ -703,7 +704,7 @@ export default function ServicesPage() {
                   ].map(location => (
                     <Link
                       key={location.slug}
-                      href={`/locations/${location.slug}`}
+                      href={franchiseLocationPath(location.slug)}
                       className="text-pink-600 hover:underline text-sm"
                     >
                       {location.name} →

@@ -54,7 +54,7 @@ export default function FarmersPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Insurance Claims', url: 'https://pinkautoglass.com/services/insurance-claims' },
+    { name: 'Insurance Claims', url: 'https://pinkautoglass.com/colorado/services/insurance-claims' },
     { name: 'Farmers', url: 'https://pinkautoglass.com/colorado/insurance/farmers' },
   ]);
   const combinedSchema = combineSchemas(faqSchema, breadcrumbSchema);
@@ -91,7 +91,7 @@ export default function FarmersPage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Insurance Claims', href: '/services/insurance-claims' },
+              { label: 'Insurance Claims', href: '/colorado/services/insurance-claims' },
               { label: 'Farmers' },
             ]}
           />
@@ -194,7 +194,7 @@ export default function FarmersPage() {
                 {OTHER_CARRIERS.map((carrier) => (
                   <Link
                     key={carrier.slug}
-                    href={`/insurance/${carrier.slug}`}
+                    href={`/colorado/insurance/${carrier.slug}`}
                     className="flex items-center justify-between bg-gray-50 hover:bg-teal-50 border border-gray-200 hover:border-teal-300 rounded-lg px-4 py-3 text-gray-900 transition-colors"
                   >
                     <span className="font-medium">{carrier.name}</span>
@@ -203,7 +203,7 @@ export default function FarmersPage() {
                 ))}
               </div>
               <div className="mt-4 text-center">
-                <Link href="/services/insurance-claims" className="text-teal-600 hover:underline font-semibold">
+                <Link href="/colorado/services/insurance-claims" className="text-teal-600 hover:underline font-semibold">
                   View All Insurance Carriers →
                 </Link>
               </div>

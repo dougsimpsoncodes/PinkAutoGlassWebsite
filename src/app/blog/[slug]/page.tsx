@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, User, ChevronDown, ChevronUp } from 'lucide-react';
@@ -275,7 +276,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
                         {post.relatedServices.map((service) => (
                           <li key={service}>
                             <Link
-                              href={`/services/${service}`}
+                              href={`/colorado/services/${service}`}
                               className="text-gray-700 hover:text-pink-600 transition-colors"
                             >
                               {service.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -313,7 +314,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
                         {post.relatedLocations.map((location) => (
                           <li key={location}>
                             <Link
-                              href={`/locations/${location}`}
+                              href={franchiseLocationPath(location)}
                               className="text-gray-700 hover:text-pink-600 transition-colors"
                             >
                               {location.split('-').slice(0, -1).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}

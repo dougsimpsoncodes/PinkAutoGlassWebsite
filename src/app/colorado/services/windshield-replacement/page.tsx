@@ -64,7 +64,7 @@ export default function WindshieldReplacementPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Windshield Replacement', url: 'https://pinkautoglass.com/colorado/services/windshield-replacement' }
   ]);
 
@@ -114,7 +114,7 @@ export default function WindshieldReplacementPage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Windshield Replacement', href: '/services/windshield-replacement' }
+              { label: 'Windshield Replacement', href: '/colorado/services/windshield-replacement' }
             ]}
           />
         </div>
@@ -401,7 +401,7 @@ export default function WindshieldReplacementPage() {
               {/* CTA Section */}
               
               <ServiceAreaLinks />
-              <RelatedServices currentSlug="/services/windshield-replacement" />
+              <RelatedServices currentSlug="/colorado/services/windshield-replacement" />
 
               <section className="bg-gradient-to-r from-pink-600 to-pink-700 text-white rounded-xl p-8 text-center">
                 <h2 className="text-3xl font-bold mb-4">Ready to Replace Your Windshield?</h2>
@@ -476,14 +476,14 @@ export default function WindshieldReplacementPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Area</h3>
                   <p className="text-sm text-gray-700 mb-3">We serve the Front Range:</p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-blue-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-blue-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/lakewood-co" className="text-blue-600 hover:underline">Lakewood</Link>
-                    <Link href="/locations/boulder-co" className="text-blue-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/highlands-ranch-co" className="text-blue-600 hover:underline">Highlands Ranch</Link>
-                    <Link href="/locations/thornton-co" className="text-blue-600 hover:underline">Thornton</Link>
-                    <Link href="/locations/fort-collins-co" className="text-blue-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/greeley-co" className="text-blue-600 hover:underline">Greeley</Link>
+                    <Link href="/colorado/denver" className="text-blue-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/aurora" className="text-blue-600 hover:underline">Aurora</Link>
+                    <Link href="/colorado/lakewood" className="text-blue-600 hover:underline">Lakewood</Link>
+                    <Link href="/colorado/boulder" className="text-blue-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/highlands-ranch" className="text-blue-600 hover:underline">Highlands Ranch</Link>
+                    <Link href="/colorado/thornton" className="text-blue-600 hover:underline">Thornton</Link>
+                    <Link href="/colorado/fort-collins" className="text-blue-600 hover:underline">Fort Collins</Link>
+                    <Link href="/colorado/greeley" className="text-blue-600 hover:underline">Greeley</Link>
                   </div>
                 </div>
 
@@ -492,7 +492,7 @@ export default function WindshieldReplacementPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-repair" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline">
                         Windshield Repair →
                       </Link>
                     </li>
@@ -502,12 +502,12 @@ export default function WindshieldReplacementPage() {
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/mobile-service" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/services/mobile-service" className="text-pink-600 hover:underline">
                         Mobile Service →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/insurance-claims" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/services/insurance-claims" className="text-pink-600 hover:underline">
                         Insurance Claims →
                       </Link>
                     </li>

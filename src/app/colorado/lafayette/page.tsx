@@ -63,7 +63,7 @@ export default function LafayetteLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Lafayette, CO', url: 'https://pinkautoglass.com/colorado/lafayette/' }
   ]);
 
@@ -108,7 +108,7 @@ export default function LafayetteLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Lafayette, CO', href: '/colorado/lafayette/' }
             ]}
           />
@@ -246,7 +246,7 @@ export default function LafayetteLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -257,7 +257,7 @@ export default function LafayetteLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -268,7 +268,7 @@ export default function LafayetteLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Lafayette. Home, office, or curbside service available.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -378,11 +378,11 @@ export default function LafayetteLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/louisville-co" className="text-pink-600 hover:underline font-medium">Louisville</Link>
-                  <Link href="/locations/erie-co" className="text-pink-600 hover:underline font-medium">Erie</Link>
-                  <Link href="/locations/boulder-co" className="text-pink-600 hover:underline font-medium">Boulder</Link>
-                  <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
-                  <Link href="/locations/superior-co" className="text-pink-600 hover:underline font-medium">Superior</Link>
+                  <Link href="/colorado/louisville" className="text-pink-600 hover:underline font-medium">Louisville</Link>
+                  <Link href="/colorado/erie" className="text-pink-600 hover:underline font-medium">Erie</Link>
+                  <Link href="/colorado/boulder" className="text-pink-600 hover:underline font-medium">Boulder</Link>
+                  <Link href="/colorado/broomfield" className="text-pink-600 hover:underline font-medium">Broomfield</Link>
+                  <Link href="/colorado/superior" className="text-pink-600 hover:underline font-medium">Superior</Link>
                 </div>
               </section>
 
@@ -439,22 +439,22 @@ export default function LafayetteLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/louisville-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/louisville" className="text-pink-600 hover:underline">
                         Louisville, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/erie-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/erie" className="text-pink-600 hover:underline">
                         Erie, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/boulder-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/boulder" className="text-pink-600 hover:underline">
                         Boulder, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/broomfield-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/broomfield" className="text-pink-600 hover:underline">
                         Broomfield, CO &rarr;
                       </Link>
                     </li>

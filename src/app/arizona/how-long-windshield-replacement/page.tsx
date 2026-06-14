@@ -161,7 +161,7 @@ export default function HowLongPage() {
                   Why Mobile Service Saves You Time
                 </h2>
                 <p className="text-lg text-gray-700 mb-4">
-                  With a shop visit, you drive there, wait, then drive home — easily 4-5 hours of your day. With our <Link href="/services/mobile-service" className="text-green-600 hover:underline font-semibold">free mobile service</Link>, we come to your home or office. You work or relax while we handle everything. The total time is the same, but <strong>your time spent waiting is zero</strong>.
+                  With a shop visit, you drive there, wait, then drive home — easily 4-5 hours of your day. With our <Link href="/colorado/services/mobile-service" className="text-green-600 hover:underline font-semibold">free mobile service</Link>, we come to your home or office. You work or relax while we handle everything. The total time is the same, but <strong>your time spent waiting is zero</strong>.
                 </p>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-red-50 border-2 border-red-300 rounded-lg p-5 text-center">
@@ -203,11 +203,11 @@ export default function HowLongPage() {
                     <h3 className="font-semibold text-gray-900 mb-1">Pricing Guide</h3>
                     <p className="text-sm text-gray-600">Costs by vehicle type</p>
                   </Link>
-                  <Link href="/services/mobile-service" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <Link href="/colorado/services/mobile-service" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-gray-900 mb-1">Mobile Service</h3>
                     <p className="text-sm text-gray-600">Free — we come to you</p>
                   </Link>
-                  <Link href="/services/emergency-windshield-repair" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <Link href="/colorado/services/emergency-windshield-repair" className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-gray-900 mb-1">Emergency Service</h3>
                     <p className="text-sm text-gray-600">Same-day 24/7 available</p>
                   </Link>
@@ -264,12 +264,12 @@ export default function HowLongPage() {
                 <div className="bg-green-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Service Areas</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <Link href="/locations/denver-co" className="text-green-600 hover:underline">Denver</Link>
-                    <Link href="/locations/aurora-co" className="text-green-600 hover:underline">Aurora</Link>
-                    <Link href="/locations/boulder-co" className="text-green-600 hover:underline">Boulder</Link>
-                    <Link href="/locations/colorado-springs-co" className="text-green-600 hover:underline">Colorado Springs</Link>
-                    <Link href="/locations/fort-collins-co" className="text-green-600 hover:underline">Fort Collins</Link>
-                    <Link href="/locations/phoenix-az" className="text-green-600 hover:underline">Phoenix</Link>
+                    <Link href="/colorado/denver" className="text-green-600 hover:underline">Denver</Link>
+                    <Link href="/colorado/aurora" className="text-green-600 hover:underline">Aurora</Link>
+                    <Link href="/colorado/boulder" className="text-green-600 hover:underline">Boulder</Link>
+                    <Link href="/colorado/colorado-springs" className="text-green-600 hover:underline">Colorado Springs</Link>
+                    <Link href="/colorado/fort-collins" className="text-green-600 hover:underline">Fort Collins</Link>
+                    <Link href="/arizona/phoenix" className="text-green-600 hover:underline">Phoenix</Link>
                   </div>
                 </div>
               </div>

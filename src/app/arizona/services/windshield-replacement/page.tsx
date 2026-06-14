@@ -253,7 +253,7 @@ export default function WindshieldReplacementPage() {
                   Need the insurance-focused version first? Go here:
                 </p>
                 <Link
-                  href="/arizona/services/insurance-claims/arizona"
+                  href="/arizona/arizona/services/insurance-claims"
                   className="inline-flex items-center text-pink-600 hover:text-pink-700 font-semibold"
                 >
                   Arizona insurance claims help →

@@ -149,7 +149,7 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 var path = (window.location.pathname || '').toLowerCase();
-                var isArizona = path.includes('/phoenix') || path.includes('-az') || path.includes('/arizona');
+                var isArizona = path.includes('/arizona') || path.includes('-az') || path.includes('/arizona');
                 var phoneConversionNumber = isArizona ? '(480) 712-7465' : '(720) 918-7465';
                 gtag('config', 'AW-17667607828', {
                   'phone_conversion_number': phoneConversionNumber,

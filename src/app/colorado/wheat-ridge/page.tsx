@@ -62,7 +62,7 @@ export default function WheatRidgeLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Wheat Ridge, CO', url: 'https://pinkautoglass.com/colorado/wheat-ridge/' }
   ]);
 
@@ -101,7 +101,7 @@ export default function WheatRidgeLocationPage() {
 
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Wheat Ridge, CO', href: '/colorado/wheat-ridge/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Wheat Ridge, CO', href: '/colorado/wheat-ridge/' }]} />
         </div>
 
         {/* Main Content */}
@@ -153,11 +153,11 @@ export default function WheatRidgeLocationPage() {
                   We bring a full range of auto glass services directly to you in Wheat Ridge:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -165,7 +165,7 @@ export default function WheatRidgeLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -254,19 +254,19 @@ export default function WheatRidgeLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Complete windshield replacement with OEM quality glass. ADAS calibration available.</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Mobile Service</h3>
                     <p className="text-blue-600 font-bold text-2xl mb-3">No Extra Charge</p>
                     <p className="text-gray-700 mb-4">We come to you anywhere in Wheat Ridge. Skip the I-70 traffic -- we bring the shop to you.</p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">ADAS Calibration</h3>
@@ -365,11 +365,11 @@ export default function WheatRidgeLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/arvada-co" className="text-pink-600 hover:underline font-medium">Arvada</Link>
-                  <Link href="/locations/lakewood-co" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
-                  <Link href="/locations/denver-co" className="text-pink-600 hover:underline font-medium">Denver</Link>
-                  <Link href="/locations/golden-co" className="text-pink-600 hover:underline font-medium">Golden</Link>
-                  <Link href="/locations/edgewater-co" className="text-pink-600 hover:underline font-medium">Edgewater</Link>
+                  <Link href="/colorado/arvada" className="text-pink-600 hover:underline font-medium">Arvada</Link>
+                  <Link href="/colorado/lakewood" className="text-pink-600 hover:underline font-medium">Lakewood</Link>
+                  <Link href="/colorado/denver" className="text-pink-600 hover:underline font-medium">Denver</Link>
+                  <Link href="/colorado/golden" className="text-pink-600 hover:underline font-medium">Golden</Link>
+                  <Link href="/colorado/edgewater" className="text-pink-600 hover:underline font-medium">Edgewater</Link>
                 </div>
               </section>
 
@@ -417,10 +417,10 @@ export default function WheatRidgeLocationPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
-                    <li><Link href="/locations/lakewood-co" className="text-pink-600 hover:underline">Lakewood, CO →</Link></li>
-                    <li><Link href="/locations/arvada-co" className="text-pink-600 hover:underline">Arvada, CO →</Link></li>
-                    <li><Link href="/locations/denver-co" className="text-pink-600 hover:underline">Denver, CO →</Link></li>
-                    <li><Link href="/locations/golden-co" className="text-pink-600 hover:underline">Golden, CO →</Link></li>
+                    <li><Link href="/colorado/lakewood" className="text-pink-600 hover:underline">Lakewood, CO →</Link></li>
+                    <li><Link href="/colorado/arvada" className="text-pink-600 hover:underline">Arvada, CO →</Link></li>
+                    <li><Link href="/colorado/denver" className="text-pink-600 hover:underline">Denver, CO →</Link></li>
+                    <li><Link href="/colorado/golden" className="text-pink-600 hover:underline">Golden, CO →</Link></li>
                   </ul>
                 </div>
 

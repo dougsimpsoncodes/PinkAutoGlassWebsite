@@ -17,24 +17,24 @@ export const metadata: Metadata = {
 
 export default function SitemapPage() {
   const services = [
-    { name: 'Windshield Replacement', href: '/services/windshield-replacement' },
-    { name: 'Windshield Repair', href: '/services/windshield-repair' },
+    { name: 'Windshield Replacement', href: '/colorado/services/windshield-replacement' },
+    { name: 'Windshield Repair', href: '/colorado/services/windshield-repair' },
     { name: 'ADAS Calibration', href: '/services/adas-calibration' },
-    { name: 'Mobile Service', href: '/services/mobile-service' },
-    { name: 'Insurance Claims', href: '/services/insurance-claims' },
+    { name: 'Mobile Service', href: '/colorado/services/mobile-service' },
+    { name: 'Insurance Claims', href: '/colorado/services/insurance-claims' },
   ];
 
   const locations = [
-    { name: 'Denver', href: '/locations/denver-co' },
-    { name: 'Aurora', href: '/locations/aurora-co' },
-    { name: 'Lakewood', href: '/locations/lakewood-co' },
-    { name: 'Boulder', href: '/locations/boulder-co' },
-    { name: 'Thornton', href: '/locations/thornton-co' },
-    { name: 'Arvada', href: '/locations/arvada-co' },
-    { name: 'Westminster', href: '/locations/westminster-co' },
-    { name: 'Centennial', href: '/locations/centennial-co' },
-    { name: 'Parker', href: '/locations/parker-co' },
-    { name: 'Highlands Ranch', href: '/locations/highlands-ranch-co' },
+    { name: 'Denver', href: '/colorado/denver' },
+    { name: 'Aurora', href: '/colorado/aurora' },
+    { name: 'Lakewood', href: '/colorado/lakewood' },
+    { name: 'Boulder', href: '/colorado/boulder' },
+    { name: 'Thornton', href: '/colorado/thornton' },
+    { name: 'Arvada', href: '/colorado/arvada' },
+    { name: 'Westminster', href: '/colorado/westminster' },
+    { name: 'Centennial', href: '/colorado/centennial' },
+    { name: 'Parker', href: '/colorado/parker' },
+    { name: 'Highlands Ranch', href: '/colorado/highlands-ranch' },
   ];
 
   const vehicleBrands = [
@@ -56,7 +56,7 @@ export default function SitemapPage() {
     { name: 'Get Free Quote', href: '/book' },
     { name: 'Track Your Request', href: '/track' },
     { name: 'All Services', href: '/services' },
-    { name: 'All Locations', href: '/locations' },
+    { name: 'All Locations', href: '/colorado' },
     { name: 'Find Your Vehicle', href: '/vehicles' },
   ];
 
@@ -144,7 +144,7 @@ export default function SitemapPage() {
             </div>
             <div className="mb-4">
               <Link
-                href="/locations"
+                href="/colorado"
                 className="text-pink-600 hover:text-pink-700 font-semibold text-lg"
               >
                 → View All Locations

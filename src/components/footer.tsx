@@ -66,11 +66,11 @@ export default function Footer() {
               <h3 className="font-semibold text-lg mb-4">Services</h3>
               <ul className="space-y-2">
                 {[
-                  { href: "/services/windshield-replacement", label: "Windshield Replacement" },
-                  { href: "/services/windshield-repair", label: "Rock Chip Repair" },
-                  { href: "/services/mobile-service", label: "Mobile Service" },
+                  { href: "/colorado/services/windshield-replacement", label: "Windshield Replacement" },
+                  { href: "/colorado/services/windshield-repair", label: "Rock Chip Repair" },
+                  { href: "/colorado/services/mobile-service", label: "Mobile Service" },
                   { href: "/services/adas-calibration", label: "ADAS Calibration" },
-                  { href: "/services/insurance-claims", label: "Insurance Claims" },
+                  { href: "/colorado/services/insurance-claims", label: "Insurance Claims" },
                 ].map((item) => (
                   <li key={item.href}>
                     <Link
@@ -97,10 +97,10 @@ export default function Footer() {
               <h3 className="font-semibold text-lg mb-4">Service Area</h3>
               <ul className="space-y-2">
                 {[
-                  { href: "/locations/denver-co", label: "Denver" },
-                  { href: "/locations/aurora-co", label: "Aurora" },
-                  { href: "/locations/lakewood-co", label: "Lakewood" },
-                  { href: "/locations/boulder-co", label: "Boulder" },
+                  { href: "/colorado/denver", label: "Denver" },
+                  { href: "/colorado/aurora", label: "Aurora" },
+                  { href: "/colorado/lakewood", label: "Lakewood" },
+                  { href: "/colorado/boulder", label: "Boulder" },
                 ].map((item) => (
                   <li key={item.href}>
                     <Link 
@@ -113,7 +113,7 @@ export default function Footer() {
                 ))}
                 <li>
                   <Link 
-                    href="/locations"
+                    href="/colorado"
                     className="text-pink-400 hover:text-pink-300 transition-colors"
                   >
                     View All Locations →

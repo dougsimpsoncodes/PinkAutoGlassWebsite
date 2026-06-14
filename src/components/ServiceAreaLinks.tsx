@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 
 const CO_CITIES = [
   { name: 'Denver', slug: 'denver-co' },
@@ -46,14 +47,14 @@ export default function ServiceAreaLinks({ heading = 'Our Service Areas', market
               {CO_CITIES.map((city) => (
                 <Link
                   key={city.slug}
-                  href={`/locations/${city.slug}`}
+                  href={franchiseLocationPath(city.slug)}
                   className="text-sm bg-pink-50 text-pink-700 hover:bg-pink-100 px-3 py-1 rounded-full transition-colors"
                 >
                   {city.name}
                 </Link>
               ))}
               <Link
-                href="/locations#colorado"
+                href="/colorado#colorado"
                 className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
                 + 35 more cities
@@ -68,14 +69,14 @@ export default function ServiceAreaLinks({ heading = 'Our Service Areas', market
               {AZ_CITIES.map((city) => (
                 <Link
                   key={city.slug}
-                  href={`/locations/${city.slug}`}
+                  href={franchiseLocationPath(city.slug)}
                   className="text-sm bg-orange-50 text-orange-700 hover:bg-orange-100 px-3 py-1 rounded-full transition-colors"
                 >
                   {city.name}
                 </Link>
               ))}
               <Link
-                href="/locations#arizona"
+                href="/colorado#arizona"
                 className="text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
               >
                 + 12 more cities

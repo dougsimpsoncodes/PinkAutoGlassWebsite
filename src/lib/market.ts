@@ -89,7 +89,7 @@ export function getMarketFromPath(pathname: string | null | undefined): Market |
   if (!pathname) return null;
 
   const path = pathname.toLowerCase();
-  if (path.includes('/phoenix') || path.includes('-az') || path.includes('/arizona')) return 'arizona';
+  if (path.includes('/arizona') || path.includes('-az') || path.includes('/arizona')) return 'arizona';
   if (
     path.includes('/denver') ||
     path.includes('/boulder') ||

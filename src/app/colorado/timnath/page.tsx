@@ -63,7 +63,7 @@ export default function TimnathLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Timnath, CO', url: 'https://pinkautoglass.com/colorado/timnath/' }
   ]);
 
@@ -108,7 +108,7 @@ export default function TimnathLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Timnath, CO', href: '/colorado/timnath/' }
             ]}
           />
@@ -246,7 +246,7 @@ export default function TimnathLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -257,7 +257,7 @@ export default function TimnathLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM quality glass. ADAS calibration available.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -268,7 +268,7 @@ export default function TimnathLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Timnath. Home, office, or curbside service available.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More &rarr;
                     </Link>
                   </div>
@@ -378,11 +378,11 @@ export default function TimnathLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/fort-collins-co" className="text-pink-600 hover:underline font-medium">Fort Collins</Link>
-                  <Link href="/locations/windsor-co" className="text-pink-600 hover:underline font-medium">Windsor</Link>
-                  <Link href="/locations/loveland-co" className="text-pink-600 hover:underline font-medium">Loveland</Link>
-                  <Link href="/locations/wellington-co" className="text-pink-600 hover:underline font-medium">Wellington</Link>
-                  <Link href="/locations/greeley-co" className="text-pink-600 hover:underline font-medium">Greeley</Link>
+                  <Link href="/colorado/fort-collins" className="text-pink-600 hover:underline font-medium">Fort Collins</Link>
+                  <Link href="/colorado/windsor" className="text-pink-600 hover:underline font-medium">Windsor</Link>
+                  <Link href="/colorado/loveland" className="text-pink-600 hover:underline font-medium">Loveland</Link>
+                  <Link href="/colorado/wellington" className="text-pink-600 hover:underline font-medium">Wellington</Link>
+                  <Link href="/colorado/greeley" className="text-pink-600 hover:underline font-medium">Greeley</Link>
                 </div>
               </section>
 
@@ -439,22 +439,22 @@ export default function TimnathLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/fort-collins-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/fort-collins" className="text-pink-600 hover:underline">
                         Fort Collins, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/windsor-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/windsor" className="text-pink-600 hover:underline">
                         Windsor, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/loveland-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/loveland" className="text-pink-600 hover:underline">
                         Loveland, CO &rarr;
                       </Link>
                     </li>
                     <li>
-                      <Link href="/locations/johnstown-co" className="text-pink-600 hover:underline">
+                      <Link href="/colorado/johnstown" className="text-pink-600 hover:underline">
                         Johnstown, CO &rarr;
                       </Link>
                     </li>

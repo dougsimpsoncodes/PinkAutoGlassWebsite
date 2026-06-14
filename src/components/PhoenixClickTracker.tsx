@@ -5,7 +5,7 @@ import { trackPhoneClick, trackTextClick } from '@/lib/tracking';
 import { trackBookingClick } from '@/lib/analytics';
 
 /**
- * Attaches conversion tracking to all tel: and /book links on the /phoenix landing page.
+ * Attaches conversion tracking to all tel: and /book links on the /arizona landing page.
  * Keeps the page itself as a server component (required for metadata export).
  */
 export default function PhoenixClickTracker() {

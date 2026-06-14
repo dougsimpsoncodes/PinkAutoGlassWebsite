@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { franchiseLocationPath } from '@/lib/locationUrl';
 import Link from 'next/link';
 import { Phone, CheckCircle, FileText, Shield } from 'lucide-react';
 import InsuranceQuoteForm from '@/components/InsuranceQuoteForm';
@@ -11,12 +12,12 @@ export const metadata: Metadata = {
   description: 'AZ law means your windshield replacement costs $0 with comprehensive coverage. We handle all paperwork. Call (480) 712-7465.',
   keywords: 'arizona windshield insurance claims, zero deductible arizona, arizona glass coverage law, $0 windshield arizona, no rate increase, choose your shop, phoenix windshield insurance',
   alternates: {
-    canonical: 'https://pinkautoglass.com/colorado/services/insurance-claims/arizona',
+    canonical: 'https://pinkautoglass.com/colorado/arizona/services/insurance-claims',
   },
   openGraph: {
     title: 'Arizona Windshield Insurance Claims | $0 Deductible',
     description: 'AZ law means your windshield replacement costs $0 with comprehensive coverage. We handle all paperwork. Call (480) 712-7465.',
-    url: 'https://pinkautoglass.com/colorado/services/insurance-claims/arizona',
+    url: 'https://pinkautoglass.com/colorado/arizona/services/insurance-claims',
     type: 'website',
   },
 };
@@ -56,9 +57,9 @@ export default function ArizonaInsuranceClaimsPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Services', url: 'https://pinkautoglass.com/services' },
+    { name: 'Services', url: 'https://pinkautoglass.com/colorado/services' },
     { name: 'Insurance Claims', url: 'https://pinkautoglass.com/colorado/services/insurance-claims' },
-    { name: 'Arizona', url: 'https://pinkautoglass.com/colorado/services/insurance-claims/arizona' }
+    { name: 'Arizona', url: 'https://pinkautoglass.com/colorado/arizona/services/insurance-claims' }
   ]);
 
   const webPageSchema = {
@@ -128,8 +129,8 @@ export default function ArizonaInsuranceClaimsPage() {
           <Breadcrumbs
             items={[
               { label: 'Services', href: '/services' },
-              { label: 'Insurance Claims', href: '/services/insurance-claims' },
-              { label: 'Arizona', href: '/services/insurance-claims/arizona' }
+              { label: 'Insurance Claims', href: '/colorado/services/insurance-claims' },
+              { label: 'Arizona', href: '/arizona/services/insurance-claims' }
             ]}
           />
         </div>
@@ -283,7 +284,7 @@ export default function ArizonaInsuranceClaimsPage() {
                   {azCities.map(city => (
                     <Link
                       key={city.slug}
-                      href={`/locations/${city.slug}`}
+                      href={franchiseLocationPath(city.slug)}
                       className="bg-white border border-gray-200 rounded-lg p-3 text-center hover:bg-orange-50 hover:border-orange-300 transition-colors"
                     >
                       <span className="text-orange-700 font-medium text-sm">{city.name}</span>
@@ -374,27 +375,27 @@ export default function ArizonaInsuranceClaimsPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Phoenix Metro Cities</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {azCities.slice(0, 8).map(city => (
-                      <Link key={city.slug} href={`/locations/${city.slug}`} className="text-blue-600 hover:underline">{city.name}</Link>
+                      <Link key={city.slug} href={franchiseLocationPath(city.slug)} className="text-blue-600 hover:underline">{city.name}</Link>
                     ))}
                   </div>
-                  <Link href="/locations" className="block mt-3 text-blue-600 hover:underline font-semibold text-sm">View All Locations →</Link>
+                  <Link href="/colorado" className="block mt-3 text-blue-600 hover:underline font-semibold text-sm">View All Locations →</Link>
                 </div>
 
                 <div className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">Related Services</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/services/windshield-replacement" className="text-orange-600 hover:underline">
+                      <Link href="/colorado/services/windshield-replacement" className="text-orange-600 hover:underline">
                         Windshield Replacement →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/windshield-repair" className="text-orange-600 hover:underline">
+                      <Link href="/colorado/services/windshield-repair" className="text-orange-600 hover:underline">
                         Windshield Repair →
                       </Link>
                     </li>
                     <li>
-                      <Link href="/services/insurance-claims" className="text-orange-600 hover:underline">
+                      <Link href="/colorado/services/insurance-claims" className="text-orange-600 hover:underline">
                         Colorado Insurance Claims →
                       </Link>
                     </li>

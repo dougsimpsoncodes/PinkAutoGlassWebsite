@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   keywords:
     'arizona windshield insurance claims, phoenix windshield insurance, zero deductible windshield arizona, arizona auto glass claim, mobile windshield replacement phoenix',
   alternates: {
-    canonical: 'https://pinkautoglass.com/arizona/services/insurance-claims/arizona',
+    canonical: 'https://pinkautoglass.com/arizona/arizona/services/insurance-claims',
   },
   openGraph: {
     title: 'Arizona Windshield Insurance Claims | Coverage Check & Mobile Service',
     description:
       'Coverage verification, claim help, and mobile windshield replacement across Phoenix metro.',
-    url: 'https://pinkautoglass.com/arizona/services/insurance-claims/arizona',
+    url: 'https://pinkautoglass.com/arizona/arizona/services/insurance-claims',
     type: 'website',
   },
 };
@@ -71,7 +71,7 @@ export default function ArizonaInsuranceClaimsPage() {
     { name: 'Insurance Claims', url: 'https://pinkautoglass.com/arizona/services/insurance-claims' },
     {
       name: 'Arizona',
-      url: 'https://pinkautoglass.com/arizona/services/insurance-claims/arizona',
+      url: 'https://pinkautoglass.com/arizona/arizona/services/insurance-claims',
     },
   ]);
 
@@ -121,7 +121,7 @@ export default function ArizonaInsuranceClaimsPage() {
               { label: 'Arizona', href: '/arizona' },
               { label: 'Services', href: '/arizona/services' },
               { label: 'Insurance Claims', href: '/arizona/services/insurance-claims' },
-              { label: 'Arizona', href: '/arizona/services/insurance-claims/arizona' },
+              { label: 'Arizona', href: '/arizona/arizona/services/insurance-claims' },
             ]}
           />
         </div>
@@ -308,7 +308,7 @@ export default function ArizonaInsuranceClaimsPage() {
                     <Link href="/arizona/services/windshield-replacement" className="block text-orange-600 hover:underline">
                       Windshield replacement
                     </Link>
-                    <Link href="/phoenix" className="block text-orange-600 hover:underline">
+                    <Link href="/arizona" className="block text-orange-600 hover:underline">
                       Phoenix market page
                     </Link>
                     <a href="tel:+14807127465" className="inline-flex items-center gap-2 text-orange-600 hover:underline">

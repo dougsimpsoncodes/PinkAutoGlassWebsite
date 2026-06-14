@@ -62,7 +62,7 @@ export default function LoneTreeLocationPage() {
   const faqSchema = generateFAQSchema(faqs);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Lone Tree, CO', url: 'https://pinkautoglass.com/colorado/lone-tree/' }
   ]);
 
@@ -101,7 +101,7 @@ export default function LoneTreeLocationPage() {
 
         {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumbs items={[{ label: 'Locations', href: '/locations' }, { label: 'Lone Tree, CO', href: '/colorado/lone-tree/' }]} />
+          <Breadcrumbs items={[{ label: 'Locations', href: '/colorado' }, { label: 'Lone Tree, CO', href: '/colorado/lone-tree/' }]} />
         </div>
 
         {/* Main Content */}
@@ -153,11 +153,11 @@ export default function LoneTreeLocationPage() {
                   We bring a full range of auto glass services directly to you in Lone Tree:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -165,7 +165,7 @@ export default function LoneTreeLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -254,19 +254,19 @@ export default function LoneTreeLocationPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Repair</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.</p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-pink-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Windshield Replacement</h3>
                     <p className="text-pink-600 font-bold text-2xl mb-3">Professional Service</p>
                     <p className="text-gray-700 mb-4">Complete windshield replacement with OEM quality glass. ADAS calibration included for equipped vehicles.</p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Mobile Service</h3>
                     <p className="text-blue-600 font-bold text-2xl mb-3">No Extra Charge</p>
                     <p className="text-gray-700 mb-4">We come to your home, office, or Park Meadows parking lot. Skip the C-470 traffic.</p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">Learn More →</Link>
                   </div>
                   <div className="bg-white border-2 border-blue-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">ADAS Calibration</h3>
@@ -365,11 +365,11 @@ export default function LoneTreeLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/highlands-ranch-co" className="text-pink-600 hover:underline font-medium">Highlands Ranch</Link>
-                  <Link href="/locations/centennial-co" className="text-pink-600 hover:underline font-medium">Centennial</Link>
-                  <Link href="/locations/parker-co" className="text-pink-600 hover:underline font-medium">Parker</Link>
-                  <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline font-medium">Castle Rock</Link>
-                  <Link href="/locations/englewood-co" className="text-pink-600 hover:underline font-medium">Englewood</Link>
+                  <Link href="/colorado/highlands-ranch" className="text-pink-600 hover:underline font-medium">Highlands Ranch</Link>
+                  <Link href="/colorado/centennial" className="text-pink-600 hover:underline font-medium">Centennial</Link>
+                  <Link href="/colorado/parker" className="text-pink-600 hover:underline font-medium">Parker</Link>
+                  <Link href="/colorado/castle-rock" className="text-pink-600 hover:underline font-medium">Castle Rock</Link>
+                  <Link href="/colorado/englewood" className="text-pink-600 hover:underline font-medium">Englewood</Link>
                 </div>
               </section>
 
@@ -417,10 +417,10 @@ export default function LoneTreeLocationPage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
-                    <li><Link href="/locations/highlands-ranch-co" className="text-pink-600 hover:underline">Highlands Ranch, CO →</Link></li>
-                    <li><Link href="/locations/centennial-co" className="text-pink-600 hover:underline">Centennial, CO →</Link></li>
-                    <li><Link href="/locations/parker-co" className="text-pink-600 hover:underline">Parker, CO →</Link></li>
-                    <li><Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline">Castle Rock, CO →</Link></li>
+                    <li><Link href="/colorado/highlands-ranch" className="text-pink-600 hover:underline">Highlands Ranch, CO →</Link></li>
+                    <li><Link href="/colorado/centennial" className="text-pink-600 hover:underline">Centennial, CO →</Link></li>
+                    <li><Link href="/colorado/parker" className="text-pink-600 hover:underline">Parker, CO →</Link></li>
+                    <li><Link href="/colorado/castle-rock" className="text-pink-600 hover:underline">Castle Rock, CO →</Link></li>
                   </ul>
                 </div>
 

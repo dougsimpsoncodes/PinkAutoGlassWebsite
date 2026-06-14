@@ -6,8 +6,8 @@ interface Props {
   citySlug: string;
   /**
    * URL prefix for the city's pages, WITHOUT trailing slash. Each neighborhood
-   * link becomes `${basePath}/${slug}`. Franchise pages pass "/colorado/denver";
-   * the legacy Aurora page relies on the default "/locations/<citySlug>-co".
+   * link becomes `${basePath}/${slug}`. Defaults to the franchise path
+   * "/colorado/<citySlug>"; franchise city pages may pass it explicitly.
    */
   basePath?: string;
   /** Optional extra classes on the grid wrapper */
@@ -31,7 +31,7 @@ export default function NeighborhoodLinks({ citySlug, basePath, className = '' }
   const neighborhoods = getNeighborhoodsByCity(citySlug);
   if (neighborhoods.length === 0) return null;
 
-  const prefix = basePath ?? `/locations/${citySlug}-co`;
+  const prefix = basePath ?? `/colorado/${citySlug}`;
 
   return (
     <div className={`grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6 ${className}`}>

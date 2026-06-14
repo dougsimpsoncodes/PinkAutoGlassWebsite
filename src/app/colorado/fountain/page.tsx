@@ -67,7 +67,7 @@ export default function FountainLocationPage() {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Locations', url: 'https://pinkautoglass.com/colorado' },
     { name: 'Fountain, CO', url: 'https://pinkautoglass.com/colorado/fountain/' }
   ]);
 
@@ -111,7 +111,7 @@ export default function FountainLocationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
+              { label: 'Locations', href: '/colorado' },
               { label: 'Fountain, CO', href: '/colorado/fountain/' }
             ]}
           />
@@ -168,11 +168,11 @@ export default function FountainLocationPage() {
                   We bring a full range of auto glass services directly to you in Fountain:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <Link href="/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-replacement" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Windshield Replacement</span>
                     <span className="block text-sm text-gray-600">Full replacement with OEM glass</span>
                   </Link>
-                  <Link href="/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/windshield-repair" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Chip & Crack Repair</span>
                     <span className="block text-sm text-gray-600">30-minute service, often $0</span>
                   </Link>
@@ -180,7 +180,7 @@ export default function FountainLocationPage() {
                     <span className="font-semibold text-gray-900">ADAS Calibration</span>
                     <span className="block text-sm text-gray-600">Camera recalibration after replacement</span>
                   </Link>
-                  <Link href="/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
+                  <Link href="/colorado/services/insurance-claims" className="bg-white border border-gray-200 rounded-lg p-3 hover:border-pink-300 hover:shadow-sm transition-all">
                     <span className="font-semibold text-gray-900">Insurance Claims</span>
                     <span className="block text-sm text-gray-600">We handle all paperwork — $0 often</span>
                   </Link>
@@ -272,7 +272,7 @@ export default function FountainLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Fast repair for chips and small cracks. Often covered 100% by insurance with no deductible.
                     </p>
-                    <Link href="/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-repair" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -283,7 +283,7 @@ export default function FountainLocationPage() {
                     <p className="text-gray-700 mb-4">
                       Complete windshield replacement with OEM-quality glass. ADAS calibration included when required.
                     </p>
-                    <Link href="/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/windshield-replacement" className="text-pink-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -294,7 +294,7 @@ export default function FountainLocationPage() {
                     <p className="text-gray-700 mb-4">
                       We come to you anywhere in Fountain. Home, office, or base-adjacent parking - no extra fee.
                     </p>
-                    <Link href="/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
+                    <Link href="/colorado/services/mobile-service" className="text-blue-600 hover:underline font-semibold">
                       Learn More →
                     </Link>
                   </div>
@@ -406,11 +406,11 @@ export default function FountainLocationPage() {
                   We Also Serve Nearby
                 </h2>
                 <div className="flex flex-wrap gap-4">
-                  <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
-                  <Link href="/locations/security-widefield-co" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
-                  <Link href="/locations/fort-carson-co" className="text-pink-600 hover:underline font-medium">Fort Carson</Link>
-                  <Link href="/locations/pueblo-co" className="text-pink-600 hover:underline font-medium">Pueblo</Link>
-                  <Link href="/locations/monument-co" className="text-pink-600 hover:underline font-medium">Monument</Link>
+                  <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline font-medium">Colorado Springs</Link>
+                  <Link href="/colorado/security-widefield" className="text-pink-600 hover:underline font-medium">Security-Widefield</Link>
+                  <Link href="/colorado/fort-carson" className="text-pink-600 hover:underline font-medium">Fort Carson</Link>
+                  <Link href="/colorado/pueblo" className="text-pink-600 hover:underline font-medium">Pueblo</Link>
+                  <Link href="/colorado/monument" className="text-pink-600 hover:underline font-medium">Monument</Link>
                 </div>
               </section>
 
@@ -467,16 +467,16 @@ export default function FountainLocationPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Nearby Service Areas</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/locations/colorado-springs-co" className="text-pink-600 hover:underline">Colorado Springs, CO →</Link>
+                      <Link href="/colorado/colorado-springs" className="text-pink-600 hover:underline">Colorado Springs, CO →</Link>
                     </li>
                     <li>
-                      <Link href="/locations/security-widefield-co" className="text-pink-600 hover:underline">Security-Widefield, CO →</Link>
+                      <Link href="/colorado/security-widefield" className="text-pink-600 hover:underline">Security-Widefield, CO →</Link>
                     </li>
                     <li>
-                      <Link href="/locations/castle-rock-co" className="text-pink-600 hover:underline">Castle Rock, CO →</Link>
+                      <Link href="/colorado/castle-rock" className="text-pink-600 hover:underline">Castle Rock, CO →</Link>
                     </li>
                     <li>
-                      <Link href="/locations/manitou-springs-co" className="text-pink-600 hover:underline">Manitou Springs, CO →</Link>
+                      <Link href="/colorado/manitou-springs" className="text-pink-600 hover:underline">Manitou Springs, CO →</Link>
                     </li>
                   </ul>
                 </div>
