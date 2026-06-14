@@ -6,6 +6,7 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import NeighborhoodLinks from '@/components/NeighborhoodLinks';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Fort Collins CO | Mobile',
@@ -195,20 +196,7 @@ export default function FortCollinsLocationPage() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
                   Fort Collins Areas We Serve
                 </h2>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  {[
-                    'Old Town', 'CSU Campus', 'Midtown',
-                    'South Fort Collins', 'Fossil Creek', 'Harmony Corridor',
-                    'Timberline', 'Prospect', 'Mulberry',
-                    'Foothills', 'Spring Creek', 'Rigden Farm',
-                    'Oakridge', 'Northeast', 'Northwest',
-                    'Westside', 'Eastside', 'College West'
-                  ].map(neighborhood => (
-                    <div key={neighborhood} className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">{neighborhood}</span>
-                    </div>
-                  ))}
-                </div>
+                <NeighborhoodLinks citySlug="fort-collins" basePath="/colorado/fort-collins" />
                 <p className="text-gray-600 text-center">
                   Don't see your neighborhood? We serve all of Fort Collins - <a href="tel:+17209187465" className="text-pink-600 hover:underline font-semibold">call us</a> to confirm service in your area!
                 </p>

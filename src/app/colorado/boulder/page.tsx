@@ -5,6 +5,7 @@ import CTAButtons from '@/components/CTAButtons';
 import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
+import NeighborhoodLinks from '@/components/NeighborhoodLinks';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
 
 export const metadata: Metadata = {
@@ -217,53 +218,7 @@ export default function BoulderLocationPage() {
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Boulder Neighborhoods We Serve</h2>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">University Hill</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Table Mesa</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Gunbarrel</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">North Boulder</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">South Boulder</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Martin Acres</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Newlands</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Chautauqua</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Downtown Boulder</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Pearl Street</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Boulder Creek</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Wonderland Lake</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Niwot</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Four Mile Canyon</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Mapleton Hill</span>
-                    </div>
-                </div>
+                <NeighborhoodLinks citySlug="boulder" basePath="/colorado/boulder" />
               </section>
 
               <section>

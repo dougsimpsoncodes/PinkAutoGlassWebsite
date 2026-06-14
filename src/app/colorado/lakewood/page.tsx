@@ -6,6 +6,7 @@ import TrustSignals from '@/components/TrustSignals';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AboveFoldCTA from '@/components/AboveFoldCTA';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import NeighborhoodLinks from '@/components/NeighborhoodLinks';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Lakewood CO | Mobile, $0 Deductible',
@@ -167,53 +168,7 @@ export default function LakewoodLocationPage() {
 
               <section>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Lakewood Neighborhoods We Serve</h2>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Bear Valley</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Green Mountain</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Belmar</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Applewood</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Fox Hollow</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Lakewood Heights</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Villa Italia</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Lakewood Estates</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Red Rocks</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Morrison Road</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Kipling</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Wadsworth</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">West Alameda</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Lakewood Plaza</span>
-                    </div>
-                  <div className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">Kendrick Lake</span>
-                    </div>
-                </div>
+                <NeighborhoodLinks citySlug="lakewood" basePath="/colorado/lakewood" />
               </section>
 
               <section>

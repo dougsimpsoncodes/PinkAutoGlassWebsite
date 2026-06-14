@@ -8,6 +8,7 @@ import AboveFoldCTA from '@/components/AboveFoldCTA';
 import GoogleMapEmbed from '@/components/GoogleMapEmbed';
 import GoogleReviewsWidget from '@/components/GoogleReviewsWidget';
 import { generateLocalBusinessSchema, generateFAQSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/schema';
+import NeighborhoodLinks from '@/components/NeighborhoodLinks';
 
 export const metadata: Metadata = {
   title: 'Windshield Replacement Denver CO | Mobile, $0 Deductible',
@@ -181,22 +182,7 @@ export default function DenverLocationPage() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
                   Denver Neighborhoods We Serve
                 </h2>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  {[
-                    'Capitol Hill', 'Cherry Creek', 'Washington Park',
-                    'Highlands', 'LoDo', 'RiNo',
-                    'Park Hill', 'Congress Park', 'Stapleton',
-                    'Five Points', 'Uptown', 'City Park',
-                    'Green Valley Ranch', 'Montbello', 'Gateway',
-                    'Baker', 'Platt Park', 'Berkeley',
-                    'Sunnyside', 'Sloan Lake', 'Barnum',
-                    'Westwood', 'University', 'DU Area'
-                  ].map(neighborhood => (
-                    <div key={neighborhood} className="bg-white border border-gray-200 rounded p-3 text-center hover:bg-pink-50 hover:border-pink-300 transition-colors">
-                      <span className="text-gray-700 font-medium">{neighborhood}</span>
-                    </div>
-                  ))}
-                </div>
+                <NeighborhoodLinks citySlug="denver" basePath="/colorado/denver" />
                 <p className="text-gray-600 text-center">
                   Don't see your neighborhood? We serve all of Denver - <a href="tel:+17209187465" className="text-pink-600 hover:underline font-semibold">call us</a> to confirm service in your area!
                 </p>

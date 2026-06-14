@@ -3,186 +3,172 @@ import { getAllVehicleSlugs, getAllMakes } from '@/data/makes-models';
 import { getAllBlogPosts } from '@/data/blog';
 import { allNeighborhoods } from '@/data/neighborhoods';
 
+/**
+ * Franchise URL structure (2026-06-14 migration).
+ * Old /locations, /services, /insurance, /phoenix URLs 301-redirect to the
+ * /colorado/* and /arizona/* equivalents (see next.config.js franchiseRedirects),
+ * so the sitemap must list ONLY the canonical franchise URLs.
+ *
+ * Two exceptions still live on the old structure because their franchise pages
+ * don't exist yet (kept canonical via reverse redirects, not cannibalizing):
+ *   - Aurora: /locations/aurora-co (+ its 14 neighborhood pages)
+ *   - /services/adas-calibration
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://pinkautoglass.com';
   const now = new Date();
+  const azDate = new Date('2026-02-22');
 
-  // Core pages
-  const pages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/book`,
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/locations`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/vehicles`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/careers`,
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/sitemap`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: now,
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
+  // CO cities with a live /colorado/<city> page (Aurora excluded — see above)
+  const CO_CITIES = [
+    'arvada', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
+    'centennial', 'cherry-hills-village', 'colorado-springs', 'commerce-city',
+    'denver', 'englewood', 'erie', 'evergreen', 'federal-heights', 'firestone',
+    'fort-collins', 'fountain', 'frederick', 'golden', 'greeley',
+    'greenwood-village', 'highlands-ranch', 'johnstown', 'lafayette', 'lakewood',
+    'littleton', 'lone-tree', 'longmont', 'louisville', 'loveland',
+    'manitou-springs', 'northglenn', 'parker', 'security-widefield', 'sheridan',
+    'superior', 'thornton', 'timnath', 'wellington', 'westminster', 'wheat-ridge',
+    'windsor',
+  ];
+  const AZ_CITIES = [
+    'phoenix', 'scottsdale', 'tempe', 'mesa', 'chandler', 'gilbert', 'glendale',
+    'peoria', 'surprise', 'goodyear', 'avondale', 'buckeye', 'fountain-hills',
+    'queen-creek', 'apache-junction', 'cave-creek', 'maricopa', 'el-mirage',
+    'litchfield-park', 'ahwatukee',
+  ];
+  const CO_SERVICES = [
+    'windshield-replacement', 'windshield-repair', 'mobile-service',
+    'insurance-claims', 'emergency-windshield-repair',
+  ];
+  const AZ_SERVICES = [
+    'windshield-replacement', 'windshield-repair', 'adas-calibration',
+    'mobile-service', 'insurance-claims', 'emergency-windshield-repair',
+  ];
+  const INSURANCE_CARRIERS = [
+    'progressive', 'aaa', 'allstate', 'geico', 'esurance', 'state-farm',
+    'usaa', 'farmers', 'safeco', 'liberty-mutual',
+  ];
+  const HIGH_INTENT = [
+    'pricing', 'insurance-coverage-guide', 'how-long-windshield-replacement',
+    'adas-calibration-cost',
   ];
 
-  // Service pages
-  const services = [
-    'windshield-replacement',
-    'windshield-repair',
-    'mobile-service',
-    'adas-calibration',
-    'insurance-claims',
-  ].map((slug) => ({
-    url: `${baseUrl}/services/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.9,
+  // Global pages (no state prefix)
+  const pages: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/book`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/vehicles`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/careers`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${baseUrl}/sitemap`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+  ];
+
+  // State hubs
+  const hubs: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/colorado`, lastModified: now, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${baseUrl}/arizona`, lastModified: azDate, changeFrequency: 'weekly', priority: 0.95 },
+  ];
+
+  // CO service pages (+ index). ADAS stays on the old URL (no franchise page yet).
+  const coServices: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/colorado/services`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+    ...CO_SERVICES.map((s) => ({
+      url: `${baseUrl}/colorado/services/${s}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    })),
+    { url: `${baseUrl}/services/adas-calibration`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+  ];
+
+  // AZ service pages (+ index)
+  const azServices: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/arizona/services`, lastModified: azDate, changeFrequency: 'weekly', priority: 0.8 },
+    ...AZ_SERVICES.map((s) => ({
+      url: `${baseUrl}/arizona/services/${s}`,
+      lastModified: azDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+  ];
+
+  // CO location pages (+ Aurora on the old URL)
+  const coLocations: MetadataRoute.Sitemap = [
+    ...CO_CITIES.map((c) => ({
+      url: `${baseUrl}/colorado/${c}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: c === 'denver' ? 0.9 : 0.8,
+    })),
+    { url: `${baseUrl}/locations/aurora-co`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+  ];
+
+  // AZ location pages
+  const azLocations: MetadataRoute.Sitemap = AZ_CITIES.map((c) => ({
+    url: `${baseUrl}/arizona/${c}`,
+    lastModified: azDate,
+    changeFrequency: 'weekly' as const,
+    priority: c === 'phoenix' ? 0.9 : 0.8,
   }));
 
-  // Location pages - All 44 cities in service area
-  const locations = [
-    // Denver Metro - Core Cities
-    'denver-co',
-    'aurora-co',
-    'lakewood-co',
-    'thornton-co',
-    'arvada-co',
-    'westminster-co',
-    'centennial-co',
-    'parker-co',
-    'highlands-ranch-co',
-    'littleton-co',
-    'commerce-city-co',
-    'englewood-co',
-    'broomfield-co',
-    'brighton-co',
-    // Denver Metro - Additional Cities (30 mile radius)
-    'erie-co',
-    'northglenn-co',
-    'wheat-ridge-co',
-    'lafayette-co',
-    'louisville-co',
-    'superior-co',
-    'federal-heights-co',
-    'sheridan-co',
-    'greenwood-village-co',
-    'lone-tree-co',
-    'cherry-hills-village-co',
-    'firestone-co',
-    'frederick-co',
-    // Boulder County
-    'boulder-co',
-    'longmont-co',
-    // Northern Front Range - Core Cities
-    'fort-collins-co',
-    'loveland-co',
-    'greeley-co',
-    'windsor-co',
-    // Northern Front Range - Additional Cities (10 mile radius from Fort Collins)
-    'johnstown-co',
-    'timnath-co',
-    'wellington-co',
-    // Southern Colorado - Core Cities
-    'colorado-springs-co',
-    'castle-rock-co',
-    // Southern Colorado - Additional Cities (10 mile radius from Colorado Springs)
-    'security-widefield-co',
-    'fountain-co',
-    'manitou-springs-co',
-    'black-forest-co',
-    // Mountain Communities
-    'evergreen-co',
-    'golden-co',
-  ].map((slug) => ({
-    url: `${baseUrl}/locations/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: slug === 'denver-co' ? 0.9 : 0.8,
-  }));
-
-  // Neighborhood pages (dynamically generated from data — /locations/{city}-co/{slug})
-  const neighborhoods = allNeighborhoods.map((n) => ({
-    url: `${baseUrl}/locations/${n.citySlug}-co/${n.slug}`,
+  // Neighborhood pages — Aurora on the old URL, all others on the franchise URL
+  const neighborhoods: MetadataRoute.Sitemap = allNeighborhoods.map((n) => ({
+    url: n.citySlug === 'aurora'
+      ? `${baseUrl}/locations/aurora-co/${n.slug}`
+      : `${baseUrl}/colorado/${n.citySlug}/${n.slug}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
-  // Vehicle pages (dynamically generated from data)
-  const vehicleSlugs = getAllVehicleSlugs();
-  const vehicles = vehicleSlugs.map((slug) => ({
+  // Insurance carrier pages (CO + AZ)
+  const coInsurance: MetadataRoute.Sitemap = INSURANCE_CARRIERS.map((slug) => ({
+    url: `${baseUrl}/colorado/insurance/${slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+  }));
+  const azInsurance: MetadataRoute.Sitemap = INSURANCE_CARRIERS.map((slug) => ({
+    url: `${baseUrl}/arizona/insurance/${slug}`,
+    lastModified: azDate,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  // High-intent content pages (CO + AZ)
+  const coHighIntent: MetadataRoute.Sitemap = HIGH_INTENT.map((slug) => ({
+    url: `${baseUrl}/colorado/${slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+  const azHighIntent: MetadataRoute.Sitemap = HIGH_INTENT.map((slug) => ({
+    url: `${baseUrl}/arizona/${slug}`,
+    lastModified: azDate,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  // Vehicle pages (global)
+  const vehicles = getAllVehicleSlugs().map((slug) => ({
     url: `${baseUrl}/vehicles/${slug}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
-  // Blog pages (exclude slugs that 301-redirect to canonical versions)
-  const blogPosts = getAllBlogPosts();
+  // Blog pages (global; exclude slugs that 301-redirect to canonical versions)
   const redirectedBlogSlugs = new Set([
     'windshield-repair-vs-replacement-decision-guide',
     'windshield-replacement-cost-guide-colorado',
   ]);
   const blog: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    },
-    ...blogPosts
+    { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    ...getAllBlogPosts()
       .filter((post) => !redirectedBlogSlugs.has(post.slug))
       .map((post) => ({
         url: `${baseUrl}/blog/${post.slug}`,
@@ -192,82 +178,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
       })),
   ];
 
-  // Brand (make) pages
-  const makes = getAllMakes();
-  const brands = makes.map((make) => ({
+  // Brand (make) pages (global)
+  const brands = getAllMakes().map((make) => ({
     url: `${baseUrl}/vehicles/brands/${make.toLowerCase()}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
 
-  // Arizona location pages
-  const azLocations = [
-    'phoenix-az',
-    'scottsdale-az',
-    'tempe-az',
-    'mesa-az',
-    'chandler-az',
-    'gilbert-az',
-    'glendale-az',
-    'peoria-az',
-    'surprise-az',
-    'goodyear-az',
-    'avondale-az',
-    'buckeye-az',
-    'fountain-hills-az',
-    'queen-creek-az',
-    'apache-junction-az',
-    'cave-creek-az',
-    'maricopa-az',
-    'el-mirage-az',
-    'litchfield-park-az',
-    'ahwatukee-az',
-  ].map((slug) => ({
-    url: `${baseUrl}/locations/${slug}`,
-    lastModified: new Date('2026-02-22'),
-    changeFrequency: 'weekly' as const,
-    priority: slug === 'phoenix-az' ? 0.9 : 0.8,
-  }));
-
-  // Arizona insurance page + Phoenix landing page
-  const azInsurance: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/phoenix`,
-      lastModified: new Date('2026-02-22'),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services/insurance-claims/arizona`,
-      lastModified: new Date('2026-02-22'),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
+  return [
+    ...pages,
+    ...hubs,
+    ...coServices,
+    ...azServices,
+    ...coLocations,
+    ...azLocations,
+    ...neighborhoods,
+    ...coInsurance,
+    ...azInsurance,
+    ...coHighIntent,
+    ...azHighIntent,
+    ...vehicles,
+    ...blog,
+    ...brands,
   ];
-
-  // Legacy /services/insurance-claims/[carrier] routes now 301 → /insurance/[carrier]
-  // Only keep /services/insurance-claims/arizona (no redirect, unique AZ law page)
-  const insuranceBrands: MetadataRoute.Sitemap = [];
-
-  // Carrier-specific insurance pages at /insurance/[carrier]
-  const carrierInsurancePages: MetadataRoute.Sitemap = [
-    'progressive',
-    'aaa',
-    'allstate',
-    'geico',
-    'esurance',
-    'state-farm',
-    'usaa',
-    'farmers',
-    'safeco',
-    'liberty-mutual',
-  ].map((slug) => ({
-    url: `${baseUrl}/insurance/${slug}`,
-    lastModified: new Date('2026-02-26'),
-    changeFrequency: 'monthly' as const,
-    priority: 0.9,
-  }));
-
-  return [...pages, ...services, ...azInsurance, ...insuranceBrands, ...carrierInsurancePages, ...locations, ...azLocations, ...neighborhoods, ...vehicles, ...blog, ...brands];
 }
