@@ -510,3 +510,30 @@ Look for:
 
 ## 2026-06-10 (latest) — MS goal revenue fix applied
 - Panel (Codex+Gemini) unanimous: VariableValue flip is reporting-only under MaxConversions, going-forward, no learning reset; leave count type/windows alone pre-Jun 17. Applied + verified: Quick quote → VariableValue $91, Text_click → VariableValue $55. Dead-goal deletion deferred to Jun 24 session per Codex.
+
+## 2026-06-14 — GSC Performance: fix orphaned neighborhood pages (indexing)
+**Trigger:** Doug asked to improve Google performance; GSC Coverage showed 58 "Crawled - currently not indexed" + 47 "Discovered - not indexed" (116 non-indexed pages total).
+
+**Root cause found:** The 73 neighborhood pages (/locations/{city}-co/{slug}) were orphaned:
+- NOT in sitemap.ts (services/locations/vehicles/blog were, neighborhoods weren't)
+- No internal links INTO the cluster — city pages rendered hardcoded `<div><span>` neighborhood names (not links), and the marketing names didn't even match page slugs. NeighborhoodPage cross-links siblings + links up to city, but nothing linked down from authoritative pages.
+- Content itself is high quality + differentiated (unique landmarks/hazards/FAQs per neighborhood), so NOT a thin-content problem — purely a link-signal problem.
+
+**Changes:**
+- `src/components/NeighborhoodLinks.tsx` (NEW): data-driven linked grid, URLs derived from neighborhood data (always match routes).
+- `src/app/sitemap.ts`: import allNeighborhoods, emit 73 neighborhood URLs. Sitemap 135 → 208 URLs (verified in build output).
+- 6 city pages (denver/aurora/lakewood/boulder/fort-collins/colorado-springs): replaced hardcoded non-linked neighborhood/"areas we serve" grids with `<NeighborhoodLinks citySlug=... />`. Preserved each page's heading + "Don't see your neighborhood?" CTA.
+- Resubmitted stale sitemap to GSC via API (was last submitted 2026-03-01 → now 2026-06-14). Script: scripts/resubmit-sitemap.mjs.
+- `scripts/analyze-pag-performance.mjs` (NEW): GSC API analysis (perf, striking distance, CTR ops). Report: tasks/2026-06-14-pag-gsc-analysis.md.
+
+**Verification:**
+- `npm run build` exit 0. All 73 neighborhood pages prerender as static HTML.
+- sitemap.xml body contains 73 neighborhood URLs (verified), 208 total <url> entries.
+- aurora-co.html renders 14 real `href="/locations/aurora-co/{slug}"` internal links (verified).
+
+**Deliberately NOT done:**
+- Did not touch the 58-URL "crawled not indexed" triage — needs Doug to export the URL list from GSC to confirm which pages they are (hypothesis: the orphaned neighborhood pages; this fix should resolve most).
+- Did not fix pre-existing unused-import warnings (Phone/Star/Shield) in location pages — out of scope, pre-existing.
+- Did not address CTR/title rewrites (geico pos 11.7, boulder pos 17.9) or the mobile-service page (pos 58) — separate follow-up.
+
+**Performance snapshot (28d):** 68 clicks (+31%), 14,357 impressions (+28%), CTR 0.47%, avg pos 33.4. Momentum positive.
