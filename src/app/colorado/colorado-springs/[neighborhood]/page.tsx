@@ -5,7 +5,6 @@ import NeighborhoodPage from '@/components/NeighborhoodPage';
 
 const CITY_SLUG = 'colorado-springs';
 const CITY_NAME = 'Colorado Springs';
-const CITY_FOLDER = 'colorado-springs-co';
 
 interface Props {
   params: Promise<{ neighborhood: string }>;
@@ -29,12 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: {
-      canonical: `https://pinkautoglass.com/locations/${CITY_FOLDER}/${slug}`,
+      canonical: `https://pinkautoglass.com/colorado/${CITY_SLUG}/${slug}`,
     },
     openGraph: {
       title: `Auto Glass Repair ${n.name}, ${CITY_NAME} CO | Mobile Windshield Service`,
       description,
-      url: `https://pinkautoglass.com/locations/${CITY_FOLDER}/${slug}`,
+      url: `https://pinkautoglass.com/colorado/${CITY_SLUG}/${slug}`,
       type: 'website',
     },
   };

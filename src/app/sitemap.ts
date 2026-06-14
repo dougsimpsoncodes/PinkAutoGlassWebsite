@@ -9,9 +9,8 @@ import { allNeighborhoods } from '@/data/neighborhoods';
  * /colorado/* and /arizona/* equivalents (see next.config.js franchiseRedirects),
  * so the sitemap must list ONLY the canonical franchise URLs.
  *
- * Two exceptions still live on the old structure because their franchise pages
- * don't exist yet (kept canonical via reverse redirects, not cannibalizing):
- *   - Aurora: /locations/aurora-co (+ its 14 neighborhood pages)
+ * One exception still lives on the old structure because its franchise page
+ * doesn't exist yet (kept canonical via a reverse redirect, not cannibalizing):
  *   - /services/adas-calibration
  */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -19,9 +18,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const azDate = new Date('2026-02-22');
 
-  // CO cities with a live /colorado/<city> page (Aurora excluded — see above)
+  // CO cities with a live /colorado/<city> page
   const CO_CITIES = [
-    'arvada', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
+    'arvada', 'aurora', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
     'centennial', 'cherry-hills-village', 'colorado-springs', 'commerce-city',
     'denver', 'englewood', 'erie', 'evergreen', 'federal-heights', 'firestone',
     'fort-collins', 'fountain', 'frederick', 'golden', 'greeley',
@@ -96,16 +95,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 
-  // CO location pages (+ Aurora on the old URL)
-  const coLocations: MetadataRoute.Sitemap = [
-    ...CO_CITIES.map((c) => ({
-      url: `${baseUrl}/colorado/${c}`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: c === 'denver' ? 0.9 : 0.8,
-    })),
-    { url: `${baseUrl}/locations/aurora-co`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-  ];
+  // CO location pages
+  const coLocations: MetadataRoute.Sitemap = CO_CITIES.map((c) => ({
+    url: `${baseUrl}/colorado/${c}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: c === 'denver' ? 0.9 : 0.8,
+  }));
 
   // AZ location pages
   const azLocations: MetadataRoute.Sitemap = AZ_CITIES.map((c) => ({
@@ -115,11 +111,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: c === 'phoenix' ? 0.9 : 0.8,
   }));
 
-  // Neighborhood pages — Aurora on the old URL, all others on the franchise URL
+  // Neighborhood pages — all on the franchise URL /colorado/<city>/<slug>
   const neighborhoods: MetadataRoute.Sitemap = allNeighborhoods.map((n) => ({
-    url: n.citySlug === 'aurora'
-      ? `${baseUrl}/locations/aurora-co/${n.slug}`
-      : `${baseUrl}/colorado/${n.citySlug}/${n.slug}`,
+    url: `${baseUrl}/colorado/${n.citySlug}/${n.slug}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.7,

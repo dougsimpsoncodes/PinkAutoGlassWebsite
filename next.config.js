@@ -86,18 +86,17 @@ validateEnvironmentVariables();
 // Franchise URL migration (2026-06-14)
 // Old structure (/locations, /services, /insurance, /phoenix) → franchise
 // subfolder structure (/colorado/*, /arizona/*). Every entry below has a
-// VERIFIED live target page. Two pages are intentionally NOT migrated because
-// their franchise versions don't exist yet (they already resolve to the old
-// URL via existing reverse redirects, so they aren't cannibalizing):
-//   - Aurora (/locations/aurora-co + its 14 neighborhoods)
+// VERIFIED live target page. One page is intentionally NOT migrated because its
+// franchise version doesn't exist yet (it resolves to the old URL via a reverse
+// redirect, so it isn't cannibalizing):
 //   - /services/adas-calibration
-// Build these franchise pages later, then add their redirects here.
+// Build that franchise page later, then add its redirect here.
 // Source of truth: data/url-restructure-redirect-map.md
 // ============================================================================
 
-// CO cities that have a live /colorado/<city> page (Aurora excluded on purpose)
+// CO cities that have a live /colorado/<city> page
 const CO_CITIES = [
-  'arvada', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
+  'arvada', 'aurora', 'black-forest', 'boulder', 'brighton', 'broomfield', 'castle-rock',
   'centennial', 'cherry-hills-village', 'colorado-springs', 'commerce-city',
   'denver', 'englewood', 'erie', 'evergreen', 'federal-heights', 'firestone',
   'fort-collins', 'fountain', 'frederick', 'golden', 'greeley',
@@ -108,9 +107,9 @@ const CO_CITIES = [
   'windsor',
 ];
 
-// CO cities with a live /colorado/<city>/[neighborhood] route (Aurora excluded)
+// CO cities with a live /colorado/<city>/[neighborhood] route
 const CO_NEIGHBORHOOD_CITIES = [
-  'boulder', 'colorado-springs', 'denver', 'fort-collins', 'lakewood',
+  'aurora', 'boulder', 'colorado-springs', 'denver', 'fort-collins', 'lakewood',
 ];
 
 // AZ cities with a live /arizona/<city> page (slug strips the -az suffix)
@@ -318,20 +317,6 @@ const nextConfig = {
       {
         source: '/colorado/services/adas-calibration',
         destination: '/services/adas-calibration',
-        permanent: true,
-      },
-      // Aurora has no franchise page yet — keep it canonical on /locations/aurora-co
-      // and route the franchise URL back to it (NOT cannibalizing). When the
-      // /colorado/aurora franchise page + [neighborhood] route are built, flip
-      // these to forward redirects and add Aurora to franchiseRedirects above.
-      {
-        source: '/colorado/aurora',
-        destination: '/locations/aurora-co',
-        permanent: true,
-      },
-      {
-        source: '/colorado/aurora/:neighborhood',
-        destination: '/locations/aurora-co',
         permanent: true,
       },
       // Location shorthand → franchise slugs

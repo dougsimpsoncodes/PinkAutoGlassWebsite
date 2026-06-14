@@ -537,3 +537,43 @@ Look for:
 - Did not address CTR/title rewrites (geico pos 11.7, boulder pos 17.9) or the mobile-service page (pos 58) — separate follow-up.
 
 **Performance snapshot (28d):** 68 clicks (+31%), 14,357 impressions (+28%), CTR 0.47%, avg pos 33.4. Momentum positive.
+
+## 2026-06-14 — Complete franchise URL migration (301 redirects + sitemap) [PR #61]
+**Decision (Daisy):** Two live page structures (old /locations|services|insurance + new /colorado|arizona franchise) were cannibalizing sitewide. Chose to complete the franchise migration (franchise = canonical).
+
+**Diagnosis:** Both structures returned 200 + self-canonical. Planned 301s (data/url-restructure-redirect-map.md) never built; commit 65f376a un-noindexed franchise tree exposing duplicates. GSC URL inspection (208 sitemap URLs): 108 Discovered-not-indexed, 47 Crawled-not-indexed, 39 indexed.
+
+**Changes:**
+- next.config.js: 94 franchise 301s (verified-live targets only). 43 CO cities, 5 CO neighborhood patterns, 20 AZ cities, 5 services, 10 insurance, 4 high-intent, /phoenix, /locations. Legacy redirects repointed to franchise.
+- sitemap.ts: rewritten → 233 canonical franchise URLs (122 /colorado, 41 /arizona). 0 leaked old /locations/*-co.
+- NeighborhoodLinks: added basePath prop; applied to 5 franchise city pages (else franchise neighborhoods orphaned — same issue as PR #60).
+- scripts/inspect-indexing-status.mjs: GSC inspection bucketing tool. Report: tasks/2026-06-14-indexing-status.md.
+
+**Intentionally NOT migrated (no franchise page yet; already consolidated via reverse redirect, not cannibalizing):**
+- Aurora (/locations/aurora-co + 14 neighborhoods) — stays canonical on old URL + in sitemap
+- /services/adas-calibration — stays canonical on old URL + in sitemap
+- FOLLOW-UP: build /colorado/aurora (+[neighborhood]) and /colorado/services/adas-calibration, then flip their redirects.
+
+**Verified:** build exit 0; 109 redirects in routes-manifest; local server 308 old→franchise (denver-co, capitol-hill nbhd, mobile-service, geico, phoenix, pricing, mesa-az); aurora+adas stay 200; franchise denver renders 12 nbhd links; 59 franchise nbhd pages prerender.
+
+**Cleanup follow-up:** old /locations/*-co page files still exist (redirect before render). Safe to delete later.
+**Content bug noted (out of scope):** /arizona/insurance/geico title says "CO" — needs AZ copy.
+**Note:** PR #60 (neighborhood links on old /locations pages) is now largely superseded by redirects, except Aurora which stays on the old URL — so PR #60's Aurora work remains live and correct.
+
+## 2026-06-14 — Build franchise Aurora + fix neighborhood canonicals [PR pending]
+Completes the franchise migration for Aurora (was the one major location stranded on /locations/aurora-co; highest-impression page at 1,290 impr/pos 19).
+
+**Changes:**
+- NEW src/app/colorado/aurora/page.tsx (ported from /locations/aurora-co, franchise URLs + NeighborhoodLinks basePath="/colorado/aurora") + src/app/colorado/aurora/[neighborhood]/page.tsx.
+- NeighborhoodPage.tsx: now builds franchise /colorado/<citySlug>/<slug> URLs (was /locations/<city>-co). Fixes a latent issue the migration exposed — the 5 existing franchise neighborhood pages were self-canonicaling to the OLD (now-redirecting) URL. Removed dead citySlugToFolder map. Breadcrumb parent now "Colorado" → /colorado.
+- 5 franchise [neighborhood]/page.tsx (boulder, colorado-springs, denver, fort-collins, lakewood): canonical /locations → /colorado, removed dead CITY_FOLDER const.
+- next.config.js: added aurora to CO_CITIES + CO_NEIGHBORHOOD_CITIES (forward redirects /locations/aurora-co[/:n] → /colorado/aurora[/:n]); removed the two reverse redirects.
+- sitemap.ts: aurora now franchise like all others; removed aurora old-URL special-cases.
+- NEW scripts/verify-redirects-live.mjs (prod redirect integrity checker — 90/90 clean on PR #61).
+
+**Verified:** build exit 0; franchise aurora city + 14 nbhd pages prerender; aurora city renders 14 franchise nbhd links; redirects flipped (forward present, reverse gone); boulder/university-hill canonical now self-references /colorado/boulder/university-hill.
+
+**STILL OPEN follow-ups:**
+- /services/adas-calibration: still only on old URL (no franchise page). Build /colorado/services/adas-calibration, then flip.
+- DEAD FILE CLEANUP (deferred from this PR for reviewability): all old src/app/locations/*-co/ dirs (64 cities + 6 nbhd routes) now redirect and never render. Delete them in a dedicated PR + update any inbound internal links from /locations/* to /colorado/*. Safe (redirects cover paths) but large diff.
+- /arizona/insurance/* titles say "CO" — needs AZ copy.
