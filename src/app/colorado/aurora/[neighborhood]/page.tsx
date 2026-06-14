@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import { getNeighborhood, getNeighborhoodsByCity } from '@/data/neighborhoods';
 import NeighborhoodPage from '@/components/NeighborhoodPage';
 
-const CITY_SLUG = 'boulder';
-const CITY_NAME = 'Boulder';
+const CITY_SLUG = 'aurora';
+const CITY_NAME = 'Aurora';
 
 interface Props {
   params: Promise<{ neighborhood: string }>;

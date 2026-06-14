@@ -15,16 +15,6 @@ import {
   combineSchemas,
 } from '@/lib/schema';
 
-// Map citySlug to the URL folder name (e.g. "denver" -> "denver-co")
-const citySlugToFolder: Record<string, string> = {
-  denver: 'denver-co',
-  aurora: 'aurora-co',
-  lakewood: 'lakewood-co',
-  boulder: 'boulder-co',
-  'fort-collins': 'fort-collins-co',
-  'colorado-springs': 'colorado-springs-co',
-};
-
 // Nearby city links per city (other cities we serve)
 const nearbyCities: Record<string, { name: string; href: string }[]> = {
   denver: [
@@ -70,9 +60,10 @@ function SchemaScript({ schema }: { schema: object }) {
 
 export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neighborhood }) {
   const n = neighborhood;
-  const cityFolder = citySlugToFolder[n.citySlug] || `${n.citySlug}-co`;
-  const pageUrl = `https://pinkautoglass.com/locations/${cityFolder}/${n.slug}`;
-  const cityUrl = `https://pinkautoglass.com/locations/${cityFolder}`;
+  // Franchise structure: neighborhoods live at /colorado/<citySlug>/<slug>.
+  const cityPath = `/colorado/${n.citySlug}`;
+  const pageUrl = `https://pinkautoglass.com${cityPath}/${n.slug}`;
+  const cityUrl = `https://pinkautoglass.com${cityPath}`;
 
   // Schema markup
   const localBusinessSchema = generateLocalBusinessSchema({
@@ -89,7 +80,7 @@ export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neigh
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://pinkautoglass.com' },
-    { name: 'Locations', url: 'https://pinkautoglass.com/locations' },
+    { name: 'Colorado', url: 'https://pinkautoglass.com/colorado' },
     { name: `${n.cityName}, CO`, url: cityUrl },
     { name: n.name, url: pageUrl },
   ]);
@@ -138,9 +129,9 @@ export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neigh
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Breadcrumbs
             items={[
-              { label: 'Locations', href: '/locations' },
-              { label: `${n.cityName}, CO`, href: `/locations/${cityFolder}` },
-              { label: n.name, href: `/locations/${cityFolder}/${n.slug}` },
+              { label: 'Colorado', href: '/colorado' },
+              { label: `${n.cityName}, CO`, href: cityPath },
+              { label: n.name, href: `${cityPath}/${n.slug}` },
             ]}
           />
         </div>
@@ -329,14 +320,14 @@ export default function NeighborhoodPage({ neighborhood }: { neighborhood: Neigh
                     <ul className="space-y-2">
                       {siblings.map((s) => (
                         <li key={s.slug}>
-                          <Link href={`/locations/${cityFolder}/${s.slug}`} className="text-pink-600 hover:underline">
+                          <Link href={`${cityPath}/${s.slug}`} className="text-pink-600 hover:underline">
                             {s.name} &rarr;
                           </Link>
                         </li>
                       ))}
                     </ul>
                     <div className="mt-3 pt-3 border-t">
-                      <Link href={`/locations/${cityFolder}`} className="text-gray-600 hover:text-pink-600 text-sm font-semibold">
+                      <Link href={cityPath} className="text-gray-600 hover:text-pink-600 text-sm font-semibold">
                         View all {n.cityName} services &rarr;
                       </Link>
                     </div>
